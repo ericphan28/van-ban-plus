@@ -326,25 +326,34 @@ YÊU CẦU QUAN TRỌNG:
 - Giữ nguyên dấu tiếng Việt chính xác
 - Số văn bản phải đúng format (VD: 15/GM-UBND, 234/CV-SGDĐT)
 - Ngày tháng format dd/MM/yyyy
-- Nội dung phải đầy đủ, không tóm tắt
+- loai_van_ban chỉ chọn 1 trong: CongVan, QuyetDinh, BaoCao, ToTrinh, KeHoach, ThongBao, NghiQuyet, ChiThi, HuongDan, Khac
+- huong_van_ban chỉ chọn 1 trong: Den, Di, NoiBo
+- Nội dung phải đầy đủ, không tóm tắt (nếu văn bản DÀI thì tóm tắt tối đa 2000 ký tự)
+- Output là JSON theo đúng schema đã khai báo";
 
-Trả về JSON (KHÔNG markdown, KHÔNG ```json```, chỉ thuần JSON):
-{
-  ""so_van_ban"": ""số hiệu văn bản (VD: 15/GM-UBND)"",
-  ""trich_yeu"": ""trích yếu nội dung văn bản"",
-  ""loai_van_ban"": ""một trong: CongVan, QuyetDinh, BaoCao, ToTrinh, KeHoach, ThongBao, NghiQuyet, ChiThi, HuongDan, Khac"",
-  ""ngay_ban_hanh"": ""dd/MM/yyyy"",
-  ""co_quan_ban_hanh"": ""tên cơ quan ban hành"",
-  ""nguoi_ky"": ""họ tên người ký"",
-  ""noi_dung"": ""nội dung chính của văn bản. Nếu văn bản NGẮN (dưới 3 trang) ghi đầy đủ, nếu DÀI (luật, nghị định, thông tư nhiều trang) thì CHỈ tóm tắt nội dung chính (tối đa 2000 ký tự)"",
-  ""noi_nhan"": [""nơi nhận 1"", ""nơi nhận 2""],
-  ""can_cu"": [""căn cứ pháp lý 1"", ""căn cứ pháp lý 2""],
-  ""huong_van_ban"": ""Den hoặc Di hoặc NoiBo"",
-  ""linh_vuc"": ""lĩnh vực liên quan (VD: Giáo dục, Y tế, Tài chính...)"",
-  ""dia_danh"": ""địa danh nơi ban hành văn bản, lấy từ dòng ngày tháng bên phải (VD: Gia Kiểm, Biên Hòa, Đồng Nai, Hà Nội). KHÔNG bịa đặt, chỉ lấy đúng từ văn bản"",
-  ""chuc_danh_ky"": ""chức danh/chức vụ của người ký (VD: CHỦ TỊCH, GIÁM ĐỐC, TRƯỞNG PHÒNG). Lấy chính xác từ phần ký tên cuối văn bản"",
-  ""tham_quyen_ky"": ""thẩm quyền ký, là dòng chữ nhỏ phía trên chức danh (VD: TM. nếu có 'TM.', KT. nếu có 'KT.', Q. nếu có 'Q.'). Nếu người ký trực tiếp không qua ủy quyền thì để rỗng""
-}";
+            // JSON Schema cho Structured Output — Gemini đảm bảo 100% valid JSON
+            var extractSchema = new
+            {
+                type = "object",
+                properties = new Dictionary<string, object>
+                {
+                    ["so_van_ban"] = new { type = "string", description = "Số hiệu văn bản (VD: 15/GM-UBND)" },
+                    ["trich_yeu"] = new { type = "string", description = "Trích yếu nội dung văn bản" },
+                    ["loai_van_ban"] = new { type = "string", description = "Loại văn bản", @enum = new[] { "CongVan", "QuyetDinh", "BaoCao", "ToTrinh", "KeHoach", "ThongBao", "NghiQuyet", "ChiThi", "HuongDan", "Khac" } },
+                    ["ngay_ban_hanh"] = new { type = "string", description = "Ngày ban hành dd/MM/yyyy" },
+                    ["co_quan_ban_hanh"] = new { type = "string", description = "Tên cơ quan ban hành" },
+                    ["nguoi_ky"] = new { type = "string", description = "Họ tên người ký" },
+                    ["noi_dung"] = new { type = "string", description = "Nội dung chính văn bản. Ngắn thì đầy đủ, dài thì tóm tắt tối đa 2000 ký tự" },
+                    ["noi_nhan"] = new { type = "array", items = new { type = "string" }, description = "Danh sách nơi nhận" },
+                    ["can_cu"] = new { type = "array", items = new { type = "string" }, description = "Danh sách căn cứ pháp lý" },
+                    ["huong_van_ban"] = new { type = "string", description = "Hướng văn bản", @enum = new[] { "Den", "Di", "NoiBo" } },
+                    ["linh_vuc"] = new { type = "string", description = "Lĩnh vực liên quan (VD: Giáo dục, Y tế, Tài chính)" },
+                    ["dia_danh"] = new { type = "string", description = "Địa danh nơi ban hành (VD: Gia Kiểm, Biên Hòa, Hà Nội)" },
+                    ["chuc_danh_ky"] = new { type = "string", description = "Chức danh người ký (VD: CHỦ TỊCH, GIÁM ĐỐC)" },
+                    ["tham_quyen_ky"] = new { type = "string", description = "Thẩm quyền ký (TM., KT., Q. hoặc rỗng)" }
+                },
+                required = new[] { "so_van_ban", "trich_yeu", "loai_van_ban", "ngay_ban_hanh", "co_quan_ban_hanh", "nguoi_ky", "noi_dung", "noi_nhan", "can_cu", "huong_van_ban", "linh_vuc", "dia_danh", "chuc_danh_ky", "tham_quyen_ky" }
+            };
 
             var requestBody = new GeminiRequest
             {
@@ -369,7 +378,10 @@ Trả về JSON (KHÔNG markdown, KHÔNG ```json```, chỉ thuần JSON):
                 GenerationConfig = new GenerationConfig
                 {
                     Temperature = 0.1,
-                    MaxOutputTokens = 65536
+                    MaxOutputTokens = 65536,
+                    ResponseMimeType = "application/json",
+                    ResponseSchema = extractSchema,
+                    ThinkingConfig = new ThinkingConfig { ThinkingBudget = 0 }
                 }
             };
 
@@ -390,11 +402,23 @@ Trả về JSON (KHÔNG markdown, KHÔNG ```json```, chỉ thuần JSON):
 
             if (result?.Candidates != null && result.Candidates.Length > 0)
             {
-                // Gemini 2.5 trả nhiều parts (thinking + answer) → lấy part cuối
-                var parts = result.Candidates[0].Content?.Parts;
+                var candidate = result.Candidates[0];
+                var parts = candidate.Content?.Parts;
+                
+                // Log chi tiết response
+                Console.WriteLine($"📊 Gemini Direct Extract — finishReason: {candidate.FinishReason}, parts: {parts?.Length ?? 0}");
+                if (result.UsageMetadata != null)
+                {
+                    Console.WriteLine($"📊 Tokens — prompt: {result.UsageMetadata.PromptTokenCount}, completion: {result.UsageMetadata.CandidatesTokenCount}, total: {result.UsageMetadata.TotalTokenCount}");
+                }
+
+                // Với Structured Output + thinkingBudget=0 → chỉ có 1 part duy nhất chứa JSON hợp lệ
                 var text = (parts != null && parts.Length > 0)
                     ? parts[parts.Length - 1]?.Text ?? ""
                     : "";
+                
+                Console.WriteLine($"📊 Content length: {text.Length}, preview: {(text.Length > 200 ? text[..200] + "..." : text)}");
+                
                 return ParseExtractedDocument(text);
             }
 
@@ -649,6 +673,24 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
         [JsonPropertyName("maxOutputTokens")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? MaxOutputTokens { get; set; }
+
+        [JsonPropertyName("responseMimeType")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ResponseMimeType { get; set; }
+
+        [JsonPropertyName("responseSchema")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public object? ResponseSchema { get; set; }
+
+        [JsonPropertyName("thinkingConfig")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ThinkingConfig? ThinkingConfig { get; set; }
+    }
+
+    private class ThinkingConfig
+    {
+        [JsonPropertyName("thinkingBudget")]
+        public int ThinkingBudget { get; set; }
     }
 
     private class GeminiResponse
