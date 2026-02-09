@@ -317,18 +317,21 @@ public class GeminiAIService
             }
 
             // ===== Gemini trực tiếp (legacy) =====
-            var prompt = @"Bạn là chuyên gia phân tích văn bản hành chính Việt Nam. 
-Hãy đọc kỹ toàn bộ nội dung văn bản trong file/ảnh này và trích xuất thông tin chi tiết.
+            var prompt = @"Bạn là chuyên gia OCR và trích xuất văn bản hành chính Việt Nam.
+Đọc file/ảnh này và trích xuất thông tin theo schema JSON đã khai báo.
 
-YÊU CẦU QUAN TRỌNG:
-- Đọc TOÀN BỘ nội dung, không bỏ sót
-- Giữ nguyên dấu tiếng Việt chính xác
-- Số văn bản phải đúng format (VD: 15/GM-UBND, 234/CV-SGDĐT)
-- Ngày tháng format dd/MM/yyyy
-- loai_van_ban chỉ chọn 1 trong: CongVan, QuyetDinh, BaoCao, ToTrinh, KeHoach, ThongBao, NghiQuyet, ChiThi, HuongDan, Khac
-- huong_van_ban chỉ chọn 1 trong: Den, Di, NoiBo
-- Trường noi_dung: ghi ĐẦY ĐỦ TOÀN BỘ nội dung văn bản, KHÔNG tóm tắt, KHÔNG rút gọn, KHÔNG bỏ sót
-- Output là JSON theo đúng schema đã khai báo";
+QUY TẮC BẮT BUỘC:
+1. Số văn bản: đúng format gốc (VD: 15/GM-UBND, 108/2025/QH15)
+2. Ngày tháng: format dd/MM/yyyy
+3. loai_van_ban: chọn 1 trong CongVan|QuyetDinh|BaoCao|ToTrinh|KeHoach|ThongBao|NghiQuyet|ChiThi|HuongDan|Khac
+4. huong_van_ban: chọn 1 trong Den|Di|NoiBo
+5. TRƯỜNG noi_dung — ĐÂY LÀ TRƯỜNG QUAN TRỌNG NHẤT:
+   - Trích xuất NGUYÊN VĂN toàn bộ nội dung văn bản gốc
+   - KHÔNG được tóm tắt, KHÔNG được diễn giải, KHÔNG được rút gọn
+   - KHÔNG được bỏ sót bất kỳ điều, khoản, mục, chương nào
+   - Giữ nguyên từng câu từng chữ như trong văn bản gốc
+   - Đây là văn bản nhà nước, nội dung KHÔNG ĐƯỢC thay đổi
+6. Giữ nguyên dấu tiếng Việt chính xác";
 
             // JSON Schema cho Structured Output — Gemini đảm bảo 100% valid JSON
             var extractSchema = new
@@ -342,7 +345,7 @@ YÊU CẦU QUAN TRỌNG:
                     ["ngay_ban_hanh"] = new { type = "string", description = "Ngày ban hành dd/MM/yyyy" },
                     ["co_quan_ban_hanh"] = new { type = "string", description = "Tên cơ quan ban hành" },
                     ["nguoi_ky"] = new { type = "string", description = "Họ tên người ký" },
-                    ["noi_dung"] = new { type = "string", description = "Toàn bộ nội dung văn bản, ghi đầy đủ không tóm tắt, không rút gọn" },
+                    ["noi_dung"] = new { type = "string", description = "NGUYÊN VĂN toàn bộ nội dung văn bản gốc, từng câu từng chữ, TUYỆT ĐỐI KHÔNG tóm tắt/rút gọn/diễn giải. Đây là văn bản nhà nước không được thay đổi nội dung" },
                     ["noi_nhan"] = new { type = "array", items = new { type = "string" }, description = "Danh sách nơi nhận" },
                     ["can_cu"] = new { type = "array", items = new { type = "string" }, description = "Danh sách căn cứ pháp lý" },
                     ["huong_van_ban"] = new { type = "string", description = "Hướng văn bản", @enum = new[] { "Den", "Di", "NoiBo" } },
