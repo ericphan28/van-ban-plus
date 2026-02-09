@@ -149,7 +149,11 @@ public class GeminiAIService
             
             if (result?.Candidates != null && result.Candidates.Length > 0)
             {
-                var text = result.Candidates[0].Content?.Parts?[0]?.Text ?? "";
+                // Gemini 2.5 trả nhiều parts (thinking + answer) → lấy part cuối
+                var gParts = result.Candidates[0].Content?.Parts;
+                var text = (gParts != null && gParts.Length > 0)
+                    ? gParts[gParts.Length - 1]?.Text ?? ""
+                    : "";
                 return text;
             }
 
@@ -385,7 +389,11 @@ Trả về JSON (KHÔNG markdown, KHÔNG ```json```, chỉ thuần JSON):
 
             if (result?.Candidates != null && result.Candidates.Length > 0)
             {
-                var text = result.Candidates[0].Content?.Parts?[0]?.Text ?? "";
+                // Gemini 2.5 trả nhiều parts (thinking + answer) → lấy part cuối
+                var parts = result.Candidates[0].Content?.Parts;
+                var text = (parts != null && parts.Length > 0)
+                    ? parts[parts.Length - 1]?.Text ?? ""
+                    : "";
                 return ParseExtractedDocument(text);
             }
 
@@ -463,7 +471,11 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
-        return result?.Candidates?[0]?.Content?.Parts?[0]?.Text ?? "";
+        // Gemini 2.5 trả nhiều parts (thinking + answer) → lấy part cuối
+        var resultParts = result?.Candidates?[0]?.Content?.Parts;
+        return (resultParts != null && resultParts.Length > 0)
+            ? resultParts[resultParts.Length - 1]?.Text ?? ""
+            : "";
     }
 
     private ExtractedDocumentData ParseExtractedDocument(string jsonText)
@@ -481,6 +493,17 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
             if (jsonText.EndsWith("```"))
                 jsonText = jsonText.Substring(0, jsonText.Length - 3);
             jsonText = jsonText.Trim();
+
+            // Nếu text không bắt đầu bằng '{', thử tìm JSON block trong text
+            if (!jsonText.StartsWith("{"))
+            {
+                var jsonStart = jsonText.IndexOf('{');
+                var jsonEnd = jsonText.LastIndexOf('}');
+                if (jsonStart >= 0 && jsonEnd > jsonStart)
+                {
+                    jsonText = jsonText.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                }
+            }
 
             using var doc = JsonDocument.Parse(jsonText);
             var root = doc.RootElement;
