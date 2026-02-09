@@ -60,3 +60,4 @@ Desktop.ini
 ## User-specific
 *.env
 *.local
+.vercel

@@ -781,8 +781,7 @@ public partial class DocumentListPage : Page
     {
         try
         {
-            const string GEMINI_API_KEY = "AIzaSyAhQRYO6lSjG8m0sTP-Y8Gk262QKJyLrUg";
-            var dialog = new ScanImportDialog(_documentService, GEMINI_API_KEY);
+            var dialog = new ScanImportDialog(_documentService);
             dialog.Owner = Window.GetWindow(this);
             
             if (dialog.ShowDialog() == true && dialog.CreatedDocument != null)

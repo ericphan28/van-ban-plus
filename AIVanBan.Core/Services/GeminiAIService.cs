@@ -7,20 +7,88 @@ using AIVanBan.Core.Models;
 namespace AIVanBan.Core.Services;
 
 /// <summary>
-/// Service tích hợp Gemini API để tạo nội dung văn bản tự động
+/// Service tích hợp AI — hỗ trợ 2 chế độ:
+/// 1. VanBanPlus API (khuyến nghị): gọi qua API Gateway, quản lý quota/usage
+/// 2. Gemini trực tiếp (legacy): gọi trực tiếp Google Gemini API
 /// </summary>
 public class GeminiAIService
 {
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
-    private const string API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+    private readonly bool _useVanBanPlusApi;
+    private readonly string _vanBanPlusApiUrl;
+    private readonly string _fallbackGeminiKey; // Fallback khi VanBanPlus lỗi
+    private const string GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
-    public GeminiAIService(string apiKey)
+    /// <summary>
+    /// Khởi tạo từ AppSettings (khuyến nghị)
+    /// </summary>
+    public GeminiAIService()
     {
-        _apiKey = apiKey;
+        var settings = AppSettingsService.Load();
+        _useVanBanPlusApi = settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey);
+        _vanBanPlusApiUrl = settings.VanBanPlusApiUrl.TrimEnd('/');
+        _apiKey = _useVanBanPlusApi ? settings.VanBanPlusApiKey : settings.GeminiApiKey;
+        _fallbackGeminiKey = settings.GeminiApiKey; // Dùng khi VanBanPlus lỗi
+        
         _httpClient = new HttpClient();
         _httpClient.Timeout = TimeSpan.FromSeconds(60);
+        
+        if (_useVanBanPlusApi)
+        {
+            _httpClient.DefaultRequestHeaders.Add("X-API-Key", _apiKey);
+            // Vercel Deployment Protection bypass (Hobby plan)
+            var bypassToken = settings.VercelBypassToken;
+            if (!string.IsNullOrEmpty(bypassToken))
+                _httpClient.DefaultRequestHeaders.Add("x-vercel-protection-bypass", bypassToken);
+        }
     }
+
+    /// <summary>
+    /// Khởi tạo truyền thẳng API Key (legacy, backward compatible)
+    /// </summary>
+    public GeminiAIService(string apiKey)
+    {
+        var settings = AppSettingsService.Load();
+        
+        // Nếu có VanBanPlus config, ưu tiên dùng nó
+        if (settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey))
+        {
+            _useVanBanPlusApi = true;
+            _vanBanPlusApiUrl = settings.VanBanPlusApiUrl.TrimEnd('/');
+            _apiKey = settings.VanBanPlusApiKey;
+            _fallbackGeminiKey = !string.IsNullOrEmpty(settings.GeminiApiKey) ? settings.GeminiApiKey : apiKey;
+        }
+        else
+        {
+            _useVanBanPlusApi = false;
+            _vanBanPlusApiUrl = "";
+            _apiKey = apiKey;
+            _fallbackGeminiKey = apiKey;
+        }
+        
+        _httpClient = new HttpClient();
+        _httpClient.Timeout = TimeSpan.FromSeconds(60);
+        
+        if (_useVanBanPlusApi)
+        {
+            _httpClient.DefaultRequestHeaders.Add("X-API-Key", _apiKey);
+            // Vercel Deployment Protection bypass (Hobby plan)
+            var bypassToken = settings.VercelBypassToken;
+            if (!string.IsNullOrEmpty(bypassToken))
+                _httpClient.DefaultRequestHeaders.Add("x-vercel-protection-bypass", bypassToken);
+        }
+    }
+
+    /// <summary>
+    /// Đang dùng VanBanPlus API hay Gemini trực tiếp?
+    /// </summary>
+    public bool IsUsingVanBanPlusApi => _useVanBanPlusApi;
+
+    /// <summary>
+    /// Lấy Gemini API Key cho gọi trực tiếp (ưu tiên fallback key)
+    /// </summary>
+    private string GeminiDirectKey => _useVanBanPlusApi ? _fallbackGeminiKey : _apiKey;
 
     /// <summary>
     /// Tạo nội dung văn bản từ prompt
@@ -29,6 +97,29 @@ public class GeminiAIService
     {
         try
         {
+            // ===== VanBanPlus API mode =====
+            if (_useVanBanPlusApi)
+            {
+                try
+                {
+                    var body = new
+                    {
+                        prompt = prompt,
+                        systemInstruction = systemInstruction
+                    };
+                    var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/generate", body);
+                    vbpResponse.EnsureSuccessStatusCode();
+                    var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
+                    return vbpResult?.Data?.Content ?? "Không thể tạo nội dung";
+                }
+                catch (Exception ex) when (!string.IsNullOrEmpty(_fallbackGeminiKey))
+                {
+                    // Fallback sang Gemini trực tiếp
+                    Console.WriteLine($"⚠️ VanBanPlus API lỗi, fallback Gemini: {ex.Message}");
+                }
+            }
+
+            // ===== Gemini trực tiếp (legacy) =====
             var requestBody = new GeminiRequest
             {
                 Contents = new[]
@@ -49,7 +140,7 @@ public class GeminiAIService
                 };
             }
 
-            var url = $"{API_BASE_URL}/gemini-2.5-flash:generateContent?key={_apiKey}";
+            var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
             
             var response = await _httpClient.PostAsJsonAsync(url, requestBody);
             response.EnsureSuccessStatusCode();
@@ -66,7 +157,7 @@ public class GeminiAIService
         }
         catch (Exception ex)
         {
-            throw new Exception($"Lỗi khi gọi Gemini API: {ex.Message}", ex);
+            throw new Exception($"Lỗi khi gọi AI: {ex.Message}", ex);
         }
     }
 
@@ -75,6 +166,15 @@ public class GeminiAIService
     /// </summary>
     public async IAsyncEnumerable<string> GenerateContentStreamAsync(string prompt, string? systemInstruction = null)
     {
+        // VanBanPlus API mode: không hỗ trợ streaming → trả về toàn bộ 1 lần
+        if (_useVanBanPlusApi)
+        {
+            var result = await GenerateContentAsync(prompt, systemInstruction);
+            yield return result;
+            yield break;
+        }
+
+        // ===== Gemini trực tiếp: streaming =====
         var requestBody = new GeminiRequest
         {
             Contents = new[]
@@ -94,7 +194,7 @@ public class GeminiAIService
             };
         }
 
-        var url = $"{API_BASE_URL}/gemini-2.5-flash:streamGenerateContent?key={_apiKey}&alt=sse";
+        var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:streamGenerateContent?key={GeminiDirectKey}&alt=sse";
         
         var jsonContent = JsonContent.Create(requestBody);
         var request = new HttpRequestMessage(HttpMethod.Post, url)
@@ -193,6 +293,26 @@ public class GeminiAIService
     {
         try
         {
+            // ===== VanBanPlus API mode =====
+            if (_useVanBanPlusApi)
+            {
+                try
+                {
+                    var body = new { base64Data, mimeType };
+                    _httpClient.Timeout = TimeSpan.FromSeconds(120);
+                    var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body);
+                    vbpResponse.EnsureSuccessStatusCode();
+                    var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
+                    var text = vbpResult?.Data?.Content ?? "";
+                    return ParseExtractedDocument(text);
+                }
+                catch (Exception ex) when (!string.IsNullOrEmpty(_fallbackGeminiKey))
+                {
+                    Console.WriteLine($"⚠️ VanBanPlus API lỗi, fallback Gemini: {ex.Message}");
+                }
+            }
+
+            // ===== Gemini trực tiếp (legacy) =====
             var prompt = @"Bạn là chuyên gia phân tích văn bản hành chính Việt Nam. 
 Hãy đọc kỹ toàn bộ nội dung văn bản trong file/ảnh này và trích xuất thông tin chi tiết.
 
@@ -248,7 +368,7 @@ Trả về JSON (KHÔNG markdown, KHÔNG ```json```, chỉ thuần JSON):
                 }
             };
 
-            var url = $"{API_BASE_URL}/gemini-2.5-flash:generateContent?key={_apiKey}";
+            var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
 
             var jsonOptions = new JsonSerializerOptions 
             { 
@@ -294,6 +414,25 @@ Trả về JSON (KHÔNG markdown, KHÔNG ```json```, chỉ thuần JSON):
             _ => "application/octet-stream"
         };
 
+        // ===== VanBanPlus API mode =====
+        if (_useVanBanPlusApi)
+        {
+            try
+            {
+                var body = new { base64Data = base64, mimeType };
+                _httpClient.Timeout = TimeSpan.FromSeconds(120);
+                var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/read-text", body);
+                vbpResponse.EnsureSuccessStatusCode();
+                var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
+                return vbpResult?.Data?.Content ?? "";
+            }
+            catch (Exception ex) when (!string.IsNullOrEmpty(_fallbackGeminiKey))
+            {
+                Console.WriteLine($"⚠️ VanBanPlus API lỗi, fallback Gemini: {ex.Message}");
+            }
+        }
+
+        // ===== Gemini trực tiếp (legacy) =====
         var prompt = @"Đọc và trả về TOÀN BỘ nội dung text trong file/ảnh này.
 Giữ nguyên format, xuống dòng, dấu tiếng Việt. 
 CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
@@ -314,7 +453,7 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
             GenerationConfig = new GenerationConfig { Temperature = 0.1, MaxOutputTokens = 8192 }
         };
 
-        var url = $"{API_BASE_URL}/gemini-2.5-flash:generateContent?key={_apiKey}";
+        var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
         var jsonOptions = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
         var json = JsonSerializer.Serialize(requestBody, jsonOptions);
         var httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
@@ -474,6 +613,37 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
 
         [JsonPropertyName("totalTokenCount")]
         public int TotalTokenCount { get; set; }
+    }
+
+    #endregion
+
+    #region DTOs cho VanBanPlus API
+
+    private class VanBanPlusAIResponse
+    {
+        [JsonPropertyName("success")]
+        public bool Success { get; set; }
+
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
+
+        [JsonPropertyName("data")]
+        public VanBanPlusAIData? Data { get; set; }
+    }
+
+    private class VanBanPlusAIData
+    {
+        [JsonPropertyName("content")]
+        public string Content { get; set; } = "";
+
+        [JsonPropertyName("promptTokens")]
+        public int PromptTokens { get; set; }
+
+        [JsonPropertyName("completionTokens")]
+        public int CompletionTokens { get; set; }
+
+        [JsonPropertyName("totalTokens")]
+        public int TotalTokens { get; set; }
     }
 
     #endregion

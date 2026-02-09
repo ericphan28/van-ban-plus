@@ -1,0 +1,105 @@
+<Window x:Class="AIVanBan.Desktop.Views.ApiSettingsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="⚙️ Cài đặt API" Height="560" Width="520"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="⚙️ Cài đặt kết nối AI" FontSize="20" FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+            <TextBlock Text="Chọn chế độ gọi AI và nhập thông tin API Key" 
+                       FontSize="13" Opacity="0.7" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Chế độ API -->
+                <GroupBox Header="Chế độ API" Margin="0,0,0,12"
+                          materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                    <StackPanel Margin="8">
+                        <RadioButton x:Name="rbVanBanPlus" Content="☁️ VanBanPlus API (khuyến nghị)"
+                                     FontWeight="SemiBold" Margin="0,4"
+                                     Checked="ApiMode_Changed"/>
+                        <TextBlock Text="   Gọi AI qua server VanBanPlus — quản lý quota, thống kê sử dụng" 
+                                   FontSize="11" Opacity="0.6" Margin="0,0,0,8"/>
+                        
+                        <RadioButton x:Name="rbGeminiDirect" Content="🔑 Gemini trực tiếp (legacy)"
+                                     Margin="0,4"
+                                     Checked="ApiMode_Changed"/>
+                        <TextBlock Text="   Gọi thẳng Google Gemini API bằng API Key cá nhân" 
+                                   FontSize="11" Opacity="0.6"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- VanBanPlus API Settings -->
+                <GroupBox x:Name="grpVanBanPlus" Header="VanBanPlus API" Margin="0,0,0,12"
+                          materialDesign:ColorZoneAssist.Mode="SecondaryLight">
+                    <StackPanel Margin="8">
+                        <TextBlock Text="API URL" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtApiUrl" 
+                                 materialDesign:HintAssist.Hint="https://vanbanplus-api-xxx.vercel.app"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 Margin="0,0,0,12"/>
+
+                        <TextBlock Text="API Key" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtApiKey"
+                                 materialDesign:HintAssist.Hint="vbp_xxxxxxxxxxxx"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 Margin="0,0,0,12"/>
+
+                        <Button Content="🔍 Kiểm tra kết nối" Click="TestConnection_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                HorizontalAlignment="Left" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="txtConnectionStatus" FontSize="12" Margin="0,4,0,0"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Gemini Direct Settings -->
+                <GroupBox x:Name="grpGeminiDirect" Header="Gemini API Key" Margin="0,0,0,12"
+                          materialDesign:ColorZoneAssist.Mode="SecondaryLight">
+                    <StackPanel Margin="8">
+                        <TextBlock Text="Google Gemini API Key" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBox x:Name="txtGeminiKey"
+                                 materialDesign:HintAssist.Hint="AIzaSy..."
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                        <TextBlock Text="Lấy API Key tại: https://aistudio.google.com/apikey" 
+                                   FontSize="11" Opacity="0.6" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Trạng thái hiện tại -->
+                <Border Background="{DynamicResource MaterialDesignToolBarBackground}" 
+                        CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="📊 Trạng thái hiện tại" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="txtCurrentStatus" TextWrapping="Wrap" FontSize="12" Opacity="0.8"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="💾 Lưu cài đặt" Click="Save_Click"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Margin="0,0,8,0" MinWidth="120"/>
+            <Button Content="Hủy" Click="Cancel_Click"
+                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                    MinWidth="80"/>
+        </StackPanel>
+    </Grid>
+</Window>

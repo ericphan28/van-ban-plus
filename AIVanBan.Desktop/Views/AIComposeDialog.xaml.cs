@@ -21,11 +21,11 @@ public partial class AIComposeDialog : Window
 
     public Document? GeneratedDocument { get; private set; }
 
-    public AIComposeDialog(DocumentService documentService, string geminiApiKey)
+    public AIComposeDialog(DocumentService documentService, string? geminiApiKey = null)
     {
         InitializeComponent();
         _documentService = documentService;
-        _aiService = new GeminiAIService(geminiApiKey);
+        _aiService = string.IsNullOrEmpty(geminiApiKey) ? new GeminiAIService() : new GeminiAIService(geminiApiKey);
         
         LoadTemplates();
     }

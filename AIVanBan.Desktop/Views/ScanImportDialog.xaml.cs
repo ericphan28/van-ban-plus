@@ -21,11 +21,11 @@ public partial class ScanImportDialog : Window
     /// </summary>
     public Document? CreatedDocument { get; private set; }
 
-    public ScanImportDialog(DocumentService documentService, string geminiApiKey)
+    public ScanImportDialog(DocumentService documentService, string? geminiApiKey = null)
     {
         InitializeComponent();
         _documentService = documentService;
-        _aiService = new GeminiAIService(geminiApiKey);
+        _aiService = string.IsNullOrEmpty(geminiApiKey) ? new GeminiAIService() : new GeminiAIService(geminiApiKey);
         
         InitializeComboBoxes();
     }

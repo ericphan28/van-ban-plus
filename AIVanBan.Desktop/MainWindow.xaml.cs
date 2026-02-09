@@ -1,4 +1,7 @@
 using System;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
 using AIVanBan.Core.Services;
 using AIVanBan.Desktop.Services;
@@ -38,6 +41,9 @@ public partial class MainWindow : Window
             
             Console.WriteLine("🔧 Loading statistics...");
             LoadStatistics();
+            
+            Console.WriteLine("🔧 Loading API status bar...");
+            LoadApiStatusBar();
             
             Console.WriteLine("✅ MainWindow initialized successfully!");
         }
@@ -353,4 +359,164 @@ public partial class MainWindow : Window
         };
         aboutDialog.ShowDialog();
     }
+
+    private void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        var settingsDialog = new ApiSettingsDialog
+        {
+            Owner = this
+        };
+        if (settingsDialog.ShowDialog() == true)
+        {
+            // Reload status bar sau khi settings thay đổi
+            LoadApiStatusBar();
+        }
+    }
+
+    private void QuickLogin_Click(object sender, RoutedEventArgs e)
+    {
+        var settings = AppSettingsService.Load();
+        if (settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey))
+        {
+            // Đã có key → mở Settings
+            Settings_Click(sender, e);
+        }
+        else
+        {
+            // Chưa có key → mở Login dialog
+            var loginDialog = new LoginRegisterDialog { Owner = this };
+            if (loginDialog.ShowDialog() == true)
+            {
+                LoadApiStatusBar();
+            }
+        }
+    }
+
+    private async void LoadApiStatusBar()
+    {
+        try
+        {
+            var settings = AppSettingsService.Load();
+            
+            if (settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey))
+            {
+                // VanBanPlus mode
+                iconApiStatus.Kind = MaterialDesignThemes.Wpf.PackIconKind.CloudCheck;
+                iconApiStatus.Foreground = System.Windows.Media.Brushes.Green;
+                txtApiMode.Text = "☁️ VanBanPlus API";
+                
+                // Show user info from cache
+                if (!string.IsNullOrEmpty(settings.UserEmail))
+                {
+                    txtStatusUser.Text = $"{settings.UserFullName} ({settings.UserPlan})";
+                    btnLoginQuick.Content = "⚙️ Cài đặt";
+                }
+                else
+                {
+                    txtStatusUser.Text = "Đã kết nối";
+                    btnLoginQuick.Content = "⚙️ Cài đặt";
+                }
+
+                // Fetch usage in background
+                _ = FetchUsageAsync(settings);
+            }
+            else if (!string.IsNullOrEmpty(settings.GeminiApiKey))
+            {
+                // Gemini direct mode
+                iconApiStatus.Kind = MaterialDesignThemes.Wpf.PackIconKind.Key;
+                iconApiStatus.Foreground = System.Windows.Media.Brushes.Orange;
+                txtApiMode.Text = "🔑 Gemini trực tiếp";
+                txtStatusUser.Text = "Key: " + settings.GeminiApiKey[..Math.Min(8, settings.GeminiApiKey.Length)] + "...";
+                txtUsageInfo.Text = "";
+                btnLoginQuick.Content = "⚙️ Cài đặt";
+            }
+            else
+            {
+                // No config
+                iconApiStatus.Kind = MaterialDesignThemes.Wpf.PackIconKind.CloudOff;
+                iconApiStatus.Foreground = System.Windows.Media.Brushes.Red;
+                txtApiMode.Text = "⚠️ Chưa cấu hình";
+                txtStatusUser.Text = "";
+                txtUsageInfo.Text = "";
+                btnLoginQuick.Content = "🔑 Đăng nhập";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ LoadApiStatusBar error: {ex.Message}");
+        }
+    }
+
+    private async Task FetchUsageAsync(AppSettings settings)
+    {
+        try
+        {
+            using var http = new HttpClient();
+            http.Timeout = TimeSpan.FromSeconds(10);
+            http.DefaultRequestHeaders.Add("X-API-Key", settings.VanBanPlusApiKey);
+            if (!string.IsNullOrEmpty(settings.VercelBypassToken))
+                http.DefaultRequestHeaders.Add("x-vercel-protection-bypass", settings.VercelBypassToken);
+
+            var url = settings.VanBanPlusApiUrl.TrimEnd('/');
+            
+            // Fetch profile + cache user info
+            var meResp = await http.GetAsync($"{url}/api/auth/me");
+            if (meResp.IsSuccessStatusCode)
+            {
+                var meResult = await meResp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+                if (meResult?.Data != null)
+                {
+                    settings.UserEmail = meResult.Data.Email;
+                    settings.UserFullName = meResult.Data.FullName;
+                    settings.UserPlan = meResult.Data.Plan;
+                    AppSettingsService.Save(settings);
+                    
+                    Dispatcher.Invoke(() =>
+                    {
+                        txtStatusUser.Text = $"{meResult.Data.FullName} ({meResult.Data.Plan})";
+                    });
+                }
+            }
+
+            // Fetch usage
+            var usageResp = await http.GetAsync($"{url}/api/usage");
+            if (usageResp.IsSuccessStatusCode)
+            {
+                var usageResult = await usageResp.Content.ReadFromJsonAsync<ApiResponse<UsageSummary>>();
+                if (usageResult?.Data != null)
+                {
+                    var u = usageResult.Data;
+                    Dispatcher.Invoke(() =>
+                    {
+                        txtUsageInfo.Text = $"📊 Tháng này: {u.TotalRequests} requests | {u.TotalTokens:N0} tokens";
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ FetchUsageAsync error: {ex.Message}");
+        }
+    }
+
+    #region API DTOs
+    private class ApiResponse<T>
+    {
+        [JsonPropertyName("success")] public bool Success { get; set; }
+        [JsonPropertyName("data")] public T? Data { get; set; }
+    }
+    private class UserProfile
+    {
+        [JsonPropertyName("email")] public string Email { get; set; } = "";
+        [JsonPropertyName("full_name")] public string FullName { get; set; } = "";
+        [JsonPropertyName("plan")] public string Plan { get; set; } = "";
+        [JsonPropertyName("subscription_plan_id")] public string PlanId { get; set; } = "";
+    }
+    private class UsageSummary
+    {
+        [JsonPropertyName("total_requests")] public int TotalRequests { get; set; }
+        [JsonPropertyName("total_tokens")] public int TotalTokens { get; set; }
+        [JsonPropertyName("total_cost")] public double TotalCost { get; set; }
+    }
+    #endregion
 }

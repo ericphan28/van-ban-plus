@@ -10,7 +10,6 @@ namespace AIVanBan.Desktop.Views;
 public partial class AIGeneratorPage : Page
 {
     private readonly DocumentService _documentService;
-    private const string GEMINI_API_KEY = "AIzaSyAhQRYO6lSjG8m0sTP-Y8Gk262QKJyLrUg";
 
     public AIGeneratorPage(DocumentService documentService)
     {
@@ -23,7 +22,7 @@ public partial class AIGeneratorPage : Page
     {
         try
         {
-            var dialog = new AIComposeDialog(_documentService, GEMINI_API_KEY);
+            var dialog = new AIComposeDialog(_documentService);
             dialog.Owner = Window.GetWindow(this);
             
             if (dialog.ShowDialog() == true && dialog.GeneratedDocument != null)

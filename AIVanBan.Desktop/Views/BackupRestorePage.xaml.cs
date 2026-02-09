@@ -20,9 +20,11 @@ public partial class BackupRestorePage : Page
 
     private void LoadData()
     {
-        // Hiển thị dung lượng dữ liệu
-        var dataSize = _backupService.GetDataSize();
-        txtDataSize.Text = BackupService.FormatFileSize(dataSize);
+        // Hiển thị dung lượng dữ liệu (tổng + chi tiết)
+        var (dataSize, photosSize) = _backupService.GetDataSizeDetails();
+        var totalSize = dataSize + photosSize;
+        txtDataSize.Text = BackupService.FormatFileSize(totalSize);
+        txtDataDetails.Text = $"📄 Văn bản & DB: {BackupService.FormatFileSize(dataSize)}  |  📷 Album ảnh: {BackupService.FormatFileSize(photosSize)}";
         txtDataPath.Text = _backupService.DataPath;
 
         // Load danh sách backup

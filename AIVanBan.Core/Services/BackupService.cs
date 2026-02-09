@@ -4,23 +4,25 @@ namespace AIVanBan.Core.Services;
 
 /// <summary>
 /// Service sao lưu và khôi phục dữ liệu VanBanPlus.
-/// Dữ liệu gồm: documents.db (LiteDB) + thư mục Attachments.
+/// Dữ liệu gồm: documents.db (LiteDB) + thư mục Attachments + thư mục Photos (album ảnh).
 /// </summary>
 public class BackupService
 {
+    private readonly string _basePath;
     private readonly string _dataPath;
+    private readonly string _photosPath;
     private readonly string _backupPath;
     private const int MaxAutoBackups = 10;
 
     public BackupService()
     {
-        _dataPath = Path.Combine(
+        _basePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "AIVanBan", "Data");
+            "AIVanBan");
 
-        _backupPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "AIVanBan", "Backups");
+        _dataPath = Path.Combine(_basePath, "Data");
+        _photosPath = Path.Combine(_basePath, "Photos");
+        _backupPath = Path.Combine(_basePath, "Backups");
 
         Directory.CreateDirectory(_backupPath);
     }
@@ -42,7 +44,7 @@ public class BackupService
     {
         try
         {
-            if (!Directory.Exists(_dataPath))
+            if (!Directory.Exists(_dataPath) && !Directory.Exists(_photosPath))
                 return BackupResult.Fail("Không tìm thấy thư mục dữ liệu.");
 
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
@@ -51,11 +53,20 @@ public class BackupService
             Directory.CreateDirectory(targetDir);
             var fullPath = Path.Combine(targetDir, fileName);
 
-            // Tạo file zip chứa toàn bộ thư mục Data
             if (File.Exists(fullPath))
                 File.Delete(fullPath);
 
-            ZipFile.CreateFromDirectory(_dataPath, fullPath, CompressionLevel.Optimal, false);
+            // Tạo zip chứa cả Data/ và Photos/
+            using (var archive = ZipFile.Open(fullPath, ZipArchiveMode.Create))
+            {
+                // Thêm thư mục Data/
+                if (Directory.Exists(_dataPath))
+                    AddDirectoryToZip(archive, _dataPath, "Data");
+
+                // Thêm thư mục Photos/
+                if (Directory.Exists(_photosPath))
+                    AddDirectoryToZip(archive, _photosPath, "Photos");
+            }
 
             var fileInfo = new FileInfo(fullPath);
             return BackupResult.Ok(fullPath, fileInfo.Length);
@@ -63,6 +74,19 @@ public class BackupService
         catch (Exception ex)
         {
             return BackupResult.Fail($"Lỗi sao lưu: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Thêm 1 thư mục vào file zip (giữ cấu trúc thư mục).
+    /// </summary>
+    private void AddDirectoryToZip(ZipArchive archive, string sourceDir, string entryPrefix)
+    {
+        foreach (var filePath in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceDir, filePath);
+            var entryName = Path.Combine(entryPrefix, relativePath).Replace('\\', '/');
+            archive.CreateEntryFromFile(filePath, entryName, CompressionLevel.Optimal);
         }
     }
 
@@ -79,31 +103,47 @@ public class BackupService
             if (Path.GetExtension(zipFilePath).ToLower() != ".zip")
                 return RestoreResult.Fail("File backup phải là file .zip");
 
-            // Kiểm tra file zip có hợp lệ
+            // Kiểm tra file zip có hợp lệ (có thư mục Data/ hoặc file .db)
             using (var archive = ZipFile.OpenRead(zipFilePath))
             {
-                var hasDb = archive.Entries.Any(e => e.Name.EndsWith(".db", StringComparison.OrdinalIgnoreCase));
-                if (!hasDb)
-                    return RestoreResult.Fail("File backup không hợp lệ - không tìm thấy database.");
+                var hasData = archive.Entries.Any(e => 
+                    e.FullName.StartsWith("Data/", StringComparison.OrdinalIgnoreCase) ||
+                    e.Name.EndsWith(".db", StringComparison.OrdinalIgnoreCase));
+                if (!hasData)
+                    return RestoreResult.Fail("File backup không hợp lệ - không tìm thấy dữ liệu.");
             }
 
             // Backup hiện tại trước khi khôi phục (an toàn)
             var safetyBackup = Backup();
 
-            // Xóa dữ liệu cũ
-            if (Directory.Exists(_dataPath))
+            // Kiểm tra cấu trúc file zip: có thư mục Data/ và Photos/ không?
+            bool hasSubfolders;
+            using (var archive = ZipFile.OpenRead(zipFilePath))
             {
-                // Giữ lại thư mục nhưng xóa nội dung
-                foreach (var file in Directory.GetFiles(_dataPath))
-                    File.Delete(file);
-                foreach (var dir in Directory.GetDirectories(_dataPath))
-                    Directory.Delete(dir, true);
+                hasSubfolders = archive.Entries.Any(e => 
+                    e.FullName.StartsWith("Data/", StringComparison.OrdinalIgnoreCase) ||
+                    e.FullName.StartsWith("Photos/", StringComparison.OrdinalIgnoreCase));
             }
 
-            Directory.CreateDirectory(_dataPath);
+            if (hasSubfolders)
+            {
+                // Format mới: zip chứa Data/ và Photos/
+                // Xóa dữ liệu cũ trong Data/
+                ClearDirectory(_dataPath);
 
-            // Giải nén backup vào thư mục data
-            ZipFile.ExtractToDirectory(zipFilePath, _dataPath, true);
+                // Xóa dữ liệu cũ trong Photos/
+                ClearDirectory(_photosPath);
+
+                // Giải nén vào thư mục gốc AIVanBan/
+                ZipFile.ExtractToDirectory(zipFilePath, _basePath, true);
+            }
+            else
+            {
+                // Format cũ: zip chỉ chứa nội dung Data/ (không có prefix)
+                ClearDirectory(_dataPath);
+                Directory.CreateDirectory(_dataPath);
+                ZipFile.ExtractToDirectory(zipFilePath, _dataPath, true);
+            }
 
             return RestoreResult.Ok(safetyBackup.FilePath ?? "");
         }
@@ -111,6 +151,18 @@ public class BackupService
         {
             return RestoreResult.Fail($"Lỗi khôi phục: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Xóa nội dung thư mục nhưng giữ lại thư mục.
+    /// </summary>
+    private void ClearDirectory(string path)
+    {
+        if (!Directory.Exists(path)) return;
+        foreach (var file in Directory.GetFiles(path))
+            File.Delete(file);
+        foreach (var dir in Directory.GetDirectories(path))
+            Directory.Delete(dir, true);
     }
 
     /// <summary>
@@ -207,14 +259,40 @@ public class BackupService
     }
 
     /// <summary>
-    /// Tính dung lượng thư mục dữ liệu hiện tại.
+    /// Tính dung lượng toàn bộ dữ liệu (Data + Photos).
     /// </summary>
     public long GetDataSize()
     {
-        if (!Directory.Exists(_dataPath)) return 0;
+        long total = 0;
 
-        return Directory.GetFiles(_dataPath, "*", SearchOption.AllDirectories)
-            .Sum(f => new FileInfo(f).Length);
+        if (Directory.Exists(_dataPath))
+            total += Directory.GetFiles(_dataPath, "*", SearchOption.AllDirectories)
+                .Sum(f => new FileInfo(f).Length);
+
+        if (Directory.Exists(_photosPath))
+            total += Directory.GetFiles(_photosPath, "*", SearchOption.AllDirectories)
+                .Sum(f => new FileInfo(f).Length);
+
+        return total;
+    }
+
+    /// <summary>
+    /// Tính dung lượng riêng từng phần.
+    /// </summary>
+    public (long dataSize, long photosSize) GetDataSizeDetails()
+    {
+        long dataSize = 0;
+        long photosSize = 0;
+
+        if (Directory.Exists(_dataPath))
+            dataSize = Directory.GetFiles(_dataPath, "*", SearchOption.AllDirectories)
+                .Sum(f => new FileInfo(f).Length);
+
+        if (Directory.Exists(_photosPath))
+            photosSize = Directory.GetFiles(_photosPath, "*", SearchOption.AllDirectories)
+                .Sum(f => new FileInfo(f).Length);
+
+        return (dataSize, photosSize);
     }
 
     /// <summary>
