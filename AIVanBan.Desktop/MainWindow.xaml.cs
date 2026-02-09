@@ -174,6 +174,12 @@ public partial class MainWindow : Window
         MainFrame.Navigate(new Views.BackupRestorePage());
     }
 
+    private void NavigateToAdmin(object sender, RoutedEventArgs e)
+    {
+        WelcomeScreen.Visibility = Visibility.Collapsed;
+        MainFrame.Navigate(new Views.AdminDashboardPage());
+    }
+
     private void CheckAlbumSetup()
     {
         try
@@ -376,14 +382,17 @@ public partial class MainWindow : Window
     private void QuickLogin_Click(object sender, RoutedEventArgs e)
     {
         var settings = AppSettingsService.Load();
-        if (settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey))
+        if (settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey) 
+            && !string.IsNullOrEmpty(settings.UserEmail))
         {
-            // Đã có key → mở Settings
-            Settings_Click(sender, e);
+            // Đã đăng nhập → mở UserProfile
+            var profileDialog = new UserProfileDialog { Owner = this };
+            profileDialog.ShowDialog();
+            LoadApiStatusBar();
         }
         else
         {
-            // Chưa có key → mở Login dialog
+            // Chưa đăng nhập → mở Login dialog
             var loginDialog = new LoginRegisterDialog { Owner = this };
             if (loginDialog.ShowDialog() == true)
             {
@@ -409,13 +418,18 @@ public partial class MainWindow : Window
                 if (!string.IsNullOrEmpty(settings.UserEmail))
                 {
                     txtStatusUser.Text = $"{settings.UserFullName} ({settings.UserPlan})";
-                    btnLoginQuick.Content = "⚙️ Cài đặt";
+                    btnLoginQuick.Content = "👤 " + settings.UserFullName;
+                    btnLoginQuick.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    txtStatusUser.Text = "Đã kết nối";
-                    btnLoginQuick.Content = "⚙️ Cài đặt";
+                    txtStatusUser.Text = "Chưa đăng nhập";
+                    btnLoginQuick.Content = "🔑 Đăng nhập";
+                    btnLoginQuick.Visibility = Visibility.Visible;
                 }
+
+                // Show admin button if user is admin (check via API in background)
+                _ = CheckAdminRoleAsync(settings);
 
                 // Fetch usage in background
                 _ = FetchUsageAsync(settings);
@@ -428,7 +442,8 @@ public partial class MainWindow : Window
                 txtApiMode.Text = "🔑 Gemini trực tiếp";
                 txtStatusUser.Text = "Key: " + settings.GeminiApiKey[..Math.Min(8, settings.GeminiApiKey.Length)] + "...";
                 txtUsageInfo.Text = "";
-                btnLoginQuick.Content = "⚙️ Cài đặt";
+                btnLoginQuick.Content = "🔑 Đăng nhập";
+                btnLoginQuick.Visibility = Visibility.Visible;
             }
             else
             {
@@ -439,6 +454,7 @@ public partial class MainWindow : Window
                 txtStatusUser.Text = "";
                 txtUsageInfo.Text = "";
                 btnLoginQuick.Content = "🔑 Đăng nhập";
+                btnLoginQuick.Visibility = Visibility.Visible;
             }
         }
         catch (Exception ex)
@@ -499,6 +515,37 @@ public partial class MainWindow : Window
         }
     }
 
+    private async Task CheckAdminRoleAsync(AppSettings settings)
+    {
+        try
+        {
+            using var http = new HttpClient();
+            http.Timeout = TimeSpan.FromSeconds(10);
+            http.DefaultRequestHeaders.Add("X-API-Key", settings.VanBanPlusApiKey);
+            if (!string.IsNullOrEmpty(settings.VercelBypassToken))
+                http.DefaultRequestHeaders.Add("x-vercel-protection-bypass", settings.VercelBypassToken);
+
+            var url = settings.VanBanPlusApiUrl.TrimEnd('/');
+            var resp = await http.GetAsync($"{url}/api/auth/me");
+            if (resp.IsSuccessStatusCode)
+            {
+                var result = await resp.Content.ReadFromJsonAsync<ApiResponse<UserProfile>>();
+                if (result?.Data != null)
+                {
+                    settings.UserRole = result.Data.Role;
+                    AppSettingsService.Save(settings);
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        btnAdmin.Visibility = result.Data.Role == "admin" 
+                            ? Visibility.Visible : Visibility.Collapsed;
+                    });
+                }
+            }
+        }
+        catch { /* ignore */ }
+    }
+
     #region API DTOs
     private class ApiResponse<T>
     {
@@ -508,15 +555,15 @@ public partial class MainWindow : Window
     private class UserProfile
     {
         [JsonPropertyName("email")] public string Email { get; set; } = "";
-        [JsonPropertyName("full_name")] public string FullName { get; set; } = "";
+        [JsonPropertyName("fullName")] public string FullName { get; set; } = "";
         [JsonPropertyName("plan")] public string Plan { get; set; } = "";
-        [JsonPropertyName("subscription_plan_id")] public string PlanId { get; set; } = "";
+        [JsonPropertyName("role")] public string Role { get; set; } = "user";
     }
     private class UsageSummary
     {
-        [JsonPropertyName("total_requests")] public int TotalRequests { get; set; }
-        [JsonPropertyName("total_tokens")] public int TotalTokens { get; set; }
-        [JsonPropertyName("total_cost")] public double TotalCost { get; set; }
+        [JsonPropertyName("requestsUsed")] public int TotalRequests { get; set; }
+        [JsonPropertyName("tokensUsed")] public long TotalTokens { get; set; }
+        [JsonPropertyName("estimatedCostThisMonth")] public double TotalCost { get; set; }
     }
     #endregion
 }

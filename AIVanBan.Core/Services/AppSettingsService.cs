@@ -100,4 +100,5 @@ public class AppSettings
     public string UserEmail { get; set; } = "";
     public string UserFullName { get; set; } = "";
     public string UserPlan { get; set; } = "";
+    public string UserRole { get; set; } = "user";
 }

@@ -203,6 +203,19 @@
                                     </StackPanel>
                                 </Button>
 
+                                <!-- Admin Dashboard (chỉ hiện khi là admin) -->
+                                <Button x:Name="btnAdmin" Style="{StaticResource MaterialDesignFlatButton}" 
+                                       Height="50" HorizontalContentAlignment="Left" 
+                                       Padding="20,0,0,0" Click="NavigateToAdmin"
+                                       ToolTip="Admin Dashboard" Visibility="Collapsed">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="ShieldAccount" Width="24" Height="24" 
+                                                                VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="txtAdmin" Text="Admin" FontSize="14" Margin="15,0,0,0" 
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+
                                 <Separator x:Name="separatorStats" Margin="10,20"/>
 
                                 <!-- Statistics -->
@@ -276,7 +289,7 @@
                                   FontSize="12" VerticalAlignment="Center" Opacity="0.7"/>
                     </StackPanel>
 
-                    <!-- Right: Usage -->
+                    <!-- Right: Usage + Login + Settings -->
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
                         <TextBlock x:Name="txtUsageInfo" Text="" 
                                   FontSize="12" VerticalAlignment="Center" Opacity="0.7"/>
@@ -284,6 +297,11 @@
                                 Style="{StaticResource MaterialDesignFlatButton}"
                                 FontSize="11" Height="24" Padding="8,0"
                                 Click="QuickLogin_Click" Margin="8,0,0,0"/>
+                        <TextBlock Text="│" FontSize="12" Opacity="0.3" VerticalAlignment="Center" Margin="4,0"/>
+                        <Button x:Name="btnSettingsQuick" Content="⚙ Cài đặt" 
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                FontSize="11" Height="24" Padding="8,0"
+                                Click="Settings_Click"/>
                     </StackPanel>
                 </DockPanel>
             </Border>

@@ -1,0 +1,288 @@
+<Window x:Class="AIVanBan.Desktop.Views.UserProfileDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="👤 Tài khoản VanBanPlus" Height="650" Width="750"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <materialDesign:ColorZone Grid.Row="0" Mode="PrimaryMid" Padding="16,12">
+            <DockPanel>
+                <materialDesign:PackIcon Kind="AccountCircle" Width="32" Height="32" 
+                                        VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <StackPanel>
+                    <TextBlock x:Name="txtHeaderName" Text="Nguyen Van A" FontSize="18" FontWeight="Bold"/>
+                    <TextBlock x:Name="txtHeaderEmail" Text="email@example.com" FontSize="12" Opacity="0.8"/>
+                </StackPanel>
+                <TextBlock x:Name="txtHeaderPlan" Text="📦 free" FontSize="13" 
+                          VerticalAlignment="Center" HorizontalAlignment="Right" DockPanel.Dock="Right"
+                          Opacity="0.9"/>
+            </DockPanel>
+        </materialDesign:ColorZone>
+
+        <!-- Tab Content -->
+        <TabControl Grid.Row="1" Margin="0" 
+                    materialDesign:ColorZoneAssist.Mode="PrimaryLight"
+                    Style="{StaticResource MaterialDesignNavigationRailTabControl}">
+
+            <!-- Tab 1: Thông tin cá nhân -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="AccountEdit" Width="24" Height="24" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Hồ sơ" FontSize="10" TextAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16">
+                    <StackPanel MaxWidth="500">
+                        <TextBlock Text="📋 Thông tin cá nhân" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+
+                        <TextBox x:Name="txtFullName"
+                                 materialDesign:HintAssist.Hint="Họ và tên"
+                                 materialDesign:HintAssist.IsFloating="True"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 Margin="0,0,0,12"/>
+                        <TextBox x:Name="txtEmail"
+                                 materialDesign:HintAssist.Hint="Email"
+                                 materialDesign:HintAssist.IsFloating="True"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 IsReadOnly="True" Opacity="0.7"
+                                 Margin="0,0,0,12"/>
+                        <TextBox x:Name="txtPhone"
+                                 materialDesign:HintAssist.Hint="Số điện thoại"
+                                 materialDesign:HintAssist.IsFloating="True"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 Margin="0,0,0,12"/>
+                        <TextBox x:Name="txtCompany"
+                                 materialDesign:HintAssist.Hint="Cơ quan / Đơn vị"
+                                 materialDesign:HintAssist.IsFloating="True"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 Margin="0,0,0,12"/>
+
+                        <TextBlock x:Name="txtPlanInfo" FontSize="13" Margin="0,4,0,12" Opacity="0.7"/>
+                        <TextBlock x:Name="txtCreatedDate" FontSize="12" Opacity="0.5"/>
+
+                        <Button Content="💾 Lưu thay đổi" Click="SaveProfile_Click"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Height="38" Margin="0,20,0,0" HorizontalAlignment="Left"
+                                Padding="24,0"/>
+                        <TextBlock x:Name="txtProfileStatus" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 2: Đổi mật khẩu -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="Lock" Width="24" Height="24" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Mật khẩu" FontSize="10" TextAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16">
+                    <StackPanel MaxWidth="400">
+                        <TextBlock Text="🔐 Đổi mật khẩu" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <TextBlock Text="Nhập mật khẩu hiện tại và mật khẩu mới để thay đổi." 
+                                   FontSize="13" Opacity="0.6" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                        <PasswordBox x:Name="txtCurrentPwd"
+                                     materialDesign:HintAssist.Hint="Mật khẩu hiện tại"
+                                     materialDesign:HintAssist.IsFloating="True"
+                                     Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                     Margin="0,0,0,12"/>
+                        <PasswordBox x:Name="txtNewPwd"
+                                     materialDesign:HintAssist.Hint="Mật khẩu mới (≥ 6 ký tự)"
+                                     materialDesign:HintAssist.IsFloating="True"
+                                     Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                     Margin="0,0,0,12"/>
+                        <PasswordBox x:Name="txtConfirmPwd"
+                                     materialDesign:HintAssist.Hint="Xác nhận mật khẩu mới"
+                                     materialDesign:HintAssist.IsFloating="True"
+                                     Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                     Margin="0,0,0,16"/>
+
+                        <Button Content="🔒 Đổi mật khẩu" Click="ChangePassword_Click"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Height="38" HorizontalAlignment="Left" Padding="24,0"/>
+                        <TextBlock x:Name="txtPwdStatus" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 3: API Key -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="Key" Width="24" Height="24" HorizontalAlignment="Center"/>
+                        <TextBlock Text="API Key" FontSize="10" TextAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16">
+                    <StackPanel MaxWidth="500">
+                        <TextBlock Text="🔑 Quản lý API Key" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <TextBlock Text="API Key dùng để xác thực khi gọi VanBanPlus API. Hãy giữ bí mật!" 
+                                   FontSize="13" Opacity="0.6" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                        <Border Background="{DynamicResource MaterialDesignToolBarBackground}" 
+                                CornerRadius="6" Padding="16,12" Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtApiKey" IsReadOnly="True" 
+                                         FontFamily="Consolas" FontSize="14"
+                                         Background="Transparent" BorderThickness="0"
+                                         VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Content="📋 Copy" Click="CopyApiKey_Click"
+                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                        FontSize="11" Height="30"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="#FFF3E0" CornerRadius="6" Padding="12" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="⚠️ Cảnh báo" FontWeight="Bold" FontSize="13" Foreground="#E65100"/>
+                                <TextBlock Text="Tạo key mới sẽ khiến key cũ không còn hoạt động. Tất cả ứng dụng sử dụng key cũ sẽ phải cập nhật." 
+                                           FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="#BF360C"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Button Content="🔄 Tạo API Key mới" Click="ResetApiKey_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Height="38" HorizontalAlignment="Left" Padding="24,0"
+                                Foreground="OrangeRed"/>
+                        <TextBlock x:Name="txtKeyStatus" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 4: Sử dụng & Billing -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="ChartBar" Width="24" Height="24" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Sử dụng" FontSize="10" TextAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16">
+                    <StackPanel>
+                        <TextBlock Text="📊 Thống kê sử dụng" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+
+                        <!-- Usage Summary Cards -->
+                        <UniformGrid Columns="3" Margin="0,0,0,20">
+                            <Border Background="#E3F2FD" CornerRadius="8" Padding="16" Margin="0,0,8,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="📡 Requests" FontSize="12" TextAlignment="Center" Opacity="0.7"/>
+                                    <TextBlock x:Name="txtUsageRequests" Text="0 / 50" FontSize="22" FontWeight="Bold" 
+                                              TextAlignment="Center" Foreground="#1565C0"/>
+                                    <ProgressBar x:Name="pbRequests" Value="0" Maximum="100" Height="6" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#E8F5E9" CornerRadius="8" Padding="16" Margin="4,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="🔤 Tokens" FontSize="12" TextAlignment="Center" Opacity="0.7"/>
+                                    <TextBlock x:Name="txtUsageTokens" Text="0" FontSize="22" FontWeight="Bold" 
+                                              TextAlignment="Center" Foreground="#2E7D32"/>
+                                    <ProgressBar x:Name="pbTokens" Value="0" Maximum="100" Height="6" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#FFF3E0" CornerRadius="8" Padding="16" Margin="8,0,0,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="💰 Chi phí" FontSize="12" TextAlignment="Center" Opacity="0.7"/>
+                                    <TextBlock x:Name="txtUsageCost" Text="0 ₫" FontSize="22" FontWeight="Bold" 
+                                              TextAlignment="Center" Foreground="#E65100"/>
+                                    <TextBlock x:Name="txtBillingPeriod" Text="Kỳ: --" FontSize="11" 
+                                              TextAlignment="Center" Opacity="0.5" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- Daily Usage Table -->
+                        <TextBlock Text="📅 Sử dụng theo ngày (30 ngày gần nhất)" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                        <DataGrid x:Name="dgDailyUsage" AutoGenerateColumns="False" 
+                                  IsReadOnly="True" MaxHeight="250"
+                                  materialDesign:DataGridAssist.CellPadding="8 4"
+                                  CanUserResizeColumns="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Ngày" Binding="{Binding Date}" Width="120"/>
+                                <DataGridTextColumn Header="Requests" Binding="{Binding Requests}" Width="100"/>
+                                <DataGridTextColumn Header="Tokens" Binding="{Binding Tokens, StringFormat=N0}" Width="120"/>
+                                <DataGridTextColumn Header="Chi phí (₫)" Binding="{Binding Cost, StringFormat=N0}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Button Content="🔄 Làm mới" Click="RefreshUsage_Click"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                HorizontalAlignment="Left" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 5: API Logs -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="FormatListBulleted" Width="24" Height="24" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Logs" FontSize="10" TextAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="📜 Lịch sử gọi API" FontSize="18" FontWeight="Bold" 
+                                  VerticalAlignment="Center" Margin="0,0,16,0"/>
+                        <Button Content="🔄 Tải lại" Click="RefreshLogs_Click"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Height="30" FontSize="11"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="dgLogs" Grid.Row="1" AutoGenerateColumns="False" 
+                              IsReadOnly="True"
+                              materialDesign:DataGridAssist.CellPadding="8 4"
+                              CanUserResizeColumns="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Thời gian" Binding="{Binding RequestDate}" Width="150"/>
+                            <DataGridTextColumn Header="Endpoint" Binding="{Binding Endpoint}" Width="160"/>
+                            <DataGridTextColumn Header="Loại" Binding="{Binding RequestType}" Width="100"/>
+                            <DataGridTextColumn Header="Tokens" Binding="{Binding TotalTokens, StringFormat=N0}" Width="80"/>
+                            <DataGridTextColumn Header="Thời gian (ms)" Binding="{Binding ResponseTimeMs, StringFormat=N0}" Width="100"/>
+                            <DataGridTemplateColumn Header="Trạng thái" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding StatusIcon}" FontSize="14" HorizontalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Lỗi" Binding="{Binding ErrorMessage}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <Button x:Name="btnPrevPage" Content="◀ Trước" Click="PrevPage_Click"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Height="30" FontSize="11"/>
+                        <TextBlock x:Name="txtPageInfo" Text="Trang 1 / 1" 
+                                  VerticalAlignment="Center" Margin="16,0" FontSize="12"/>
+                        <Button x:Name="btnNextPage" Content="Sau ▶" Click="NextPage_Click"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Height="30" FontSize="11"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
