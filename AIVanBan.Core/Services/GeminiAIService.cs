@@ -128,7 +128,8 @@ public class GeminiAIService
                     {
                         Parts = new[] { new Part { Text = prompt } }
                     }
-                }
+                },
+                GenerationConfig = new GenerationConfig { Temperature = 0.7, MaxOutputTokens = 16384 }
             };
 
             // Thêm system instruction nếu có
@@ -458,7 +459,7 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
                     }
                 }
             },
-            GenerationConfig = new GenerationConfig { Temperature = 0.1, MaxOutputTokens = 8192 }
+            GenerationConfig = new GenerationConfig { Temperature = 0.1, MaxOutputTokens = 16384 }
         };
 
         var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";

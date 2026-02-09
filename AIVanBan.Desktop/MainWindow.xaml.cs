@@ -401,6 +401,33 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Logout_Click(object sender, RoutedEventArgs e)
+    {
+        var confirm = MessageBox.Show(
+            "Đăng xuất khỏi tài khoản VanBanPlus?\n\nAPI Key sẽ được giữ lại, chỉ xóa thông tin đăng nhập.",
+            "Đăng xuất", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes) return;
+
+        var settings = AppSettingsService.Load();
+        settings.UserEmail = "";
+        settings.UserFullName = "";
+        settings.UserPlan = "";
+        settings.UserRole = "user";
+        settings.VanBanPlusApiKey = "";
+        AppSettingsService.Save(settings);
+
+        // Ẩn Admin button
+        btnAdmin.Visibility = Visibility.Collapsed;
+
+        // Reload status bar
+        LoadApiStatusBar();
+
+        // Quay về Welcome screen
+        WelcomeScreen.Visibility = Visibility.Visible;
+        MainFrame.Content = null;
+    }
+
     private async void LoadApiStatusBar()
     {
         try
@@ -420,12 +447,14 @@ public partial class MainWindow : Window
                     txtStatusUser.Text = $"{settings.UserFullName} ({settings.UserPlan})";
                     btnLoginQuick.Content = "👤 " + settings.UserFullName;
                     btnLoginQuick.Visibility = Visibility.Visible;
+                    btnLogout.Visibility = Visibility.Visible;
                 }
                 else
                 {
                     txtStatusUser.Text = "Chưa đăng nhập";
                     btnLoginQuick.Content = "🔑 Đăng nhập";
                     btnLoginQuick.Visibility = Visibility.Visible;
+                    btnLogout.Visibility = Visibility.Collapsed;
                 }
 
                 // Show admin button if user is admin (check via API in background)
@@ -444,6 +473,7 @@ public partial class MainWindow : Window
                 txtUsageInfo.Text = "";
                 btnLoginQuick.Content = "🔑 Đăng nhập";
                 btnLoginQuick.Visibility = Visibility.Visible;
+                btnLogout.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -455,6 +485,7 @@ public partial class MainWindow : Window
                 txtUsageInfo.Text = "";
                 btnLoginQuick.Content = "🔑 Đăng nhập";
                 btnLoginQuick.Visibility = Visibility.Visible;
+                btnLogout.Visibility = Visibility.Collapsed;
             }
         }
         catch (Exception ex)

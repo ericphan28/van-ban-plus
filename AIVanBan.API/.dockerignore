@@ -1,0 +1,7 @@
+# VanBanPlus API - Render.com hoặc Fly.io
+**/*.db
+**/bin/
+**/obj/
+**/.vs/
+**/Data/
+*.md

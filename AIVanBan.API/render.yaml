@@ -1,0 +1,21 @@
+# root directory = AIVanBan.API
+# See: https://render.com/docs/deploy-dotnet
+services:
+  - type: web
+    name: vanbanplus-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: Gemini__ApiKey
+        sync: false  # Nhập thủ công trên Render dashboard
+      - key: Gemini__Model
+        value: gemini-2.5-flash
+      - key: Admin__Email
+        value: admin@vanbanplus.com
+      - key: Admin__Password
+        sync: false  # Nhập thủ công
+      - key: Database__Path
+        value: /app/Data/vanbanplus-api.db
+    healthCheckPath: /health
