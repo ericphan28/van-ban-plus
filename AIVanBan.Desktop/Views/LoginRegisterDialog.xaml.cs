@@ -169,6 +169,80 @@ public partial class LoginRegisterDialog : Window
         Close();
     }
 
+    private async void ResetPassword_Click(object sender, RoutedEventArgs e)
+    {
+        var email = txtResetEmail.Text.Trim();
+        var resetCode = txtResetCode.Text.Trim();
+        var newPassword = txtResetNewPassword.Password;
+
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(resetCode) || string.IsNullOrEmpty(newPassword))
+        {
+            txtResetStatus.Text = "❌ Vui lòng điền đầy đủ email, mã reset và mật khẩu mới";
+            txtResetStatus.Foreground = System.Windows.Media.Brushes.Red;
+            return;
+        }
+
+        if (newPassword.Length < 6)
+        {
+            txtResetStatus.Text = "❌ Mật khẩu mới phải có ít nhất 6 ký tự";
+            txtResetStatus.Foreground = System.Windows.Media.Brushes.Red;
+            return;
+        }
+
+        txtResetStatus.Text = "⏳ Đang xử lý...";
+        txtResetStatus.Foreground = System.Windows.Media.Brushes.Gray;
+
+        try
+        {
+            using var http = CreateHttpClient();
+            var body = new { email, resetCode, newPassword };
+            var resp = await http.PostAsJsonAsync($"{GetBaseUrl()}/api/auth/reset-password", body);
+            var result = await resp.Content.ReadFromJsonAsync<AuthResponse>();
+
+            if (resp.IsSuccessStatusCode && result?.Success == true)
+            {
+                // Nếu server trả về data (email, apiKey...), tự động lưu
+                if (result.Data != null && !string.IsNullOrEmpty(result.Data.ApiKey))
+                {
+                    var settings = AppSettingsService.Load();
+                    settings.UseVanBanPlusApi = true;
+                    settings.VanBanPlusApiKey = result.Data.ApiKey;
+                    settings.UserEmail = result.Data.Email;
+                    settings.UserFullName = result.Data.FullName;
+                    settings.UserPlan = result.Data.SubscriptionPlan;
+                    AppSettingsService.Save(settings);
+                }
+
+                MessageBox.Show(
+                    $"✅ Đặt lại mật khẩu thành công!\n\n" +
+                    $"📧 {email}\n\n" +
+                    $"Bạn có thể đăng nhập bằng mật khẩu mới.",
+                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Chuyển sang tab Đăng nhập và điền sẵn email
+                txtLoginEmail.Text = email;
+                tabControl.SelectedIndex = 0;
+                txtResetStatus.Text = "✅ Thành công! Hãy đăng nhập.";
+                txtResetStatus.Foreground = System.Windows.Media.Brushes.Green;
+            }
+            else
+            {
+                txtResetStatus.Text = $"❌ {result?.Message ?? "Đặt lại mật khẩu thất bại"}";
+                txtResetStatus.Foreground = System.Windows.Media.Brushes.Red;
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            txtResetStatus.Text = "❌ Hết thời gian chờ. Kiểm tra kết nối mạng.";
+            txtResetStatus.Foreground = System.Windows.Media.Brushes.Red;
+        }
+        catch (Exception ex)
+        {
+            txtResetStatus.Text = $"❌ Lỗi: {ex.Message}";
+            txtResetStatus.Foreground = System.Windows.Media.Brushes.Red;
+        }
+    }
+
     #region DTOs
     private class AuthResponse
     {

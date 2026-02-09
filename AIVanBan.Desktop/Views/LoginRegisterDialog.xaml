@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Title="🔑 Đăng nhập VanBanPlus" Height="520" Width="440"
+        Title="🔑 Đăng nhập VanBanPlus" Height="560" Width="440"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="{DynamicResource MaterialDesignPaper}"
@@ -85,6 +85,40 @@
                                 Style="{StaticResource MaterialDesignRaisedButton}"
                                 Height="40" FontSize="14"/>
                         <TextBlock x:Name="txtRegisterStatus" TextWrapping="Wrap" 
+                                   FontSize="12" Margin="0,12,0,0" TextAlignment="Center"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab Quên mật khẩu -->
+            <TabItem Header="🔄 Quên MK">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,16,0,0">
+                        <TextBlock Text="Nhập email và mã reset do Admin cung cấp để đặt lại mật khẩu."
+                                   TextWrapping="Wrap" FontSize="12" Opacity="0.6" Margin="0,0,0,14"/>
+                        <TextBox x:Name="txtResetEmail"
+                                 materialDesign:HintAssist.Hint="Email *"
+                                 materialDesign:HintAssist.IsFloating="True"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 Margin="0,0,0,10"/>
+                        <TextBox x:Name="txtResetCode"
+                                 materialDesign:HintAssist.Hint="Mã reset (8 ký tự) *"
+                                 materialDesign:HintAssist.IsFloating="True"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 CharacterCasing="Upper"
+                                 MaxLength="8"
+                                 FontSize="18"
+                                 FontFamily="Consolas"
+                                 Margin="0,0,0,10"/>
+                        <PasswordBox x:Name="txtResetNewPassword"
+                                     materialDesign:HintAssist.Hint="Mật khẩu mới (≥6 ký tự) *"
+                                     materialDesign:HintAssist.IsFloating="True"
+                                     Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
+                                     Margin="0,0,0,14"/>
+                        <Button Content="🔄 Đặt lại mật khẩu" Click="ResetPassword_Click"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Height="40" FontSize="14"/>
+                        <TextBlock x:Name="txtResetStatus" TextWrapping="Wrap" 
                                    FontSize="12" Margin="0,12,0,0" TextAlignment="Center"/>
                     </StackPanel>
                 </ScrollViewer>
