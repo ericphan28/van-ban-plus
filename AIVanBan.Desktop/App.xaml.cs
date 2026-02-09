@@ -27,6 +27,21 @@ public partial class App : Application
         // Auto-update: check for updates on startup
         AppUpdateService.Initialize();
         AppUpdateService.CheckForUpdateSilent();
+        
+        // Auto-backup: sao lưu tự động khi mở app
+        try
+        {
+            var backupService = new AIVanBan.Core.Services.BackupService();
+            var backupResult = backupService.AutoBackup();
+            if (backupResult.Success && !backupResult.Skipped)
+                Console.WriteLine($"✅ Auto-backup: {backupResult.FilePath}");
+            else if (backupResult.Skipped)
+                Console.WriteLine("✅ Auto-backup: Skipped (recent backup exists)");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ Auto-backup failed: {ex.Message}");
+        }
     }
     
     private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

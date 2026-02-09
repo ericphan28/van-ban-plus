@@ -156,6 +156,18 @@ public partial class MainWindow : Window
         MainFrame.Navigate(new Views.MeetingListPage(_documentService));
     }
 
+    private void NavigateToRegister(object sender, RoutedEventArgs e)
+    {
+        WelcomeScreen.Visibility = Visibility.Collapsed;
+        MainFrame.Navigate(new Views.DocumentRegisterPage(_documentService));
+    }
+
+    private void NavigateToBackup(object sender, RoutedEventArgs e)
+    {
+        WelcomeScreen.Visibility = Visibility.Collapsed;
+        MainFrame.Navigate(new Views.BackupRestorePage());
+    }
+
     private void CheckAlbumSetup()
     {
         try
@@ -243,6 +255,8 @@ public partial class MainWindow : Window
                 txtPhotos.Visibility = Visibility.Collapsed;
                 txtMeetings.Visibility = Visibility.Collapsed;
                 txtAlbumSetup.Visibility = Visibility.Collapsed;
+                txtRegister.Visibility = Visibility.Collapsed;
+                txtBackup.Visibility = Visibility.Collapsed;
                 separatorSettings.Visibility = Visibility.Collapsed;
                 separatorStats.Visibility = Visibility.Collapsed;
                 txtStatsHeader.Visibility = Visibility.Collapsed;
@@ -256,6 +270,8 @@ public partial class MainWindow : Window
                 btnPhotos.HorizontalContentAlignment = HorizontalAlignment.Center;
                 btnMeetings.HorizontalContentAlignment = HorizontalAlignment.Center;
                 btnAlbumSetup.HorizontalContentAlignment = HorizontalAlignment.Center;
+                btnRegister.HorizontalContentAlignment = HorizontalAlignment.Center;
+                btnBackup.HorizontalContentAlignment = HorizontalAlignment.Center;
                 btnDashboard.Padding = new Thickness(0);
                 btnDocuments.Padding = new Thickness(0);
                 btnAI.Padding = new Thickness(0);
@@ -263,6 +279,8 @@ public partial class MainWindow : Window
                 btnAlbumSetup.Padding = new Thickness(0);
                 btnPhotos.Padding = new Thickness(0);
                 btnMeetings.Padding = new Thickness(0);
+                btnRegister.Padding = new Thickness(0);
+                btnBackup.Padding = new Thickness(0);
             }
             else
             {
@@ -280,6 +298,8 @@ public partial class MainWindow : Window
                 txtTemplates.Visibility = Visibility.Visible;
                 txtPhotos.Visibility = Visibility.Visible;
                 txtMeetings.Visibility = Visibility.Visible;
+                txtRegister.Visibility = Visibility.Visible;
+                txtBackup.Visibility = Visibility.Visible;
                 separatorStats.Visibility = Visibility.Visible;
                 txtStatsHeader.Visibility = Visibility.Visible;
                 statsPanel.Visibility = Visibility.Visible;
@@ -292,6 +312,8 @@ public partial class MainWindow : Window
                 btnTemplates.HorizontalContentAlignment = HorizontalAlignment.Left;
                 btnPhotos.HorizontalContentAlignment = HorizontalAlignment.Left;
                 btnMeetings.HorizontalContentAlignment = HorizontalAlignment.Left;
+                btnRegister.HorizontalContentAlignment = HorizontalAlignment.Left;
+                btnBackup.HorizontalContentAlignment = HorizontalAlignment.Left;
                 btnDashboard.Padding = new Thickness(20, 0, 0, 0);
                 btnAlbumSetup.Padding = new Thickness(20, 0, 0, 0);
                 btnDocuments.Padding = new Thickness(20, 0, 0, 0);
@@ -300,6 +322,8 @@ public partial class MainWindow : Window
                 btnPhotos.Padding = new Thickness(20, 0, 0, 0);
                 btnMeetings.Padding = new Thickness(20, 0, 0, 0);
                 btnAlbumSetup.Padding = new Thickness(20, 0, 0, 0);
+                btnRegister.Padding = new Thickness(20, 0, 0, 0);
+                btnBackup.Padding = new Thickness(20, 0, 0, 0);
             }
         }
         catch (Exception ex)

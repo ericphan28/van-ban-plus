@@ -1,0 +1,242 @@
+<Page x:Class="AIVanBan.Desktop.Views.DocumentRegisterPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      Title="Sổ văn bản">
+
+    <Grid Margin="30,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <materialDesign:PackIcon Kind="BookOpenPageVariant" Width="32" Height="32"
+                                        VerticalAlignment="Center" Margin="0,0,12,0"
+                                        Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                <TextBlock Text="SỔ VĂN BẢN" FontSize="24" FontWeight="Bold"
+                          VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Text="Theo dõi văn bản đi, văn bản đến và văn bản nội bộ"
+                      FontSize="13" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                      Margin="44,4,0,0"/>
+        </StackPanel>
+
+        <!-- Statistics Cards -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Tổng -->
+            <materialDesign:Card Grid.Column="0" Padding="16" Margin="0,0,8,0"
+                                materialDesign:ElevationAssist.Elevation="Dp2">
+                <StackPanel>
+                    <TextBlock Text="Tổng văn bản" FontSize="12" Foreground="Gray"/>
+                    <TextBlock x:Name="txtTotal" Text="0" FontSize="28" FontWeight="Bold" Foreground="#2196F3"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- VB Đi -->
+            <materialDesign:Card Grid.Column="1" Padding="16" Margin="4,0,4,0"
+                                materialDesign:ElevationAssist.Elevation="Dp2">
+                <StackPanel>
+                    <TextBlock Text="📤 Văn bản đi" FontSize="12" Foreground="Gray"/>
+                    <TextBlock x:Name="txtOutgoing" Text="0" FontSize="28" FontWeight="Bold" Foreground="#4CAF50"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- VB Đến -->
+            <materialDesign:Card Grid.Column="2" Padding="16" Margin="4,0,4,0"
+                                materialDesign:ElevationAssist.Elevation="Dp2">
+                <StackPanel>
+                    <TextBlock Text="📥 Văn bản đến" FontSize="12" Foreground="Gray"/>
+                    <TextBlock x:Name="txtIncoming" Text="0" FontSize="28" FontWeight="Bold" Foreground="#FF9800"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Nội bộ -->
+            <materialDesign:Card Grid.Column="3" Padding="16" Margin="8,0,0,0"
+                                materialDesign:ElevationAssist.Elevation="Dp2">
+                <StackPanel>
+                    <TextBlock Text="📋 Nội bộ" FontSize="12" Foreground="Gray"/>
+                    <TextBlock x:Name="txtInternal" Text="0" FontSize="28" FontWeight="Bold" Foreground="#9C27B0"/>
+                </StackPanel>
+            </materialDesign:Card>
+        </Grid>
+
+        <!-- Filters -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" x:Name="txtSearch"
+                    materialDesign:HintAssist.Hint="🔍 Tìm kiếm theo số, tiêu đề..."
+                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                    Margin="0,0,10,0" VerticalAlignment="Center"
+                    KeyUp="TxtSearch_KeyUp"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,10,0">
+                <TextBlock Text="Năm:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox x:Name="cboYear" Width="90"
+                         Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                         SelectionChanged="CboFilter_Changed"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,10,0">
+                <TextBlock Text="Loại VB:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox x:Name="cboType" Width="140"
+                         Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                         SelectionChanged="CboFilter_Changed"/>
+            </StackPanel>
+
+            <Button Grid.Column="4" Style="{StaticResource MaterialDesignIconButton}"
+                   ToolTip="Làm mới" Click="BtnRefresh_Click">
+                <materialDesign:PackIcon Kind="Refresh"/>
+            </Button>
+        </Grid>
+
+        <!-- Tab Control: Đi / Đến / Nội bộ -->
+        <materialDesign:Card Grid.Row="3" materialDesign:ElevationAssist.Elevation="Dp2">
+            <TabControl x:Name="tabDirections" Style="{StaticResource MaterialDesignFilledTabControl}"
+                       SelectionChanged="TabDirections_Changed">
+
+                <!-- Tab Văn bản Đi -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="EmailSend" Width="18" Height="18"
+                                                    VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Văn bản đi" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtOutgoingCount" Text="" FontSize="11"
+                                      Foreground="White" Background="#4CAF50"
+                                      Padding="6,2" Margin="8,0,0,0"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <DataGrid x:Name="dgOutgoing" AutoGenerateColumns="False"
+                             IsReadOnly="True" CanUserAddRows="False"
+                             SelectionMode="Single" HeadersVisibility="Column"
+                             materialDesign:DataGridAssist.CellPadding="10 6"
+                             GridLinesVisibility="Horizontal"
+                             HorizontalGridLinesBrush="{DynamicResource MaterialDesignDivider}"
+                             MouseDoubleClick="DataGrid_DoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="STT" Binding="{Binding RowNumber}" Width="50"/>
+                            <DataGridTextColumn Header="Số văn bản" Binding="{Binding Number}" Width="120"/>
+                            <DataGridTextColumn Header="Ngày ban hành" Binding="{Binding IssueDate, StringFormat='dd/MM/yyyy'}" Width="110"/>
+                            <DataGridTextColumn Header="Loại" Binding="{Binding Type}" Width="100"/>
+                            <DataGridTextColumn Header="Trích yếu" Binding="{Binding Subject}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding Subject}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Người ký" Binding="{Binding SignedBy}" Width="120"/>
+                            <DataGridTextColumn Header="Nơi nhận" Binding="{Binding RecipientsText}" Width="150">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding RecipientsText}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+
+                <!-- Tab Văn bản Đến -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="EmailReceive" Width="18" Height="18"
+                                                    VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Văn bản đến" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtIncomingCount" Text="" FontSize="11"
+                                      Foreground="White" Background="#FF9800"
+                                      Padding="6,2" Margin="8,0,0,0"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <DataGrid x:Name="dgIncoming" AutoGenerateColumns="False"
+                             IsReadOnly="True" CanUserAddRows="False"
+                             SelectionMode="Single" HeadersVisibility="Column"
+                             materialDesign:DataGridAssist.CellPadding="10 6"
+                             GridLinesVisibility="Horizontal"
+                             HorizontalGridLinesBrush="{DynamicResource MaterialDesignDivider}"
+                             MouseDoubleClick="DataGrid_DoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="STT" Binding="{Binding RowNumber}" Width="50"/>
+                            <DataGridTextColumn Header="Số đến" Binding="{Binding Number}" Width="120"/>
+                            <DataGridTextColumn Header="Ngày nhận" Binding="{Binding IssueDate, StringFormat='dd/MM/yyyy'}" Width="110"/>
+                            <DataGridTextColumn Header="Loại" Binding="{Binding Type}" Width="100"/>
+                            <DataGridTextColumn Header="Trích yếu" Binding="{Binding Subject}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding Subject}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Cơ quan gửi" Binding="{Binding Issuer}" Width="150"/>
+                            <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+
+                <!-- Tab Nội bộ -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileDocumentMultiple" Width="18" Height="18"
+                                                    VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Nội bộ" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtInternalCount" Text="" FontSize="11"
+                                      Foreground="White" Background="#9C27B0"
+                                      Padding="6,2" Margin="8,0,0,0"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <DataGrid x:Name="dgInternal" AutoGenerateColumns="False"
+                             IsReadOnly="True" CanUserAddRows="False"
+                             SelectionMode="Single" HeadersVisibility="Column"
+                             materialDesign:DataGridAssist.CellPadding="10 6"
+                             GridLinesVisibility="Horizontal"
+                             HorizontalGridLinesBrush="{DynamicResource MaterialDesignDivider}"
+                             MouseDoubleClick="DataGrid_DoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="STT" Binding="{Binding RowNumber}" Width="50"/>
+                            <DataGridTextColumn Header="Số văn bản" Binding="{Binding Number}" Width="120"/>
+                            <DataGridTextColumn Header="Ngày" Binding="{Binding IssueDate, StringFormat='dd/MM/yyyy'}" Width="110"/>
+                            <DataGridTextColumn Header="Loại" Binding="{Binding Type}" Width="100"/>
+                            <DataGridTextColumn Header="Trích yếu" Binding="{Binding Subject}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding Subject}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Người tạo" Binding="{Binding CreatedBy}" Width="120"/>
+                            <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </TabItem>
+            </TabControl>
+        </materialDesign:Card>
+    </Grid>
+</Page>

@@ -107,6 +107,19 @@
                                     </StackPanel>
                                 </Button>
 
+                                <!-- Sổ văn bản -->
+                                <Button x:Name="btnRegister" Style="{StaticResource MaterialDesignFlatButton}" 
+                                       Height="50" HorizontalContentAlignment="Left" 
+                                       Padding="20,0,0,0" Click="NavigateToRegister"
+                                       ToolTip="Sổ văn bản đi/đến">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="BookOpenPageVariant" Width="24" Height="24" 
+                                                                VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="txtRegister" Text="Sổ văn bản" FontSize="14" Margin="15,0,0,0" 
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+
                                 <!-- AI Generator -->
                                 <Button x:Name="btnAI" Style="{StaticResource MaterialDesignFlatButton}" 
                                        Height="50" HorizontalContentAlignment="Left" 
@@ -170,6 +183,19 @@
                                         <materialDesign:PackIcon Kind="FolderCog" Width="24" Height="24" 
                                                                 VerticalAlignment="Center"/>
                                         <TextBlock x:Name="txtAlbumSetup" Text="Cấu hình Album" FontSize="14" Margin="15,0,0,0" 
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Backup/Restore -->
+                                <Button x:Name="btnBackup" Style="{StaticResource MaterialDesignFlatButton}" 
+                                       Height="50" HorizontalContentAlignment="Left" 
+                                       Padding="20,0,0,0" Click="NavigateToBackup"
+                                       ToolTip="Sao lưu &amp; Khôi phục">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="DatabaseExport" Width="24" Height="24" 
+                                                                VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="txtBackup" Text="Sao lưu" FontSize="14" Margin="15,0,0,0" 
                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
