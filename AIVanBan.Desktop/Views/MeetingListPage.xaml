@@ -1,0 +1,167 @@
+<Page x:Class="AIVanBan.Desktop.Views.MeetingListPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      Title="Quản lý Cuộc họp">
+    
+    <Grid Background="{DynamicResource MaterialDesignPaper}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header -->
+            <RowDefinition Height="Auto"/>  <!-- Search/Filter -->
+            <RowDefinition Height="Auto"/>  <!-- Stats -->
+            <RowDefinition Height="*"/>     <!-- Meeting List -->
+        </Grid.RowDefinitions>
+        
+        <!-- ============ ROW 0: HEADER ============ -->
+        <materialDesign:ColorZone Grid.Row="0" Mode="PrimaryMid" Padding="16,12" 
+                                  materialDesign:ElevationAssist.Elevation="Dp2">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="CalendarClock" Width="28" Height="28" 
+                                            VerticalAlignment="Center"/>
+                    <TextBlock Text="QUẢN LÝ CUỘC HỌP" FontSize="18" FontWeight="Bold" 
+                              VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                           Padding="12,6" Margin="0,0,8,0"
+                           Foreground="White" BorderBrush="#FFFFFF40"
+                           Click="ExportAllMeetings_Click" ToolTip="Xuất danh sách cuộc họp ra Word">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileWord" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Xuất Word" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="btnAddMeeting" Style="{StaticResource MaterialDesignRaisedButton}"
+                           Padding="16,6" Click="AddMeeting_Click" ToolTip="Thêm cuộc họp mới">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Plus" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Thêm cuộc họp" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </materialDesign:ColorZone>
+        
+        <!-- ============ ROW 1: SEARCH & FILTER ============ -->
+        <Border Grid.Row="1" Background="{DynamicResource MaterialDesignCardBackground}" 
+                Padding="16,10" BorderBrush="{DynamicResource MaterialDesignDivider}" 
+                BorderThickness="0,0,0,1">
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Search Box -->
+                <TextBox x:Name="txtSearch" Width="280" Margin="0,0,12,4"
+                        materialDesign:HintAssist.Hint="🔍 Tìm kiếm cuộc họp..."
+                        materialDesign:TextFieldAssist.HasClearButton="True"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        materialDesign:HintAssist.IsFloating="False"
+                        KeyDown="TxtSearch_KeyDown"
+                        Padding="8,6"/>
+                
+                <!-- Type Filter -->
+                <ComboBox x:Name="cboType" Width="170" Margin="0,0,12,4"
+                         materialDesign:HintAssist.Hint="Loại cuộc họp"
+                         materialDesign:HintAssist.IsFloating="False"
+                         Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                         SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="Tất cả loại" IsSelected="True" Tag=""/>
+                </ComboBox>
+                
+                <!-- Status Filter -->
+                <ComboBox x:Name="cboStatus" Width="150" Margin="0,0,12,4"
+                         materialDesign:HintAssist.Hint="Trạng thái"
+                         materialDesign:HintAssist.IsFloating="False"
+                         Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                         SelectionChanged="Filter_Changed">
+                    <ComboBoxItem Content="Tất cả" IsSelected="True" Tag=""/>
+                    <ComboBoxItem Content="📅 Đã lên lịch" Tag="Scheduled"/>
+                    <ComboBoxItem Content="🔴 Đang diễn ra" Tag="InProgress"/>
+                    <ComboBoxItem Content="✅ Đã kết thúc" Tag="Completed"/>
+                    <ComboBoxItem Content="⏸️ Hoãn" Tag="Postponed"/>
+                    <ComboBoxItem Content="❌ Hủy" Tag="Cancelled"/>
+                </ComboBox>
+                
+                <!-- Date From -->
+                <DatePicker x:Name="dpFrom" Width="140" Margin="0,0,8,4"
+                           materialDesign:HintAssist.Hint="Từ ngày"
+                           materialDesign:HintAssist.IsFloating="False"
+                           Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                           SelectedDateChanged="Filter_Changed"/>
+                
+                <!-- Date To -->
+                <DatePicker x:Name="dpTo" Width="140" Margin="0,0,12,4"
+                           materialDesign:HintAssist.Hint="Đến ngày"
+                           materialDesign:HintAssist.IsFloating="False"
+                           Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                           SelectedDateChanged="Filter_Changed"/>
+                
+                <!-- Clear Filter -->
+                <Button Style="{StaticResource MaterialDesignOutlinedButton}" 
+                       Padding="10,4" Margin="0,0,0,4"
+                       Click="ClearFilter_Click" ToolTip="Xóa bộ lọc">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FilterRemove" Width="18" Height="18" 
+                                                VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <TextBlock Text="Xóa lọc" VerticalAlignment="Center" FontSize="12"/>
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
+        </Border>
+        
+        <!-- ============ ROW 2: STATS BAR ============ -->
+        <Border Grid.Row="2" Background="#FFF3E0" Padding="16,8" 
+                BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1">
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="txtTotalMeetings" Text="📋 Tổng: 0 cuộc họp" 
+                          FontSize="13" FontWeight="SemiBold" Margin="0,0,24,0"
+                          VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtThisMonth" Text="📅 Tháng này: 0" 
+                          FontSize="13" Margin="0,0,24,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtUpcoming" Text="⏰ Sắp tới: 0" 
+                          FontSize="13" Margin="0,0,24,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtPendingTasks" Text="📌 NV chưa xong: 0" 
+                          FontSize="13" Margin="0,0,24,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtOverdueTasks" Text="🔴 NV quá hạn: 0" 
+                          FontSize="13" Foreground="#E53935" FontWeight="SemiBold"
+                          VerticalAlignment="Center"/>
+            </WrapPanel>
+        </Border>
+        
+        <!-- ============ ROW 3: MEETING LIST ============ -->
+        <Grid Grid.Row="3">
+            <!-- Meeting Cards -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="meetingListPanel" Margin="16">
+                    <!-- Meeting cards will be added here in code-behind -->
+                </StackPanel>
+            </ScrollViewer>
+            
+            <!-- Empty State -->
+            <StackPanel x:Name="emptyState" Visibility="Collapsed"
+                       VerticalAlignment="Center" HorizontalAlignment="Center">
+                <materialDesign:PackIcon Kind="CalendarBlank" Width="80" Height="80" 
+                                        Foreground="#BDBDBD" HorizontalAlignment="Center"/>
+                <TextBlock Text="Chưa có cuộc họp nào" FontSize="18" FontWeight="SemiBold"
+                          Foreground="#757575" TextAlignment="Center" Margin="0,16,0,8"/>
+                <TextBlock Text="Nhấn nút &quot;Thêm cuộc họp&quot; để bắt đầu quản lý lịch họp"
+                          FontSize="14" Foreground="#9E9E9E" TextAlignment="Center" Margin="0,0,0,20"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
+                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                           Padding="20,8" Click="AddMeeting_Click" Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Plus" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Thêm cuộc họp đầu tiên" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                           Padding="20,8" Click="SeedDemoMeetings_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="DatabaseImport" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Tạo dữ liệu mẫu" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

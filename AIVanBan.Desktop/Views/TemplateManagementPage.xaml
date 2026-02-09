@@ -1,0 +1,110 @@
+<Page x:Class="AIVanBan.Desktop.Views.TemplateManagementPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      Title="Quản lý mẫu">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="📝 QUẢN LÝ MẪU VĂN BẢN" 
+                   FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <!-- Toolbar -->
+        <materialDesign:Card Grid.Row="1" Padding="15" Margin="0,0,0,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="txtSearch" 
+                         materialDesign:HintAssist.Hint="🔍 Tìm kiếm mẫu văn bản..." 
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         VerticalAlignment="Center"
+                         KeyUp="Search_KeyUp"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="15,0,0,0">
+                    <ComboBox x:Name="cboFilterType" 
+                             materialDesign:HintAssist.Hint="Lọc theo loại"
+                             Width="150" Margin="0,0,10,0"
+                             SelectionChanged="FilterChanged"/>
+                    
+                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                            Click="AddTemplate_Click" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Plus" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="Thêm mẫu"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                            Background="{DynamicResource SecondaryHueMidBrush}"
+                            Click="SeedDefaultTemplates_Click" Margin="0,0,10,0"
+                            ToolTip="Xóa tất cả và tạo lại 20 mẫu mặc định">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="DatabaseSync" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="Khởi tạo 20 mẫu"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
+                            Click="Refresh_Click">
+                        <materialDesign:PackIcon Kind="Refresh"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- DataGrid -->
+        <materialDesign:Card Grid.Row="2">
+            <DataGrid x:Name="dgTemplates" 
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      SelectionMode="Single"
+                      IsReadOnly="True"
+                      MouseDoubleClick="Template_DoubleClick">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tên mẫu" Binding="{Binding Name}" Width="*"/>
+                    <DataGridTextColumn Header="Loại văn bản" Binding="{Binding Type}" Width="150"/>
+                    <DataGridTextColumn Header="Số lần dùng" Binding="{Binding UsageCount}" Width="100"/>
+                    <DataGridTextColumn Header="Ngày tạo" Binding="{Binding CreatedDate, StringFormat='dd/MM/yyyy'}" Width="120"/>
+                    
+                    <DataGridTemplateColumn Header="Thao tác" Width="180">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                                            ToolTip="Xem chi tiết" Click="ViewTemplate_Click"
+                                            Tag="{Binding Id}">
+                                        <materialDesign:PackIcon Kind="Eye"/>
+                                    </Button>
+                                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                                            ToolTip="Sử dụng" Click="UseTemplate_Click"
+                                            Tag="{Binding Id}">
+                                        <materialDesign:PackIcon Kind="Play" Foreground="Green"/>
+                                    </Button>
+                                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                                            ToolTip="Sửa" Click="EditTemplate_Click"
+                                            Tag="{Binding Id}">
+                                        <materialDesign:PackIcon Kind="Pencil"/>
+                                    </Button>
+                                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                                            ToolTip="Xóa" Click="DeleteTemplate_Click"
+                                            Tag="{Binding Id}">
+                                        <materialDesign:PackIcon Kind="Delete" Foreground="Red"/>
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </materialDesign:Card>
+    </Grid>
+</Page>

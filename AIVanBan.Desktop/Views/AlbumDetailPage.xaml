@@ -1,0 +1,270 @@
+<Page x:Class="AIVanBan.Desktop.Views.AlbumDetailPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      Background="#F5F5F5"
+    Title="Chi tiết Album"
+    Focusable="True"
+    KeyDown="AlbumDetailPage_KeyDown">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header với Back button -->
+        <materialDesign:Card Grid.Row="0" Margin="10" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" 
+                        Click="Back_Click"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        ToolTip="Quay lại">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ArrowLeft" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <TextBlock Text="Quay lại" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                    <TextBlock x:Name="txtAlbumTitle" 
+                               Text="Album Title" 
+                               FontSize="20" 
+                               FontWeight="Bold"/>
+                    <TextBlock x:Name="txtPhotoCount" 
+                               Text="0 ảnh" 
+                               FontSize="12" 
+                               Foreground="#666"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Normal Mode Buttons -->
+                    <StackPanel x:Name="normalModeButtons" Orientation="Horizontal">
+                        <Button Content="✏️ Sửa album"
+                                Click="EditAlbum_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="0,0,10,0"
+                                Padding="10,6"/>
+                        
+                        <Button Content="🗑️ Xóa album"
+                                Click="DeleteAlbum_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Foreground="Red"
+                                BorderBrush="Red"
+                                Margin="0,0,15,0"
+                                Padding="10,6"/>
+                        
+                        <Button Content="📤 Upload ảnh"
+                                Click="Upload_Click"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Background="#4CAF50"
+                                BorderBrush="#4CAF50"
+                                Padding="15,6"/>
+                        
+                        <Button Content="🖼️ Đặt ảnh bìa"
+                                Click="SetCover_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="10,0,0,0"
+                                Padding="10,6"/>
+                        
+                        <Button Content="☑️ Chọn nhiều"
+                                x:Name="btnSelectMode"
+                                Click="SelectMode_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="10,0,0,0"
+                                Padding="10,6"/>
+                    </StackPanel>
+
+                    <!-- Bulk Selection Mode Buttons -->
+                    <StackPanel x:Name="bulkModeButtons" Orientation="Horizontal" Visibility="Collapsed">
+                        <Border Background="#E3F2FD" 
+                                CornerRadius="4" 
+                                Padding="10,5"
+                                Margin="0,0,10,0">
+                            <TextBlock x:Name="txtSelectionCount" 
+                                       Text="Đã chọn: 0 ảnh" 
+                                       FontWeight="SemiBold"
+                                       Foreground="#1976D2"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+
+                        <Button Content="✅ Chọn tất cả"
+                                Click="BulkSelectAll_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="0,0,10,0"
+                                Padding="10,6"/>
+                        
+                        <Button Content="❌ Bỏ chọn tất cả"
+                                Click="BulkDeselectAll_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="0,0,15,0"
+                                Padding="10,6"/>
+                        
+                        <Button Content="🗑️ Xóa đã chọn"
+                                x:Name="btnBulkDelete"
+                                Click="BulkDelete_Click"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Background="#F44336"
+                                BorderBrush="#F44336"
+                                Margin="0,0,10,0"
+                                Padding="10,6"/>
+                        
+                        <Button Content="🏷️ Thêm tags"
+                                x:Name="btnBulkAddTags"
+                                Click="BulkAddTags_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="0,0,10,0"
+                                Padding="10,6"/>
+                        
+                        <Button Content="📤 Export"
+                                x:Name="btnBulkExport"
+                                Click="BulkExport_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Margin="0,0,15,0"
+                                Padding="10,6"/>
+                        
+                        <Button Content="❌ Hủy"
+                                Click="SelectMode_Click"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Padding="10,6"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- Album Description Card -->
+        <materialDesign:Card Grid.Row="1" Margin="10,0,10,10" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Mô tả" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
+                        <TextBlock x:Name="txtDescription" 
+                                   Text="Không có mô tả" 
+                                   TextWrapping="Wrap"
+                                   Foreground="#666"/>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <!-- Tags -->
+                <ItemsControl x:Name="tagsPanel" Grid.Column="1" Margin="20,0,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#E3F2FD" 
+                                    CornerRadius="3" 
+                                    Margin="0,0,5,5">
+                                <TextBlock Text="{Binding}" 
+                                           FontSize="11" 
+                                           Foreground="#1976D2"
+                                           Margin="8,3"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- Photos Grid -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="10">
+            <Grid>
+                <!-- Photos -->
+                <ItemsControl x:Name="photosPanel">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <materialDesign:Card Width="200" Height="200" Margin="10"
+                                               MouseEnter="Photo_MouseEnter"
+                                               MouseLeave="Photo_MouseLeave"
+                                               MouseLeftButtonDown="Photo_Select"
+                                               Tag="{Binding FilePath}">
+                                <materialDesign:Card.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="👁️ Xem ảnh" Click="ViewPhoto_Click"/>
+                                        <MenuItem Header="📂 Mở thư mục" Click="OpenPhotoFolder_Click"/>
+                                        <MenuItem Header="✏️ Đổi tên" Click="RenamePhoto_Click"/>
+                                        <MenuItem Header="📋 Copy đường dẫn" Click="CopyPath_Click"/>
+                                        <Separator/>
+                                        <MenuItem Header="🗑️ Xóa ảnh" Click="DeletePhotoFromMenu_Click" Foreground="Red"/>
+                                    </ContextMenu>
+                                </materialDesign:Card.ContextMenu>
+                                <Grid>
+
+                                    <!-- Photo -->
+                                    <Image Source="{Binding ImageSource}" 
+                                           Stretch="UniformToFill"/>
+
+                                    <!-- Selected Indicator -->
+                                    <Border x:Name="selectedBorder"
+                                            BorderBrush="#2196F3"
+                                            BorderThickness="4"
+                                            Visibility="Collapsed"/>
+
+                                    <!-- Overlay on hover -->
+                                    <Border x:Name="photoOverlay" 
+                                            Background="#AA000000" 
+                                            Opacity="0">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=materialDesign:Card}}" Value="True">
+                                                        <Setter Property="Opacity" Value="1"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="Eye" 
+                                                                   Width="48" 
+                                                                   Height="48" 
+                                                                   Foreground="White"/>
+                                            <TextBlock Text="Double-click để xem" 
+                                                       Foreground="White" 
+                                                       HorizontalAlignment="Center"
+                                                       FontSize="11"
+                                                       Margin="0,10,0,0"/>
+                                            <TextBlock Text="Right-click cho thêm" 
+                                                       Foreground="#CCC" 
+                                                       HorizontalAlignment="Center"
+                                                       FontSize="9"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </materialDesign:Card>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Empty state -->
+                <StackPanel x:Name="emptyState" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"
+                           Visibility="Collapsed">
+                    <materialDesign:PackIcon Kind="ImageOff" Width="100" Height="100" Foreground="#BDBDBD"/>
+                    <TextBlock Text="Album chưa có ảnh nào" FontSize="18" Foreground="#999" Margin="0,20,0,10"/>
+                    <TextBlock Text="Click 'Upload ảnh' để thêm ảnh vào album" FontSize="14" Foreground="#BBB"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

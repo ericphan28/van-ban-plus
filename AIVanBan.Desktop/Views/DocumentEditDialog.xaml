@@ -1,0 +1,146 @@
+﻿<Window x:Class="AIVanBan.Desktop.Views.DocumentEditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="Thêm văn bản mới" Height="700" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MaterialDesignPaper}">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0">
+            <StackPanel>
+                <!-- Số văn bản -->
+                <TextBox x:Name="txtNumber" 
+                         materialDesign:HintAssist.Hint="Số văn bản (VD: 123/CV-UBND)"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Margin="0,0,0,15"/>
+
+                <!-- Tiêu đề -->
+                <TextBox x:Name="txtTitle" 
+                         materialDesign:HintAssist.Hint="Tiêu đề văn bản *"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Margin="0,0,0,15"/>
+
+                <!-- Loại và Hướng -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="cboType" 
+                             materialDesign:HintAssist.Hint="Loại văn bản"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+
+                    <ComboBox x:Name="cboDirection" Grid.Column="2"
+                             materialDesign:HintAssist.Hint="Hướng"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                </Grid>
+
+                <!-- Ngày ban hành -->
+                <DatePicker x:Name="dpIssueDate" 
+                           materialDesign:HintAssist.Hint="Ngày ban hành"
+                           Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                           Margin="0,0,0,15"/>
+
+                <!-- Cơ quan ban hành -->
+                <TextBox x:Name="txtIssuer" 
+                         materialDesign:HintAssist.Hint="Cơ quan ban hành"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Margin="0,0,0,15"/>
+
+                <!-- Trích yếu -->
+                <TextBox x:Name="txtSubject" 
+                         materialDesign:HintAssist.Hint="Trích yếu"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Margin="0,0,0,15"/>
+
+                <!-- Nơi nhận/Nơi gửi (Đồng kính gởi) -->
+                <TextBox x:Name="txtRecipients" 
+                         materialDesign:HintAssist.Hint="Nơi nhận (mỗi dòng 1 đơn vị, VD: - Như trên)"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="80"
+                         VerticalScrollBarVisibility="Auto"
+                         Margin="0,0,0,15"/>
+
+                <!-- CĂN CỨ - Phần quan trọng trong văn bản hành chính VN -->
+                <TextBox x:Name="txtBasedOn" 
+                         materialDesign:HintAssist.Hint="Căn cứ pháp lý (mỗi dòng 1 căn cứ, VD: Căn cứ Luật ABC...)"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="100"
+                         VerticalScrollBarVisibility="Auto"
+                         Margin="0,0,0,15">
+                    <TextBox.ToolTip>
+                        <ToolTip>
+                            <StackPanel MaxWidth="400">
+                                <TextBlock FontWeight="Bold" Margin="0,0,0,5">Ví dụ căn cứ pháp lý:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">
+                                    Căn cứ Luật Tổ chức chính quyền địa phương ngày 19/6/2015;
+                                </TextBlock>
+                                <TextBlock TextWrapping="Wrap" Margin="0,3,0,0">
+                                    Căn cứ Nghị định số 66/NQ-CP ngày 26/3/2025;
+                                </TextBlock>
+                                <TextBlock TextWrapping="Wrap" Margin="0,3,0,0">
+                                    Theo đề nghị của Trưởng phòng Tài chính;
+                                </TextBlock>
+                            </StackPanel>
+                        </ToolTip>
+                    </TextBox.ToolTip>
+                </TextBox>
+
+                <!-- Nội dung -->
+                <TextBox x:Name="txtContent" 
+                         materialDesign:HintAssist.Hint="Nội dung văn bản"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="150"
+                         VerticalScrollBarVisibility="Auto"
+                         Margin="0,0,0,15"/>
+
+                <!-- File đính kèm -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="txtFilePath" 
+                             materialDesign:HintAssist.Hint="File đính kèm"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             IsReadOnly="True"/>
+
+                    <Button Grid.Column="1" 
+                           Style="{StaticResource MaterialDesignRaisedButton}"
+                           Margin="10,0,0,0"
+                           Click="BrowseFile_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FolderOpen" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="Chọn file"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Style="{StaticResource MaterialDesignFlatButton}"
+                   Content="Hủy" Margin="0,0,10,0"
+                   Click="Cancel_Click"/>
+            <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                   Content="Lưu"
+                   Click="Save_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

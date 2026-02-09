@@ -1,0 +1,39 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build AIVanBan",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"AIVanBan.sln",
+				"--no-restore"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Run AIVanBan Desktop",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"Stop-Process -Name \"AIVanBan.Desktop\" -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 500; cd D:\\AIVanBanCaNhan\\AIVanBan.Desktop\\bin\\Debug\\net9.0-windows; Start-Process -FilePath \".\\AIVanBan.Desktop.exe\""
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Build and Run AIVanBan",
+			"dependsOn": [
+				"Build AIVanBan",
+				"Run AIVanBan Desktop"
+			],
+			"dependsOrder": "sequence",
+			"group": "build"
+		}
+	]
+}

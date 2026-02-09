@@ -1,0 +1,271 @@
+<Window x:Class="AIVanBan.Desktop.Views.AIComposeDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="AI Soạn thảo văn bản" 
+        Height="700" 
+        Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="🤖 AI Soạn thảo văn bản" 
+                      Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                      Margin="0,0,0,5"/>
+            <TextBlock Text="Nhập thông tin để AI tạo nội dung văn bản tự động"
+                      Style="{StaticResource MaterialDesignBody2TextBlock}"
+                      Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+        </StackPanel>
+
+        <!-- Template Selection -->
+        <materialDesign:Card Grid.Row="1" Padding="16" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="📝 Chọn mẫu văn bản" 
+                          Style="{StaticResource MaterialDesignBody1TextBlock}"
+                          FontWeight="SemiBold"
+                          Margin="0,0,0,8"/>
+                
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="TemplateComboBox"
+                             Grid.Column="0"
+                             materialDesign:HintAssist.Hint="Chọn loại văn bản"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                             DisplayMemberPath="Name"
+                             SelectionChanged="TemplateComboBox_SelectionChanged"
+                             Margin="0,0,10,0"/>
+
+                    <Button Grid.Column="1"
+                           x:Name="ViewTemplateButton"
+                           Content="Xem mẫu"
+                           Style="{StaticResource MaterialDesignOutlinedButton}"
+                           Click="ViewTemplate_Click"
+                           IsEnabled="False"/>
+                </Grid>
+
+                <!-- Template Info -->
+                <StackPanel x:Name="TemplateInfoPanel" 
+                           Visibility="Collapsed"
+                           Margin="0,12,0,0">
+                    <TextBlock x:Name="TemplateDescription"
+                              TextWrapping="Wrap"
+                              Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                    
+                    <TextBlock x:Name="RequiredFieldsText"
+                              Margin="0,8,0,0"
+                              TextWrapping="Wrap"
+                              Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                </StackPanel>
+            </StackPanel>
+        </materialDesign:Card>
+
+        <!-- Input Fields -->
+        <ScrollViewer Grid.Row="2" 
+                     VerticalScrollBarVisibility="Auto"
+                     Margin="0,0,0,16">
+            <StackPanel x:Name="InputFieldsPanel">
+                <!-- Dynamic fields will be added here -->
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Generated Content Preview with Rich Text Editor -->
+        <Expander Grid.Row="3" 
+                 x:Name="PreviewExpander"
+                 Header="📄 Nội dung văn bản (có thể chỉnh sửa)"
+                 IsExpanded="False"
+                 Margin="0,0,0,16"
+                 Visibility="Collapsed">
+            <materialDesign:Card Padding="0" Margin="0,8,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Rich Text Editor Toolbar -->
+                    <ToolBar Grid.Row="0" Background="#F5F5F5" Padding="5">
+                        <ComboBox x:Name="FontFamilyComboBox" 
+                                 Width="130" 
+                                 SelectionChanged="FontFamily_Changed"
+                                 ToolTip="Phông chữ">
+                            <ComboBoxItem Content="Times New Roman" IsSelected="True"/>
+                            <ComboBoxItem Content="Arial"/>
+                            <ComboBoxItem Content="Tahoma"/>
+                            <ComboBoxItem Content="Calibri"/>
+                        </ComboBox>
+                        
+                        <ComboBox x:Name="FontSizeComboBox" 
+                                 Width="60" 
+                                 SelectionChanged="FontSize_Changed"
+                                 ToolTip="Cỡ chữ">
+                            <ComboBoxItem Content="10"/>
+                            <ComboBoxItem Content="11"/>
+                            <ComboBoxItem Content="12"/>
+                            <ComboBoxItem Content="13"/>
+                            <ComboBoxItem Content="14" IsSelected="True"/>
+                            <ComboBoxItem Content="16"/>
+                            <ComboBoxItem Content="18"/>
+                            <ComboBoxItem Content="20"/>
+                        </ComboBox>
+                        
+                        <Separator/>
+                        
+                        <Button x:Name="BoldButton" Click="Bold_Click" ToolTip="In đậm (Ctrl+B)" Padding="8,4">
+                            <TextBlock Text="B" FontWeight="Bold" FontSize="14"/>
+                        </Button>
+                        
+                        <Button x:Name="ItalicButton" Click="Italic_Click" ToolTip="In nghiêng (Ctrl+I)" Padding="8,4">
+                            <TextBlock Text="I" FontStyle="Italic" FontSize="14"/>
+                        </Button>
+                        
+                        <Button x:Name="UnderlineButton" Click="Underline_Click" ToolTip="Gạch chân (Ctrl+U)" Padding="8,4">
+                            <TextBlock Text="U" TextDecorations="Underline" FontSize="14"/>
+                        </Button>
+                        
+                        <Separator/>
+                        
+                        <Button x:Name="AlignLeftButton" Click="AlignLeft_Click" ToolTip="Căn trái" Padding="8,4">
+                            <materialDesign:PackIcon Kind="FormatAlignLeft" Width="16" Height="16"/>
+                        </Button>
+                        
+                        <Button x:Name="AlignCenterButton" Click="AlignCenter_Click" ToolTip="Căn giữa" Padding="8,4">
+                            <materialDesign:PackIcon Kind="FormatAlignCenter" Width="16" Height="16"/>
+                        </Button>
+                        
+                        <Button x:Name="AlignRightButton" Click="AlignRight_Click" ToolTip="Căn phải" Padding="8,4">
+                            <materialDesign:PackIcon Kind="FormatAlignRight" Width="16" Height="16"/>
+                        </Button>
+                        
+                        <Button x:Name="AlignJustifyButton" Click="AlignJustify_Click" ToolTip="Căn đều" Padding="8,4">
+                            <materialDesign:PackIcon Kind="FormatAlignJustify" Width="16" Height="16"/>
+                        </Button>
+                        
+                        <Separator/>
+                        
+                        <Button x:Name="CopyButton" Click="Copy_Click" ToolTip="Copy nội dung" Padding="8,4">
+                            <materialDesign:PackIcon Kind="ContentCopy" Width="16" Height="16"/>
+                        </Button>
+                        
+                        <Button x:Name="ExportWordButton" Click="ExportWord_Click" ToolTip="Xuất ra Word (.docx)" Padding="8,4">
+                            <materialDesign:PackIcon Kind="MicrosoftWord" Width="16" Height="16"/>
+                        </Button>
+                        
+                        <Button x:Name="PrintButton" Click="Print_Click" ToolTip="In văn bản" Padding="8,4">
+                            <materialDesign:PackIcon Kind="Printer" Width="16" Height="16"/>
+                        </Button>
+                    </ToolBar>
+                    
+                    <!-- RichTextBox for formatted content -->
+                    <Border Grid.Row="1" 
+                           BorderBrush="#DDDDDD" 
+                           BorderThickness="1"
+                           Background="White"
+                           Margin="5">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                                     HorizontalScrollBarVisibility="Disabled">
+                            <RichTextBox x:Name="GeneratedContentRichTextBox"
+                                        MinHeight="400"
+                                        Padding="20"
+                                        FontFamily="Times New Roman"
+                                        FontSize="14"
+                                        AcceptsTab="True"
+                                        AcceptsReturn="True"
+                                        InputMethod.IsInputMethodEnabled="True"
+                                        BorderThickness="0"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </materialDesign:Card>
+        </Expander>
+
+        <!-- Action Buttons -->
+         <StackPanel Grid.Row="4" 
+                 Orientation="Horizontal" 
+                 HorizontalAlignment="Right">
+            <ComboBox x:Name="SampleScenarioComboBox"
+                     Width="200"
+                     materialDesign:HintAssist.Hint="Chọn kịch bản mẫu"
+                     Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                     SelectionChanged="SampleScenarioComboBox_SelectionChanged"
+                     Margin="0,0,10,0">
+                <ComboBoxItem Content="📄 Công văn xin hỗ trợ kinh phí" Tag="cv_kinhi"/>
+                <ComboBoxItem Content="🎯 Công văn báo cáo tiến độ" Tag="cv_baocao"/>
+                <ComboBoxItem Content="💬 Công văn trả lời công văn" Tag="cv_traloi"/>
+                <ComboBoxItem Content="🏆 Quyết định khen thưởng" Tag="qd_khenthuong"/>
+                <ComboBoxItem Content="👤 Quyết định điều động CB" Tag="qd_dieudonng"/>
+                <ComboBoxItem Content="🏢 Quyết định thành lập ban" Tag="qd_thanhlap"/>
+                <ComboBoxItem Content="💰 Quyết định phê duyệt dự án" Tag="qd_pheduyet"/>
+                <ComboBoxItem Content="📊 Báo cáo tổng kết năm" Tag="bc_tongket"/>
+                <ComboBoxItem Content="📈 Báo cáo tình hình tháng" Tag="bc_tinhhinh"/>
+                <ComboBoxItem Content="💡 Tờ trình xin ý kiến" Tag="tt_yikien"/>
+                <ComboBoxItem Content="🎯 Tờ trình đề xuất dự án" Tag="tt_dexuat"/>
+                <ComboBoxItem Content="📅 Kế hoạch công tác năm" Tag="kh_congtac"/>
+                <ComboBoxItem Content="🎉 Kế hoạch tổ chức sự kiện" Tag="kh_sukien"/>
+                <ComboBoxItem Content="🤝 Thông báo họp quan trọng" Tag="tb_hop"/>
+                <ComboBoxItem Content="✅ Thông báo kết quả họp" Tag="tb_ketqua"/>
+                <ComboBoxItem Content="📜 Nghị quyết HĐND" Tag="nq_hdnd"/>
+                <ComboBoxItem Content="🏛️ Nghị quyết UBND" Tag="nq_ubnd"/>
+            </ComboBox>
+            
+            <Button x:Name="LoadSampleButton"
+                   Content="📥 Tải mẫu"
+                   Style="{StaticResource MaterialDesignRaisedButton}"
+                   Click="LoadSample_Click"
+                   IsEnabled="False"
+                   Margin="0,0,10,0">
+                <Button.ToolTip>
+                    <ToolTip Content="Tự động điền dữ liệu mẫu cho kịch bản đã chọn"/>
+                </Button.ToolTip>
+            </Button>
+
+            <Button x:Name="GenerateButton"
+                   Content="✨ Tạo văn bản với AI"
+                   Style="{StaticResource MaterialDesignRaisedButton}"
+                   Click="Generate_Click"
+                   IsEnabled="False"
+                   Margin="0,0,10,0">
+                <Button.ToolTip>
+                    <ToolTip Content="Sử dụng AI để tạo nội dung văn bản"/>
+                </Button.ToolTip>
+            </Button>
+
+             <ProgressBar x:Name="LoadingProgress"
+                   Style="{StaticResource MaterialDesignCircularProgressBar}"
+                   Value="0"
+                   IsIndeterminate="True"
+                   Width="24"
+                   Height="24"
+                   Visibility="Collapsed"
+                   Margin="0,0,10,0"/>
+
+             <Button x:Name="SaveDocumentButton"
+                 Content="💾 Lưu văn bản"
+                 Style="{StaticResource MaterialDesignRaisedButton}"
+                 Click="Save_Click"
+                 IsEnabled="False"
+                 Margin="0,0,10,0"/>
+
+             <Button Content="Hủy"
+                 Style="{StaticResource MaterialDesignOutlinedButton}"
+                 Click="Cancel_Click"/>
+         </StackPanel>
+    </Grid>
+</Window>

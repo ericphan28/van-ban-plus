@@ -1,0 +1,191 @@
+<Page x:Class="AIVanBan.Desktop.Views.AIGeneratorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      Title="AI Tạo văn bản">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="✨ AI TẠO VĂN BẢN TỰ ĐỘNG" 
+                   FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Input Form -->
+            <materialDesign:Card Grid.Column="0" Padding="20" Margin="0,0,15,0" VerticalAlignment="Top">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="📋 THÔNG TIN VĂN BẢN" FontWeight="Bold" FontSize="16" Margin="0,0,0,15"/>
+
+                        <!-- Document Type -->
+                        <ComboBox x:Name="cboDocType" 
+                                 materialDesign:HintAssist.Hint="Loại văn bản *"
+                                 Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                 Margin="0,0,0,15"
+                                 SelectionChanged="DocumentType_Changed"/>
+
+                        <!-- Number -->
+                        <TextBox x:Name="txtNumber" 
+                                materialDesign:HintAssist.Hint="Số văn bản (VD: 123/CV-UBND)"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="0,0,0,15"/>
+
+                        <!-- Issue Date -->
+                        <DatePicker x:Name="dpIssueDate" 
+                                   materialDesign:HintAssist.Hint="Ngày ban hành"
+                                   Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                                   Margin="0,0,0,15"/>
+
+                        <!-- Issuer -->
+                        <TextBox x:Name="txtIssuer" 
+                                materialDesign:HintAssist.Hint="Cơ quan ban hành (VD: UBND Xã Hòa Bình)"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="0,0,0,15"/>
+
+                        <!-- Recipient -->
+                        <TextBox x:Name="txtRecipient" 
+                                materialDesign:HintAssist.Hint="Người nhận/Đơn vị nhận"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="0,0,0,15"/>
+
+                        <!-- Subject -->
+                        <TextBox x:Name="txtSubject" 
+                                materialDesign:HintAssist.Hint="Trích yếu/Về việc"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="0,0,0,15"
+                                TextWrapping="Wrap"
+                                MinHeight="60"/>
+
+                        <!-- Main Content -->
+                        <TextBox x:Name="txtMainContent" 
+                                materialDesign:HintAssist.Hint="Nội dung chính (AI sẽ mở rộng thành văn bản đầy đủ)"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="0,0,0,15"
+                                TextWrapping="Wrap"
+                                MinHeight="120"
+                                AcceptsReturn="True"/>
+
+                        <!-- Signer -->
+                        <TextBox x:Name="txtSigner" 
+                                materialDesign:HintAssist.Hint="Người ký (VD: Chủ tịch UBND)"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="0,0,0,20"/>
+
+                        <!-- Template Selection -->
+                        <ComboBox x:Name="cboTemplate" 
+                                 materialDesign:HintAssist.Hint="Mẫu văn bản (tùy chọn)"
+                                 Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                 Margin="0,0,0,20"/>
+
+                        <!-- NEW DIALOG BUTTON (with sample loading feature) -->
+                        <Button x:Name="btnNewDocument" 
+                               Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                               Height="55"
+                               Click="NewDocument_Click"
+                               Margin="0,0,0,15">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FileDocumentPlus" Width="26" Height="26" 
+                                                        VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock Text="📝 TẠO VĂN BẢN MỚI VỚI AI" FontSize="14" FontWeight="Bold"/>
+                                    <TextBlock Text="(Có 17 mẫu dữ liệu sẵn)" FontSize="10" Opacity="0.8"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Generate Button (old method) -->
+                        <Button x:Name="btnGenerate" 
+                               Style="{StaticResource MaterialDesignRaisedButton}"
+                               Height="50"
+                               Click="Generate_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="AutoFix" Width="24" Height="24" 
+                                                        VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="✨ TẠO BẰNG FORM (cách cũ)" FontSize="14" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock Text="💡 Mẹo: Dùng nút màu tối ở trên để dùng tính năng mới!" 
+                                  Foreground="Gray" FontSize="11" TextWrapping="Wrap" 
+                                  Margin="0,10,0,0" FontStyle="Italic"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </materialDesign:Card>
+
+            <!-- Output Preview -->
+            <materialDesign:Card Grid.Column="1" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Preview Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                        <TextBlock Text="📄 KẾT QUẢ" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                        
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,0,0,0">
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                   Click="Copy_Click" ToolTip="Copy văn bản"
+                                   Margin="0,0,10,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="Copy"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                   Click="SaveToDatabase_Click" ToolTip="Lưu vào cơ sở dữ liệu"
+                                   Margin="0,0,10,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ContentSave" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="Lưu DB"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Button Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
+                                   Click="ExportWord_Click" ToolTip="Xuất ra file Word">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="MicrosoftWord" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="Xuất Word"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Preview Content -->
+                    <Border Grid.Row="1" BorderBrush="{DynamicResource MaterialDesignDivider}" 
+                           BorderThickness="1" CornerRadius="4" Padding="20"
+                           Background="White">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBox x:Name="txtPreview" 
+                                    TextWrapping="Wrap"
+                                    IsReadOnly="True"
+                                    BorderThickness="0"
+                                    FontFamily="Times New Roman"
+                                    FontSize="14"
+                                    Text="Nhập thông tin và click 'Tạo văn bản bằng AI' để bắt đầu..."/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Status Bar -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,15,0,0">
+                        <materialDesign:PackIcon Kind="InformationOutline" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock x:Name="txtStatus" Text="Sẵn sàng" VerticalAlignment="Center" Foreground="Gray"/>
+                    </StackPanel>
+                </Grid>
+            </materialDesign:Card>
+        </Grid>
+    </Grid>
+</Page>
