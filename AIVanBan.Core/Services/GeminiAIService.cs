@@ -32,7 +32,7 @@ public class GeminiAIService
         _fallbackGeminiKey = settings.GeminiApiKey; // Dùng khi VanBanPlus lỗi
         
         _httpClient = new HttpClient();
-        _httpClient.Timeout = TimeSpan.FromSeconds(60);
+        _httpClient.Timeout = TimeSpan.FromSeconds(120); // Đặt sẵn 120s cho Vision/Extract
         
         if (_useVanBanPlusApi)
         {
@@ -68,7 +68,7 @@ public class GeminiAIService
         }
         
         _httpClient = new HttpClient();
-        _httpClient.Timeout = TimeSpan.FromSeconds(60);
+        _httpClient.Timeout = TimeSpan.FromSeconds(120); // Đặt sẵn 120s cho Vision/Extract
         
         if (_useVanBanPlusApi)
         {
@@ -304,7 +304,6 @@ public class GeminiAIService
                 try
                 {
                     var body = new { base64Data, mimeType };
-                    _httpClient.Timeout = TimeSpan.FromSeconds(120);
                     var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body);
                     vbpResponse.EnsureSuccessStatusCode();
                     var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
@@ -394,7 +393,6 @@ YÊU CẦU QUAN TRỌNG:
             var json = JsonSerializer.Serialize(requestBody, jsonOptions);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            _httpClient.Timeout = TimeSpan.FromSeconds(120); // Vision cần thời gian lâu hơn
             var response = await _httpClient.PostAsync(url, content);
             response.EnsureSuccessStatusCode();
 
@@ -453,7 +451,6 @@ YÊU CẦU QUAN TRỌNG:
             try
             {
                 var body = new { base64Data = base64, mimeType };
-                _httpClient.Timeout = TimeSpan.FromSeconds(120);
                 var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/read-text", body);
                 vbpResponse.EnsureSuccessStatusCode();
                 var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
@@ -491,7 +488,6 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
         var json = JsonSerializer.Serialize(requestBody, jsonOptions);
         var httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-        _httpClient.Timeout = TimeSpan.FromSeconds(120);
         var response = await _httpClient.PostAsync(url, httpContent);
         response.EnsureSuccessStatusCode();
 
