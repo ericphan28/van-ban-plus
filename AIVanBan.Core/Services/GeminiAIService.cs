@@ -327,7 +327,7 @@ YÊU CẦU QUAN TRỌNG:
 - Ngày tháng format dd/MM/yyyy
 - loai_van_ban chỉ chọn 1 trong: CongVan, QuyetDinh, BaoCao, ToTrinh, KeHoach, ThongBao, NghiQuyet, ChiThi, HuongDan, Khac
 - huong_van_ban chỉ chọn 1 trong: Den, Di, NoiBo
-- Nội dung phải đầy đủ, không tóm tắt (nếu văn bản DÀI thì tóm tắt tối đa 2000 ký tự)
+- Trường noi_dung: ghi ĐẦY ĐỦ TOÀN BỘ nội dung văn bản, KHÔNG tóm tắt, KHÔNG rút gọn, KHÔNG bỏ sót
 - Output là JSON theo đúng schema đã khai báo";
 
             // JSON Schema cho Structured Output — Gemini đảm bảo 100% valid JSON
@@ -342,7 +342,7 @@ YÊU CẦU QUAN TRỌNG:
                     ["ngay_ban_hanh"] = new { type = "string", description = "Ngày ban hành dd/MM/yyyy" },
                     ["co_quan_ban_hanh"] = new { type = "string", description = "Tên cơ quan ban hành" },
                     ["nguoi_ky"] = new { type = "string", description = "Họ tên người ký" },
-                    ["noi_dung"] = new { type = "string", description = "Nội dung chính văn bản. Ngắn thì đầy đủ, dài thì tóm tắt tối đa 2000 ký tự" },
+                    ["noi_dung"] = new { type = "string", description = "Toàn bộ nội dung văn bản, ghi đầy đủ không tóm tắt, không rút gọn" },
                     ["noi_nhan"] = new { type = "array", items = new { type = "string" }, description = "Danh sách nơi nhận" },
                     ["can_cu"] = new { type = "array", items = new { type = "string" }, description = "Danh sách căn cứ pháp lý" },
                     ["huong_van_ban"] = new { type = "string", description = "Hướng văn bản", @enum = new[] { "Den", "Di", "NoiBo" } },
