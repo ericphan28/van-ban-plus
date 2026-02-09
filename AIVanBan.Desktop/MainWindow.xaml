@@ -47,7 +47,7 @@
                         </Button>
                         <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="Giới thiệu phần mềm"
                                 Click="About_Click">
-                            <materialDesign:PackIcon Kind="InformationOutline"/>
+                            <materialDesign:PackIcon Kind="InformationOutline" Foreground="Yellow" Width="22" Height="22"/>
                         </Button>
                     </StackPanel>
                 </DockPanel>

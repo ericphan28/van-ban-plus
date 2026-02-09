@@ -20,8 +20,8 @@ public class AboutDialog : Window
     public AboutDialog()
     {
         Title = "Giới thiệu VanBanPlus";
-        Width = 520;
-        Height = 580;
+        Width = 540;
+        Height = 700;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         ResizeMode = ResizeMode.NoResize;
         WindowStyle = WindowStyle.None;
@@ -113,8 +113,9 @@ public class AboutDialog : Window
         // Version info
         var version = AppUpdateService.GetCurrentVersion();
         AddInfoRow(bodyStack, "📦 Phiên bản:", $"v{version}");
-        AddInfoRow(bodyStack, "🖥️ Nền tảng:", ".NET 9.0 / WPF");
-        AddInfoRow(bodyStack, "👤 Tác giả:", "Eric Phan");
+        AddInfoRow(bodyStack, "🏢 Phát triển:", "Cty TNHH Gia Kiệm Số");
+        AddInfoRow(bodyStack, "🌐 Website:", "giakiemso.com");
+        AddInfoRow(bodyStack, "📧 Email:", "ericphan28@gmail.com");
         AddInfoRow(bodyStack, "📅 Phát hành:", "02/2026");
 
         // Separator
@@ -136,13 +137,13 @@ public class AboutDialog : Window
 
         bodyStack.Children.Add(new TextBlock
         {
-            Text = "VanBanPlus là phần mềm hỗ trợ quản lý văn bản hành chính dành cho cán bộ, công chức cấp xã. " +
-                   "Tích hợp AI (Gemini) giúp soạn thảo văn bản nhanh chóng, quản lý tài liệu, " +
+            Text = "VanBanPlus là phần mềm hỗ trợ quản lý văn bản hành chính dành cho cán bộ, công chức. " +
+                   "Tích hợp AI giúp soạn thảo văn bản nhanh chóng, quản lý tài liệu, " +
                    "album ảnh công việc và biên bản cuộc họp.",
             TextWrapping = TextWrapping.Wrap,
             FontSize = 12.5,
             LineHeight = 20,
-            Foreground = (Brush)FindResource("MaterialDesignBodyLight")
+            Foreground = new SolidColorBrush(Color.FromRgb(50, 50, 50))
         });
 
         // Features
@@ -158,7 +159,7 @@ public class AboutDialog : Window
         var features = new[]
         {
             "• Quản lý văn bản hành chính (Quyết định, Công văn, Báo cáo...)",
-            "• Soạn thảo văn bản thông minh với AI Gemini",
+            "• Soạn thảo văn bản thông minh với AI",
             "• Quản lý album ảnh công việc theo cấu trúc",
             "• Quản lý biên bản cuộc họp, xuất Word",
             "• Tự động cập nhật phiên bản mới"
@@ -171,7 +172,7 @@ public class AboutDialog : Window
                 Text = feature,
                 FontSize = 12,
                 Margin = new Thickness(8, 2, 0, 2),
-                Foreground = (Brush)FindResource("MaterialDesignBodyLight")
+                Foreground = new SolidColorBrush(Color.FromRgb(50, 50, 50))
             });
         }
 
@@ -185,31 +186,27 @@ public class AboutDialog : Window
 
         var footerStack = new StackPanel();
 
-        // GitHub link
+        // Contact links
         var linkPanel = new StackPanel
         {
-            Orientation = Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 0, 0, 14)
         };
 
-        var githubLink = new TextBlock
+        AddHyperlink(linkPanel, "🌐 giakiemso.com", "https://giakiemso.com");
+        AddHyperlink(linkPanel, "📱 Fanpage: Gia Kiệm Số", "https://www.facebook.com/profile.php?id=61577066581766");
+        AddHyperlink(linkPanel, "💬 Facebook: Thang Phan", "https://www.facebook.com/thang.phan.334");
+        
+        var zaloText = new TextBlock
         {
+            Text = "📞 Zalo: 0907136029",
             FontSize = 12,
             HorizontalAlignment = HorizontalAlignment.Center,
-            Cursor = Cursors.Hand
+            Margin = new Thickness(0, 2, 0, 2),
+            Foreground = new SolidColorBrush(Color.FromRgb(50, 50, 50))
         };
-        var hyperlink = new Hyperlink(new Run("🔗 github.com/ericphan28/van-ban-plus"))
-        {
-            NavigateUri = new Uri("https://github.com/ericphan28/van-ban-plus")
-        };
-        hyperlink.RequestNavigate += (s, e) =>
-        {
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
-            e.Handled = true;
-        };
-        githubLink.Inlines.Add(hyperlink);
-        linkPanel.Children.Add(githubLink);
+        linkPanel.Children.Add(zaloText);
+        
         footerStack.Children.Add(linkPanel);
 
         // Buttons row
@@ -245,11 +242,11 @@ public class AboutDialog : Window
         // Copyright
         footerStack.Children.Add(new TextBlock
         {
-            Text = "© 2026 VanBanPlus Software. All rights reserved.",
+            Text = "© 2026 Cty TNHH Gia Kiệm Số. All rights reserved.",
             FontSize = 11,
             HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 12, 0, 0),
-            Foreground = (Brush)FindResource("MaterialDesignBodyLight")
+            Foreground = new SolidColorBrush(Color.FromRgb(100, 100, 100))
         });
 
         footerBorder.Child = footerStack;
@@ -285,9 +282,31 @@ public class AboutDialog : Window
         {
             Text = value,
             FontSize = 13,
-            Foreground = (Brush)FindResource("MaterialDesignBodyLight")
+            Foreground = new SolidColorBrush(Color.FromRgb(30, 30, 30))
         });
 
         parent.Children.Add(row);
+    }
+
+    private void AddHyperlink(StackPanel parent, string text, string url)
+    {
+        var tb = new TextBlock
+        {
+            FontSize = 12,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 2, 0, 2),
+            Cursor = Cursors.Hand
+        };
+        var link = new Hyperlink(new Run(text))
+        {
+            NavigateUri = new Uri(url)
+        };
+        link.RequestNavigate += (s, e) =>
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
+        };
+        tb.Inlines.Add(link);
+        parent.Children.Add(tb);
     }
 }
