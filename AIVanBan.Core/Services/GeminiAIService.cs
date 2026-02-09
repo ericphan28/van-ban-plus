@@ -336,7 +336,7 @@ Trả về JSON (KHÔNG markdown, KHÔNG ```json```, chỉ thuần JSON):
   ""ngay_ban_hanh"": ""dd/MM/yyyy"",
   ""co_quan_ban_hanh"": ""tên cơ quan ban hành"",
   ""nguoi_ky"": ""họ tên người ký"",
-  ""noi_dung"": ""toàn bộ nội dung chính của văn bản (đầy đủ, không tóm tắt)"",
+  ""noi_dung"": ""nội dung chính của văn bản. Nếu văn bản NGẮN (dưới 3 trang) ghi đầy đủ, nếu DÀI (luật, nghị định, thông tư nhiều trang) thì CHỈ tóm tắt nội dung chính (tối đa 2000 ký tự)"",
   ""noi_nhan"": [""nơi nhận 1"", ""nơi nhận 2""],
   ""can_cu"": [""căn cứ pháp lý 1"", ""căn cứ pháp lý 2""],
   ""huong_van_ban"": ""Den hoặc Di hoặc NoiBo"",
@@ -369,7 +369,7 @@ Trả về JSON (KHÔNG markdown, KHÔNG ```json```, chỉ thuần JSON):
                 GenerationConfig = new GenerationConfig
                 {
                     Temperature = 0.1,
-                    MaxOutputTokens = 8192
+                    MaxOutputTokens = 65536
                 }
             };
 
@@ -533,10 +533,36 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
 
             return result;
         }
-        catch
+        catch (Exception ex)
         {
-            // Nếu parse JSON thất bại, trả về với nội dung raw
-            return new ExtractedDocumentData { NoiDung = jsonText };
+            Console.WriteLine($"❌ ParseExtractedDocument FAILED: {ex.Message}");
+            Console.WriteLine($"❌ Text (first 500 chars): {jsonText?.Substring(0, Math.Min(500, jsonText?.Length ?? 0))}");
+            
+            // Thử salvage: nếu JSON bị cắt ngang, trích xuất từng field bằng regex
+            var salvaged = new ExtractedDocumentData();
+            try
+            {
+                salvaged.SoVanBan = ExtractJsonField(jsonText, "so_van_ban");
+                salvaged.TrichYeu = ExtractJsonField(jsonText, "trich_yeu");
+                salvaged.LoaiVanBan = ExtractJsonField(jsonText, "loai_van_ban");
+                salvaged.NgayBanHanh = ExtractJsonField(jsonText, "ngay_ban_hanh");
+                salvaged.CoQuanBanHanh = ExtractJsonField(jsonText, "co_quan_ban_hanh");
+                salvaged.NguoiKy = ExtractJsonField(jsonText, "nguoi_ky");
+                salvaged.HuongVanBan = ExtractJsonField(jsonText, "huong_van_ban");
+                salvaged.LinhVuc = ExtractJsonField(jsonText, "linh_vuc");
+                salvaged.DiaDanh = ExtractJsonField(jsonText, "dia_danh");
+                salvaged.ChucDanhKy = ExtractJsonField(jsonText, "chuc_danh_ky");
+                salvaged.ThamQuyenKy = ExtractJsonField(jsonText, "tham_quyen_ky");
+                // noi_dung có thể rất dài và bị cắt → lấy best effort
+                salvaged.NoiDung = ExtractJsonField(jsonText, "noi_dung");
+                if (string.IsNullOrEmpty(salvaged.NoiDung))
+                    salvaged.NoiDung = jsonText; // fallback raw text
+            }
+            catch
+            {
+                salvaged.NoiDung = jsonText;
+            }
+            return salvaged;
         }
     }
 
@@ -544,6 +570,25 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
     {
         if (root.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.String)
             return prop.GetString() ?? "";
+        return "";
+    }
+
+    /// <summary>
+    /// Trích xuất giá trị field từ JSON text bằng regex (dùng khi JSON bị cắt/invalid)
+    /// </summary>
+    private string ExtractJsonField(string text, string fieldName)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+        // Match: "field_name": "value" (handle escaped quotes inside value)
+        var pattern = $@"""{fieldName}""\s*:\s*""((?:[^""\\]|\\.)*)""";
+        var match = System.Text.RegularExpressions.Regex.Match(text, pattern, System.Text.RegularExpressions.RegexOptions.Singleline);
+        if (match.Success && match.Groups.Count > 1)
+        {
+            return match.Groups[1].Value
+                .Replace("\\n", "\n")
+                .Replace("\\\"", "\"")
+                .Replace("\\\\", "\\");
+        }
         return "";
     }
 
