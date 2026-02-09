@@ -45,6 +45,10 @@
                         <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="Trợ giúp">
                             <materialDesign:PackIcon Kind="Help"/>
                         </Button>
+                        <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="Giới thiệu phần mềm"
+                                Click="About_Click">
+                            <materialDesign:PackIcon Kind="InformationOutline"/>
+                        </Button>
                     </StackPanel>
                 </DockPanel>
             </materialDesign:ColorZone>

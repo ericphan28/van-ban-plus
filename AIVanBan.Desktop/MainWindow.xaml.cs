@@ -320,4 +320,13 @@ public partial class MainWindow : Window
     {
         AppUpdateService.CheckForUpdateManual();
     }
+    
+    private void About_Click(object sender, RoutedEventArgs e)
+    {
+        var aboutDialog = new AboutDialog
+        {
+            Owner = this
+        };
+        aboutDialog.ShowDialog();
+    }
 }

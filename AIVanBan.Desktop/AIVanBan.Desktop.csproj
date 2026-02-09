@@ -20,9 +20,9 @@
     <UseWindowsForms>false</UseWindowsForms>
     <RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
-    <Version>1.0.5</Version>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
-    <FileVersion>1.0.5.0</FileVersion>
+    <Version>1.0.6</Version>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <FileVersion>1.0.6.0</FileVersion>
     <Product>VanBanPlus</Product>
     <Company>VanBanPlus Software</Company>
     <Description>Phan mem quan ly van ban thong minh</Description>
