@@ -9,7 +9,7 @@
 #define MyAppURL "https://vanbanplus.vn"
 #define MyAppExeName "AIVanBan.Desktop.exe"
 #define MyAppDescription "Phan mem quan ly van ban thong minh"
-#define PublishDir "D:\AIVanBanCaNhan\AIVanBan.Desktop\bin\Release\net9.0-windows\win-x64\publish"
+#define PublishDir "D:\AIVanBanCaNhan\AIVanBan.Desktop\bin\Release\net9.0-windows\publish"
 
 [Setup]
 AppId={{8A7B9C3D-4E5F-6A1B-2C3D-4E5F6A7B8C9D}
@@ -64,25 +64,10 @@ Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescri
 Name: "startup"; Description: "Start VanBanPlus when Windows starts"; GroupDescription: "Other options:"; Flags: unchecked
 
 [Files]
-; Main application files
+; Self-contained single file - app + runtime đóng gói trong 1 EXE
 Source: "{#PublishDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#PublishDir}\*.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#PublishDir}\*.pdb"; DestDir: "{app}"; Flags: ignoreversion; Excludes: "*.Core.pdb"
-
-; Localization folders (if any satellite assemblies)
-Source: "{#PublishDir}\cs\*"; DestDir: "{app}\cs"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\de\*"; DestDir: "{app}\de"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\es\*"; DestDir: "{app}\es"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\fr\*"; DestDir: "{app}\fr"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\it\*"; DestDir: "{app}\it"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\ja\*"; DestDir: "{app}\ja"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\ko\*"; DestDir: "{app}\ko"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\pl\*"; DestDir: "{app}\pl"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\pt-BR\*"; DestDir: "{app}\pt-BR"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\ru\*"; DestDir: "{app}\ru"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\tr\*"; DestDir: "{app}\tr"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\zh-Hans\*"; DestDir: "{app}\zh-Hans"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
-Source: "{#PublishDir}\zh-Hant\*"; DestDir: "{app}\zh-Hant"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+; All subfolders (localization, etc.)
+Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "{#MyAppExeName}"
 
 [Icons]
 ; Start Menu shortcuts
