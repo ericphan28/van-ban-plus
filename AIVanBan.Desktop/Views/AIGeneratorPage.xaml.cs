@@ -123,10 +123,12 @@ public partial class AIGeneratorPage : Page
 
     private void InitializeData()
     {
-        // Load Document Types
-        foreach (DocumentType type in Enum.GetValues(typeof(DocumentType)))
+        // Load Document Types (hiển thị tên tiếng Việt)
+        cboDocType.DisplayMemberPath = "Value";
+        cboDocType.SelectedValuePath = "Key";
+        foreach (var item in EnumDisplayHelper.GetDocumentTypeItems())
         {
-            cboDocType.Items.Add(type);
+            cboDocType.Items.Add(item);
         }
         cboDocType.SelectedIndex = 0;
 
@@ -146,9 +148,9 @@ public partial class AIGeneratorPage : Page
     private void DocumentType_Changed(object sender, SelectionChangedEventArgs e)
     {
         // Update hints based on document type
-        if (cboDocType.SelectedItem is DocumentType type)
+        if (cboDocType.SelectedValue is DocumentType type)
         {
-            txtStatus.Text = $"Đã chọn: {type}";
+            txtStatus.Text = $"Đã chọn: {type.GetDisplayName()}";
         }
     }
 
@@ -174,7 +176,7 @@ public partial class AIGeneratorPage : Page
 
         try
         {
-            var docType = (DocumentType)cboDocType.SelectedItem;
+            var docType = (DocumentType)cboDocType.SelectedValue;
             var generatedText = GenerateDocument(docType);
             
             txtPreview.Text = generatedText;
@@ -409,7 +411,7 @@ Số: {number}
         {
             Number = txtNumber.Text.Trim(),
             Title = txtSubject.Text.Trim(),
-            Type = (DocumentType)cboDocType.SelectedItem,
+            Type = (DocumentType)cboDocType.SelectedValue,
             IssueDate = dpIssueDate.SelectedDate ?? DateTime.Now,
             Issuer = txtIssuer.Text.Trim(),
             Subject = txtSubject.Text.Trim(),

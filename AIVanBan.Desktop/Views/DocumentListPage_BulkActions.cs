@@ -417,9 +417,11 @@ public partial class DocumentListPage
             Grid.SetRow(lblInfo, 0);
             
             var cboType = new ComboBox { Height = 40 };
-            foreach (DocumentType type in Enum.GetValues(typeof(DocumentType)))
+            cboType.DisplayMemberPath = "Value";
+            cboType.SelectedValuePath = "Key";
+            foreach (var item in EnumDisplayHelper.GetDocumentTypeItems())
             {
-                cboType.Items.Add(type);
+                cboType.Items.Add(item);
             }
             cboType.SelectedIndex = 0;
             
@@ -449,7 +451,7 @@ public partial class DocumentListPage
             
             btnOk.Click += (s, args) =>
             {
-                dialog.Tag = cboType.SelectedItem;
+                dialog.Tag = cboType.SelectedValue;
                 dialog.DialogResult = true;
                 dialog.Close();
             };

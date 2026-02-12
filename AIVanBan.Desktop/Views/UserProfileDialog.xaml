@@ -117,18 +117,18 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- Tab 3: API Key -->
+            <!-- Tab 3: Kích hoạt AI -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel>
                         <materialDesign:PackIcon Kind="Key" Width="24" Height="24" HorizontalAlignment="Center"/>
-                        <TextBlock Text="API Key" FontSize="10" TextAlignment="Center"/>
+                        <TextBlock Text="Kích hoạt" FontSize="10" TextAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16">
                     <StackPanel MaxWidth="500">
-                        <TextBlock Text="🔑 Quản lý API Key" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
-                        <TextBlock Text="API Key dùng để xác thực khi gọi VanBanPlus API. Hãy giữ bí mật!" 
+                        <TextBlock Text="🔑 Quản lý mã kích hoạt AI" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <TextBlock Text="Mã kích hoạt dùng để xác thực kết nối AI. Hãy giữ bí mật!" 
                                    FontSize="13" Opacity="0.6" Margin="0,0,0,16" TextWrapping="Wrap"/>
 
                         <Border Background="{DynamicResource MaterialDesignToolBarBackground}" 
@@ -151,12 +151,12 @@
                         <Border Background="#FFF3E0" CornerRadius="6" Padding="12" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="⚠️ Cảnh báo" FontWeight="Bold" FontSize="13" Foreground="#E65100"/>
-                                <TextBlock Text="Tạo key mới sẽ khiến key cũ không còn hoạt động. Tất cả ứng dụng sử dụng key cũ sẽ phải cập nhật." 
+                                <TextBlock Text="Tạo mã mới sẽ khiến mã cũ không còn hoạt động. Tất cả thiết bị dùng mã cũ sẽ phải cập nhật." 
                                            FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="#BF360C"/>
                             </StackPanel>
                         </Border>
 
-                        <Button Content="🔄 Tạo API Key mới" Click="ResetApiKey_Click"
+                        <Button Content="🔄 Tạo mã kích hoạt mới" Click="ResetApiKey_Click"
                                 Style="{StaticResource MaterialDesignOutlinedButton}"
                                 Height="38" HorizontalAlignment="Left" Padding="24,0"
                                 Foreground="OrangeRed"/>

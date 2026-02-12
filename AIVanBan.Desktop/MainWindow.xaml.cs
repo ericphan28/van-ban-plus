@@ -404,7 +404,7 @@ public partial class MainWindow : Window
     private void Logout_Click(object sender, RoutedEventArgs e)
     {
         var confirm = MessageBox.Show(
-            "Đăng xuất khỏi tài khoản VanBanPlus?\n\nAPI Key sẽ được giữ lại, chỉ xóa thông tin đăng nhập.",
+            "Đăng xuất khỏi tài khoản VanBanPlus?\n\nMã kích hoạt sẽ được giữ lại, chỉ xóa thông tin đăng nhập.",
             "Đăng xuất", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
         if (confirm != MessageBoxResult.Yes) return;
@@ -465,11 +465,11 @@ public partial class MainWindow : Window
             }
             else if (!string.IsNullOrEmpty(settings.GeminiApiKey))
             {
-                // Gemini direct mode
-                iconApiStatus.Kind = MaterialDesignThemes.Wpf.PackIconKind.Key;
+                // AI direct mode (dev/maintenance only)
+                iconApiStatus.Kind = MaterialDesignThemes.Wpf.PackIconKind.Wrench;
                 iconApiStatus.Foreground = System.Windows.Media.Brushes.Orange;
-                txtApiMode.Text = "🔑 Gemini trực tiếp";
-                txtStatusUser.Text = "Key: " + settings.GeminiApiKey[..Math.Min(8, settings.GeminiApiKey.Length)] + "...";
+                txtApiMode.Text = "🔧 Bảo trì";
+                txtStatusUser.Text = "Đã kích hoạt";
                 txtUsageInfo.Text = "";
                 btnLoginQuick.Content = "🔑 Đăng nhập";
                 btnLoginQuick.Visibility = Visibility.Visible;

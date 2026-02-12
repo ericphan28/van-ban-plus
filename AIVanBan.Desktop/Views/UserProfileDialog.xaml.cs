@@ -187,7 +187,7 @@ public partial class UserProfileDialog : Window
         if (!string.IsNullOrEmpty(txtApiKey.Text))
         {
             Clipboard.SetText(txtApiKey.Text);
-            txtKeyStatus.Text = "✅ Đã copy API Key!";
+            txtKeyStatus.Text = "✅ Đã copy mã kích hoạt!";
             txtKeyStatus.Foreground = System.Windows.Media.Brushes.Green;
         }
     }
@@ -195,7 +195,7 @@ public partial class UserProfileDialog : Window
     private async void ResetApiKey_Click(object sender, RoutedEventArgs e)
     {
         var confirm = MessageBox.Show(
-            "⚠️ Tạo API Key mới sẽ khiến key cũ không còn hoạt động.\n\nBạn có chắc chắn?",
+            "⚠️ Tạo mã kích hoạt mới sẽ khiến mã cũ không còn hoạt động.\n\nBạn có chắc chắn?",
             "Xác nhận tạo key mới", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
         if (confirm != MessageBoxResult.Yes) return;
@@ -218,7 +218,7 @@ public partial class UserProfileDialog : Window
                 settings.VanBanPlusApiKey = result.Data.ApiKey;
                 AppSettingsService.Save(settings);
 
-                txtKeyStatus.Text = "✅ API Key mới đã được tạo và lưu!";
+                txtKeyStatus.Text = "✅ Mã kích hoạt mới đã được tạo và lưu!";
                 txtKeyStatus.Foreground = System.Windows.Media.Brushes.Green;
             }
             else

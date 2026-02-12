@@ -99,6 +99,55 @@ public enum Direction
 }
 
 /// <summary>
+/// Helper class để hiển thị tên tiếng Việt thân thiện cho enum
+/// </summary>
+public static class EnumDisplayHelper
+{
+    private static readonly Dictionary<DocumentType, string> _typeNames = new()
+    {
+        [DocumentType.Luat] = "Luật",
+        [DocumentType.NghiDinh] = "Nghị định",
+        [DocumentType.ThongTu] = "Thông tư",
+        [DocumentType.NghiQuyet] = "Nghị quyết",
+        [DocumentType.QuyetDinh] = "Quyết định",
+        [DocumentType.CongVan] = "Công văn",
+        [DocumentType.BaoCao] = "Báo cáo",
+        [DocumentType.ToTrinh] = "Tờ trình",
+        [DocumentType.KeHoach] = "Kế hoạch",
+        [DocumentType.ThongBao] = "Thông báo",
+        [DocumentType.ChiThi] = "Chỉ thị",
+        [DocumentType.HuongDan] = "Hướng dẫn",
+        [DocumentType.QuyDinh] = "Quy định",
+        [DocumentType.Khac] = "Khác",
+    };
+
+    private static readonly Dictionary<Direction, string> _dirNames = new()
+    {
+        [Direction.Di] = "📤 Văn bản đi",
+        [Direction.Den] = "📥 Văn bản đến",
+        [Direction.NoiBo] = "🔄 Nội bộ",
+    };
+
+    public static string GetDisplayName(this DocumentType type) =>
+        _typeNames.TryGetValue(type, out var name) ? name : type.ToString();
+
+    public static string GetDisplayName(this Direction dir) =>
+        _dirNames.TryGetValue(dir, out var name) ? name : dir.ToString();
+
+    /// <summary>
+    /// Tạo danh sách {Value, Display} cho ComboBox DocumentType
+    /// </summary>
+    public static List<KeyValuePair<DocumentType, string>> GetDocumentTypeItems() =>
+        _typeNames.Select(kv => new KeyValuePair<DocumentType, string>(kv.Key, kv.Value)).ToList();
+
+    /// <summary>
+    /// Tạo danh sách {Value, Display} cho ComboBox Direction
+    /// </summary>
+    public static List<KeyValuePair<Direction, string>> GetDirectionItems() =>
+        _dirNames.Select(kv => new KeyValuePair<Direction, string>(kv.Key, kv.Value)).ToList();
+}
+
+/// <summary>
 /// Trạng thái workflow văn bản đi
 /// </summary>
 public enum DocumentStatus

@@ -13,16 +13,20 @@ public partial class DocumentEditDialog : Window
     {
         InitializeComponent();
         
-        // Load loại văn bản
-        foreach (DocumentType type in Enum.GetValues(typeof(DocumentType)))
+        // Load loại văn bản (hiển thị tên tiếng Việt)
+        cboType.DisplayMemberPath = "Value";
+        cboType.SelectedValuePath = "Key";
+        foreach (var item in EnumDisplayHelper.GetDocumentTypeItems())
         {
-            cboType.Items.Add(type);
+            cboType.Items.Add(item);
         }
         
-        // Load hướng văn bản
-        foreach (Direction dir in Enum.GetValues(typeof(Direction)))
+        // Load hướng văn bản (hiển thị tên tiếng Việt)
+        cboDirection.DisplayMemberPath = "Value";
+        cboDirection.SelectedValuePath = "Key";
+        foreach (var item in EnumDisplayHelper.GetDirectionItems())
         {
-            cboDirection.Items.Add(dir);
+            cboDirection.Items.Add(item);
         }
 
         if (document != null)
@@ -57,8 +61,8 @@ public partial class DocumentEditDialog : Window
         txtContent.Text = Document.Content;
         txtFilePath.Text = Document.FilePath;
         dpIssueDate.SelectedDate = Document.IssueDate;
-        cboType.SelectedItem = Document.Type;
-        cboDirection.SelectedItem = Document.Direction;
+        cboType.SelectedValue = Document.Type;
+        cboDirection.SelectedValue = Document.Direction;
     }
 
     private void BrowseFile_Click(object sender, RoutedEventArgs e)
@@ -104,8 +108,8 @@ public partial class DocumentEditDialog : Window
         Document.Content = txtContent.Text;
         Document.FilePath = txtFilePath.Text;
         Document.IssueDate = dpIssueDate.SelectedDate ?? DateTime.Now;
-        Document.Type = (DocumentType)(cboType.SelectedItem ?? DocumentType.CongVan);
-        Document.Direction = (Direction)(cboDirection.SelectedItem ?? Direction.Den);
+        Document.Type = cboType.SelectedValue is DocumentType t ? t : DocumentType.CongVan;
+        Document.Direction = cboDirection.SelectedValue is Direction d ? d : Direction.Den;
 
         if (!string.IsNullOrEmpty(Document.FilePath) && File.Exists(Document.FilePath))
         {

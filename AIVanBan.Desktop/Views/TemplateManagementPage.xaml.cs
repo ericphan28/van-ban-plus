@@ -27,7 +27,7 @@ public partial class TemplateManagementPage : Page
         cboFilterType.Items.Add("Tất cả");
         foreach (DocumentType type in Enum.GetValues(typeof(DocumentType)))
         {
-            cboFilterType.Items.Add(type);
+            cboFilterType.Items.Add(type.GetDisplayName());
         }
         cboFilterType.SelectedIndex = 0;
     }
@@ -96,10 +96,11 @@ public partial class TemplateManagementPage : Page
         }
 
         // Type filter
-        if (cboFilterType.SelectedIndex > 0)
+        if (cboFilterType.SelectedIndex > 0 && cboFilterType.SelectedItem is string selectedTypeName)
         {
-            var selectedType = (DocumentType)cboFilterType.SelectedItem;
-            filtered = filtered.Where(t => t.Type == selectedType);
+            var matchedType = Enum.GetValues(typeof(DocumentType)).Cast<DocumentType>()
+                .FirstOrDefault(t => t.GetDisplayName() == selectedTypeName);
+            filtered = filtered.Where(t => t.Type == matchedType);
         }
 
         dgTemplates.ItemsSource = filtered.ToList();
@@ -124,6 +125,19 @@ public partial class TemplateManagementPage : Page
     {
         var dialog = new TemplateEditDialog(null, _documentService);
         if (dialog.ShowDialog() == true)
+        {
+            LoadTemplates();
+        }
+    }
+
+    private void OpenStore_Click(object sender, RoutedEventArgs e)
+    {
+        var storeDialog = new TemplateStoreDialog(_documentService);
+        storeDialog.Owner = Window.GetWindow(this);
+        storeDialog.ShowDialog();
+        
+        // Reload nếu đã tải template mới
+        if (storeDialog.DownloadedCount > 0)
         {
             LoadTemplates();
         }

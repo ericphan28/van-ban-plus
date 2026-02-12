@@ -167,8 +167,8 @@ public partial class AdminDashboardPage : Page
         if (user == null) return;
 
         var confirm = MessageBox.Show(
-            $"Tạo API Key mới cho {user.FullName}?\nKey cũ sẽ không còn hoạt động.",
-            "Reset API Key", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            $"Tạo mã kích hoạt mới cho {user.FullName}?\nMã cũ sẽ không còn hoạt động.",
+            "Đặt lại mã kích hoạt", MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (confirm != MessageBoxResult.Yes) return;
 
         try

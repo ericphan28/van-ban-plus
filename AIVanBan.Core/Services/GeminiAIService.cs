@@ -25,6 +25,9 @@ public class GeminiAIService
     /// </summary>
     public GeminiAIService()
     {
+        // Tự động revert dev mode nếu quá hạn 24h
+        DevModePolicy.AutoRevertIfExpired();
+
         var settings = AppSettingsService.Load();
         _useVanBanPlusApi = settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey);
         _vanBanPlusApiUrl = settings.VanBanPlusApiUrl.TrimEnd('/');
@@ -32,7 +35,7 @@ public class GeminiAIService
         _fallbackGeminiKey = settings.GeminiApiKey; // Dùng khi VanBanPlus lỗi
         
         _httpClient = new HttpClient();
-        _httpClient.Timeout = TimeSpan.FromSeconds(120); // Đặt sẵn 120s cho Vision/Extract
+        _httpClient.Timeout = TimeSpan.FromSeconds(300); // 300s cho Vision/Extract (file lớn cần nhiều thời gian)
         
         if (_useVanBanPlusApi)
         {
@@ -68,7 +71,7 @@ public class GeminiAIService
         }
         
         _httpClient = new HttpClient();
-        _httpClient.Timeout = TimeSpan.FromSeconds(120); // Đặt sẵn 120s cho Vision/Extract
+        _httpClient.Timeout = TimeSpan.FromSeconds(300); // 300s cho Vision/Extract (file lớn cần nhiều thời gian)
         
         if (_useVanBanPlusApi)
         {
@@ -100,26 +103,18 @@ public class GeminiAIService
             // ===== VanBanPlus API mode =====
             if (_useVanBanPlusApi)
             {
-                try
+                var body = new
                 {
-                    var body = new
-                    {
-                        prompt = prompt,
-                        systemInstruction = systemInstruction
-                    };
-                    var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/generate", body);
-                    vbpResponse.EnsureSuccessStatusCode();
-                    var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
-                    return vbpResult?.Data?.Content ?? "Không thể tạo nội dung";
-                }
-                catch (Exception ex) when (!string.IsNullOrEmpty(_fallbackGeminiKey))
-                {
-                    // Fallback sang Gemini trực tiếp
-                    Console.WriteLine($"⚠️ VanBanPlus API lỗi, fallback Gemini: {ex.Message}");
-                }
+                    prompt = prompt,
+                    systemInstruction = systemInstruction
+                };
+                var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/generate", body);
+                vbpResponse.EnsureSuccessStatusCode();
+                var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
+                return vbpResult?.Data?.Content ?? "Không thể tạo nội dung";
             }
 
-            // ===== Gemini trực tiếp (legacy) =====
+            // ===== Gemini trực tiếp (khi user chọn chế độ AI trực tiếp) =====
             var requestBody = new GeminiRequest
             {
                 Contents = new[]
@@ -301,23 +296,61 @@ public class GeminiAIService
             // ===== VanBanPlus API mode =====
             if (_useVanBanPlusApi)
             {
-                try
-                {
-                    var body = new { base64Data, mimeType };
-                    var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body);
-                    vbpResponse.EnsureSuccessStatusCode();
-                    var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
-                    var text = vbpResult?.Data?.Content ?? "";
-                    return ParseExtractedDocument(text);
-                }
-                catch (Exception ex) when (!string.IsNullOrEmpty(_fallbackGeminiKey))
-                {
-                    Console.WriteLine($"⚠️ VanBanPlus API lỗi, fallback Gemini: {ex.Message}");
-                }
+                var body = new { base64Data, mimeType };
+                var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body);
+                vbpResponse.EnsureSuccessStatusCode();
+                var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
+                var text = vbpResult?.Data?.Content ?? "";
+                return ParseExtractedDocument(text);
             }
 
-            // ===== Gemini trực tiếp (legacy) =====
-            var prompt = @"Bạn là chuyên gia OCR và trích xuất văn bản hành chính Việt Nam.
+            // ===== Gemini trực tiếp (với retry) =====
+            const int maxRetries = 2;
+            Exception? lastException = null;
+            
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
+            {
+                try
+                {
+                    if (attempt > 0)
+                    {
+                        Console.WriteLine($"🔄 Retry lần {attempt}/{maxRetries} sau khi timeout...");
+                        await Task.Delay(2000 * attempt); // Chờ 2s, 4s trước khi retry
+                    }
+                    
+                    return await CallGeminiDirectExtractAsync(base64Data, mimeType);
+                }
+                catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException || ex.CancellationToken == default)
+                {
+                    lastException = ex;
+                    Console.WriteLine($"⏰ Timeout lần {attempt + 1}: {ex.Message}");
+                }
+                catch (HttpRequestException ex)
+                {
+                    lastException = ex;
+                    Console.WriteLine($"🌐 Lỗi mạng lần {attempt + 1}: {ex.Message}");
+                    if (attempt == maxRetries) break;
+                }
+            }
+            
+            throw new Exception($"Không thể trích xuất sau {maxRetries + 1} lần thử. Lỗi cuối: {lastException?.Message}", lastException!);
+        }
+        catch (Exception ex) when (ex.Message.StartsWith("Không thể trích xuất"))
+        {
+            throw; // Re-throw retry failures as-is
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Lỗi khi trích xuất văn bản bằng AI: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Gọi Gemini API trực tiếp để extract document (tách riêng để hỗ trợ retry)
+    /// </summary>
+    private async Task<ExtractedDocumentData> CallGeminiDirectExtractAsync(string base64Data, string mimeType)
+    {
+        var prompt = @"Bạn là chuyên gia OCR và trích xuất văn bản hành chính Việt Nam.
 Đọc file/ảnh này và trích xuất thông tin theo schema JSON đã khai báo.
 
 QUY TẮC BẮT BUỘC:
@@ -326,109 +359,108 @@ QUY TẮC BẮT BUỘC:
 3. loai_van_ban: chọn 1 trong CongVan|QuyetDinh|BaoCao|ToTrinh|KeHoach|ThongBao|NghiQuyet|ChiThi|HuongDan|Khac
 4. huong_van_ban: chọn 1 trong Den|Di|NoiBo
 5. TRƯỜNG noi_dung — ĐÂY LÀ TRƯỜNG QUAN TRỌNG NHẤT:
-   - Trích xuất NGUYÊN VĂN toàn bộ nội dung văn bản gốc
-   - KHÔNG được tóm tắt, KHÔNG được diễn giải, KHÔNG được rút gọn
-   - KHÔNG được bỏ sót bất kỳ điều, khoản, mục, chương nào
-   - Giữ nguyên từng câu từng chữ như trong văn bản gốc
-   - Đây là văn bản nhà nước, nội dung KHÔNG ĐƯỢC thay đổi
+   - CHỈ lấy PHẦN NỘI DUNG CHÍNH của văn bản (từ sau phần căn cứ hoặc sau tiêu đề loại VB)
+   - KHÔNG đưa vào: tên cơ quan, QUỐC HỘI, CỘNG HÒA XÃ HỘI..., Độc lập - Tự do - Hạnh phúc, số văn bản, ngày tháng ban hành, tên loại văn bản (Luật, Nghị định...), trích yếu
+   - KHÔNG đưa vào: căn cứ pháp lý (căn cứ đã có trường can_cu riêng)
+   - KHÔNG đưa vào: nơi nhận, chữ ký, người ký (đã có trường riêng)
+   - Bắt đầu từ: Chương I hoặc Điều 1 hoặc đoạn nội dung đầu tiên sau căn cứ
+   - Trích xuất NGUYÊN VĂN, KHÔNG tóm tắt, KHÔNG rút gọn
+   - BẮT BUỘC dùng \n xuống dòng giữa các đoạn, điều, khoản, mục, chương
+   - Mỗi Điều/Khoản/Chương/Mục PHẢI trên dòng mới
+   - KHÔNG gộp thành 1 dòng liền nhau
 6. Giữ nguyên dấu tiếng Việt chính xác";
 
-            // JSON Schema cho Structured Output — Gemini đảm bảo 100% valid JSON
-            var extractSchema = new
+        // JSON Schema cho Structured Output — Gemini đảm bảo 100% valid JSON
+        var extractSchema = new
+        {
+            type = "object",
+            properties = new Dictionary<string, object>
             {
-                type = "object",
-                properties = new Dictionary<string, object>
-                {
-                    ["so_van_ban"] = new { type = "string", description = "Số hiệu văn bản (VD: 15/GM-UBND)" },
-                    ["trich_yeu"] = new { type = "string", description = "Trích yếu nội dung văn bản" },
-                    ["loai_van_ban"] = new { type = "string", description = "Loại văn bản", @enum = new[] { "CongVan", "QuyetDinh", "BaoCao", "ToTrinh", "KeHoach", "ThongBao", "NghiQuyet", "ChiThi", "HuongDan", "Khac" } },
-                    ["ngay_ban_hanh"] = new { type = "string", description = "Ngày ban hành dd/MM/yyyy" },
-                    ["co_quan_ban_hanh"] = new { type = "string", description = "Tên cơ quan ban hành" },
-                    ["nguoi_ky"] = new { type = "string", description = "Họ tên người ký" },
-                    ["noi_dung"] = new { type = "string", description = "NGUYÊN VĂN toàn bộ nội dung văn bản gốc, từng câu từng chữ, TUYỆT ĐỐI KHÔNG tóm tắt/rút gọn/diễn giải. Đây là văn bản nhà nước không được thay đổi nội dung" },
-                    ["noi_nhan"] = new { type = "array", items = new { type = "string" }, description = "Danh sách nơi nhận" },
-                    ["can_cu"] = new { type = "array", items = new { type = "string" }, description = "Danh sách căn cứ pháp lý" },
-                    ["huong_van_ban"] = new { type = "string", description = "Hướng văn bản", @enum = new[] { "Den", "Di", "NoiBo" } },
-                    ["linh_vuc"] = new { type = "string", description = "Lĩnh vực liên quan (VD: Giáo dục, Y tế, Tài chính)" },
-                    ["dia_danh"] = new { type = "string", description = "Địa danh nơi ban hành (VD: Gia Kiểm, Biên Hòa, Hà Nội)" },
-                    ["chuc_danh_ky"] = new { type = "string", description = "Chức danh người ký (VD: CHỦ TỊCH, GIÁM ĐỐC)" },
-                    ["tham_quyen_ky"] = new { type = "string", description = "Thẩm quyền ký (TM., KT., Q. hoặc rỗng)" }
-                },
-                required = new[] { "so_van_ban", "trich_yeu", "loai_van_ban", "ngay_ban_hanh", "co_quan_ban_hanh", "nguoi_ky", "noi_dung", "noi_nhan", "can_cu", "huong_van_ban", "linh_vuc", "dia_danh", "chuc_danh_ky", "tham_quyen_ky" }
-            };
+                ["so_van_ban"] = new { type = "string", description = "Số hiệu văn bản (VD: 15/GM-UBND)" },
+                ["trich_yeu"] = new { type = "string", description = "Trích yếu nội dung văn bản" },
+                ["loai_van_ban"] = new { type = "string", description = "Loại văn bản", @enum = new[] { "CongVan", "QuyetDinh", "BaoCao", "ToTrinh", "KeHoach", "ThongBao", "NghiQuyet", "ChiThi", "HuongDan", "Khac" } },
+                ["ngay_ban_hanh"] = new { type = "string", description = "Ngày ban hành dd/MM/yyyy" },
+                ["co_quan_ban_hanh"] = new { type = "string", description = "Tên cơ quan ban hành" },
+                ["nguoi_ky"] = new { type = "string", description = "Họ tên người ký" },
+                ["noi_dung"] = new { type = "string", description = "CHỈ phần NỘI DUNG CHÍNH (từ Chương/Điều đầu tiên). KHÔNG bao gồm: tiêu đề cơ quan, CỘNG HÒA XÃ HỘI, số văn bản, ngày ban hành, tên loại VB, trích yếu, căn cứ, nơi nhận, chữ ký. Dùng \\n xuống dòng giữa đoạn/điều/khoản/chương." },
+                ["noi_nhan"] = new { type = "array", items = new { type = "string" }, description = "Danh sách nơi nhận" },
+                ["can_cu"] = new { type = "array", items = new { type = "string" }, description = "Danh sách căn cứ pháp lý" },
+                ["huong_van_ban"] = new { type = "string", description = "Hướng văn bản", @enum = new[] { "Den", "Di", "NoiBo" } },
+                ["linh_vuc"] = new { type = "string", description = "Lĩnh vực liên quan (VD: Giáo dục, Y tế, Tài chính)" },
+                ["dia_danh"] = new { type = "string", description = "Địa danh nơi ban hành (VD: Gia Kiểm, Biên Hòa, Hà Nội)" },
+                ["chuc_danh_ky"] = new { type = "string", description = "Chức danh người ký (VD: CHỦ TỊCH, GIÁM ĐỐC)" },
+                ["tham_quyen_ky"] = new { type = "string", description = "Thẩm quyền ký (TM., KT., Q. hoặc rỗng)" }
+            },
+            required = new[] { "so_van_ban", "trich_yeu", "loai_van_ban", "ngay_ban_hanh", "co_quan_ban_hanh", "nguoi_ky", "noi_dung", "noi_nhan", "can_cu", "huong_van_ban", "linh_vuc", "dia_danh", "chuc_danh_ky", "tham_quyen_ky" }
+        };
 
-            var requestBody = new GeminiRequest
+        var requestBody = new GeminiRequest
+        {
+            Contents = new[]
             {
-                Contents = new[]
+                new Content
                 {
-                    new Content
+                    Parts = new[]
                     {
-                        Parts = new[]
+                        new Part { Text = prompt },
+                        new Part
                         {
-                            new Part { Text = prompt },
-                            new Part
+                            InlineData = new InlineData
                             {
-                                InlineData = new InlineData
-                                {
-                                    MimeType = mimeType,
-                                    Data = base64Data
-                                }
+                                MimeType = mimeType,
+                                Data = base64Data
                             }
                         }
                     }
-                },
-                GenerationConfig = new GenerationConfig
-                {
-                    Temperature = 0.1,
-                    MaxOutputTokens = 65536,
-                    ResponseMimeType = "application/json",
-                    ResponseSchema = extractSchema,
-                    ThinkingConfig = new ThinkingConfig { ThinkingBudget = 0 }
                 }
-            };
-
-            var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
-
-            var jsonOptions = new JsonSerializerOptions 
-            { 
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull 
-            };
-            var json = JsonSerializer.Serialize(requestBody, jsonOptions);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync(url, content);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
-
-            if (result?.Candidates != null && result.Candidates.Length > 0)
+            },
+            GenerationConfig = new GenerationConfig
             {
-                var candidate = result.Candidates[0];
-                var parts = candidate.Content?.Parts;
-                
-                // Log chi tiết response
-                Console.WriteLine($"📊 Gemini Direct Extract — finishReason: {candidate.FinishReason}, parts: {parts?.Length ?? 0}");
-                if (result.UsageMetadata != null)
-                {
-                    Console.WriteLine($"📊 Tokens — prompt: {result.UsageMetadata.PromptTokenCount}, completion: {result.UsageMetadata.CandidatesTokenCount}, total: {result.UsageMetadata.TotalTokenCount}");
-                }
+                Temperature = 0.1,
+                MaxOutputTokens = 65536,
+                ResponseMimeType = "application/json",
+                ResponseSchema = extractSchema,
+                ThinkingConfig = new ThinkingConfig { ThinkingBudget = 0 }
+            }
+        };
 
-                // Với Structured Output + thinkingBudget=0 → chỉ có 1 part duy nhất chứa JSON hợp lệ
-                var text = (parts != null && parts.Length > 0)
-                    ? parts[parts.Length - 1]?.Text ?? ""
-                    : "";
-                
-                Console.WriteLine($"📊 Content length: {text.Length}, preview: {(text.Length > 200 ? text[..200] + "..." : text)}");
-                
-                return ParseExtractedDocument(text);
+        var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
+
+        var jsonOptions = new JsonSerializerOptions 
+        { 
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull 
+        };
+        var json = JsonSerializer.Serialize(requestBody, jsonOptions);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync(url, content);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
+
+        if (result?.Candidates != null && result.Candidates.Length > 0)
+        {
+            var candidate = result.Candidates[0];
+            var parts = candidate.Content?.Parts;
+            
+            // Log chi tiết response
+            Console.WriteLine($"📊 Gemini Direct Extract — finishReason: {candidate.FinishReason}, parts: {parts?.Length ?? 0}");
+            if (result.UsageMetadata != null)
+            {
+                Console.WriteLine($"📊 Tokens — prompt: {result.UsageMetadata.PromptTokenCount}, completion: {result.UsageMetadata.CandidatesTokenCount}, total: {result.UsageMetadata.TotalTokenCount}");
             }
 
-            return new ExtractedDocumentData();
+            // Với Structured Output + thinkingBudget=0 → chỉ có 1 part duy nhất chứa JSON hợp lệ
+            var text = (parts != null && parts.Length > 0)
+                ? parts[parts.Length - 1]?.Text ?? ""
+                : "";
+            
+            Console.WriteLine($"📊 Content length: {text.Length}, preview: {(text.Length > 200 ? text[..200] + "..." : text)}");
+            
+            return ParseExtractedDocument(text);
         }
-        catch (Exception ex)
-        {
-            throw new Exception($"Lỗi khi trích xuất văn bản bằng AI: {ex.Message}", ex);
-        }
+
+        return new ExtractedDocumentData();
     }
 
     /// <summary>
@@ -451,21 +483,14 @@ QUY TẮC BẮT BUỘC:
         // ===== VanBanPlus API mode =====
         if (_useVanBanPlusApi)
         {
-            try
-            {
-                var body = new { base64Data = base64, mimeType };
-                var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/read-text", body);
-                vbpResponse.EnsureSuccessStatusCode();
-                var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
-                return vbpResult?.Data?.Content ?? "";
-            }
-            catch (Exception ex) when (!string.IsNullOrEmpty(_fallbackGeminiKey))
-            {
-                Console.WriteLine($"⚠️ VanBanPlus API lỗi, fallback Gemini: {ex.Message}");
-            }
+            var body = new { base64Data = base64, mimeType };
+            var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/read-text", body);
+            vbpResponse.EnsureSuccessStatusCode();
+            var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
+            return vbpResult?.Data?.Content ?? "";
         }
 
-        // ===== Gemini trực tiếp (legacy) =====
+        // ===== Gemini trực tiếp =====
         var prompt = @"Đọc và trả về TOÀN BỘ nội dung text trong file/ảnh này.
 Giữ nguyên format, xuống dòng, dấu tiếng Việt. 
 CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
@@ -554,6 +579,9 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
             if (root.TryGetProperty("can_cu", out var canCu) && canCu.ValueKind == JsonValueKind.Array)
                 result.CanCu = canCu.EnumerateArray().Select(e => e.GetString() ?? "").Where(s => !string.IsNullOrEmpty(s)).ToArray();
 
+            // Post-process: đảm bảo nội dung có line breaks đúng cấu trúc văn bản
+            result.NoiDung = FormatExtractedContent(result.NoiDung);
+
             return result;
         }
         catch (Exception ex)
@@ -587,6 +615,134 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
             }
             return salvaged;
         }
+    }
+
+    /// <summary>
+    /// Post-process nội dung trích xuất: thêm line breaks cho cấu trúc văn bản hành chính
+    /// Gemini đôi khi trả về 1 khối text liền → cần tách thành các đoạn rõ ràng
+    /// </summary>
+    private string FormatExtractedContent(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return content;
+
+        // Bước 1: Loại bỏ tiêu đề văn bản nếu Gemini vô tình đưa vào noi_dung
+        content = StripHeaderFromContent(content);
+
+        // Bước 2: Nếu đã có nhiều line breaks (>= 3 dòng), Gemini đã format tốt → giữ nguyên
+        var existingLineBreaks = content.Split('\n').Length;
+        if (existingLineBreaks >= 3) return content;
+
+        // Gemini gộp hết thành 1 dòng → cần tách ra
+        // Pattern: thêm \n trước các keyword cấu trúc văn bản hành chính VN
+        var patterns = new[]
+        {
+            // Chương, Phần, Mục (cấp cao nhất)
+            @"(?<=[.;:])\s*(?=Chương\s+[IVXLCDM\d]+)",
+            @"(?<=[.;:])\s*(?=CHƯƠNG\s+[IVXLCDM\d]+)",
+            @"(?<=[.;:])\s*(?=Phần\s+(thứ\s+)?[IVXLCDM\d]+)",
+            @"(?<=[.;:])\s*(?=PHẦN\s+(THỨ\s+)?[IVXLCDM\d]+)",
+            @"(?<=[.;:])\s*(?=Mục\s+\d+)",
+            @"(?<=[.;:])\s*(?=MỤC\s+\d+)",
+            // Điều (quan trọng nhất trong Luật/NĐ/QĐ)
+            @"(?<=[.;:])\s*(?=Điều\s+\d+)",
+            // Khoản (dùng số + dấu chấm)
+            @"(?<=[.;:])\s*(?=\d+\.\s+[A-ZÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬĐÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ])",
+            // Điểm a), b), c)...
+            @"(?<=[.;:])\s*(?=[a-zđ]\)\s)",
+        };
+
+        var result = content;
+        foreach (var pattern in patterns)
+        {
+            result = System.Text.RegularExpressions.Regex.Replace(result, pattern, "\n");
+        }
+
+        // Trim các dòng thừa
+        var lines = result.Split('\n')
+            .Select(l => l.Trim())
+            .Where(l => !string.IsNullOrEmpty(l));
+        
+        return string.Join("\n", lines);
+    }
+
+    /// <summary>
+    /// Loại bỏ các dòng tiêu đề văn bản khỏi noi_dung (nếu Gemini vô tình đưa vào)
+    /// Ví dụ: QUỐC HỘI, CỘNG HÒA XÃ HỘI..., Độc lập - Tự do, Luật số..., LUẬT, QUẢN LÝ THUẾ
+    /// </summary>
+    private string StripHeaderFromContent(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return content;
+        
+        var lines = content.Split('\n').ToList();
+        
+        // Các pattern dòng tiêu đề cần loại bỏ (đầu văn bản)
+        var headerPatterns = new[]
+        {
+            @"^\s*QUỐC HỘI\s*$",
+            @"^\s*CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT\s*NAM\s*$",
+            @"^\s*Độc lập\s*-\s*Tự do\s*-\s*Hạnh phúc\s*$",
+            @"^\s*(Luật|Nghị định|Quyết định|Thông tư|Công văn)\s+số[:\s]",  // Luật số: 108/...
+            @"^\s*Số[:\s]+\d+",  // Số: 108/2025/QH15
+            @"^\s*Ngày\s+\d+\s+tháng\s+\d+",  // Ngày 10 tháng 12 năm 2025
+            @"^\s*QUYẾ?T ĐỊN?H\s*[:\s]*$",  // QUYẾ?T ĐỊNH:
+            @"^\s*LUẬT\s*$",  // LUẬT
+            @"^\s*NGHỊ ĐỊNH\s*$",
+            @"^\s*THÔNG TƯ\s*$",
+            @"^\s*CHỦ TỊCH\s",  // CHỦ TỊCH QUỐC HỘI
+        };
+
+        // Chỉ loại bỏ các dòng ở ĐẦU văn bản (trước Chương/Điều đầu tiên)
+        int firstContentLine = 0;
+        for (int i = 0; i < lines.Count && i < 20; i++) // Chỉ check 20 dòng đầu
+        {
+            var trimmed = lines[i].Trim();
+            if (string.IsNullOrEmpty(trimmed)) 
+            {
+                firstContentLine = i + 1;
+                continue;
+            }
+
+            // Nếu gặp Chương/Điều đầu tiên → đây là bắt đầu nội dung chính
+            if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^(Chương|CHƯƠNG)\s+[IVXLCDM\d]") ||
+                System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^Điều\s+\d+"))
+            {
+                firstContentLine = i;
+                break;
+            }
+
+            // Kiểm tra có phải header line không
+            bool isHeader = headerPatterns.Any(p => 
+                System.Text.RegularExpressions.Regex.IsMatch(trimmed, p, System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+            
+            // Kiểm tra dòng trích yếu/tên luật viết HOA toàn bộ và ngắn (VD: QUẢN LÝ THUẾ)
+            bool isShortUpperCase = trimmed.Length <= 60 && 
+                trimmed == trimmed.ToUpper() && 
+                !trimmed.StartsWith("CHƯƠNG") && !trimmed.StartsWith("ĐIỀU") &&
+                !trimmed.StartsWith("QUY ĐỊNH");
+            
+            if (isHeader || isShortUpperCase)
+            {
+                firstContentLine = i + 1;
+            }
+            else if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^Căn cứ\s", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            {
+                // Bỏ qua dòng căn cứ (đã có trường can_cu)
+                firstContentLine = i + 1;
+            }
+            else
+            {
+                // Gặp dòng nội dung bình thường → dừng strip
+                firstContentLine = i;
+                break;
+            }
+        }
+
+        if (firstContentLine > 0 && firstContentLine < lines.Count)
+        {
+            lines = lines.Skip(firstContentLine).ToList();
+        }
+
+        return string.Join("\n", lines).Trim();
     }
 
     private string GetJsonString(JsonElement root, string propertyName)

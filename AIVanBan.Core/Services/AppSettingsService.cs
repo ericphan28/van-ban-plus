@@ -77,6 +77,44 @@ public class AppSettingsService
 /// <summary>
 /// Cấu hình ứng dụng
 /// </summary>
+public static class DevModePolicy
+{
+    /// <summary>Chế độ bảo trì tự hết hạn sau bao nhiêu giờ</summary>
+    public const int MaxHours = 1;
+
+    /// <summary>
+    /// Kiểm tra và tự động revert về VanBanPlus nếu dev mode đã quá hạn.
+    /// Gọi khi app khởi động hoặc mở Settings dialog.
+    /// </summary>
+    public static bool AutoRevertIfExpired()
+    {
+        var settings = AppSettingsService.Load();
+        if (!settings.UseVanBanPlusApi 
+            && settings.DevModeActivatedAt.HasValue
+            && (DateTime.Now - settings.DevModeActivatedAt.Value).TotalHours >= MaxHours)
+        {
+            settings.UseVanBanPlusApi = true;
+            settings.DevModeActivatedAt = null;
+            AppSettingsService.Save(settings);
+            return true; // đã revert
+        }
+        return false;
+    }
+
+    /// <summary>Thời gian còn lại (null nếu không ở dev mode)</summary>
+    public static TimeSpan? GetRemainingTime()
+    {
+        var settings = AppSettingsService.Load();
+        if (!settings.UseVanBanPlusApi && settings.DevModeActivatedAt.HasValue)
+        {
+            var elapsed = DateTime.Now - settings.DevModeActivatedAt.Value;
+            var remaining = TimeSpan.FromHours(MaxHours) - elapsed;
+            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
+        }
+        return null;
+    }
+}
+
 public class AppSettings
 {
     // ===== Chế độ API =====
@@ -93,8 +131,14 @@ public class AppSettings
     /// </summary>
     public string VercelBypassToken { get; set; } = "O6ZwqggP5r8buGm985jUItBVbT8qIZQC";
 
-    // ===== Gemini trực tiếp (legacy) =====
+    // ===== Gemini trực tiếp (legacy/bảo trì) =====
     public string GeminiApiKey { get; set; } = "";
+
+    /// <summary>
+    /// Thời điểm bật chế độ bảo trì (Gemini trực tiếp). Null = không dùng.
+    /// Tự động hết hạn sau DevModeMaxHours giờ.
+    /// </summary>
+    public DateTime? DevModeActivatedAt { get; set; }
 
     // ===== Thông tin người dùng (cache từ API) =====
     public string UserEmail { get; set; } = "";

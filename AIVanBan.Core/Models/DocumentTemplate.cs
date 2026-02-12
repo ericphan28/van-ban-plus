@@ -26,6 +26,10 @@ public class DocumentTemplate
     public string[] Tags { get; set; } = Array.Empty<string>();
     public int UsageCount { get; set; } // Số lần sử dụng
     
+    // Store (kho mẫu online)
+    public string StoreId { get; set; } = string.Empty; // ID trên store, rỗng = tự tạo
+    public int StoreVersion { get; set; } // Version trên store, 0 = chưa từ store
+    
     // Audit
     public string CreatedBy { get; set; } = Environment.UserName;
     public DateTime CreatedDate { get; set; } = DateTime.Now;

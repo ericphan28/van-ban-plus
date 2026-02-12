@@ -522,29 +522,79 @@ public class WordExportService
                 continue;
             }
 
-            var run = para.AppendChild(new Run());
-            run.AppendChild(new Text(line) { Space = SpaceProcessingModeValues.Preserve });
+            var trimmedLine = line.Trim();
             
-            // Font Times New Roman 14pt
+            // Phát hiện loại dòng để format phù hợp
+            var lineType = DetectLineType(trimmedLine);
+            
+            var run = para.AppendChild(new Run());
+            run.AppendChild(new Text(trimmedLine) { Space = SpaceProcessingModeValues.Preserve });
+            
+            // Font Times New Roman
             var runProps = run.AppendChild(new RunProperties());
             runProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-            runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
             
-            // Căn đều 2 bên (justify), line spacing 1.3, thụt đầu dòng 1cm
+            // ParagraphProperties
             var paraProps = para.AppendChild(new ParagraphProperties());
-            paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
-            paraProps.AppendChild(new Indentation() 
-            { 
-                FirstLine = "567" // Thụt đầu dòng 1cm (567 twips)
-            });
             
-            // Line spacing 1.3 theo chuẩn
-            paraProps.AppendChild(new SpacingBetweenLines() 
-            { 
-                After = "0",
-                Line = LineSpacing13, // 1.3 lines
-                LineRule = LineSpacingRuleValues.Auto
-            });
+            switch (lineType)
+            {
+                case ContentLineType.ChuongPhan: // Chương I, Phần thứ nhất...
+                    runProps.AppendChild(new Bold());
+                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
+                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Center });
+                    paraProps.AppendChild(new SpacingBetweenLines()
+                    {
+                        Before = SpacingLarge, After = SpacingSmall,
+                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
+                    });
+                    break;
+                    
+                case ContentLineType.Dieu: // Điều 1, Điều 2...
+                    runProps.AppendChild(new Bold());
+                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
+                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
+                    paraProps.AppendChild(new Indentation() { FirstLine = "567" });
+                    paraProps.AppendChild(new SpacingBetweenLines()
+                    {
+                        Before = SpacingMedium, After = "0",
+                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
+                    });
+                    break;
+                    
+                case ContentLineType.Khoan: // 1. ..., 2. ...
+                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
+                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
+                    paraProps.AppendChild(new Indentation() { FirstLine = "567" });
+                    paraProps.AppendChild(new SpacingBetweenLines()
+                    {
+                        Before = SpacingSmall, After = "0",
+                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
+                    });
+                    break;
+                    
+                case ContentLineType.Diem: // a) ..., b) ...
+                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
+                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
+                    paraProps.AppendChild(new Indentation() { FirstLine = "851" }); // Thụt sâu hơn 1.5cm
+                    paraProps.AppendChild(new SpacingBetweenLines()
+                    {
+                        After = "0",
+                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
+                    });
+                    break;
+                    
+                default: // Nội dung thường
+                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
+                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
+                    paraProps.AppendChild(new Indentation() { FirstLine = "567" });
+                    paraProps.AppendChild(new SpacingBetweenLines()
+                    {
+                        After = "0",
+                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
+                    });
+                    break;
+            }
         }
 
         // Khoảng cách trước chữ ký
@@ -556,6 +606,43 @@ public class WordExportService
             Line = LineSpacing13,
             LineRule = LineSpacingRuleValues.Auto
         });
+    }
+
+    /// <summary>
+    /// Phân loại dòng nội dung để format phù hợp trong Word
+    /// </summary>
+    private enum ContentLineType { Normal, ChuongPhan, Dieu, Khoan, Diem }
+    
+    private ContentLineType DetectLineType(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)) return ContentLineType.Normal;
+        
+        var trimmed = line.TrimStart();
+        
+        // Chương I, CHƯƠNG II, Phần thứ nhất, PHẦN THỨ HAI, Mục 1, MỤC 2
+        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^(Chương|CHƯƠNG)\s+[IVXLCDM\d]+", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            return ContentLineType.ChuongPhan;
+        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^(Phần|PHẦN)\s+(thứ\s+)?[IVXLCDM\d]", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            return ContentLineType.ChuongPhan;
+        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^(Mục|MỤC)\s+\d+", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            return ContentLineType.ChuongPhan;
+        // QUY ĐỊNH CHUNG, QUY ĐỊNH CỤ THỂ (tiêu đề chương)
+        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^[A-ZÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬĐÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ\s]+$") && trimmed.Length <= 80)
+            return ContentLineType.ChuongPhan;
+
+        // Điều 1. ..., Điều 12: ...
+        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^Điều\s+\d+"))
+            return ContentLineType.Dieu;
+
+        // Khoản: 1. ..., 2. ..., 10. ... (số + dấu chấm + khoảng trắng + chữ cái)
+        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^\d+\.\s+[A-ZÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬĐÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴa-zàáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]"))
+            return ContentLineType.Khoan;
+
+        // Điểm: a) ..., b) ..., đ) ...
+        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^[a-zđ]\)\s"))
+            return ContentLineType.Diem;
+
+        return ContentLineType.Normal;
     }
 
     /// <summary>

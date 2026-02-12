@@ -31,9 +31,10 @@ public partial class DocumentRegisterPage : Page
         cboYear.ItemsSource = years;
         cboYear.SelectedIndex = 0;
 
-        // Loại văn bản
+        // Loại văn bản (hiển thị tên tiếng Việt)
         var types = new List<string> { "Tất cả" };
-        types.AddRange(Enum.GetNames(typeof(DocumentType)));
+        foreach (DocumentType t in Enum.GetValues(typeof(DocumentType)))
+            types.Add(t.GetDisplayName());
         cboType.ItemsSource = types;
         cboType.SelectedIndex = 0;
     }
@@ -53,8 +54,12 @@ public partial class DocumentRegisterPage : Page
             filtered = filtered.Where(d => d.IssueDate.Year == year);
 
         // Filter by type
-        if (cboType.SelectedItem is string typeStr && typeStr != "Tất cả" && Enum.TryParse<DocumentType>(typeStr, out var type))
-            filtered = filtered.Where(d => d.Type == type);
+        if (cboType.SelectedItem is string typeName && typeName != "Tất cả")
+        {
+            var matchedType = Enum.GetValues(typeof(DocumentType)).Cast<DocumentType>()
+                .FirstOrDefault(t => t.GetDisplayName() == typeName);
+            filtered = filtered.Where(d => d.Type == matchedType);
+        }
 
         // Filter by search
         var keyword = txtSearch.Text?.Trim().ToLower() ?? "";

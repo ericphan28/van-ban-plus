@@ -146,7 +146,7 @@ public partial class ScanImportDialog : Window
         if (fileInfo.Length > 20 * 1024 * 1024)
         {
             MessageBox.Show(
-                "File quá lớn (> 20MB). Gemini Vision hỗ trợ tối đa 20MB cho inline upload.\n\n" +
+                "File quá lớn (> 20MB). AI hỗ trợ tối đa 20MB mỗi file.\n\n" +
                 "Hãy giảm kích thước file hoặc chia thành nhiều file nhỏ hơn.",
                 "File quá lớn", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
@@ -160,13 +160,34 @@ public partial class ScanImportDialog : Window
         txtExtractionStatus.Text = "⏳ Đang phân tích...";
         txtAnalyzeButton.Text = "⏳ Đang xử lý...";
         
+        // Timer đếm thời gian chờ
+        var elapsed = 0;
+        var progressTimer = new System.Windows.Threading.DispatcherTimer();
+        progressTimer.Interval = TimeSpan.FromSeconds(1);
+        progressTimer.Tick += (s, args) =>
+        {
+            elapsed++;
+            var statusText = elapsed switch
+            {
+                <= 10 => $"🤖 Đang gửi file lên Gemini AI... ({elapsed}s)",
+                <= 30 => $"🔍 AI đang đọc và phân tích văn bản... ({elapsed}s)",
+                <= 60 => $"📝 AI đang trích xuất nội dung chi tiết... ({elapsed}s)",
+                <= 120 => $"⏳ File lớn — AI cần thêm thời gian... ({elapsed}s)",
+                <= 180 => $"🔄 Đang chờ phản hồi từ Gemini... ({elapsed}s)",
+                _ => $"⏳ Vẫn đang xử lý, xin kiên nhẫn... ({elapsed}s)"
+            };
+            txtLoadingStatus.Text = statusText;
+        };
+        
         try
         {
             txtLoadingStatus.Text = "🤖 Đang gửi file lên Gemini AI Vision...";
+            progressTimer.Start();
             
             _extractedData = await _aiService.ExtractDocumentFromFileAsync(_selectedFilePath);
             
-            txtLoadingStatus.Text = "✅ Phân tích hoàn tất! Đang điền dữ liệu...";
+            progressTimer.Stop();
+            txtLoadingStatus.Text = $"✅ Phân tích hoàn tất sau {elapsed}s! Đang điền dữ liệu...";
             await System.Threading.Tasks.Task.Delay(500); // Brief visual feedback
             
             // Populate form
@@ -175,17 +196,25 @@ public partial class ScanImportDialog : Window
             loadingPanel.Visibility = Visibility.Collapsed;
             btnSave.IsEnabled = true;
             txtExtractionStatus.Text = "✅ Đã trích xuất — Kiểm tra và chỉnh sửa nếu cần";
-            txtFooterInfo.Text = $"✅ Trích xuất thành công | File: {Path.GetFileName(_selectedFilePath)}";
+            txtFooterInfo.Text = $"✅ Trích xuất thành công ({elapsed}s) | File: {Path.GetFileName(_selectedFilePath)}";
         }
         catch (Exception ex)
         {
+            progressTimer.Stop();
             loadingPanel.Visibility = Visibility.Collapsed;
             txtExtractionStatus.Text = "❌ Lỗi phân tích";
             
-            MessageBox.Show(
-                $"Lỗi khi phân tích file:\n\n{ex.Message}\n\n" +
-                "Hãy thử lại hoặc chọn file khác.",
-                "Lỗi AI", MessageBoxButton.OK, MessageBoxImage.Error);
+            // Phân biệt lỗi timeout vs lỗi khác
+            var isTimeout = ex.Message.Contains("Timeout") || ex.Message.Contains("timeout") 
+                || ex.Message.Contains("Không thể trích xuất sau");
+            var errorDetail = isTimeout
+                ? $"⏰ Quá thời gian chờ ({elapsed}s)\n\n" +
+                  "Nguyên nhân: File quá lớn hoặc mạng chậm.\n" +
+                  "Gợi ý: Thử lại hoặc dùng file nhỏ hơn."
+                : $"Lỗi khi phân tích file:\n\n{ex.Message}\n\n" +
+                  "Hãy thử lại hoặc chọn file khác.";
+            
+            MessageBox.Show(errorDetail, "Lỗi AI", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {

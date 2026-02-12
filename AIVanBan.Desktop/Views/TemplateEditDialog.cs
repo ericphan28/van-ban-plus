@@ -47,9 +47,11 @@ public partial class TemplateEditDialog : Window
         // Type
         var lblType = new TextBlock { Text = "Loại văn bản:", Margin = new Thickness(0, 0, 0, 5) };
         cboType = new ComboBox { Margin = new Thickness(0, 0, 0, 15) };
-        foreach (DocumentType type in Enum.GetValues(typeof(DocumentType)))
+        cboType.DisplayMemberPath = "Value";
+        cboType.SelectedValuePath = "Key";
+        foreach (var item in EnumDisplayHelper.GetDocumentTypeItems())
         {
-            cboType.Items.Add(type);
+            cboType.Items.Add(item);
         }
         cboType.SelectedIndex = 0;
 
@@ -140,7 +142,7 @@ public partial class TemplateEditDialog : Window
 
     private void LoadTemplate(DocumentTemplate template)
     {
-        cboType.SelectedItem = template.Type;
+        cboType.SelectedValue = template.Type;
         txtName.Text = template.Name;
         txtDescription.Text = template.Description;
         txtContent.Text = template.TemplateContent;
@@ -168,7 +170,7 @@ public partial class TemplateEditDialog : Window
             // Create new
             Template = new DocumentTemplate
             {
-                Type = (DocumentType)cboType.SelectedItem,
+                Type = (DocumentType)cboType.SelectedValue,
                 Name = txtName.Text.Trim(),
                 Description = txtDescription.Text.Trim(),
                 TemplateContent = txtContent.Text.Trim(),
@@ -180,7 +182,7 @@ public partial class TemplateEditDialog : Window
         else
         {
             // Update existing
-            Template.Type = (DocumentType)cboType.SelectedItem;
+            Template.Type = (DocumentType)cboType.SelectedValue;
             Template.Name = txtName.Text.Trim();
             Template.Description = txtDescription.Text.Trim();
             Template.TemplateContent = txtContent.Text.Trim();

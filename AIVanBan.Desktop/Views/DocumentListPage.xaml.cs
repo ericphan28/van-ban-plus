@@ -216,11 +216,11 @@ public partial class DocumentListPage : Page
 
     private void InitializeFilters()
     {
-        // Load Document Types
+        // Load Document Types (hiển thị tên tiếng Việt)
         cboType.Items.Add("Tất cả");
         foreach (DocumentType type in Enum.GetValues(typeof(DocumentType)))
         {
-            cboType.Items.Add(type.ToString());
+            cboType.Items.Add(type.GetDisplayName());
         }
         cboType.SelectedIndex = 0;
 
@@ -315,11 +315,12 @@ public partial class DocumentListPage : Page
             }
 
             // Filter by type
-            if (cboType != null && cboType.SelectedIndex > 0 && cboType.SelectedItem != null)
+            if (cboType != null && cboType.SelectedIndex > 0 && cboType.SelectedItem is string selectedTypeName)
             {
-                var selectedType = (DocumentType)Enum.Parse(typeof(DocumentType), cboType.SelectedItem.ToString()!);
-                Console.WriteLine($"📂 Type filter: {selectedType}");
-                filtered = filtered.Where(d => d.Type == selectedType);
+                var matchedType = Enum.GetValues(typeof(DocumentType)).Cast<DocumentType>()
+                    .FirstOrDefault(t => t.GetDisplayName() == selectedTypeName);
+                Console.WriteLine($"📂 Type filter: {matchedType}");
+                filtered = filtered.Where(d => d.Type == matchedType);
             }
 
             // Filter by year
@@ -934,6 +935,163 @@ public partial class DocumentListPage : Page
         }
     }
 
+    private void ReviewDocument_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string? docId = null;
+            if (sender is Button btn && btn.Tag is string tagId)
+                docId = tagId;
+            else if (dgDocuments.SelectedItem is DocumentViewModel vm)
+                docId = vm.Id;
+
+            if (string.IsNullOrEmpty(docId)) return;
+
+            var doc = _documentService.GetDocument(docId);
+            if (doc == null)
+            {
+                MessageBox.Show("Không tìm thấy văn bản!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var typeName = doc.Type.GetDisplayName();
+            var dialog = new DocumentReviewDialog(doc.Content ?? "", typeName, doc.Title, doc.Issuer);
+            
+            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.AppliedContent))
+            {
+                doc.Content = dialog.AppliedContent;
+                _documentService.UpdateDocument(doc);
+                LoadDocuments();
+                MessageBox.Show("✅ Đã áp dụng nội dung đã sửa vào văn bản!", 
+                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error in ReviewDocument_Click: {ex.Message}");
+            MessageBox.Show($"Lỗi khi kiểm tra văn bản:\n{ex.Message}", "Lỗi", 
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #region AI Tham mưu xử lý
+
+    private void AdvisoryDocument_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string? docId = null;
+            if (sender is Button btn && btn.Tag is string tagId)
+                docId = tagId;
+            else if (dgDocuments.SelectedItem is DocumentViewModel vm)
+                docId = vm.Id;
+
+            if (string.IsNullOrEmpty(docId))
+            {
+                MessageBox.Show("Vui lòng chọn một văn bản trước.", "Chưa chọn văn bản",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var doc = _documentService.GetDocument(docId);
+            if (doc == null)
+            {
+                MessageBox.Show("Không tìm thấy văn bản trong cơ sở dữ liệu.", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Dùng Content hoặc fallback về Title/Subject nếu nội dung trống
+            var contentToAnalyze = doc.Content;
+            if (string.IsNullOrWhiteSpace(contentToAnalyze) || contentToAnalyze.Length < 10)
+            {
+                var fallbackParts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(doc.Title)) fallbackParts.Add($"Tiêu đề: {doc.Title}");
+                if (!string.IsNullOrWhiteSpace(doc.Subject)) fallbackParts.Add($"Trích yếu: {doc.Subject}");
+                if (!string.IsNullOrWhiteSpace(doc.Issuer)) fallbackParts.Add($"Cơ quan ban hành: {doc.Issuer}");
+                if (!string.IsNullOrWhiteSpace(doc.Number)) fallbackParts.Add($"Số hiệu: {doc.Number}");
+                
+                if (fallbackParts.Count == 0)
+                {
+                    MessageBox.Show("Văn bản chưa có nội dung hoặc thông tin để phân tích.\nVui lòng nhập nội dung văn bản trước.",
+                        "Thiếu nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                contentToAnalyze = string.Join("\n", fallbackParts);
+            }
+
+            // Mở popup dialog — giống AI Kiểm tra
+            var typeName = doc.Type.GetDisplayName();
+            var dialog = new DocumentAdvisoryDialog(contentToAnalyze, typeName, doc.Title, doc.Issuer);
+            dialog.Owner = Window.GetWindow(this);
+            dialog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi mở AI Tham mưu:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void SummaryDocument_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string? docId = null;
+            if (sender is Button btn && btn.Tag is string tagId)
+                docId = tagId;
+            else if (dgDocuments.SelectedItem is DocumentViewModel vm)
+                docId = vm.Id;
+
+            if (string.IsNullOrEmpty(docId))
+            {
+                MessageBox.Show("Vui lòng chọn một văn bản trước.", "Chưa chọn văn bản",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var doc = _documentService.GetDocument(docId);
+            if (doc == null)
+            {
+                MessageBox.Show("Không tìm thấy văn bản trong cơ sở dữ liệu.", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Dùng Content hoặc fallback về Title/Subject nếu nội dung trống
+            var contentToAnalyze = doc.Content;
+            if (string.IsNullOrWhiteSpace(contentToAnalyze) || contentToAnalyze.Length < 10)
+            {
+                var fallbackParts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(doc.Title)) fallbackParts.Add($"Tiêu đề: {doc.Title}");
+                if (!string.IsNullOrWhiteSpace(doc.Subject)) fallbackParts.Add($"Trích yếu: {doc.Subject}");
+                if (!string.IsNullOrWhiteSpace(doc.Issuer)) fallbackParts.Add($"Cơ quan ban hành: {doc.Issuer}");
+                if (!string.IsNullOrWhiteSpace(doc.Number)) fallbackParts.Add($"Số hiệu: {doc.Number}");
+                
+                if (fallbackParts.Count == 0)
+                {
+                    MessageBox.Show("Văn bản chưa có nội dung hoặc thông tin để tóm tắt.\nVui lòng nhập nội dung văn bản trước.",
+                        "Thiếu nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                contentToAnalyze = string.Join("\n", fallbackParts);
+            }
+
+            // Mở popup dialog AI Tóm tắt
+            var typeName = doc.Type.GetDisplayName();
+            var dialog = new DocumentSummaryDialog(contentToAnalyze, typeName, doc.Title, doc.Issuer);
+            dialog.Owner = Window.GetWindow(this);
+            dialog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi mở AI Tóm tắt:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
     private void DeleteDocument_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is string id)
@@ -1224,11 +1382,17 @@ public partial class DocumentListPage : Page
             if (recipientsCard != null)
                 recipientsCard.Visibility = Visibility.Collapsed;
             
+            if (basedOnCard != null)
+                basedOnCard.Visibility = Visibility.Collapsed;
+            
             if (txtPreviewContent != null)
                 txtPreviewContent.Text = string.Empty;
             
             if (txtPreviewRecipients != null)
                 txtPreviewRecipients.Text = string.Empty;
+            
+            if (txtPreviewBasedOn != null)
+                txtPreviewBasedOn.Text = string.Empty;
             
             // STEP 2: Show and populate info cards immediately
             if (docInfoCard != null) 
@@ -1263,6 +1427,8 @@ public partial class DocumentListPage : Page
             if (btnPreviewEdit != null) btnPreviewEdit.Tag = doc.Id;
             if (btnPreviewView != null) btnPreviewView.Tag = doc.Id;
             if (btnPreviewDelete != null) btnPreviewDelete.Tag = doc.Id;
+            if (btnPreviewReview != null) btnPreviewReview.Tag = doc.Id;
+            if (btnPreviewAdvisory != null) btnPreviewAdvisory.Tag = doc.Id;
             
             // STEP 3: Prepare content data
             var content = doc.Content ?? "Chưa có nội dung";
@@ -1273,6 +1439,9 @@ public partial class DocumentListPage : Page
             
             var hasRecipients = doc.Recipients != null && doc.Recipients.Length > 0;
             var recipientsText = hasRecipients ? string.Join("\n", doc.Recipients) : string.Empty;
+            
+            var hasBasedOn = doc.BasedOn != null && doc.BasedOn.Length > 0;
+            var basedOnText = hasBasedOn ? string.Join("\n", doc.BasedOn) : string.Empty;
             
             // STEP 4: Use Dispatcher to show content AFTER UI has updated
             Dispatcher.BeginInvoke(new Action(() =>
@@ -1287,6 +1456,16 @@ public partial class DocumentListPage : Page
                         
                         if (recipientsCard != null)
                             recipientsCard.Visibility = Visibility.Visible;
+                    }
+                    
+                    // Show Căn cứ
+                    if (hasBasedOn)
+                    {
+                        if (txtPreviewBasedOn != null)
+                            txtPreviewBasedOn.Text = basedOnText;
+                        
+                        if (basedOnCard != null)
+                            basedOnCard.Visibility = Visibility.Visible;
                     }
                     
                     // Show Content - CRITICAL SECTION

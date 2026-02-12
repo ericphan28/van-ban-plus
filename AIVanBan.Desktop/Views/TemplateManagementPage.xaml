@@ -36,6 +36,16 @@
                              SelectionChanged="FilterChanged"/>
                     
                     <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                            Background="#1565C0" Foreground="White"
+                            Click="OpenStore_Click" Margin="0,0,10,0"
+                            ToolTip="Tải mẫu văn bản mới từ kho online">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="CloudDownload" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="📦 Kho mẫu online"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
                             Click="AddTemplate_Click" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Plus" VerticalAlignment="Center" Margin="0,0,5,0"/>

@@ -130,7 +130,7 @@
                         <Button Style="{StaticResource MaterialDesignRaisedButton}"
                                 Click="ScanImport_Click" Margin="0,0,10,0" Height="32"
                                 Background="#E65100" Foreground="White"
-                                ToolTip="Nhập văn bản từ file PDF/ảnh scan bằng AI Gemini Vision">
+                                ToolTip="Nhập văn bản từ file PDF/ảnh scan bằng AI">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="CameraDocument" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                 <TextBlock Text="Nhập từ scan"/>
@@ -868,6 +868,32 @@
                                 </StackPanel>
                             </Border>
 
+                            <!-- Căn cứ Card -->
+                            <Border x:Name="basedOnCard"
+                                   Background="White" 
+                                   BorderBrush="#E0E0E0" 
+                                   BorderThickness="1"
+                                   CornerRadius="4"
+                                   Padding="12"
+                                   Margin="0,0,0,12"
+                                   Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock Text="⚖️ CĂN CỨ" 
+                                              FontWeight="Bold" 
+                                              FontSize="12"
+                                              Foreground="#6A1B9A"
+                                              Margin="0,0,0,10"/>
+                                    
+                                    <TextBlock x:Name="txtPreviewBasedOn" 
+                                              TextWrapping="Wrap"
+                                              FontFamily="Times New Roman"
+                                              FontSize="13"
+                                              FontStyle="Italic"
+                                              LineHeight="20"
+                                              Foreground="#555"/>
+                                </StackPanel>
+                            </Border>
+
                             <!-- Document Content Preview -->
                             <Border x:Name="docContentCard"
                                    Background="White" 
@@ -922,37 +948,96 @@
                            x:Name="previewActions"
                            BorderBrush="#E0E0E0" 
                            BorderThickness="0,1,0,0"
-                           Padding="12"
+                           Padding="10,8"
                            Visibility="Collapsed">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="btnPreviewEdit"
-                                   Style="{StaticResource MaterialDesignRaisedButton}"
-                                   Click="EditDocument_Click"
-                                   Margin="0,0,8,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Pencil" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                    <TextBlock Text="Sửa"/>
-                                </StackPanel>
-                            </Button>
+                        <StackPanel>
+                            <!-- Row 1: 3 nút AI ngang nhau -->
+                            <UniformGrid Columns="3" Margin="0,0,0,8">
+                                <Button x:Name="btnPreviewAdvisory"
+                                       Style="{StaticResource MaterialDesignRaisedButton}"
+                                       Background="#00796B"
+                                       Foreground="White"
+                                       Height="34"
+                                       Click="AdvisoryDocument_Click"
+                                       Margin="0,0,4,0"
+                                       ToolTip="AI phân tích VB đến → tóm tắt, đề xuất xử lý, deadline">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="LightbulbOn" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="AI Tham mưu" FontSize="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <Button x:Name="btnPreviewReview"
+                                       Style="{StaticResource MaterialDesignRaisedButton}"
+                                       Background="#1565C0"
+                                       Foreground="White"
+                                       Height="34"
+                                       Click="ReviewDocument_Click"
+                                       Margin="2,0,2,0"
+                                       ToolTip="AI kiểm tra chính tả, văn phong, xung đột nội dung">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="TextSearch" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="AI Kiểm tra" FontSize="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <Button x:Name="btnPreviewSummary"
+                                       Style="{StaticResource MaterialDesignRaisedButton}"
+                                       Background="#6A1B9A"
+                                       Foreground="White"
+                                       Height="34"
+                                       Click="SummaryDocument_Click"
+                                       Margin="4,0,0,0"
+                                       ToolTip="AI tóm tắt nội dung chính, trích xuất căn cứ pháp lý và số liệu">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="TextBoxCheck" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="AI Tóm tắt" FontSize="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </UniformGrid>
                             
-                            <Button x:Name="btnPreviewView"
-                                   Style="{StaticResource MaterialDesignOutlinedButton}"
-                                   Click="ViewDocument_Click"
-                                   Margin="0,0,8,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="OpenInNew" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                    <TextBlock Text="Mở"/>
-                                </StackPanel>
-                            </Button>
-                            
-                            <Button x:Name="btnPreviewDelete"
-                                   Style="{StaticResource MaterialDesignOutlinedButton}"
-                                   Click="DeleteDocument_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Delete" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#D32F2F"/>
-                                    <TextBlock Text="Xóa" Foreground="#D32F2F"/>
-                                </StackPanel>
-                            </Button>
+                            <!-- Row 2: Sửa / Mở / Xóa — nhỏ gọn -->
+                            <UniformGrid Columns="3" HorizontalAlignment="Stretch">
+                                <Button x:Name="btnPreviewEdit"
+                                       Style="{StaticResource MaterialDesignOutlinedButton}"
+                                       Click="EditDocument_Click"
+                                       Height="32" Padding="4,0"
+                                       Margin="0,0,4,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="Sửa" FontSize="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <Button x:Name="btnPreviewView"
+                                       Style="{StaticResource MaterialDesignOutlinedButton}"
+                                       Click="ViewDocument_Click"
+                                       Height="32" Padding="4,0"
+                                       Margin="2,0,2,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="OpenInNew" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBlock Text="Mở" FontSize="12" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <Button x:Name="btnPreviewDelete"
+                                       Style="{StaticResource MaterialDesignOutlinedButton}"
+                                       Click="DeleteDocument_Click"
+                                       Height="32" Padding="4,0"
+                                       Margin="4,0,0,0"
+                                       BorderBrush="#FFCDD2">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0" Foreground="#D32F2F"/>
+                                        <TextBlock Text="Xóa" FontSize="12" Foreground="#D32F2F" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </UniformGrid>
                         </StackPanel>
                     </Border>
                 </Grid>

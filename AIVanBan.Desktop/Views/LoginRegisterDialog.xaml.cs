@@ -66,7 +66,7 @@ public partial class LoginRegisterDialog : Window
                     $"👤 {result.Data.FullName}\n" +
                     $"📧 {result.Data.Email}\n" +
                     $"📦 Gói: {result.Data.SubscriptionPlan}\n\n" +
-                    $"API Key đã được tự động lưu.",
+                    $"Đã kích hoạt AI thành công.",
                     "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 DialogResult = true;
@@ -137,9 +137,8 @@ public partial class LoginRegisterDialog : Window
                     $"✅ Đăng ký thành công!\n\n" +
                     $"👤 {result.Data.FullName}\n" +
                     $"📧 {result.Data.Email}\n" +
-                    $"📦 Gói: {result.Data.SubscriptionPlan}\n" +
-                    $"🔑 API Key: {result.Data.ApiKey}\n\n" +
-                    $"Key đã được tự động lưu vào ứng dụng.",
+                    $"📦 Gói: {result.Data.SubscriptionPlan}\n\n" +
+                    $"Đã kích hoạt AI thành công.",
                     "Đăng ký thành công", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 DialogResult = true;

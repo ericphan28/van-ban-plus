@@ -27,13 +27,13 @@
                 <StackPanel>
                     <TextBlock Text="📸 NHẬP VĂN BẢN TỪ PDF/ẢNH SCAN" 
                                FontSize="16" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="Sử dụng AI Gemini Vision để đọc và trích xuất nội dung từ văn bản scan" 
+                    <TextBlock Text="Sử dụng AI để đọc và trích xuất nội dung từ văn bản scan" 
                                FontSize="12" Foreground="#B3FFFFFF" Margin="0,2,0,0"/>
                 </StackPanel>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border CornerRadius="12" Padding="8,4" Background="#BBDEFB">
-                        <TextBlock Text="Gemini 2.5 Flash Vision" FontSize="11" 
+                        <TextBlock Text="AI Vision" FontSize="11" 
                                    FontWeight="SemiBold" Foreground="#0D47A1"/>
                     </Border>
                 </StackPanel>
