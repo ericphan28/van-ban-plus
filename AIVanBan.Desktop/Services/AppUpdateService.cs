@@ -19,7 +19,7 @@ public static class AppUpdateService
     /// URL tới file XML chứa thông tin version mới nhất.
     /// Có thể host trên: GitHub Pages, Google Drive, Web server, v.v.
     /// </summary>
-    private const string UpdateXmlUrl = "https://raw.githubusercontent.com/ericphan28/van-ban-plus/main/update.xml";
+    private const string UpdateXmlUrl = "https://raw.githubusercontent.com/ericphan28/van-ban-plus-releases/main/update.xml";
 
     // Tên app hiển thị
     private const string AppTitle = "VanBanPlus";
