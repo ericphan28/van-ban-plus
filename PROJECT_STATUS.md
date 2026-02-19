@@ -226,12 +226,12 @@ Nhắc nhở khi mở app + Toast notification.
 
 | # | Task | Status | File cần tạo/sửa | Ghi chú |
 |---|------|--------|-------------------|---------|
-| B3.1 | UI `CalendarPage.xaml` — lịch tháng với event markers | [ ] | `AIVanBan.Desktop/Views/` | WPF Calendar control + overlay |
-| B3.2 | Load events: VB deadline (PersonalDeadline) + Meeting + Task từ meeting | [ ] | `CalendarPage.xaml.cs` | |
+| B3.1 | UI `CalendarPage.xaml` — lịch tháng với event markers | [x] ✅ 2025-01 | `AIVanBan.Desktop/Views/` | WPF Calendar control + overlay |
+| B3.2 | Load events: VB deadline (PersonalDeadline) + Meeting + Task từ meeting | [x] ✅ 2025-01 | `CalendarPage.xaml.cs` | |
 | B3.3 | Click event → mở VB/họp/task tương ứng | [ ] | `CalendarPage.xaml.cs` | |
-| B3.4 | Color-code: 🔴 quá hạn, 🟡 sắp hạn, 🔵 họp, 🟢 task hoàn thành | [ ] | `CalendarPage.xaml` | |
+| B3.4 | Color-code: 🔴 quá hạn, 🟡 sắp hạn, 🔵 họp, 🟢 task hoàn thành | [x] ✅ 2025-01 | `CalendarPage.xaml` | |
 | B3.5 | Toast notification khi mở app (VB quá hạn, sắp hạn, họp hôm nay) | [ ] | `App.xaml.cs` | Snackbar hoặc MaterialDesign dialog |
-| B3.6 | Thêm vào sidebar + navigation | [ ] | `MainWindow.xaml` | |
+| B3.6 | Thêm vào sidebar + navigation | [x] ✅ 2025-01 | `MainWindow.xaml` | |
 | B3.7 | Test + sửa lỗi | [ ] | | |
 
 ---
@@ -299,9 +299,9 @@ Nhắc nhở khi mở app + Toast notification.
 
 | # | Task | Status | File cần tạo/sửa | Ghi chú |
 |---|------|--------|-------------------|---------|
-| B7.1 | Service `ExcelExportService` (ClosedXML) | [ ] | `AIVanBan.Core/Services/` | NuGet: ClosedXML |
-| B7.2 | Nút "Xuất Excel" trong StatisticsPage | [ ] | `StatisticsPage.xaml` | |
-| B7.3 | Xuất: Danh sách VB tôi xử lý (lọc theo kỳ) | [ ] | `ExcelExportService.cs` | |
+| B7.1 | Service `ExcelExportService` (ClosedXML) | [x] ✅ 2025-01 | `AIVanBan.Core/Services/` | NuGet: ClosedXML |
+| B7.2 | Nút "Xuất Excel" trong StatisticsPage | [x] ✅ 2025-01 | `StatisticsPage.xaml` | |
+| B7.3 | Xuất: Danh sách VB tôi xử lý (lọc theo kỳ) | [x] ✅ 2025-01 | `ExcelExportService.cs` | |
 | B7.4 | Xuất: Thống kê tổng hợp (biểu đồ dạng bảng) | [ ] | `ExcelExportService.cs` | |
 | B7.5 | Nút "Xuất Excel" trong DocumentListPage (VB đang hiển thị) | [ ] | `DocumentListPage.xaml` | |
 | B7.6 | Test + sửa lỗi | [ ] | | |
@@ -337,9 +337,9 @@ Khi user chọn loại CQ = "Bệnh viện" → app gợi ý mẫu y tế. Chọ
 
 | # | Task | Status | File cần tạo/sửa | Ghi chú |
 |---|------|--------|-------------------|---------|
-| B9.1 | Mẫu VB đặc thù Bệnh viện (QT KCB, BC y tế, TB trực...) | [ ] | `TemplateSeeder.cs` | 10-15 mẫu |
-| B9.2 | Mẫu VB đặc thù Trường học (KH dạy học, QĐ khen HS, BC chất lượng) | [ ] | `TemplateSeeder.cs` | 10-15 mẫu |
-| B9.3 | Mẫu VB đặc thù UBND xã (BC KT-XH, QĐ hộ nghèo, KH NTM) | [ ] | `TemplateSeeder.cs` | 10-15 mẫu |
+| B9.1 | Mẫu VB đặc thù Bệnh viện (QT KCB, BC y tế, TB trực...) | [x] ✅ 2025-01 | `TemplateSeeder.cs` | 8 mẫu |
+| B9.2 | Mẫu VB đặc thù Trường học (KH dạy học, QĐ khen HS, BC chất lượng) | [x] ✅ 2025-01 | `TemplateSeeder.cs` | 8 mẫu |
+| B9.3 | Mẫu VB đặc thù UBND xã (BC KT-XH, QĐ hộ nghèo, KH NTM) | [x] ✅ 2025-01 | `TemplateSeeder.cs` | 8 mẫu |
 | B9.4 | Auto-suggest mẫu theo loại CQ đã thiết lập | [ ] | `TemplateSeeder.cs` | |
 | B9.5 | Test + sửa lỗi | [ ] | | |
 
@@ -364,8 +364,8 @@ Khi user chọn loại CQ = "Bệnh viện" → app gợi ý mẫu y tế. Chọ
 
 | # | Vấn đề | Status | Ghi chú |
 |---|--------|--------|---------|
-| C1 | [ ] 3 photo album pages (Page, PageNew, PageSimple) — chỉ dùng Simple | Dọn dẹp dead code |
-| C2 | [ ] Demo meeting seed chạy mỗi lần mở app | Chỉ seed khi chưa có |
+| C1 | [x] ✅ Xóa PhotoAlbumPage + PhotoAlbumPageNew, chỉ giữ Simple | v1.0.10 |
+| C2 | [x] ✅ MeetingSeeder đã có guard clause (skip nếu count > 0) | OK |
 | C3 | [ ] Biểu đồ vẽ tay bằng Rectangle — không có chart library | Cân nhắc LiveCharts2 |
 | C4 | [ ] AI results không cache | Tốn quota gọi lại |
 | C5 | [ ] Chỉ có NĐ 30/2020 trong Legal Reference | Thêm TT, Luật Lưu trữ |
