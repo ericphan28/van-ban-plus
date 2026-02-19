@@ -19,7 +19,20 @@ public class TemplateSeeder
     /// </summary>
     public void SeedDefaultTemplates()
     {
-        var existingTemplates = _documentService.GetAllTemplates();
+        List<DocumentTemplate> existingTemplates;
+        try
+        {
+            existingTemplates = _documentService.GetAllTemplates();
+        }
+        catch (Exception ex)
+        {
+            // Nếu LiteDB không deserialize được (VD: enum value cũ không tồn tại),
+            // xóa collection templates cũ và seed lại từ đầu
+            Console.WriteLine($"⚠️ Error loading existing templates: {ex.Message}");
+            Console.WriteLine("🔄 Dropping corrupted templates collection and re-seeding...");
+            _documentService.DropTemplatesCollection();
+            existingTemplates = new List<DocumentTemplate>();
+        }
         
         // Nếu đã có template rồi thì không seed nữa
         if (existingTemplates.Count > 0)

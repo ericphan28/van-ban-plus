@@ -534,6 +534,15 @@ public class DocumentService : IDisposable
         collection.Delete(id);
     }
     
+    /// <summary>
+    /// Xóa toàn bộ collection templates (dùng khi data bị corrupted/enum mismatch)
+    /// </summary>
+    public void DropTemplatesCollection()
+    {
+        _db.DropCollection("templates");
+        Console.WriteLine("🗑️ Dropped templates collection.");
+    }
+    
     #endregion
     
     #region Photos & Albums
