@@ -407,6 +407,12 @@ public partial class MainWindow : Window
         MainFrame.Navigate(new Views.MeetingListPage(_documentService));
     }
 
+    private void NavigateToCalendar(object sender, RoutedEventArgs e)
+    {
+        WelcomeScreen.Visibility = Visibility.Collapsed;
+        MainFrame.Navigate(new Views.CalendarPage(_documentService));
+    }
+
     private void NavigateToBackup(object sender, RoutedEventArgs e)
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
@@ -437,8 +443,6 @@ public partial class MainWindow : Window
             Views.StatisticsPage => "secDocManage",
             Views.AIGeneratorPage => "secAICompose",
             Views.PhotoAlbumPageSimple => "secAlbum",
-            Views.PhotoAlbumPageNew => "secAlbum",
-            Views.PhotoAlbumPage => "secAlbum",
             Views.MeetingListPage => "secMeeting",
             Views.BackupRestorePage => "secBackup",
             Views.HelpPage => (string?)null, // Already on help
@@ -547,6 +551,7 @@ public partial class MainWindow : Window
                 txtStatistics.Visibility = Visibility.Collapsed;
                 txtPhotos.Visibility = Visibility.Collapsed;
                 txtMeetings.Visibility = Visibility.Collapsed;
+                txtCalendar.Visibility = Visibility.Collapsed;
                 txtAI.Visibility = Visibility.Collapsed;
                 txtAIReport.Visibility = Visibility.Collapsed;
                 txtAIScan.Visibility = Visibility.Collapsed;
@@ -590,6 +595,7 @@ public partial class MainWindow : Window
                 txtStatistics.Visibility = Visibility.Visible;
                 txtPhotos.Visibility = Visibility.Visible;
                 txtMeetings.Visibility = Visibility.Visible;
+                txtCalendar.Visibility = Visibility.Visible;
                 txtAI.Visibility = Visibility.Visible;
                 txtAIReport.Visibility = Visibility.Visible;
                 txtAIScan.Visibility = Visibility.Visible;

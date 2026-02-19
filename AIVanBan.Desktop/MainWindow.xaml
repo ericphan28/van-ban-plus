@@ -188,6 +188,18 @@
                                     </StackPanel>
                                 </Button>
 
+                                <Button x:Name="btnCalendar" Style="{StaticResource MaterialDesignFlatButton}" 
+                                       Height="40" HorizontalContentAlignment="Left" 
+                                       Padding="20,0,0,0" Click="NavigateToCalendar"
+                                       ToolTip="Lịch tổng hợp (deadline VB + họp + task)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CalendarMonth" Width="22" Height="22" 
+                                                                VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="txtCalendar" Text="Lịch tổng hợp" FontSize="13" Margin="12,0,0,0" 
+                                                  VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+
                                 <!-- ═══════ NHÓM: AI NÂNG CAO ═══════ -->
                                 <TextBlock x:Name="txtGroupAI" Text="✨ AI NÂNG CAO" FontSize="11" FontWeight="Bold" 
                                           Foreground="#FF9800" Opacity="0.85"

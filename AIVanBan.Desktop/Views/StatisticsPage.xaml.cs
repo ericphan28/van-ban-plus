@@ -405,4 +405,57 @@ public partial class StatisticsPage : Page
     }
 
     #endregion
+
+    #region Xuất Excel
+
+    private void ExportExcel_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var periodLabels = new[] { "Tuần này", "Tháng này", "Quý này", "Năm nay", "Tất cả" };
+            var idx = cboPeriod?.SelectedIndex ?? 1;
+            var periodLabel = periodLabels[idx];
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Excel files (*.xlsx)|*.xlsx",
+                FileName = $"BaoCao_ThongKe_{DateTime.Now:yyyyMMdd}.xlsx",
+                Title = "Xuất báo cáo thống kê Excel"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var allDocs = _documentService.GetAllDocuments();
+                var excelService = new ExcelExportService();
+
+                excelService.ExportStatisticsReport(
+                    _periodDocs,
+                    _prevPeriodDocs,
+                    allDocs,
+                    periodLabel,
+                    dialog.FileName);
+
+                var result = MessageBox.Show(
+                    $"✅ Đã xuất báo cáo thống kê ({_periodDocs.Count} VB) ra:\n{dialog.FileName}\n\nBạn có muốn mở file không?",
+                    "Xuất Excel thành công",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = dialog.FileName,
+                        UseShellExecute = true
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi xuất Excel:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
 }

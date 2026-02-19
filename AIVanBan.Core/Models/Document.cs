@@ -287,6 +287,18 @@ public static class EnumDisplayHelper
         _ => "Bản gốc"
     };
 
+    public static string GetDisplayName(this DocumentStatus status) => status switch
+    {
+        DocumentStatus.Draft => "Nháp",
+        DocumentStatus.PendingApproval => "Trình ký",
+        DocumentStatus.Approved => "Đã duyệt",
+        DocumentStatus.Signed => "Đã ký",
+        DocumentStatus.Published => "Đã phát hành",
+        DocumentStatus.Sent => "Đã gửi",
+        DocumentStatus.Archived => "Lưu trữ",
+        _ => "Nháp"
+    };
+
     /// <summary>
     /// Ký hiệu viết tắt bản sao — Theo Phụ lục III, NĐ 30/2020/NĐ-CP
     /// </summary>

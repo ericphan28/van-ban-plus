@@ -41,6 +41,16 @@
                         </StackPanel>
                     </Button>
                     
+                    <Button Style="{StaticResource MaterialDesignRaisedButton}" 
+                            Height="36" Click="ExportExcel_Click" Margin="0,0,8,0"
+                            Background="#217346" BorderBrush="#217346"
+                            ToolTip="Xuất báo cáo thống kê tổng hợp ra Excel (.xlsx)">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="MicrosoftExcel" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="Xuất Excel" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                    
                     <Button Style="{StaticResource MaterialDesignRaisedSecondaryButton}" 
                             Height="36" Click="Refresh_Click">
                         <materialDesign:PackIcon Kind="Refresh"/>

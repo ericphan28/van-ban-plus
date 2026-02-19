@@ -109,6 +109,35 @@ public class TemplateSeeder
             
             // === PHỤ LỤC VĂN BẢN — Mẫu 2.1, Phụ lục III, NĐ 30/2020 ===
             CreatePhuLucVanBanTemplate(),
+            
+            // === MẪU VB CHUYÊN NGÀNH — Bệnh viện / Trường học / UBND xã ===
+            // Y tế
+            CreateBVBaoCaoTinhHinhDichTemplate(),
+            CreateBVGiayChuyenVienTemplate(),
+            CreateBVGiayXacNhanKhamTemplate(),
+            CreateBVKeHoachPhongChongDichTemplate(),
+            CreateBVQuyetDinhBanHanhQuyTrinhTemplate(),
+            CreateBVBaoCaoHoatDongBVTemplate(),
+            CreateBVBienBanHoiChanTemplate(),
+            CreateBVThongBaoKetQuaXetNghiemTemplate(),
+            // Giáo dục
+            CreateGDKeHoachNamHocTemplate(),
+            CreateGDKeHoachDayHocTemplate(),
+            CreateGDBaoCaoChatLuongGDTemplate(),
+            CreateGDQuyetDinhKhenThuongHocSinhTemplate(),
+            CreateGDThongBaoHopPhuHuynhTemplate(),
+            CreateGDQuyetDinhKyLuatHocSinhTemplate(),
+            CreateGDGiayChungNhanTotNghiepTemplate(),
+            CreateGDBaoCaoThiDuaTemplate(),
+            // UBND xã/phường
+            CreateUBNDGiayXacNhanCuTruTemplate(),
+            CreateUBNDGiayXacNhanHonNhanTemplate(),
+            CreateUBNDBaoCaoKTXHTemplate(),
+            CreateUBNDKeHoachPhongChongThienTaiTemplate(),
+            CreateUBNDQuyetDinhHoTroTemplate(),
+            CreateUBNDThongBaoCaiCachHanhChinhTemplate(),
+            CreateUBNDBaoCaoDanSoTemplate(),
+            CreateUBNDKeHoachXayDungNongThonMoiTemplate(),
         };
 
         foreach (var template in templates)
@@ -1990,6 +2019,532 @@ Nội dung phụ lục: {content}",
             Tags = new[] { "phụ lục", "kèm theo", "Mẫu 2.1", "NĐ 30/2020" }
         };
     }
+
+    #endregion
+
+    #region Mẫu VB Chuyên ngành — Y tế (Bệnh viện / Trung tâm Y tế)
+
+    private DocumentTemplate CreateBVBaoCaoTinhHinhDichTemplate() => new()
+    {
+        Name = "BC tình hình dịch bệnh (Y tế)",
+        Type = DocumentType.BaoCao,
+        Category = "Y tế",
+        Description = "Báo cáo tình hình dịch bệnh truyền nhiễm trên địa bàn",
+        TemplateContent = @"[TÊN CƠ QUAN CẤP TRÊN]
+[TÊN ĐƠN VỊ Y TẾ]
+-------
+CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+-------
+Số:     /BC-[Viết tắt]
+
+[Địa danh], ngày    tháng    năm 202
+
+BÁO CÁO
+Tình hình dịch bệnh [tên dịch bệnh] trên địa bàn [đơn vị hành chính]
+
+I. TÌNH HÌNH CHUNG
+- Tổng số ca mắc: [số liệu]
+- Số ca tử vong: [số liệu]
+- Khu vực có ổ dịch: [liệt kê]
+
+II. CÔNG TÁC PHÒNG CHỐNG
+[Nội dung các biện pháp đã triển khai]
+
+III. KIẾN NGHỊ, ĐỀ XUẤT
+[Nội dung kiến nghị]
+
+Nơi nhận:                           GIÁM ĐỐC
+- Như trên;
+- Lưu VT.                          [Họ và tên]",
+        AIPrompt = @"Viết báo cáo tình hình dịch bệnh:
+- Đơn vị y tế: {medical_unit}
+- Tên dịch bệnh: {disease_name}
+- Địa bàn: {area}
+- Số liệu ca mắc/tử vong: {statistics}
+- Biện pháp phòng chống: {prevention_measures}
+- Kiến nghị: {recommendations}
+- Người ký: {signer_name}, {signer_title}",
+        RequiredFields = new[] { "medical_unit", "disease_name", "area", "statistics", "prevention_measures", "signer_name", "signer_title" },
+        Tags = new[] { "y tế", "dịch bệnh", "bệnh viện", "báo cáo" }
+    };
+
+    private DocumentTemplate CreateBVGiayChuyenVienTemplate() => new()
+    {
+        Name = "Giấy chuyển viện (Y tế)",
+        Type = DocumentType.CongVan,
+        Category = "Y tế",
+        Description = "Giấy chuyển bệnh nhân lên tuyến trên hoặc chuyển sang cơ sở y tế khác",
+        TemplateContent = @"[TÊN CƠ SỞ Y TẾ]
+-------
+CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+-------
+
+GIẤY CHUYỂN VIỆN
+
+Kính gửi: [Bệnh viện tiếp nhận]
+
+Tên bệnh nhân: [Họ tên]    Tuổi: [    ]    Giới: [    ]
+Địa chỉ: [Địa chỉ]
+Chẩn đoán: [Chẩn đoán]
+Lý do chuyển: [Lý do]
+Tóm tắt bệnh án: [Tóm tắt]
+
+Đề nghị [Bệnh viện] tiếp nhận và điều trị.
+
+[Địa danh], ngày    tháng    năm 202
+GIÁM ĐỐC
+[Họ và tên]",
+        AIPrompt = @"Viết giấy chuyển viện:
+- Cơ sở chuyển: {from_hospital}
+- Bệnh viện nhận: {to_hospital}
+- Bệnh nhân: {patient_name}, tuổi {patient_age}, giới {patient_gender}
+- Chẩn đoán: {diagnosis}
+- Lý do chuyển: {transfer_reason}
+- Tóm tắt bệnh án: {medical_summary}
+- Người ký: {signer_name}",
+        RequiredFields = new[] { "from_hospital", "to_hospital", "patient_name", "diagnosis", "transfer_reason", "signer_name" },
+        Tags = new[] { "y tế", "chuyển viện", "bệnh viện" }
+    };
+
+    private DocumentTemplate CreateBVGiayXacNhanKhamTemplate() => new()
+    {
+        Name = "Giấy xác nhận khám bệnh (Y tế)",
+        Type = DocumentType.CongVan,
+        Category = "Y tế",
+        Description = "Giấy xác nhận đã khám bệnh tại cơ sở y tế",
+        TemplateContent = @"[TÊN CƠ SỞ Y TẾ]
+-------
+CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+-------
+
+GIẤY XÁC NHẬN KHÁM BỆNH
+
+Chúng tôi xác nhận:
+Ông/Bà: [Họ tên]    Năm sinh: [    ]
+Số CCCD/CMND: [    ]
+Địa chỉ: [Địa chỉ]
+Đã đến khám bệnh tại [Cơ sở y tế] vào ngày [    ]
+Kết quả khám: [Kết quả]
+Kết luận: [Kết luận]
+
+[Địa danh], ngày    tháng    năm 202
+GIÁM ĐỐC
+[Họ và tên]",
+        AIPrompt = @"Viết giấy xác nhận khám bệnh:
+- Cơ sở y tế: {medical_unit}
+- Bệnh nhân: {patient_name}, năm sinh {birth_year}
+- Ngày khám: {exam_date}
+- Kết quả: {result}
+- Kết luận: {conclusion}
+- Người ký: {signer_name}",
+        RequiredFields = new[] { "medical_unit", "patient_name", "exam_date", "result", "conclusion", "signer_name" },
+        Tags = new[] { "y tế", "xác nhận", "khám bệnh" }
+    };
+
+    private DocumentTemplate CreateBVKeHoachPhongChongDichTemplate() => new()
+    {
+        Name = "KH phòng chống dịch bệnh (Y tế)",
+        Type = DocumentType.KeHoach,
+        Category = "Y tế",
+        Description = "Kế hoạch phòng chống dịch bệnh trên địa bàn",
+        AIPrompt = @"Viết kế hoạch phòng chống dịch bệnh:
+- Đơn vị: {medical_unit}
+- Dịch bệnh: {disease_name}
+- Địa bàn: {area}
+- Mục tiêu: {objectives}
+- Biện pháp cụ thể: {measures}
+- Kinh phí dự kiến: {budget}
+- Người ký: {signer_name}, {signer_title}",
+        RequiredFields = new[] { "medical_unit", "disease_name", "area", "objectives", "measures", "signer_name", "signer_title" },
+        Tags = new[] { "y tế", "phòng chống dịch", "kế hoạch" }
+    };
+
+    private DocumentTemplate CreateBVQuyetDinhBanHanhQuyTrinhTemplate() => new()
+    {
+        Name = "QĐ ban hành quy trình khám chữa bệnh (Y tế)",
+        Type = DocumentType.QuyetDinh,
+        Category = "Y tế",
+        Description = "Quyết định ban hành quy trình chuyên môn khám chữa bệnh",
+        AIPrompt = @"Viết quyết định ban hành quy trình khám chữa bệnh:
+- Bệnh viện: {hospital}
+- Tên quy trình: {procedure_name}
+- Căn cứ pháp lý: {legal_basis}
+- Phạm vi áp dụng: {scope}
+- Nội dung chính: {content}
+- Người ký: {signer_name}, {signer_title}",
+        RequiredFields = new[] { "hospital", "procedure_name", "legal_basis", "content", "signer_name", "signer_title" },
+        Tags = new[] { "y tế", "quyết định", "quy trình", "bệnh viện" }
+    };
+
+    private DocumentTemplate CreateBVBaoCaoHoatDongBVTemplate() => new()
+    {
+        Name = "BC hoạt động bệnh viện (Y tế)",
+        Type = DocumentType.BaoCao,
+        Category = "Y tế",
+        Description = "Báo cáo tổng hợp hoạt động bệnh viện theo kỳ",
+        AIPrompt = @"Viết báo cáo hoạt động bệnh viện:
+- Bệnh viện: {hospital}
+- Kỳ báo cáo: {period}
+- Số lượt khám/điều trị: {patient_count}
+- Kết quả công tác chuyên môn: {clinical_results}
+- Thuận lợi/khó khăn: {challenges}
+- Kế hoạch kỳ tới: {next_plan}
+- Người ký: {signer_name}, {signer_title}",
+        RequiredFields = new[] { "hospital", "period", "patient_count", "clinical_results", "signer_name", "signer_title" },
+        Tags = new[] { "y tế", "báo cáo", "bệnh viện", "hoạt động" }
+    };
+
+    private DocumentTemplate CreateBVBienBanHoiChanTemplate() => new()
+    {
+        Name = "Biên bản hội chẩn (Y tế)",
+        Type = DocumentType.BienBan,
+        Category = "Y tế",
+        Description = "Biên bản hội chẩn chuyên môn tại bệnh viện",
+        AIPrompt = @"Viết biên bản hội chẩn:
+- Bệnh viện: {hospital}
+- Bệnh nhân: {patient_name}, tuổi {patient_age}
+- Chẩn đoán: {diagnosis}
+- Thành phần hội chẩn: {participants}
+- Ý kiến thảo luận: {discussion}
+- Kết luận hội chẩn: {conclusion}
+- Phương án điều trị: {treatment_plan}",
+        RequiredFields = new[] { "hospital", "patient_name", "diagnosis", "participants", "conclusion", "treatment_plan" },
+        Tags = new[] { "y tế", "hội chẩn", "biên bản", "bệnh viện" }
+    };
+
+    private DocumentTemplate CreateBVThongBaoKetQuaXetNghiemTemplate() => new()
+    {
+        Name = "TB kết quả xét nghiệm (Y tế)",
+        Type = DocumentType.ThongBao,
+        Category = "Y tế",
+        Description = "Thông báo kết quả xét nghiệm cho bệnh nhân hoặc đơn vị liên quan",
+        AIPrompt = @"Viết thông báo kết quả xét nghiệm:
+- Cơ sở y tế: {medical_unit}
+- Đối tượng thông báo: {recipient}
+- Loại xét nghiệm: {test_type}
+- Kết quả: {test_result}
+- Kết luận: {conclusion}
+- Khuyến nghị: {recommendation}
+- Người ký: {signer_name}",
+        RequiredFields = new[] { "medical_unit", "recipient", "test_type", "test_result", "conclusion", "signer_name" },
+        Tags = new[] { "y tế", "xét nghiệm", "thông báo" }
+    };
+
+    #endregion
+
+    #region Mẫu VB Chuyên ngành — Giáo dục (Trường học)
+
+    private DocumentTemplate CreateGDKeHoachNamHocTemplate() => new()
+    {
+        Name = "KH năm học (Giáo dục)",
+        Type = DocumentType.KeHoach,
+        Category = "Giáo dục",
+        Description = "Kế hoạch thực hiện nhiệm vụ năm học",
+        AIPrompt = @"Viết kế hoạch năm học:
+- Trường: {school_name}
+- Năm học: {school_year}
+- Mục tiêu tổng quát: {objectives}
+- Chỉ tiêu cụ thể: {targets}
+- Các giải pháp: {solutions}
+- Tổ chức thực hiện: {implementation}
+- Người ký: {signer_name}, {signer_title}",
+        RequiredFields = new[] { "school_name", "school_year", "objectives", "targets", "solutions", "signer_name", "signer_title" },
+        Tags = new[] { "giáo dục", "kế hoạch", "năm học", "trường" }
+    };
+
+    private DocumentTemplate CreateGDKeHoachDayHocTemplate() => new()
+    {
+        Name = "KH dạy học theo chương trình (Giáo dục)",
+        Type = DocumentType.KeHoach,
+        Category = "Giáo dục",
+        Description = "Kế hoạch dạy học theo chương trình giáo dục phổ thông",
+        AIPrompt = @"Viết kế hoạch dạy học:
+- Trường: {school_name}
+- Môn học/Hoạt động GD: {subject}
+- Khối lớp: {grade}
+- Học kỳ/Năm học: {period}
+- Phân phối chương trình: {curriculum_plan}
+- Phương pháp kiểm tra đánh giá: {assessment}
+- Người ký: {signer_name}",
+        RequiredFields = new[] { "school_name", "subject", "grade", "period", "curriculum_plan", "signer_name" },
+        Tags = new[] { "giáo dục", "dạy học", "chương trình", "kế hoạch" }
+    };
+
+    private DocumentTemplate CreateGDBaoCaoChatLuongGDTemplate() => new()
+    {
+        Name = "BC chất lượng giáo dục (Giáo dục)",
+        Type = DocumentType.BaoCao,
+        Category = "Giáo dục",
+        Description = "Báo cáo kết quả chất lượng giáo dục theo kỳ/năm học",
+        AIPrompt = @"Viết báo cáo chất lượng giáo dục:
+- Trường: {school_name}
+- Kỳ báo cáo: {period}
+- Tổng số HS: {student_count}
+- Tỷ lệ HS giỏi/khá/TB/yếu: {quality_stats}
+- Thành tích nổi bật: {achievements}
+- Hạn chế, khó khăn: {challenges}
+- Kế hoạch cải thiện: {improvement_plan}
+- Người ký: {signer_name}, {signer_title}",
+        RequiredFields = new[] { "school_name", "period", "student_count", "quality_stats", "signer_name", "signer_title" },
+        Tags = new[] { "giáo dục", "báo cáo", "chất lượng", "trường" }
+    };
+
+    private DocumentTemplate CreateGDQuyetDinhKhenThuongHocSinhTemplate() => new()
+    {
+        Name = "QĐ khen thưởng học sinh (Giáo dục)",
+        Type = DocumentType.QuyetDinh,
+        Category = "Giáo dục",
+        Description = "Quyết định khen thưởng học sinh có thành tích xuất sắc",
+        AIPrompt = @"Viết quyết định khen thưởng học sinh:
+- Trường: {school_name}
+- Căn cứ: {legal_basis}
+- Danh sách HS khen thưởng: {students}
+- Hình thức khen thưởng: {reward_type}
+- Lý do: {reason}
+- Hiệu trưởng: {principal_name}",
+        RequiredFields = new[] { "school_name", "legal_basis", "students", "reward_type", "reason", "principal_name" },
+        Tags = new[] { "giáo dục", "khen thưởng", "học sinh", "quyết định" }
+    };
+
+    private DocumentTemplate CreateGDThongBaoHopPhuHuynhTemplate() => new()
+    {
+        Name = "TB họp phụ huynh (Giáo dục)",
+        Type = DocumentType.ThongBao,
+        Category = "Giáo dục",
+        Description = "Thông báo tổ chức họp phụ huynh học sinh",
+        AIPrompt = @"Viết thông báo họp phụ huynh:
+- Trường: {school_name}
+- Thời gian: {meeting_time}
+- Địa điểm: {location}
+- Nội dung họp: {agenda}
+- Khối/Lớp: {class_info}
+- Lưu ý cho phụ huynh: {notes}
+- Hiệu trưởng: {principal_name}",
+        RequiredFields = new[] { "school_name", "meeting_time", "location", "agenda", "principal_name" },
+        Tags = new[] { "giáo dục", "họp phụ huynh", "thông báo", "trường" }
+    };
+
+    private DocumentTemplate CreateGDQuyetDinhKyLuatHocSinhTemplate() => new()
+    {
+        Name = "QĐ kỷ luật học sinh (Giáo dục)",
+        Type = DocumentType.QuyetDinh,
+        Category = "Giáo dục",
+        Description = "Quyết định kỷ luật học sinh vi phạm nội quy",
+        AIPrompt = @"Viết quyết định kỷ luật học sinh:
+- Trường: {school_name}
+- Họ tên HS: {student_name}, Lớp: {class_name}
+- Hành vi vi phạm: {violation}
+- Hình thức kỷ luật: {discipline_type}
+- Căn cứ: {legal_basis}
+- Thời hạn: {duration}
+- Hiệu trưởng: {principal_name}",
+        RequiredFields = new[] { "school_name", "student_name", "class_name", "violation", "discipline_type", "principal_name" },
+        Tags = new[] { "giáo dục", "kỷ luật", "học sinh", "quyết định" }
+    };
+
+    private DocumentTemplate CreateGDGiayChungNhanTotNghiepTemplate() => new()
+    {
+        Name = "Giấy CN tốt nghiệp tạm thời (Giáo dục)",
+        Type = DocumentType.CongVan,
+        Category = "Giáo dục",
+        Description = "Giấy chứng nhận tốt nghiệp tạm thời",
+        AIPrompt = @"Viết giấy chứng nhận tốt nghiệp tạm thời:
+- Trường: {school_name}
+- Học sinh: {student_name}, sinh ngày {birth_date}
+- Lớp: {class_name}
+- Năm tốt nghiệp: {graduation_year}
+- Xếp loại: {ranking}
+- Hiệu trưởng: {principal_name}",
+        RequiredFields = new[] { "school_name", "student_name", "birth_date", "graduation_year", "ranking", "principal_name" },
+        Tags = new[] { "giáo dục", "tốt nghiệp", "chứng nhận" }
+    };
+
+    private DocumentTemplate CreateGDBaoCaoThiDuaTemplate() => new()
+    {
+        Name = "BC thi đua cuối năm (Giáo dục)",
+        Type = DocumentType.BaoCao,
+        Category = "Giáo dục",
+        Description = "Báo cáo thành tích thi đua cuối năm học",
+        AIPrompt = @"Viết báo cáo thi đua cuối năm:
+- Trường: {school_name}
+- Năm học: {school_year}
+- Thành tích tập thể: {collective_achievements}
+- Thành tích cá nhân GV: {teacher_achievements}
+- Thành tích HS: {student_achievements}
+- Đề nghị khen thưởng: {reward_proposal}
+- Hiệu trưởng: {principal_name}",
+        RequiredFields = new[] { "school_name", "school_year", "collective_achievements", "reward_proposal", "principal_name" },
+        Tags = new[] { "giáo dục", "thi đua", "báo cáo", "khen thưởng" }
+    };
+
+    #endregion
+
+    #region Mẫu VB Chuyên ngành — UBND xã/phường
+
+    private DocumentTemplate CreateUBNDGiayXacNhanCuTruTemplate() => new()
+    {
+        Name = "Giấy xác nhận cư trú (UBND xã)",
+        Type = DocumentType.CongVan,
+        Category = "UBND xã/phường",
+        Description = "Xác nhận nơi cư trú của công dân",
+        TemplateContent = @"ỦY BAN NHÂN DÂN
+[XÃ/PHƯỜNG/THỊ TRẤN]
+-------
+CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+-------
+
+GIẤY XÁC NHẬN CƯ TRÚ
+
+UBND [xã/phường] xác nhận:
+Ông/Bà: [Họ tên]    Sinh ngày: [    ]
+Số CCCD: [    ]
+Hiện đang cư trú tại: [Địa chỉ]
+Mục đích xác nhận: [Mục đích]
+
+[Địa danh], ngày    tháng    năm 202
+CHỦ TỊCH UBND
+[Họ và tên]",
+        AIPrompt = @"Viết giấy xác nhận cư trú:
+- UBND xã/phường: {ward_name}
+- Công dân: {citizen_name}, sinh ngày {birth_date}
+- Số CCCD: {id_number}
+- Địa chỉ cư trú: {address}
+- Mục đích xác nhận: {purpose}
+- Chủ tịch UBND: {chairman_name}",
+        RequiredFields = new[] { "ward_name", "citizen_name", "birth_date", "address", "purpose", "chairman_name" },
+        Tags = new[] { "UBND xã", "xác nhận", "cư trú", "hành chính công" }
+    };
+
+    private DocumentTemplate CreateUBNDGiayXacNhanHonNhanTemplate() => new()
+    {
+        Name = "Giấy XN tình trạng hôn nhân (UBND xã)",
+        Type = DocumentType.CongVan,
+        Category = "UBND xã/phường",
+        Description = "Xác nhận tình trạng hôn nhân của công dân",
+        AIPrompt = @"Viết giấy xác nhận tình trạng hôn nhân:
+- UBND xã/phường: {ward_name}
+- Công dân: {citizen_name}, sinh ngày {birth_date}
+- Số CCCD: {id_number}
+- Tình trạng hôn nhân: {marital_status}
+- Mục đích: {purpose}
+- Chủ tịch UBND: {chairman_name}",
+        RequiredFields = new[] { "ward_name", "citizen_name", "birth_date", "marital_status", "purpose", "chairman_name" },
+        Tags = new[] { "UBND xã", "hôn nhân", "xác nhận", "hành chính công" }
+    };
+
+    private DocumentTemplate CreateUBNDBaoCaoKTXHTemplate() => new()
+    {
+        Name = "BC tình hình KT-XH (UBND xã)",
+        Type = DocumentType.BaoCao,
+        Category = "UBND xã/phường",
+        Description = "Báo cáo tình hình kinh tế - xã hội trên địa bàn",
+        AIPrompt = @"Viết báo cáo tình hình kinh tế - xã hội:
+- UBND xã/phường: {ward_name}
+- Kỳ báo cáo: {period}
+- Kinh tế (nông nghiệp, thương mại, xây dựng): {economy}
+- Xã hội (y tế, giáo dục, ANTT): {social}
+- Tồn tại, hạn chế: {challenges}
+- Phương hướng kỳ tới: {next_plan}
+- Chủ tịch UBND: {chairman_name}",
+        RequiredFields = new[] { "ward_name", "period", "economy", "social", "next_plan", "chairman_name" },
+        Tags = new[] { "UBND xã", "kinh tế xã hội", "báo cáo" }
+    };
+
+    private DocumentTemplate CreateUBNDKeHoachPhongChongThienTaiTemplate() => new()
+    {
+        Name = "KH phòng chống thiên tai (UBND xã)",
+        Type = DocumentType.KeHoach,
+        Category = "UBND xã/phường",
+        Description = "Kế hoạch phòng chống thiên tai và tìm kiếm cứu nạn",
+        AIPrompt = @"Viết kế hoạch phòng chống thiên tai:
+- UBND xã/phường: {ward_name}
+- Loại thiên tai: {disaster_type}
+- Khu vực nguy cơ: {risk_areas}
+- Lực lượng ứng cứu: {rescue_forces}
+- Phương tiện/vật tư: {resources}
+- Phương án sơ tán: {evacuation_plan}
+- Chủ tịch UBND: {chairman_name}",
+        RequiredFields = new[] { "ward_name", "disaster_type", "risk_areas", "rescue_forces", "evacuation_plan", "chairman_name" },
+        Tags = new[] { "UBND xã", "thiên tai", "phòng chống", "kế hoạch" }
+    };
+
+    private DocumentTemplate CreateUBNDQuyetDinhHoTroTemplate() => new()
+    {
+        Name = "QĐ hỗ trợ hộ nghèo/khó khăn (UBND xã)",
+        Type = DocumentType.QuyetDinh,
+        Category = "UBND xã/phường",
+        Description = "Quyết định hỗ trợ cho hộ nghèo, hộ có hoàn cảnh khó khăn",
+        AIPrompt = @"Viết quyết định hỗ trợ:
+- UBND xã/phường: {ward_name}
+- Đối tượng hỗ trợ: {beneficiaries}
+- Hình thức hỗ trợ: {support_type}
+- Mức hỗ trợ: {support_amount}
+- Nguồn kinh phí: {funding_source}
+- Căn cứ pháp lý: {legal_basis}
+- Chủ tịch UBND: {chairman_name}",
+        RequiredFields = new[] { "ward_name", "beneficiaries", "support_type", "support_amount", "legal_basis", "chairman_name" },
+        Tags = new[] { "UBND xã", "hỗ trợ", "hộ nghèo", "quyết định" }
+    };
+
+    private DocumentTemplate CreateUBNDThongBaoCaiCachHanhChinhTemplate() => new()
+    {
+        Name = "TB cải cách hành chính (UBND xã)",
+        Type = DocumentType.ThongBao,
+        Category = "UBND xã/phường",
+        Description = "Thông báo về cải cách thủ tục hành chính, tiếp nhận hồ sơ",
+        AIPrompt = @"Viết thông báo cải cách hành chính:
+- UBND xã/phường: {ward_name}
+- Nội dung cải cách: {reform_content}
+- Thủ tục liên quan: {procedures}
+- Thời gian áp dụng: {effective_date}
+- Nơi tiếp nhận: {receiving_point}
+- Liên hệ: {contact}
+- Chủ tịch UBND: {chairman_name}",
+        RequiredFields = new[] { "ward_name", "reform_content", "procedures", "effective_date", "chairman_name" },
+        Tags = new[] { "UBND xã", "CCHC", "thông báo", "thủ tục hành chính" }
+    };
+
+    private DocumentTemplate CreateUBNDBaoCaoDanSoTemplate() => new()
+    {
+        Name = "BC dân số - KHHGĐ (UBND xã)",
+        Type = DocumentType.BaoCao,
+        Category = "UBND xã/phường",
+        Description = "Báo cáo công tác dân số - kế hoạch hóa gia đình",
+        AIPrompt = @"Viết báo cáo dân số - KHHGĐ:
+- UBND xã/phường: {ward_name}
+- Kỳ báo cáo: {period}
+- Tổng dân số: {population}
+- Tỷ lệ sinh/tử: {birth_death_rate}
+- Kết quả công tác KHHGĐ: {family_planning_results}
+- Tồn tại: {challenges}
+- Kiến nghị: {recommendations}
+- Chủ tịch UBND: {chairman_name}",
+        RequiredFields = new[] { "ward_name", "period", "population", "birth_death_rate", "chairman_name" },
+        Tags = new[] { "UBND xã", "dân số", "KHHGĐ", "báo cáo" }
+    };
+
+    private DocumentTemplate CreateUBNDKeHoachXayDungNongThonMoiTemplate() => new()
+    {
+        Name = "KH xây dựng nông thôn mới (UBND xã)",
+        Type = DocumentType.KeHoach,
+        Category = "UBND xã/phường",
+        Description = "Kế hoạch thực hiện chương trình xây dựng nông thôn mới",
+        AIPrompt = @"Viết kế hoạch xây dựng nông thôn mới:
+- UBND xã: {ward_name}
+- Năm thực hiện: {year}
+- Tiêu chí đã đạt/chưa đạt: {criteria_status}
+- Mục tiêu năm: {year_targets}
+- Nội dung triển khai: {implementation}
+- Nguồn vốn: {funding}
+- Phân công thực hiện: {assignment}
+- Chủ tịch UBND: {chairman_name}",
+        RequiredFields = new[] { "ward_name", "year", "criteria_status", "year_targets", "implementation", "chairman_name" },
+        Tags = new[] { "UBND xã", "nông thôn mới", "kế hoạch", "NTM" }
+    };
 
     #endregion
 }

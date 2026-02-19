@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using AIVanBan.Core.Models;
+using AIVanBan.Core.Services;
 using System.Linq;
 using System.Windows.Media;
 
@@ -255,6 +256,59 @@ public partial class DocumentListPage
         catch (Exception ex)
         {
             MessageBox.Show($"Lỗi khi xuất Word hàng loạt:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+    
+    private void BulkExportExcel_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var selectedDocs = dgDocuments.SelectedItems.Cast<DocumentViewModel>().ToList();
+            if (selectedDocs.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn ít nhất một văn bản!", "Thông báo",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = $"Xuất {selectedDocs.Count} văn bản ra Excel",
+                FileName = $"DanhSach_VanBan_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                DefaultExt = ".xlsx",
+                Filter = "Excel files (*.xlsx)|*.xlsx"
+            };
+            
+            if (saveDialog.ShowDialog() == true)
+            {
+                var documents = selectedDocs.Select(vm => _documentService.GetDocument(vm.Id))
+                                          .Where(d => d != null)
+                                          .Cast<Document>()
+                                          .ToList();
+                
+                var excelService = new ExcelExportService();
+                excelService.ExportDocumentList(documents, saveDialog.FileName);
+                
+                var result = MessageBox.Show(
+                    $"✅ Đã xuất {documents.Count} văn bản ra file:\n{saveDialog.FileName}\n\nBạn có muốn mở file không?",
+                    "Xuất Excel thành công",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+                
+                if (result == MessageBoxResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = saveDialog.FileName,
+                        UseShellExecute = true
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi xuất Excel hàng loạt:\n{ex.Message}", "Lỗi",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }

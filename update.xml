@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <item>
-    <version>1.0.9</version>
-    <url>https://github.com/ericphan28/van-ban-plus-releases/releases/download/v1.0.9/VanBanPlus-Setup-1.0.9-x64.exe</url>
+    <version>1.0.10</version>
+    <url>https://github.com/ericphan28/van-ban-plus-releases/releases/download/v1.0.10/VanBanPlus-Setup-1.0.10-x64.exe</url>
     <changelog>https://github.com/ericphan28/van-ban-plus-releases/releases/tag/v1.0.9</changelog>
     <mandatory>true</mandatory>
 </item>

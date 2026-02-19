@@ -480,6 +480,18 @@
                                     </StackPanel>
                                 </Button>
                                 
+                                <Button x:Name="btnBulkExportExcel" Click="BulkExportExcel_Click"
+                                       Style="{StaticResource MaterialDesignFlatButton}"
+                                       Height="32" Padding="8,0" Margin="0,0,4,0"
+                                       ToolTip="Xuất danh sách các văn bản đã chọn ra Excel (.xlsx)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="MicrosoftExcel" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0"
+                                                                Foreground="#217346"/>
+                                        <TextBlock Text="Xuất Excel" FontSize="12"/>
+                                    </StackPanel>
+                                </Button>
+                                
                                 <Button x:Name="btnBulkTag" Click="BulkTag_Click"
                                        Style="{StaticResource MaterialDesignFlatButton}"
                                        Height="32" Padding="8,0" Margin="0,0,4,0"
