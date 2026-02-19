@@ -55,6 +55,11 @@ public class SimpleAlbum
     public DateTime ModifiedDate { get; set; } = DateTime.Now;
     
     /// <summary>
+    /// Ngày diễn ra sự kiện (nếu album liên quan đến cuộc họp/sự kiện)
+    /// </summary>
+    public DateTime? EventDate { get; set; }
+    
+    /// <summary>
     /// Số lượng ảnh trong album
     /// </summary>
     public int PhotoCount { get; set; }

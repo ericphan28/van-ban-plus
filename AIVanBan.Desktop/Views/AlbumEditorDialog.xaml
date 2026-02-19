@@ -57,6 +57,16 @@
                          Padding="10"
                          Margin="0,0,0,20"/>
 
+                <!-- Ngày diễn ra -->
+                <TextBlock Text="Ngày diễn ra (nếu liên quan đến sự kiện/cuộc họp)" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <DatePicker x:Name="dpEventDate"
+                            materialDesign:HintAssist.Hint="Chọn ngày diễn ra..."
+                            Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                            FontSize="13"
+                            Margin="0,0,0,20"
+                            Width="250"
+                            HorizontalAlignment="Left"/>
+
                 <!-- Tags -->
                 <TextBlock Text="Tags (cách nhau bởi dấu phẩy)" FontWeight="SemiBold" Margin="0,0,0,8"/>
                 <TextBox x:Name="txtTags"

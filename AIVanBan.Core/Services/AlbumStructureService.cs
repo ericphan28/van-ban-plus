@@ -118,9 +118,6 @@ public class AlbumStructureService : IDisposable
             var truongTHCSTemplate = CreateTruongTHCSTemplate();
             collection.Insert(truongTHCSTemplate);
 
-            // CẤP HUYỆN
-            var huyenTemplate = CreateHuyenTemplate();
-            collection.Insert(huyenTemplate);
         }
     }
 
@@ -434,30 +431,6 @@ public class AlbumStructureService : IDisposable
                 }
             }
         };
-    }
-
-    /// <summary>
-    /// Cấu trúc album cho Huyện
-    /// </summary>
-    private AlbumStructureTemplate CreateHuyenTemplate()
-    {
-        var template = CreateXaPhuongTemplate(); // Kế thừa từ xã
-        template.Name = "Cấu trúc Album - UBND Huyện/Quận/Thị xã";
-        template.OrganizationType = "Huyen";
-        template.Description = "Cấu trúc album chuẩn cho cơ quan UBND cấp huyện";
-        
-        // Thêm các subcategory đặc thù cho cấp huyện
-        var sukienCategory = template.Categories.First(c => c.Name == "Sự kiện - Hội nghị");
-        sukienCategory.SubCategories.Add(new AlbumSubCategory 
-        { 
-            Name = "Hội nghị liên xã", 
-            Icon = "🏛️", 
-            SortOrder = 100,
-            AutoCreateYearFolder = true,
-            SuggestedTags = new[] { "liên xã", "cấp huyện", "điều hành" }
-        });
-
-        return template;
     }
 
     /// <summary>

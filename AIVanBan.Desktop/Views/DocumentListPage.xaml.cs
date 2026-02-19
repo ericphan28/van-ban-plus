@@ -37,6 +37,21 @@ public class DocumentViewModel
     public string AttachmentText { get; set; } = string.Empty;
     public bool HasAttachments => AttachmentCount > 0;
     public bool HasNoAttachments => AttachmentCount == 0;
+    public string CopyIndicator { get; set; } = string.Empty; // Bản sao indicator: "📋 SAO Y (05/SY-UBND)"
+    public bool IsCopy => !string.IsNullOrEmpty(CopyIndicator);
+    public Direction Direction { get; set; }
+    public string DirectionText { get; set; } = string.Empty;
+    public string DirectionColor { get; set; } = "#999";
+    
+    // Deadline status — Theo dõi hạn xử lý (Điều 24, NĐ 30/2020)
+    public DateTime? DueDate { get; set; }
+    public string DeadlineText { get; set; } = string.Empty; // "⚠ Quá hạn" / "⏰ Còn 2 ngày" / ""
+    public string DeadlineColor { get; set; } = "#999";
+    public string RowBackground { get; set; } = "Transparent"; // Tô màu dòng
+    
+    // Thùng rác — hiện nút Phục hồi, ẩn nút Sửa/Word
+    public Visibility RestoreVisibility { get; set; } = Visibility.Collapsed;
+    public Visibility EditVisibility { get; set; } = Visibility.Visible;
     
     public static DocumentViewModel FromDocument(Document doc, DocumentService? service = null)
     {
@@ -49,7 +64,17 @@ public class DocumentViewModel
             IssueDate = doc.IssueDate,
             Issuer = doc.Issuer,
             Subject = doc.Subject,
-            Content = doc.Content
+            Content = doc.Content,
+            Direction = doc.Direction
+        };
+        
+        // Badge hướng VB
+        (vm.DirectionText, vm.DirectionColor) = doc.Direction switch
+        {
+            Direction.Di => ("Đi", "#1B5E20"),
+            Direction.Den => ("Đến", "#E65100"),
+            Direction.NoiBo => ("NB", "#1565C0"),
+            _ => ("?", "#999")
         };
         
         // Get attachment count
@@ -69,68 +94,75 @@ public class DocumentViewModel
         }
         
         // Set type text and color
-        switch (doc.Type)
+        // Tên hiển thị: delegate sang EnumDisplayHelper (đủ 29 loại VB, NĐ 30/2020)
+        vm.TypeText = doc.Type.GetDisplayName();
+        
+        // Màu badge theo loại VB
+        vm.TypeColor = doc.Type switch
         {
-            case DocumentType.CongVan:
-                vm.TypeText = "Công văn";
-                vm.TypeColor = "#2196F3";
-                break;
-            case DocumentType.QuyetDinh:
-                vm.TypeText = "Quyết định";
-                vm.TypeColor = "#4CAF50";
-                break;
-            case DocumentType.BaoCao:
-                vm.TypeText = "Báo cáo";
-                vm.TypeColor = "#FF9800";
-                break;
-            case DocumentType.ToTrinh:
-                vm.TypeText = "Tờ trình";
-                vm.TypeColor = "#9C27B0";
-                break;
-            case DocumentType.KeHoach:
-                vm.TypeText = "Kế hoạch";
-                vm.TypeColor = "#00BCD4";
-                break;
-            case DocumentType.ThongBao:
-                vm.TypeText = "Thông báo";
-                vm.TypeColor = "#FF5722";
-                break;
-            case DocumentType.NghiQuyet:
-                vm.TypeText = "Nghị quyết";
-                vm.TypeColor = "#F44336";
-                break;
-            case DocumentType.ChiThi:
-                vm.TypeText = "Chỉ thị";
-                vm.TypeColor = "#E91E63";
-                break;
-            case DocumentType.HuongDan:
-                vm.TypeText = "Hướng dẫn";
-                vm.TypeColor = "#3F51B5";
-                break;
-            case DocumentType.QuyDinh:
-                vm.TypeText = "Quy định";
-                vm.TypeColor = "#009688";
-                break;
-            case DocumentType.Luat:
-                vm.TypeText = "Luật";
-                vm.TypeColor = "#D32F2F";
-                break;
-            case DocumentType.NghiDinh:
-                vm.TypeText = "Nghị định";
-                vm.TypeColor = "#C2185B";
-                break;
-            case DocumentType.ThongTu:
-                vm.TypeText = "Thông tư";
-                vm.TypeColor = "#7B1FA2";
-                break;
-            case DocumentType.Khac:
-                vm.TypeText = "Khác";
-                vm.TypeColor = "#757575";
-                break;
-            default:
-                vm.TypeText = doc.Type.ToString();
-                vm.TypeColor = "#999999";
-                break;
+            // VBQPPL
+            DocumentType.Luat => "#D32F2F",
+            DocumentType.NghiDinh => "#C2185B",
+            DocumentType.ThongTu => "#7B1FA2",
+            // VB hành chính — Điều 7, NĐ 30/2020
+            DocumentType.NghiQuyet => "#F44336",
+            DocumentType.QuyetDinh => "#4CAF50",
+            DocumentType.ChiThi => "#E91E63",
+            DocumentType.QuyChE => "#009688",
+            DocumentType.QuyDinh => "#009688",
+            DocumentType.ThongCao => "#795548",
+            DocumentType.ThongBao => "#FF5722",
+            DocumentType.HuongDan => "#3F51B5",
+            DocumentType.ChuongTrinh => "#00897B",
+            DocumentType.KeHoach => "#00BCD4",
+            DocumentType.PhuongAn => "#26A69A",
+            DocumentType.DeAn => "#5C6BC0",
+            DocumentType.DuAn => "#42A5F5",
+            DocumentType.BaoCao => "#FF9800",
+            DocumentType.BienBan => "#8D6E63",
+            DocumentType.ToTrinh => "#9C27B0",
+            DocumentType.HopDong => "#607D8B",
+            DocumentType.CongVan => "#2196F3",
+            DocumentType.CongDien => "#EF5350",
+            DocumentType.BanGhiNho => "#78909C",
+            DocumentType.BanThoaThuan => "#66BB6A",
+            DocumentType.GiayUyQuyen => "#AB47BC",
+            DocumentType.GiayMoi => "#29B6F6",
+            DocumentType.GiayGioiThieu => "#26C6DA",
+            DocumentType.GiayNghiPhep => "#FFA726",
+            DocumentType.PhieuGui => "#BDBDBD",
+            DocumentType.PhieuChuyen => "#90A4AE",
+            DocumentType.PhieuBao => "#A1887F",
+            DocumentType.ThuCong => "#7E57C2",
+            DocumentType.Khac => "#757575",
+            _ => "#999999"
+        };
+        
+        // Hiển thị chỉ báo bản sao — Điều 25, NĐ 30/2020
+        if (doc.CopyType != CopyType.None)
+        {
+            vm.CopyIndicator = $"📋 {doc.CopyType.GetDisplayName().ToUpper()} ({doc.CopySymbol})";
+        }
+        
+        // Cảnh báo hạn xử lý — Điều 24, NĐ 30/2020
+        vm.DueDate = doc.DueDate;
+        if (doc.DueDate.HasValue && doc.Direction == Direction.Den
+            && doc.WorkflowStatus != DocumentStatus.Archived
+            && doc.WorkflowStatus != DocumentStatus.Published)
+        {
+            var daysLeft = (doc.DueDate.Value.Date - DateTime.Today).Days;
+            if (daysLeft < 0)
+            {
+                vm.DeadlineText = $"⚠ Quá hạn {-daysLeft} ngày";
+                vm.DeadlineColor = "#C62828"; // Đỏ
+                vm.RowBackground = "#FFEBEE"; // Đỏ nhạt
+            }
+            else if (daysLeft <= 3)
+            {
+                vm.DeadlineText = daysLeft == 0 ? "⏰ Hết hạn hôm nay" : $"⏰ Còn {daysLeft} ngày";
+                vm.DeadlineColor = "#E65100"; // Cam
+                vm.RowBackground = "#FFF3E0"; // Vàng nhạt
+            }
         }
         
         return vm;
@@ -144,6 +176,7 @@ public partial class DocumentListPage : Page
     private string _selectedFolderId = string.Empty;
     private DateTime? _quickFilterStart = null;
     private DateTime? _quickFilterEnd = null;
+    private bool _isTrashView = false; // Thùng rác mode
 
     public DocumentListPage(DocumentService documentService)
     {
@@ -255,18 +288,39 @@ public partial class DocumentListPage : Page
         }
     }
 
-    private void LoadDocuments()
+    private async void LoadDocuments()
     {
-        // Load by folder if selected, otherwise all
-        if (!string.IsNullOrEmpty(_selectedFolderId))
+        // Show loading state
+        if (dgDocuments != null) dgDocuments.IsEnabled = false;
+        if (txtTotalDocs != null) txtTotalDocs.Text = "Đang tải...";
+        
+        try
         {
-            _allDocuments = _documentService.GetDocumentsByFolder(_selectedFolderId);
+            // Load on background thread to avoid UI freeze
+            var folderId = _selectedFolderId;
+            var isTrash = _isTrashView;
+            var docs = await Task.Run(() =>
+            {
+                if (isTrash)
+                    return _documentService.GetDeletedDocuments();
+                else if (!string.IsNullOrEmpty(folderId))
+                    return _documentService.GetDocumentsByFolder(folderId);
+                else
+                    return _documentService.GetAllDocuments();
+            });
+            
+            _allDocuments = docs;
+            ApplyFilters();
         }
-        else
+        catch (Exception ex)
         {
-            _allDocuments = _documentService.GetAllDocuments();
+            Console.WriteLine($"❌ Error loading documents: {ex.Message}");
+            MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-        ApplyFilters();
+        finally
+        {
+            if (dgDocuments != null) dgDocuments.IsEnabled = true;
+        }
     }
 
     private void ApplyFilters()
@@ -390,6 +444,16 @@ public partial class DocumentListPage : Page
             var result = filtered.OrderByDescending(d => d.IssueDate)
                                 .Select(d => DocumentViewModel.FromDocument(d, _documentService))
                                 .ToList();
+            
+            // Hiện nút Phục hồi khi ở chế độ thùng rác
+            if (_isTrashView)
+            {
+                foreach (var vm in result)
+                {
+                    vm.RestoreVisibility = Visibility.Visible;
+                    vm.EditVisibility = Visibility.Collapsed;
+                }
+            }
             
             Console.WriteLine($"✅ Filtered result: {result.Count} documents");
             
@@ -639,8 +703,9 @@ public partial class DocumentListPage : Page
                     var doc = _documentService.GetDocument(docVm.Id);
                     if (doc != null)
                     {
-                        var viewer = new DocumentViewDialog(doc);
+                        var viewer = new DocumentViewDialog(doc, _documentService);
                         viewer.ShowDialog();
+                        if (viewer.IsEdited) LoadDocuments();
                     }
                     e.Handled = true;
                 }
@@ -650,19 +715,29 @@ public partial class DocumentListPage : Page
                     var doc = _documentService.GetDocument(docVm.Id);
                     if (doc != null)
                     {
-                        var result = MessageBox.Show(
-                            $"Bạn có chắc muốn xóa văn bản '{doc.Title}'?\n\n" +
-                            $"Nhấn Delete một lần nữa để xác nhận xóa.",
-                            "Xác nhận xóa",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Warning);
-
-                        if (result == MessageBoxResult.Yes)
+                        if (_isTrashView)
                         {
-                            _documentService.DeleteDocument(docVm.Id);
-                            LoadDocuments();
-                            MessageBox.Show("✅ Đã xóa văn bản!", "Thành công",
-                                MessageBoxButton.OK, MessageBoxImage.Information);
+                            var result = MessageBox.Show(
+                                $"Xóa vĩnh viễn '{doc.Title}'?\nKhông thể hoàn tác!",
+                                "Xóa vĩnh viễn",
+                                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                            if (result == MessageBoxResult.Yes)
+                            {
+                                _documentService.PermanentDeleteDocument(docVm.Id);
+                                LoadDocuments();
+                            }
+                        }
+                        else
+                        {
+                            var result = MessageBox.Show(
+                                $"Chuyển '{doc.Title}' vào thùng rác?",
+                                "Xóa văn bản",
+                                MessageBoxButton.YesNo, MessageBoxImage.Question);
+                            if (result == MessageBoxResult.Yes)
+                            {
+                                _documentService.SoftDeleteDocument(docVm.Id);
+                                LoadDocuments();
+                            }
                         }
                     }
                     e.Handled = true;
@@ -758,11 +833,76 @@ public partial class DocumentListPage : Page
     {
         LoadDocuments();
     }
+    
+    // ═══════════════════════════════════════
+    // THÙNG RÁC — Soft Delete
+    // ═══════════════════════════════════════
+    private void TrashToggle_Click(object sender, RoutedEventArgs e)
+    {
+        _isTrashView = !_isTrashView;
+        
+        if (_isTrashView)
+        {
+            txtTrashToggle.Text = "← Quay lại";
+            btnTrashToggle.BorderBrush = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+            btnTrashToggle.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+            btnEmptyTrash.Visibility = Visibility.Visible;
+            
+            // Update status text
+            var trashCount = _documentService.GetTrashCount();
+            if (txtTotalDocs != null)
+                txtTotalDocs.Text = $"🗑️ Thùng rác: {trashCount} văn bản";
+        }
+        else
+        {
+            txtTrashToggle.Text = "Thùng rác";
+            btnTrashToggle.BorderBrush = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+            btnTrashToggle.Foreground = (Brush)FindResource("MaterialDesignBody");
+            btnEmptyTrash.Visibility = Visibility.Collapsed;
+        }
+        
+        LoadDocuments();
+    }
+    
+    private void RestoreDocument_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.Tag is string id)
+        {
+            _documentService.RestoreDocument(id);
+            LoadDocuments();
+            MessageBox.Show("✅ Đã khôi phục văn bản!", "Thành công",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+    
+    private void EmptyTrash_Click(object sender, RoutedEventArgs e)
+    {
+        var count = _documentService.GetTrashCount();
+        if (count == 0)
+        {
+            MessageBox.Show("Thùng rác đã trống.", "Thùng rác", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        
+        var result = MessageBox.Show(
+            $"Xóa vĩnh viễn {count} văn bản trong thùng rác?\nHành động này KHÔNG thể hoàn tác!",
+            "Dọn sạch thùng rác",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        
+        if (result == MessageBoxResult.Yes)
+        {
+            var deleted = _documentService.EmptyTrash();
+            LoadDocuments();
+            MessageBox.Show($"✅ Đã xóa vĩnh viễn {deleted} văn bản.", "Thành công",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
 
     private void AddDocument_Click(object sender, RoutedEventArgs e)
     {
         // Pass selectedFolderId để văn bản mới được gán vào đúng thư mục
-        var dialog = new DocumentEditDialog(null, _selectedFolderId);
+        var dialog = new DocumentEditDialog(null, _selectedFolderId, _documentService);
         if (dialog.ShowDialog() == true && dialog.Document != null)
         {
             _documentService.AddDocument(dialog.Document);
@@ -813,69 +953,41 @@ public partial class DocumentListPage : Page
     {
         try
         {
-            // Đếm số văn bản hiện có
-            var existingDocs = _documentService.GetAllDocuments();
-            var existingCount = existingDocs?.Count ?? 0;
+            var result = MessageBox.Show(
+                "⚠️ Tạo 50 văn bản demo mẫu?\n\n" +
+                "Toàn bộ dữ liệu hiện có sẽ bị XÓA SẠCH\n" +
+                "và thay bằng 50 văn bản demo nhất quán.\n\n" +
+                "Phủ 25+ loại VB, nhiều phòng ban, cơ quan.\n" +
+                "Dữ liệu demo giúp kiểm tra:\n" +
+                "• Cảnh báo hạn xử lý (VB đến quá hạn/sắp hạn)\n" +
+                "• Export Word, tìm kiếm, lọc, sắp xếp\n" +
+                "• Thùng rác, thống kê",
+                "Tạo dữ liệu Demo",
+                MessageBoxButton.YesNo, 
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            // Xóa sạch toàn bộ (bao gồm thùng rác)
+            var deletedCount = _documentService.DeleteAllDocuments();
+
+            // Tạo mới 50 VB demo nhất quán — phủ 25+ loại VB theo Điều 7, NĐ 30/2020
+            var seedService = new AIVanBan.Core.Services.SeedDataService(_documentService);
+            var docs = seedService.GenerateDemoDocuments();
+
+            LoadDocuments();
             
-            string message;
-            if (existingCount > 0)
-            {
-                message = $"Hiện có {existingCount} văn bản trong hệ thống.\n\n" +
-                         "Bạn muốn:\n" +
-                         "• YES - Xóa tất cả và tạo 20 văn bản demo mới\n" +
-                         "• NO - Giữ nguyên và thêm 20 văn bản demo\n" +
-                         "• CANCEL - Hủy bỏ";
-            }
-            else
-            {
-                message = "Tạo 20 văn bản demo để test?\n\n" +
-                         "Dữ liệu demo sẽ giúp bạn kiểm tra các tính năng như:\n" +
-                         "• Tìm kiếm full-text\n" +
-                         "• Export Word với Nơi nhận\n" +
-                         "• Lọc và sắp xếp\n" +
-                         "• Phân loại theo thư mục";
-            }
+            var clearText = deletedCount > 0 ? $"(đã xóa {deletedCount} văn bản cũ)\n" : "";
             
-            var result = MessageBox.Show(message, "Tạo dữ liệu Demo",
-                existingCount > 0 ? MessageBoxButton.YesNoCancel : MessageBoxButton.YesNo, 
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Cancel)
-            {
-                return;
-            }
-
-            // Nếu chọn Yes và có dữ liệu cũ -> xóa hết
-            if (result == MessageBoxResult.Yes && existingCount > 0)
-            {
-                foreach (var doc in existingDocs)
-                {
-                    _documentService.DeleteDocument(doc.Id);
-                }
-            }
-
-            if (result == MessageBoxResult.Yes || result == MessageBoxResult.No)
-            {
-                var seedService = new AIVanBan.Core.Services.SeedDataService(_documentService);
-                var docs = seedService.GenerateDemoDocuments(20);
-
-                LoadDocuments();
-                
-                var clearText = result == MessageBoxResult.Yes && existingCount > 0 
-                    ? $"(đã xóa {existingCount} văn bản cũ)\n\n" 
-                    : "";
-                
-                MessageBox.Show(
-                    $"✅ Đã tạo thành công {docs.Count} văn bản demo!\n" +
-                    clearText +
-                    $"• {docs.Count(d => d.Direction == Direction.Di)} văn bản đi (có Nơi nhận)\n" +
-                    $"• {docs.Count(d => d.Direction == Direction.Den)} văn bản đến\n" +
-                    $"• {docs.Count(d => d.Direction == Direction.NoiBo)} văn bản nội bộ\n\n" +
-                    "Hãy chọn 1 văn bản đi để xem Nơi nhận ở panel bên phải!", 
-                    "Thành công",
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Information);
-            }
+            MessageBox.Show(
+                $"✅ Đã tạo thành công {docs.Count} văn bản demo!\n" +
+                clearText +
+                $"\n• {docs.Count(d => d.Direction == Direction.Di)} văn bản đi\n" +
+                $"• {docs.Count(d => d.Direction == Direction.Den)} văn bản đến (có hạn xử lý)\n" +
+                $"• {docs.Count(d => d.Direction == Direction.NoiBo)} văn bản nội bộ", 
+                "Thành công",
+                MessageBoxButton.OK, 
+                MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
@@ -894,8 +1006,9 @@ public partial class DocumentListPage : Page
                 var doc = _documentService.GetDocument(id);
                 if (doc != null)
                 {
-                    var viewer = new DocumentViewDialog(doc);
+                    var viewer = new DocumentViewDialog(doc, _documentService);
                     viewer.ShowDialog();
+                    if (viewer.IsEdited) LoadDocuments();
                 }
             }
         }
@@ -916,7 +1029,7 @@ public partial class DocumentListPage : Page
                 var doc = _documentService.GetDocument(id);
                 if (doc != null)
                 {
-                    var dialog = new DocumentEditDialog(doc);
+                    var dialog = new DocumentEditDialog(doc, documentService: _documentService);
                     if (dialog.ShowDialog() == true && dialog.Document != null)
                     {
                         _documentService.UpdateDocument(dialog.Document);
@@ -1099,18 +1212,37 @@ public partial class DocumentListPage : Page
             var doc = _documentService.GetDocument(id);
             if (doc != null)
             {
-                var result = MessageBox.Show(
-                    $"Bạn có chắc muốn xóa văn bản '{doc.Title}'?",
-                    "Xác nhận xóa",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
+                if (_isTrashView)
                 {
-                    _documentService.DeleteDocument(id);
-                    LoadDocuments();
-                    MessageBox.Show("✅ Đã xóa văn bản!", "Thành công",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Trong thùng rác: xóa vĩnh viễn
+                    var result = MessageBox.Show(
+                        $"Xóa vĩnh viễn '{doc.Title}'?\nHành động này không thể hoàn tác!",
+                        "Xóa vĩnh viễn",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        _documentService.PermanentDeleteDocument(id);
+                        LoadDocuments();
+                        MessageBox.Show("✅ Đã xóa vĩnh viễn!", "Thành công",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                else
+                {
+                    // Bình thường: chuyển vào thùng rác (soft delete)
+                    var result = MessageBox.Show(
+                        $"Chuyển văn bản '{doc.Title}' vào thùng rác?",
+                        "Xóa văn bản",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        _documentService.SoftDeleteDocument(id);
+                        LoadDocuments();
+                        MessageBox.Show("✅ Đã chuyển vào thùng rác!\nBạn có thể khôi phục trong mục Thùng rác.", "Thành công",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
                 }
             }
         }
@@ -1204,8 +1336,9 @@ public partial class DocumentListPage : Page
                 var doc = _documentService.GetDocument(docVm.Id);
                 if (doc != null)
                 {
-                    var viewer = new DocumentViewDialog(doc);
+                    var viewer = new DocumentViewDialog(doc, _documentService);
                     viewer.ShowDialog();
+                    if (viewer.IsEdited) LoadDocuments();
                 }
             }
         }
@@ -1438,10 +1571,10 @@ public partial class DocumentListPage : Page
             }
             
             var hasRecipients = doc.Recipients != null && doc.Recipients.Length > 0;
-            var recipientsText = hasRecipients ? string.Join("\n", doc.Recipients) : string.Empty;
+            var recipientsText = hasRecipients ? string.Join("\n", doc.Recipients!) : string.Empty;
             
             var hasBasedOn = doc.BasedOn != null && doc.BasedOn.Length > 0;
-            var basedOnText = hasBasedOn ? string.Join("\n", doc.BasedOn) : string.Empty;
+            var basedOnText = hasBasedOn ? string.Join("\n", doc.BasedOn!) : string.Empty;
             
             // STEP 4: Use Dispatcher to show content AFTER UI has updated
             Dispatcher.BeginInvoke(new Action(() =>
@@ -1513,27 +1646,10 @@ public partial class DocumentListPage : Page
         }
     }
     
-    private string GetDocumentTypeText(DocumentType type)
-    {
-        return type switch
-        {
-            DocumentType.CongVan => "Công văn",
-            DocumentType.QuyetDinh => "Quyết định",
-            DocumentType.BaoCao => "Báo cáo",
-            DocumentType.ToTrinh => "Tờ trình",
-            DocumentType.KeHoach => "Kế hoạch",
-            DocumentType.ThongBao => "Thông báo",
-            DocumentType.NghiQuyet => "Nghị quyết",
-            DocumentType.ChiThi => "Chỉ thị",
-            DocumentType.HuongDan => "Hướng dẫn",
-            DocumentType.QuyDinh => "Quy định",
-            DocumentType.Luat => "Luật",
-            DocumentType.NghiDinh => "Nghị định",
-            DocumentType.ThongTu => "Thông tư",
-            DocumentType.Khac => "Khác",
-            _ => type.ToString()
-        };
-    }
+    /// <summary>
+    /// Lấy tên hiển thị loại VB — delegate sang EnumDisplayHelper (đủ 29 loại, NĐ 30/2020)
+    /// </summary>
+    private string GetDocumentTypeText(DocumentType type) => type.GetDisplayName();
     
     private string GetDocumentStatusText(DateTime issueDate)
     {
@@ -1851,18 +1967,72 @@ public partial class DocumentListPage : Page
         return dialog;
     }
     
-    // DataGrid Sorting handler
+    // DataGrid Sorting handler — dùng ICollectionView để sort đúng
     private void DataGrid_Sorting(object sender, DataGridSortingEventArgs e)
     {
         try
         {
-            // Let WPF handle the default sorting
-            // The SortMemberPath on each column will handle the sorting automatically
-            Console.WriteLine($"Sorting by: {e.Column.Header}");
+            e.Handled = true; // Ta tự xử lý sorting
+            
+            var column = e.Column;
+            var sortPath = column.SortMemberPath;
+            if (string.IsNullOrEmpty(sortPath)) return;
+            
+            // Toggle sort direction
+            var direction = (column.SortDirection != System.ComponentModel.ListSortDirection.Ascending)
+                ? System.ComponentModel.ListSortDirection.Ascending
+                : System.ComponentModel.ListSortDirection.Descending;
+            column.SortDirection = direction;
+            
+            // Clear other column sorts
+            foreach (var col in dgDocuments.Columns)
+            {
+                if (col != column) col.SortDirection = null;
+            }
+            
+            // Sort data using ICollectionView
+            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(dgDocuments.ItemsSource);
+            if (view != null)
+            {
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new System.ComponentModel.SortDescription(sortPath, direction));
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error sorting: {ex.Message}");
-            e.Handled = false;
         }
-    }}
+    }
+    
+    #region Sao văn bản — Điều 25-27, NĐ 30/2020
+    
+    /// <summary>
+    /// Sao văn bản — Theo Điều 25-27, NĐ 30/2020/NĐ-CP
+    /// </summary>
+    private void CopyDocument_Click(object sender, RoutedEventArgs e)
+    {
+        var selected = dgDocuments.SelectedItems.Cast<DocumentViewModel>().ToList();
+        if (selected.Count != 1)
+        {
+            MessageBox.Show("Vui lòng chọn đúng 1 văn bản để sao.", "Sao văn bản", 
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        
+        var doc = _documentService.GetDocument(selected[0].Id);
+        if (doc == null) return;
+        
+        var dialog = new CopyDocumentDialog(doc, _documentService) { Owner = Window.GetWindow(this) };
+        if (dialog.ShowDialog() == true && dialog.CreatedCopy != null)
+        {
+            LoadDocuments();
+            
+            // Chọn bản sao vừa tạo
+            var newCopy = dgDocuments.Items.Cast<DocumentViewModel>()
+                .FirstOrDefault(vm => vm.Id == dialog.CreatedCopy.Id);
+            if (newCopy != null) dgDocuments.SelectedItem = newCopy;
+        }
+    }
+    
+    #endregion
+}

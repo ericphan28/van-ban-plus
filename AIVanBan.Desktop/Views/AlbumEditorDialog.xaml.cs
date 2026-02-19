@@ -43,6 +43,7 @@ public partial class AlbumEditorDialog : Window
             txtTitle.Text = _editingAlbum.Title;
             txtDescription.Text = _editingAlbum.Description;
             txtTags.Text = string.Join(", ", _editingAlbum.Tags);
+            dpEventDate.SelectedDate = _editingAlbum.EventDate;
         }
     }
 
@@ -72,6 +73,7 @@ public partial class AlbumEditorDialog : Window
                 _editingAlbum.Title = txtTitle.Text.Trim();
                 _editingAlbum.Description = txtDescription.Text.Trim();
                 _editingAlbum.Tags = tags;
+                _editingAlbum.EventDate = dpEventDate.SelectedDate;
                 _albumService.UpdateAlbum(_editingAlbum);
                 ResultAlbum = _editingAlbum;
 
@@ -86,6 +88,14 @@ public partial class AlbumEditorDialog : Window
                     txtDescription.Text.Trim(),
                     tags
                 );
+                
+                // Set EventDate if provided
+                if (dpEventDate.SelectedDate.HasValue)
+                {
+                    newAlbum.EventDate = dpEventDate.SelectedDate;
+                    _albumService.UpdateAlbum(newAlbum);
+                }
+                
                 ResultAlbum = newAlbum;
 
                 MessageBox.Show($"✅ Đã tạo album thành công!\n\n" +

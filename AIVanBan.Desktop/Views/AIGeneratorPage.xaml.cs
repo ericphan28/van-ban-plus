@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using AIVanBan.Core.Models;
 using AIVanBan.Core.Services;
 
@@ -15,9 +16,12 @@ public partial class AIGeneratorPage : Page
     {
         InitializeComponent();
         _documentService = documentService;
-        InitializeData();
+        LoadRecentDocuments();
     }
     
+    /// <summary>
+    /// Mở AI Compose Dialog để tạo văn bản mới
+    /// </summary>
     private void NewDocument_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -27,436 +31,298 @@ public partial class AIGeneratorPage : Page
             
             if (dialog.ShowDialog() == true && dialog.GeneratedDocument != null)
             {
-                // Lưu document
+                // Lưu document vào DB
                 _documentService.AddDocument(dialog.GeneratedDocument);
                 
                 MessageBox.Show(
-                    $"✅ Đã tạo và lưu văn bản:\n\n{dialog.GeneratedDocument.Title}",
+                    $"✅ Đã tạo và lưu văn bản:\n\n📋 {dialog.GeneratedDocument.Title}\n📁 Loại: {dialog.GeneratedDocument.Type.GetDisplayName()}\n🏢 Cơ quan: {dialog.GeneratedDocument.Issuer}",
                     "Thành công",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
                 );
                 
-                // Refresh would go here if we had the UI elements
+                // Refresh danh sách
+                LoadRecentDocuments();
             }
         }
         catch (Exception ex)
         {
-            var errorMessage = $"Lỗi khi mở AI Composer:\n\n{ex.Message}\n\nChi tiết:\n{ex.ToString()}";
-            
-            // Create custom error window with copyable text
-            var errorWindow = new Window
+            ShowErrorDialog(ex);
+        }
+    }
+
+    /// <summary>
+    /// Load danh sách văn bản AI đã tạo gần đây
+    /// </summary>
+    private void LoadRecentDocuments()
+    {
+        try
+        {
+            var allDocs = _documentService.GetAllDocuments();
+            var aiDocs = allDocs
+                .Where(d => d.Tags != null && d.Tags.Contains("AI Generated"))
+                .OrderByDescending(d => d.CreatedDate)
+                .Take(50)
+                .Select(d => new DocumentListItem
+                {
+                    Id = d.Id,
+                    Title = d.Title,
+                    TypeDisplay = d.Type.GetDisplayName(),
+                    Issuer = d.Issuer,
+                    CreatedDate = d.CreatedDate
+                })
+                .ToList();
+
+            dgRecentDocuments.ItemsSource = aiDocs;
+            emptyState.Visibility = aiDocs.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            dgRecentDocuments.Visibility = aiDocs.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading documents: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Refresh danh sách
+    /// </summary>
+    private void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        LoadRecentDocuments();
+    }
+
+    /// <summary>
+    /// Double-click để xem chi tiết văn bản
+    /// </summary>
+    private void DocumentDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (dgRecentDocuments.SelectedItem is DocumentListItem item)
+        {
+            var doc = _documentService.GetDocument(item.Id);
+            if (doc == null) return;
+
+            // Hiển thị nội dung trong dialog
+            var previewWindow = new Window
             {
-                Title = "❌ Lỗi",
-                Width = 600,
-                Height = 400,
+                Title = $"📄 {doc.Title}",
+                Width = 800,
+                Height = 600,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
                 Owner = Window.GetWindow(this)
             };
-            
+
             var grid = new Grid { Margin = new Thickness(15) };
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            
-            // Scrollable error text (selectable)
-            var scrollViewer = new ScrollViewer 
-            { 
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-            var errorTextBox = new TextBox
+
+            var textBox = new TextBox
             {
-                Text = errorMessage,
+                Text = doc.Content,
                 IsReadOnly = true,
                 TextWrapping = TextWrapping.Wrap,
+                FontFamily = new System.Windows.Media.FontFamily("Times New Roman"),
+                FontSize = 14,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 BorderThickness = new Thickness(1),
-                Padding = new Thickness(10),
-                FontFamily = new System.Windows.Media.FontFamily("Consolas"),
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+                Padding = new Thickness(20)
             };
-            scrollViewer.Content = errorTextBox;
-            Grid.SetRow(scrollViewer, 0);
-            grid.Children.Add(scrollViewer);
-            
-            // Buttons
-            var buttonPanel = new StackPanel 
-            { 
-                Orientation = Orientation.Horizontal, 
-                HorizontalAlignment = HorizontalAlignment.Right 
-            };
-            
-            var copyButton = new Button
+            Grid.SetRow(textBox, 0);
+            grid.Children.Add(textBox);
+
+            var buttonPanel = new StackPanel
             {
-                Content = "📋 Copy Lỗi",
-                Width = 100,
-                Height = 35,
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+
+            var exportBtn = new Button
+            {
+                Content = "📝 Xuất Word",
+                Padding = new Thickness(20, 8, 20, 8),
                 Margin = new Thickness(0, 0, 10, 0)
             };
-            copyButton.Click += (s, args) =>
+            exportBtn.Click += (s, args) =>
             {
-                try
-                {
-                    Clipboard.SetText(errorMessage);
-                    MessageBox.Show("✅ Đã copy lỗi vào clipboard!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch { }
+                ExportDocumentToWord(doc);
             };
-            
-            var closeButton = new Button
+
+            var closeBtn = new Button
             {
                 Content = "Đóng",
-                Width = 100,
-                Height = 35,
+                Padding = new Thickness(20, 8, 20, 8),
                 IsCancel = true
             };
-            closeButton.Click += (s, args) => errorWindow.Close();
-            
-            buttonPanel.Children.Add(copyButton);
-            buttonPanel.Children.Add(closeButton);
+            closeBtn.Click += (s, args) => previewWindow.Close();
+
+            buttonPanel.Children.Add(exportBtn);
+            buttonPanel.Children.Add(closeBtn);
             Grid.SetRow(buttonPanel, 1);
             grid.Children.Add(buttonPanel);
-            
-            errorWindow.Content = grid;
-            errorWindow.ShowDialog();
+
+            previewWindow.Content = grid;
+            previewWindow.ShowDialog();
         }
     }
 
-    private void InitializeData()
+    /// <summary>
+    /// Xuất Word từ danh sách
+    /// </summary>
+    private void ExportWord_Click(object sender, RoutedEventArgs e)
     {
-        // Load Document Types (hiển thị tên tiếng Việt)
-        cboDocType.DisplayMemberPath = "Value";
-        cboDocType.SelectedValuePath = "Key";
-        foreach (var item in EnumDisplayHelper.GetDocumentTypeItems())
+        if (sender is Button button && button.Tag is string documentId)
         {
-            cboDocType.Items.Add(item);
-        }
-        cboDocType.SelectedIndex = 0;
-
-        // Load Templates
-        cboTemplate.Items.Add("Mặc định");
-        var templates = _documentService.GetAllTemplates();
-        foreach (var template in templates)
-        {
-            cboTemplate.Items.Add(template.Name);
-        }
-        cboTemplate.SelectedIndex = 0;
-
-        // Set default values
-        dpIssueDate.SelectedDate = DateTime.Now;
-    }
-
-    private void DocumentType_Changed(object sender, SelectionChangedEventArgs e)
-    {
-        // Update hints based on document type
-        if (cboDocType.SelectedValue is DocumentType type)
-        {
-            txtStatus.Text = $"Đã chọn: {type.GetDisplayName()}";
+            var doc = _documentService.GetDocument(documentId);
+            if (doc != null)
+            {
+                ExportDocumentToWord(doc);
+            }
         }
     }
 
-    private void Generate_Click(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// Xuất văn bản ra file Word bằng WordExportService chuẩn TT01/2011
+    /// </summary>
+    private void ExportDocumentToWord(Document doc)
     {
-        // Validate
-        if (cboDocType.SelectedItem == null)
-        {
-            MessageBox.Show("Vui lòng chọn loại văn bản!", "Thông báo", 
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(txtSubject.Text))
-        {
-            MessageBox.Show("Vui lòng nhập trích yếu/về việc!", "Thông báo", 
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        btnGenerate.IsEnabled = false;
-        txtStatus.Text = "⏳ Đang tạo văn bản...";
-
         try
         {
-            var docType = (DocumentType)cboDocType.SelectedValue;
-            var generatedText = GenerateDocument(docType);
-            
-            txtPreview.Text = generatedText;
-            txtStatus.Text = "✅ Tạo thành công! Bạn có thể chỉnh sửa, copy hoặc lưu.";
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Lưu file Word",
+                FileName = $"{SanitizeFileName(doc.Title)}",
+                DefaultExt = ".docx",
+                Filter = "Word Document (*.docx)|*.docx"
+            };
+
+            if (saveDialog.ShowDialog() == true)
+            {
+                var wordService = new WordExportService();
+                wordService.ExportDocument(doc, saveDialog.FileName);
+
+                var result = MessageBox.Show(
+                    $"✅ Đã xuất văn bản ra file:\n{saveDialog.FileName}\n\nBạn có muốn mở file không?",
+                    "Xuất Word thành công",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = saveDialog.FileName,
+                        UseShellExecute = true
+                    });
+                }
+            }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", 
+            MessageBox.Show($"Lỗi khi xuất Word:\n{ex.Message}", "Lỗi",
                 MessageBoxButton.OK, MessageBoxImage.Error);
-            txtStatus.Text = "❌ Có lỗi xảy ra";
-        }
-        finally
-        {
-            btnGenerate.IsEnabled = true;
         }
     }
 
-    private string GenerateDocument(DocumentType type)
+    /// <summary>
+    /// Xóa văn bản từ danh sách
+    /// </summary>
+    private void DeleteDocument_Click(object sender, RoutedEventArgs e)
     {
-        // Template-based generation (later: integrate real AI)
-        var number = string.IsNullOrWhiteSpace(txtNumber.Text) ? "[Số văn bản]" : txtNumber.Text;
-        var date = dpIssueDate.SelectedDate ?? DateTime.Now;
-        var issuer = string.IsNullOrWhiteSpace(txtIssuer.Text) ? "[Cơ quan ban hành]" : txtIssuer.Text;
-        var recipient = string.IsNullOrWhiteSpace(txtRecipient.Text) ? "[Người nhận]" : txtRecipient.Text;
-        var subject = txtSubject.Text.Trim();
-        var content = string.IsNullOrWhiteSpace(txtMainContent.Text) 
-            ? "[Nội dung chi tiết...]" 
-            : txtMainContent.Text.Trim();
-        var signer = string.IsNullOrWhiteSpace(txtSigner.Text) ? "[Người ký]" : txtSigner.Text;
-
-        return type switch
+        if (sender is Button button && button.Tag is string documentId)
         {
-            DocumentType.CongVan => GenerateCongVan(number, date, issuer, recipient, subject, content, signer),
-            DocumentType.BaoCao => GenerateBaoCao(number, date, issuer, recipient, subject, content, signer),
-            DocumentType.ToTrinh => GenerateToTrinh(number, date, issuer, recipient, subject, content, signer),
-            DocumentType.QuyetDinh => GenerateQuyetDinh(number, date, issuer, recipient, subject, content, signer),
-            DocumentType.ThongBao => GenerateThongBao(number, date, issuer, recipient, subject, content, signer),
-            _ => GenerateCongVan(number, date, issuer, recipient, subject, content, signer)
-        };
-    }
-
-    private string GenerateCongVan(string number, DateTime date, string issuer, 
-        string recipient, string subject, string content, string signer)
-    {
-        return $@"{issuer.ToUpper()}
----------
-
-Số: {number}
-V/v: {subject}
-
-                                                        {issuer}, ngày {date:dd} tháng {date:MM} năm {date:yyyy}
-
-Kính gửi: {recipient}
-
-    {content}
-
-    {issuer} trân trọng thông báo và đề nghị {recipient} thực hiện.
-
-
-                                                        {signer.ToUpper()}
-                                                        (Ký và đóng dấu)
-
-
-
-                                                        [{signer}]";
-    }
-
-    private string GenerateBaoCao(string number, DateTime date, string issuer, 
-        string recipient, string subject, string content, string signer)
-    {
-        return $@"{issuer.ToUpper()}
----------
-
-BÁO CÁO
-{subject}
-
-Số: {number}
-
-Kính gửi: {recipient}
-
-    Căn cứ yêu cầu của {recipient};
-    Căn cứ kết quả thực hiện công việc;
-    
-    {issuer} báo cáo như sau:
-
-I. TÌNH HÌNH THỰC HIỆN
-
-    {content}
-
-II. ĐÁNH GIÁ VÀ ĐỀ XUẤT
-
-    [Nội dung đánh giá, kiến nghị...]
-
-    Trên đây là báo cáo của {issuer}, kính trình {recipient} xem xét.
-
-
-                                                        {issuer}, ngày {date:dd} tháng {date:MM} năm {date:yyyy}
-                                                        {signer.ToUpper()}
-                                                        (Ký và đóng dấu)
-
-
-
-                                                        [{signer}]";
-    }
-
-    private string GenerateToTrinh(string number, DateTime date, string issuer, 
-        string recipient, string subject, string content, string signer)
-    {
-        return $@"{issuer.ToUpper()}
----------
-
-TỜ TRÌNH
-{subject}
-
-Số: {number}
-
-Kính gửi: {recipient}
-
-    Căn cứ Luật [Tên luật];
-    Căn cứ [Các văn bản pháp lý liên quan];
-    Căn cứ thực tế tình hình công việc;
-    
-    {issuer} kính trình {recipient} như sau:
-
-I. SỰ CẦN THIẾT
-
-    {content}
-
-II. NỘI DUNG ĐỀ XUẤT
-
-    [Nội dung cụ thể đề xuất...]
-
-III. DỰ KIẾN KINH PHÍ VÀ NGUỒN KINH PHÍ
-
-    [Nội dung kinh phí...]
-
-    {issuer} kính trình {recipient} xem xét, quyết định.
-
-
-                                                        {issuer}, ngày {date:dd} tháng {date:MM} năm {date:yyyy}
-                                                        {signer.ToUpper()}
-                                                        (Ký và đóng dấu)
-
-
-
-                                                        [{signer}]";
-    }
-
-    private string GenerateQuyetDinh(string number, DateTime date, string issuer, 
-        string recipient, string subject, string content, string signer)
-    {
-        return $@"{issuer.ToUpper()}
----------
-
-QUYẾT ĐỊNH
-{subject}
-
-Số: {number}
-
-                                                        {signer.ToUpper()}
-
-    Căn cứ Luật [Tên luật];
-    Căn cứ [Các văn bản pháp lý liên quan];
-    Xét đề nghị của [Đơn vị/Cá nhân];
-
-QUYẾT ĐỊNH:
-
-Điều 1. {content}
-
-Điều 2. Quyết định này có hiệu lực kể từ ngày ký.
-
-Điều 3. [Các cơ quan, đơn vị, cá nhân có liên quan] chịu trách nhiệm thi hành Quyết định này.
-
-
-                                                        {issuer}, ngày {date:dd} tháng {date:MM} năm {date:yyyy}
-                                                        {signer.ToUpper()}
-                                                        (Ký và đóng dấu)
-
-
-
-                                                        [{signer}]";
-    }
-
-    private string GenerateThongBao(string number, DateTime date, string issuer, 
-        string recipient, string subject, string content, string signer)
-    {
-        return $@"{issuer.ToUpper()}
----------
-
-THÔNG BÁO
-{subject}
-
-Số: {number}
-
-    {issuer} thông báo đến {recipient}:
-
-    {content}
-
-    Đề nghị các đơn vị, cá nhân có liên quan thực hiện đúng nội dung thông báo này.
-
-
-                                                        {issuer}, ngày {date:dd} tháng {date:MM} năm {date:yyyy}
-                                                        {signer.ToUpper()}
-                                                        (Ký và đóng dấu)
-
-
-
-                                                        [{signer}]";
-    }
-
-    private void Copy_Click(object sender, RoutedEventArgs e)
-    {
-        if (!string.IsNullOrWhiteSpace(txtPreview.Text))
-        {
-            Clipboard.SetText(txtPreview.Text);
-            txtStatus.Text = "📋 Đã copy vào clipboard!";
-            MessageBox.Show("Đã copy văn bản vào clipboard!", "Thành công", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            var result = MessageBox.Show(
+                "Bạn có chắc chắn muốn xóa văn bản này?",
+                "Xác nhận xóa",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    _documentService.DeleteDocument(documentId);
+                    LoadRecentDocuments();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi xóa: {ex.Message}", "Lỗi",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
     }
 
-    private void SaveToDatabase_Click(object sender, RoutedEventArgs e)
+    private string SanitizeFileName(string name)
     {
-        if (string.IsNullOrWhiteSpace(txtPreview.Text) || cboDocType.SelectedItem == null)
-        {
-            MessageBox.Show("Vui lòng tạo văn bản trước!", "Thông báo", 
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(name)) return "VanBan";
+        var invalid = System.IO.Path.GetInvalidFileNameChars();
+        return string.Join("_", name.Split(invalid, StringSplitOptions.RemoveEmptyEntries)).Trim();
+    }
 
-        var document = new Document
-        {
-            Number = txtNumber.Text.Trim(),
-            Title = txtSubject.Text.Trim(),
-            Type = (DocumentType)cboDocType.SelectedValue,
-            IssueDate = dpIssueDate.SelectedDate ?? DateTime.Now,
-            Issuer = txtIssuer.Text.Trim(),
-            Subject = txtSubject.Text.Trim(),
-            Content = txtPreview.Text,
-            Direction = Direction.Di,
-            CreatedDate = DateTime.Now
-        };
-
-        _documentService.AddDocument(document);
+    private void ShowErrorDialog(Exception ex)
+    {
+        var errorMessage = $"Lỗi khi mở AI Composer:\n\n{ex.Message}\n\nChi tiết:\n{ex}";
         
-        txtStatus.Text = "💾 Đã lưu vào cơ sở dữ liệu!";
-        MessageBox.Show("Đã lưu văn bản vào cơ sở dữ liệu!", "Thành công", 
-            MessageBoxButton.OK, MessageBoxImage.Information);
-    }
-
-    private void ExportWord_Click(object sender, RoutedEventArgs e)
-    {
-        if (string.IsNullOrWhiteSpace(txtPreview.Text))
+        var errorWindow = new Window
         {
-            MessageBox.Show("Vui lòng tạo văn bản trước!", "Thông báo", 
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        var saveDialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter = "Text files (*.txt)|*.txt|Word files (*.docx)|*.docx|All files (*.*)|*.*",
-            DefaultExt = ".txt",
-            FileName = $"VanBan_{DateTime.Now:yyyyMMdd_HHmmss}"
+            Title = "❌ Lỗi",
+            Width = 600,
+            Height = 400,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Owner = Window.GetWindow(this)
         };
-
-        if (saveDialog.ShowDialog() == true)
+        
+        var grid = new Grid { Margin = new Thickness(15) };
+        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        
+        var errorTextBox = new TextBox
         {
-            try
-            {
-                System.IO.File.WriteAllText(saveDialog.FileName, txtPreview.Text);
-                txtStatus.Text = $"📁 Đã xuất file: {System.IO.Path.GetFileName(saveDialog.FileName)}";
-                MessageBox.Show($"Đã xuất văn bản ra file:\n{saveDialog.FileName}", "Thành công", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi khi xuất file: {ex.Message}", "Lỗi", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+            Text = errorMessage,
+            IsReadOnly = true,
+            TextWrapping = TextWrapping.Wrap,
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(10),
+            FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        };
+        Grid.SetRow(errorTextBox, 0);
+        grid.Children.Add(errorTextBox);
+        
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+        
+        var copyButton = new Button { Content = "📋 Copy Lỗi", Width = 100, Height = 35, Margin = new Thickness(0, 0, 10, 0) };
+        copyButton.Click += (s, args) =>
+        {
+            try { Clipboard.SetText(errorMessage); } catch { }
+        };
+        
+        var closeButton = new Button { Content = "Đóng", Width = 100, Height = 35, IsCancel = true };
+        closeButton.Click += (s, args) => errorWindow.Close();
+        
+        buttonPanel.Children.Add(copyButton);
+        buttonPanel.Children.Add(closeButton);
+        Grid.SetRow(buttonPanel, 1);
+        grid.Children.Add(buttonPanel);
+        
+        errorWindow.Content = grid;
+        errorWindow.ShowDialog();
     }
+}
+
+/// <summary>
+/// ViewModel cho danh sách văn bản AI
+/// </summary>
+public class DocumentListItem
+{
+    public string Id { get; set; } = "";
+    public string Title { get; set; } = "";
+    public string TypeDisplay { get; set; } = "";
+    public string Issuer { get; set; } = "";
+    public DateTime CreatedDate { get; set; }
 }

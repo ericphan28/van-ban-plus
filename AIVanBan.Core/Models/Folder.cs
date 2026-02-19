@@ -25,6 +25,11 @@ public class OrganizationConfig
     public string Id { get; set; } = "default";
     public string Name { get; set; } = string.Empty; // "UBND Xã Hòa Bình"
     public OrganizationType Type { get; set; }
+    /// <summary>
+    /// Ký hiệu viết tắt cơ quan, dùng trong ký hiệu văn bản.
+    /// VD: "UBND", "HĐND", "ĐU" — theo Phụ lục VI, NĐ 30/2020/NĐ-CP
+    /// </summary>
+    public string Abbreviation { get; set; } = string.Empty;
     public string[] Departments { get; set; } = Array.Empty<string>(); // Danh sách phòng ban
     public string FolderStructure { get; set; } = string.Empty; // JSON cấu trúc thư mục
     public DateTime SetupDate { get; set; } = DateTime.Now;
@@ -94,7 +99,7 @@ public enum OrganizationType
     
     // === CƠ SỞ Y TẾ ===
     TramYTe,            // Trạm Y tế Xã
-    TrungTamYTe,        // Trung tâm Y tế Huyện
+    TrungTamYTe,        // Trung tâm Y tế
     BenhVien,           // Bệnh viện
     
     // === CƠ QUAN KHÁC ===

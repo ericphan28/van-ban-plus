@@ -12,6 +12,7 @@ public partial class MeetingEditDialog : Window
 {
     private readonly MeetingService _meetingService;
     private readonly DocumentService? _documentService;
+    private readonly SimpleAlbumService _albumService;
     private Meeting _meeting;
     private bool _isNew;
     
@@ -20,12 +21,14 @@ public partial class MeetingEditDialog : Window
     private List<MeetingTask> _tasks = new();
     private List<MeetingDocument> _documents = new();
     private List<string> _attachmentPaths = new();
+    private List<string> _relatedAlbumIds = new();
     
     public MeetingEditDialog(Meeting? meeting, MeetingService meetingService, DocumentService? documentService = null)
     {
         InitializeComponent();
         _meetingService = meetingService;
         _documentService = documentService;
+        _albumService = new SimpleAlbumService();
         _isNew = meeting == null;
         _meeting = meeting ?? new Meeting();
         
@@ -168,6 +171,10 @@ public partial class MeetingEditDialog : Window
         
         _attachmentPaths = _meeting.AttachmentPaths?.ToList() ?? new List<string>();
         RefreshAttachmentList();
+        
+        // Tab 6: Album ảnh liên quan
+        _relatedAlbumIds = _meeting.RelatedAlbumIds?.ToList() ?? new List<string>();
+        RefreshLinkedAlbumList();
         
         // Created info
         txtCreatedInfo.Text = $"Tạo bởi: {_meeting.CreatedBy} lúc {_meeting.CreatedDate:dd/MM/yyyy HH:mm}";
@@ -889,7 +896,7 @@ public partial class MeetingEditDialog : Window
             return;
         }
         
-        var viewer = new DocumentViewDialog(doc)
+        var viewer = new DocumentViewDialog(doc, _documentService)
         {
             Owner = this
         };
@@ -1030,7 +1037,7 @@ public partial class MeetingEditDialog : Window
             {
                 if (capturedIdxUnlink < _documents.Count)
                 {
-                    _documents[capturedIdxUnlink].LinkedDocumentId = null;
+                    _documents[capturedIdxUnlink].LinkedDocumentId = string.Empty;
                     RefreshDocumentList();
                 }
             };
@@ -1344,7 +1351,7 @@ public partial class MeetingEditDialog : Window
             {
                 if (capturedIdxRemove < _documents.Count)
                 {
-                    _documents[capturedIdxRemove].FilePath = null;
+                    _documents[capturedIdxRemove].FilePath = string.Empty;
                     RefreshDocumentList();
                 }
             };
@@ -1565,6 +1572,9 @@ public partial class MeetingEditDialog : Window
             _meeting.Documents = _documents.Where(d => !string.IsNullOrWhiteSpace(d.Title) || !string.IsNullOrWhiteSpace(d.DocumentNumber) || !string.IsNullOrWhiteSpace(d.FilePath)).ToList();
             _meeting.AttachmentPaths = _attachmentPaths.ToArray();
             
+            // Tab 6: Album ảnh liên quan
+            _meeting.RelatedAlbumIds = _relatedAlbumIds.ToArray();
+            
             // Sync legacy fields for backward compatibility
             var invitation = _meeting.Documents.FirstOrDefault(d => d.DocumentType == MeetingDocumentType.GiayMoi);
             _meeting.InvitationDocId = invitation?.DocumentNumber ?? "";
@@ -1597,6 +1607,466 @@ public partial class MeetingEditDialog : Window
     {
         DialogResult = false;
         Close();
+    }
+    
+    #endregion
+    
+    #region Tab 6: Album ảnh liên quan
+    
+    private void LinkAlbum_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var allAlbums = _albumService.GetAllAlbums();
+            if (allAlbums.Count == 0)
+            {
+                MessageBox.Show("Chưa có album ảnh nào trong hệ thống.\nHãy tạo album trong mục 'Album ảnh' trước.",
+                    "Chưa có album", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            
+            // Filter out already linked albums
+            var available = allAlbums.Where(a => !_relatedAlbumIds.Contains(a.Id)).ToList();
+            if (available.Count == 0)
+            {
+                MessageBox.Show("Tất cả album đã được liên kết!", "Thông báo", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            
+            // Show album picker dialog
+            var picker = new Window
+            {
+                Title = "Chọn album ảnh để liên kết",
+                Width = 680,
+                Height = 520,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                Background = (Brush)FindResource("MaterialDesignPaper")
+            };
+            
+            var mainGrid = new Grid();
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            
+            // Header
+            var header = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(0xE3, 0xF2, 0xFD)),
+                Padding = new Thickness(16, 12, 16, 12)
+            };
+            var headerPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            headerPanel.Children.Add(new PackIcon { Kind = PackIconKind.ImageMultiple, Width = 22, Height = 22, 
+                VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0),
+                Foreground = new SolidColorBrush(Color.FromRgb(0x15, 0x65, 0xC0)) });
+            headerPanel.Children.Add(new TextBlock { Text = "CHỌN ALBUM ẢNH", FontSize = 15, FontWeight = FontWeights.Bold,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = new SolidColorBrush(Color.FromRgb(0x15, 0x65, 0xC0)) });
+            headerPanel.Children.Add(new TextBlock { Text = $"  ({available.Count} album khả dụng)", FontSize = 12,
+                VerticalAlignment = VerticalAlignment.Center, Opacity = 0.7 });
+            header.Child = headerPanel;
+            Grid.SetRow(header, 0);
+            
+            // Search box
+            var searchBox = new TextBox
+            {
+                Margin = new Thickness(16, 10, 16, 6),
+                FontSize = 13
+            };
+            HintAssist.SetHint(searchBox, "🔍 Tìm kiếm album...");
+            HintAssist.SetIsFloating(searchBox, false);
+            Grid.SetRow(searchBox, 1);
+            
+            // Album list
+            var listBox = new ListBox
+            {
+                Margin = new Thickness(16, 4, 16, 4),
+                SelectionMode = SelectionMode.Multiple,
+                MaxHeight = 340
+            };
+            
+            foreach (var album in available.OrderByDescending(a => a.ModifiedDate))
+            {
+                var itemBorder = new Border
+                {
+                    Padding = new Thickness(10, 8, 10, 8),
+                    Margin = new Thickness(0, 2, 0, 2),
+                    CornerRadius = new CornerRadius(6),
+                    Background = new SolidColorBrush(Color.FromRgb(0xFA, 0xFA, 0xFA))
+                };
+                
+                var itemGrid = new Grid();
+                itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
+                itemGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                
+                // Album thumbnail
+                var thumbBorder = new Border
+                {
+                    Width = 52, Height = 52,
+                    CornerRadius = new CornerRadius(6),
+                    Background = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
+                    Margin = new Thickness(0, 0, 8, 0),
+                    ClipToBounds = true
+                };
+                
+                if (album.ThumbnailPhotos.Count > 0 && System.IO.File.Exists(album.ThumbnailPhotos[0]))
+                {
+                    try
+                    {
+                        var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(album.ThumbnailPhotos[0]);
+                        bitmap.DecodePixelWidth = 80;
+                        bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bitmap.EndInit();
+                        bitmap.Freeze();
+                        
+                        thumbBorder.Background = new ImageBrush(bitmap)
+                        {
+                            Stretch = Stretch.UniformToFill
+                        };
+                    }
+                    catch { /* skip thumbnail error */ }
+                }
+                else
+                {
+                    var iconPackIcon = new PackIcon
+                    {
+                        Kind = PackIconKind.ImageOutline,
+                        Width = 24, Height = 24,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E))
+                    };
+                    thumbBorder.Child = iconPackIcon;
+                }
+                Grid.SetColumn(thumbBorder, 0);
+                
+                // Album info
+                var infoPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                infoPanel.Children.Add(new TextBlock
+                {
+                    Text = album.Title,
+                    FontSize = 13,
+                    FontWeight = FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                });
+                
+                var detailPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 0) };
+                detailPanel.Children.Add(new TextBlock
+                {
+                    Text = $"📷 {album.PhotoCount} ảnh",
+                    FontSize = 11,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x75, 0x75, 0x75)),
+                    Margin = new Thickness(0, 0, 12, 0)
+                });
+                detailPanel.Children.Add(new TextBlock
+                {
+                    Text = $"📅 {album.ModifiedDate:dd/MM/yyyy}",
+                    FontSize = 11,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x75, 0x75, 0x75))
+                });
+                infoPanel.Children.Add(detailPanel);
+                
+                if (!string.IsNullOrEmpty(album.AlbumFolderPath))
+                {
+                    infoPanel.Children.Add(new TextBlock
+                    {
+                        Text = $"📁 {album.AlbumFolderPath}",
+                        FontSize = 10.5,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E)),
+                        Margin = new Thickness(0, 2, 0, 0),
+                        TextTrimming = TextTrimming.CharacterEllipsis
+                    });
+                }
+                
+                Grid.SetColumn(infoPanel, 1);
+                
+                itemGrid.Children.Add(thumbBorder);
+                itemGrid.Children.Add(infoPanel);
+                itemBorder.Child = itemGrid;
+                
+                var lbi = new ListBoxItem { Content = itemBorder, Tag = album, Padding = new Thickness(4) };
+                listBox.Items.Add(lbi);
+            }
+            
+            // Search filter
+            searchBox.TextChanged += (s, ev) =>
+            {
+                var keyword = searchBox.Text?.Trim().ToLower() ?? "";
+                foreach (ListBoxItem item in listBox.Items)
+                {
+                    if (item.Tag is SimpleAlbum a)
+                    {
+                        item.Visibility = string.IsNullOrEmpty(keyword) || 
+                            a.Title.ToLower().Contains(keyword) ||
+                            (a.AlbumFolderPath?.ToLower().Contains(keyword) ?? false) ||
+                            a.Tags.Any(t => t.ToLower().Contains(keyword))
+                            ? Visibility.Visible : Visibility.Collapsed;
+                    }
+                }
+            };
+            
+            Grid.SetRow(listBox, 2);
+            
+            // Buttons
+            var btnPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(16, 10, 16, 14)
+            };
+            var btnOk = new Button
+            {
+                Content = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Children = { 
+                        new PackIcon { Kind = PackIconKind.LinkPlus, Width = 16, Height = 16, 
+                            VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0,0,6,0) },
+                        new TextBlock { Text = "Liên kết album đã chọn", VerticalAlignment = VerticalAlignment.Center }
+                    }
+                },
+                Padding = new Thickness(16, 6, 16, 6),
+                Margin = new Thickness(0, 0, 10, 0),
+                IsDefault = true,
+                Style = (Style)FindResource("MaterialDesignRaisedButton")
+            };
+            var btnCancel = new Button
+            {
+                Content = "Đóng",
+                Padding = new Thickness(16, 6, 16, 6),
+                IsCancel = true,
+                Style = (Style)FindResource("MaterialDesignOutlinedButton")
+            };
+            
+            btnOk.Click += (s, ev) =>
+            {
+                var selected = listBox.Items.Cast<ListBoxItem>()
+                    .Where(i => i.IsSelected && i.Tag is SimpleAlbum)
+                    .Select(i => ((SimpleAlbum)i.Tag).Id)
+                    .ToList();
+                    
+                if (selected.Count == 0)
+                {
+                    MessageBox.Show("Vui lòng chọn ít nhất 1 album!", "Chưa chọn", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                
+                foreach (var id in selected)
+                {
+                    if (!_relatedAlbumIds.Contains(id))
+                        _relatedAlbumIds.Add(id);
+                }
+                
+                RefreshLinkedAlbumList();
+                picker.Close();
+            };
+            
+            btnCancel.Click += (s, ev) => picker.Close();
+            
+            // Double-click to quickly add
+            listBox.MouseDoubleClick += (s, ev) =>
+            {
+                if (listBox.SelectedItem is ListBoxItem selectedItem && selectedItem.Tag is SimpleAlbum selectedAlbum)
+                {
+                    if (!_relatedAlbumIds.Contains(selectedAlbum.Id))
+                    {
+                        _relatedAlbumIds.Add(selectedAlbum.Id);
+                        RefreshLinkedAlbumList();
+                    }
+                    // Remove from picker list
+                    listBox.Items.Remove(selectedItem);
+                    
+                    // Update header count
+                    var remaining = listBox.Items.Cast<ListBoxItem>().Count(i => i.Visibility == Visibility.Visible);
+                    if (remaining == 0)
+                        picker.Close();
+                }
+            };
+            
+            btnPanel.Children.Add(btnOk);
+            btnPanel.Children.Add(btnCancel);
+            Grid.SetRow(btnPanel, 3);
+            
+            mainGrid.Children.Add(header);
+            mainGrid.Children.Add(searchBox);
+            mainGrid.Children.Add(listBox);
+            mainGrid.Children.Add(btnPanel);
+            picker.Content = mainGrid;
+            
+            picker.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi tải danh sách album:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+    
+    private void RefreshLinkedAlbumList()
+    {
+        linkedAlbumListPanel.Children.Clear();
+        
+        txtNoLinkedAlbums.Visibility = _relatedAlbumIds.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        txtAlbumStats.Text = _relatedAlbumIds.Count > 0 ? $"— {_relatedAlbumIds.Count} album" : "";
+        
+        foreach (var albumId in _relatedAlbumIds.ToList())
+        {
+            var album = _albumService.GetAlbumById(albumId);
+            
+            var card = new Border
+            {
+                Margin = new Thickness(0, 4, 0, 4),
+                Padding = new Thickness(12, 10, 12, 10),
+                CornerRadius = new CornerRadius(8),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
+                BorderThickness = new Thickness(1),
+                Background = new SolidColorBrush(Color.FromRgb(0xFA, 0xFA, 0xFA))
+            };
+            
+            var cardGrid = new Grid();
+            cardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(72) });
+            cardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            cardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            
+            // Thumbnail (2x2 grid or single cover)
+            var thumbBorder = new Border
+            {
+                Width = 64, Height = 64,
+                CornerRadius = new CornerRadius(8),
+                Background = new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8)),
+                ClipToBounds = true,
+                Margin = new Thickness(0, 0, 10, 0)
+            };
+            
+            if (album != null && album.ThumbnailPhotos.Count > 0 && System.IO.File.Exists(album.ThumbnailPhotos[0]))
+            {
+                try
+                {
+                    var bitmap = new System.Windows.Media.Imaging.BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(album.ThumbnailPhotos[0]);
+                    bitmap.DecodePixelWidth = 100;
+                    bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+                    bitmap.Freeze();
+                    
+                    thumbBorder.Background = new ImageBrush(bitmap) { Stretch = Stretch.UniformToFill };
+                }
+                catch { /* skip */ }
+            }
+            else
+            {
+                thumbBorder.Child = new PackIcon
+                {
+                    Kind = PackIconKind.ImageMultiple,
+                    Width = 28, Height = 28,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E))
+                };
+            }
+            Grid.SetColumn(thumbBorder, 0);
+            
+            // Album info
+            var infoPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            
+            if (album != null)
+            {
+                infoPanel.Children.Add(new TextBlock
+                {
+                    Text = album.Title,
+                    FontSize = 14,
+                    FontWeight = FontWeights.SemiBold,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    Margin = new Thickness(0, 0, 0, 3)
+                });
+                
+                var metaPanel = new WrapPanel();
+                metaPanel.Children.Add(new TextBlock
+                {
+                    Text = $"📷 {album.PhotoCount} ảnh",
+                    FontSize = 11.5,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x61, 0x61, 0x61)),
+                    Margin = new Thickness(0, 0, 14, 0)
+                });
+                metaPanel.Children.Add(new TextBlock
+                {
+                    Text = $"📅 {album.ModifiedDate:dd/MM/yyyy}",
+                    FontSize = 11.5,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x61, 0x61, 0x61)),
+                    Margin = new Thickness(0, 0, 14, 0)
+                });
+                if (!string.IsNullOrEmpty(album.AlbumFolderPath))
+                {
+                    metaPanel.Children.Add(new TextBlock
+                    {
+                        Text = $"📁 {album.AlbumFolderPath}",
+                        FontSize = 11,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E)),
+                        TextTrimming = TextTrimming.CharacterEllipsis,
+                        MaxWidth = 300
+                    });
+                }
+                infoPanel.Children.Add(metaPanel);
+                
+                if (!string.IsNullOrEmpty(album.Description))
+                {
+                    var desc = album.Description.Length > 80 ? album.Description.Substring(0, 80) + "..." : album.Description;
+                    infoPanel.Children.Add(new TextBlock
+                    {
+                        Text = desc,
+                        FontSize = 11,
+                        Foreground = new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E)),
+                        FontStyle = FontStyles.Italic,
+                        Margin = new Thickness(0, 3, 0, 0),
+                        TextTrimming = TextTrimming.CharacterEllipsis
+                    });
+                }
+            }
+            else
+            {
+                // Album deleted or not found
+                infoPanel.Children.Add(new TextBlock
+                {
+                    Text = $"⚠️ Album không tìm thấy (ID: {albumId.Substring(0, Math.Min(8, albumId.Length))}...)",
+                    FontSize = 12,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0xE6, 0x51, 0x00)),
+                    FontStyle = FontStyles.Italic
+                });
+            }
+            Grid.SetColumn(infoPanel, 1);
+            
+            // Remove button
+            var capturedAlbumId = albumId;
+            var removeBtn = new Button
+            {
+                ToolTip = "Gỡ liên kết album này",
+                Width = 32, Height = 32,
+                Padding = new Thickness(0),
+                Style = (Style)FindResource("MaterialDesignIconButton"),
+                Foreground = new SolidColorBrush(Color.FromRgb(0xC6, 0x28, 0x28)),
+                Content = new PackIcon { Kind = PackIconKind.LinkOff, Width = 18, Height = 18 },
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            removeBtn.Click += (s, ev) =>
+            {
+                _relatedAlbumIds.Remove(capturedAlbumId);
+                RefreshLinkedAlbumList();
+            };
+            Grid.SetColumn(removeBtn, 2);
+            
+            cardGrid.Children.Add(thumbBorder);
+            cardGrid.Children.Add(infoPanel);
+            cardGrid.Children.Add(removeBtn);
+            card.Child = cardGrid;
+            
+            linkedAlbumListPanel.Children.Add(card);
+        }
     }
     
     #endregion

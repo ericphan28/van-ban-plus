@@ -456,6 +456,72 @@
                     </ScrollViewer>
                 </Grid>
             </TabItem>
+            
+            <!-- ====== TAB 6: ALBUM ẢNH LIÊN QUAN ====== -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="ImageMultiple" Width="24" Height="24" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Album ảnh" FontSize="10" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header + Add button -->
+                    <DockPanel Grid.Row="0" Margin="20,16,20,8">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ImageMultiple" Width="20" Height="20" 
+                                                    VerticalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                            <TextBlock Text="ALBUM ẢNH LIÊN QUAN" FontWeight="Bold" FontSize="14"
+                                      Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                      VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            <TextBlock x:Name="txtAlbumStats" Text="" FontSize="12" Margin="12,0,0,0"
+                                      Foreground="#757575" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                               DockPanel.Dock="Right" HorizontalAlignment="Right"
+                               Padding="10,4" Click="LinkAlbum_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="LinkPlus" Width="16" Height="16" 
+                                                        VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBlock Text="Liên kết album" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                    </DockPanel>
+                    
+                    <!-- Info notice -->
+                    <Border Grid.Row="1" Background="#E3F2FD" CornerRadius="6" Padding="12,8" Margin="20,0,20,8">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="18" Height="18" 
+                                                    Foreground="#1565C0" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="#424242" VerticalAlignment="Center">
+                                <Run>Liên kết album ảnh từ</Run>
+                                <Run FontWeight="Bold"> Album Ảnh </Run>
+                                <Run>để lưu trữ hình ảnh cuộc họp. Nhấn "Liên kết album" để chọn từ danh sách có sẵn.</Run>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Linked Album List -->
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="20,4,20,16">
+                            <StackPanel x:Name="linkedAlbumListPanel">
+                                <!-- Populated dynamically in code-behind -->
+                            </StackPanel>
+                            
+                            <TextBlock x:Name="txtNoLinkedAlbums" 
+                                      Text="Chưa liên kết album ảnh nào. Nhấn 'Liên kết album' để chọn album."
+                                      FontSize="12" Foreground="#9E9E9E" FontStyle="Italic" Margin="0,12,0,16"
+                                      HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
         </TabControl>
         
         <!-- ============ BUTTONS ============ -->

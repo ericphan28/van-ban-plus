@@ -503,6 +503,13 @@ public class WordExportService
         var contentText = !string.IsNullOrEmpty(document.Content) 
             ? document.Content 
             : "[Nội dung văn bản]";
+        
+        // Loại bỏ markdown artifacts từ AI
+        contentText = contentText.Replace("**", "").Replace("__", "");
+        contentText = contentText.Replace("```", "").Replace("`", "");
+        contentText = System.Text.RegularExpressions.Regex.Replace(
+            contentText, @"^#{1,6}\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline);
+        
         var lines = contentText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         
         foreach (var line in lines)
@@ -839,6 +846,125 @@ public class WordExportService
         var nameParaProps = namePara.AppendChild(new ParagraphProperties());
         nameParaProps.AppendChild(new Justification() { Val = JustificationValues.Center });
     }
+
+    #region Export Content (Reusable - Xuất nội dung text bất kỳ ra Word chuẩn)
+
+    /// <summary>
+    /// Tùy chọn xuất nội dung ra Word — dùng chung cho tất cả các trang (AI Báo cáo, AI Soạn, v.v.)
+    /// </summary>
+    public class ExportContentOptions
+    {
+        /// <summary>Tên đơn vị ban hành (VD: "UBND xã Gia Kiệm")</summary>
+        public string OrgName { get; set; } = "";
+        
+        /// <summary>Tên loại văn bản in hoa (VD: "BÁO CÁO")</summary>
+        public string DocumentTypeName { get; set; } = "BÁO CÁO";
+        
+        /// <summary>Trích yếu (VD: "Tình hình kinh tế - xã hội tháng 01/2026")</summary>
+        public string Subject { get; set; } = "";
+        
+        /// <summary>Họ tên người ký</summary>
+        public string SignerName { get; set; } = "";
+        
+        /// <summary>Chức danh người ký (VD: "Chủ tịch UBND", "Trưởng Công an xã")</summary>
+        public string SignerTitle { get; set; } = "";
+        
+        /// <summary>Địa danh (VD: "Gia Kiệm"). Nếu rỗng sẽ tự trích từ OrgName</summary>
+        public string Location { get; set; } = "";
+        
+        /// <summary>Ngày ký. Mặc định = hôm nay</summary>
+        public DateTime IssueDate { get; set; } = DateTime.Now;
+        
+        /// <summary>Danh sách nơi nhận (tùy chọn). VD: ["Như trên;", "Lưu: VT."]</summary>
+        public string[]? Recipients { get; set; }
+    }
+
+    /// <summary>
+    /// Xuất nội dung text (VD: AI-generated content) ra file Word chuẩn TT01/2011.
+    /// Có thể reuse từ bất kỳ dialog/page nào trong ứng dụng.
+    /// Format: Header 2 cột (cơ quan | quốc hiệu) → Tên loại VB → Trích yếu → Nội dung → Chữ ký.
+    /// </summary>
+    public void ExportContent(string outputPath, string content, ExportContentOptions options)
+    {
+        if (string.IsNullOrEmpty(outputPath))
+            throw new ArgumentException("Đường dẫn file không được rỗng", nameof(outputPath));
+        if (string.IsNullOrEmpty(content))
+            throw new ArgumentException("Nội dung không được rỗng", nameof(content));
+
+        options ??= new ExportContentOptions();
+
+        // Tạo Document model tạm để tái sử dụng các method AddHeader, AddContent, AddSignature
+        var tempDoc = new DocModel
+        {
+            Issuer = options.OrgName,
+            Type = DocType.BaoCao,
+            Title = options.DocumentTypeName,
+            Subject = options.Subject,
+            Content = content,
+            SignedBy = options.SignerName,
+            SigningTitle = options.SignerTitle,
+            Location = !string.IsNullOrEmpty(options.Location) 
+                ? options.Location 
+                : ExtractLocationFromOrg(options.OrgName),
+            IssueDate = options.IssueDate,
+            Recipients = options.Recipients ?? new[] { "- Như trên;", "- Lưu: VT." },
+            Direction = Direction.Di
+        };
+
+        try
+        {
+            using var wordDoc = WordprocessingDocument.Create(outputPath, WordprocessingDocumentType.Document);
+            var mainPart = wordDoc.AddMainDocumentPart();
+            mainPart.Document = new WordDoc();
+            var body = mainPart.Document.AppendChild(new Body());
+
+            // Margins theo TT01/2011
+            SetPageMargins(mainPart.Document);
+
+            // Header: Cơ quan | Quốc hiệu
+            AddHeader(body, tempDoc);
+
+            // Số VB + Ngày + Tên loại + Trích yếu
+            AddDocumentInfo(body, tempDoc);
+
+            // Nội dung
+            AddContent(body, tempDoc);
+
+            // Chữ ký (Nơi nhận | Chức danh + Tên)
+            AddSignature(body, tempDoc);
+
+            mainPart.Document.Save();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Lỗi khi xuất nội dung ra Word: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Trích địa danh từ tên cơ quan.
+    /// VD: "UBND xã Gia Kiệm" → "Gia Kiệm", "Hội LHPN xã Gia Kiệm" → "Gia Kiệm"
+    /// </summary>
+    private string ExtractLocationFromOrg(string orgName)
+    {
+        if (string.IsNullOrEmpty(orgName)) return "...";
+        
+        var locationPrefixes = new[] { " xã ", " huyện ", " tỉnh ", " thành phố ", " TP. ", " TP ",
+            " thị xã ", " thị trấn ", " phường ", " quận " };
+        
+        foreach (var prefix in locationPrefixes)
+        {
+            var idx = orgName.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
+            {
+                return orgName.Substring(idx + prefix.Length).Trim();
+            }
+        }
+        
+        return "...";
+    }
+
+    #endregion
 
     #region Helper Methods
 

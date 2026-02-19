@@ -76,10 +76,10 @@ TRẢ VỀ JSON THUẦN TÚY, KHÔNG dùng markdown code fence (```json```).
 
 Ví dụ output:
 {
-  ""brief"": ""Quyết định phê duyệt kế hoạch phát triển kinh tế - xã hội năm 2026 của UBND huyện X"",
+  ""brief"": ""Quyết định phê duyệt kế hoạch phát triển kinh tế - xã hội năm 2026 của UBND thành phố X"",
   ""document_type"": ""Quyết định"",
-  ""issuing_authority"": ""Chủ tịch UBND huyện X — Nguyễn Văn A"",
-  ""target_audience"": ""Các phòng ban thuộc UBND huyện, UBND các xã/thị trấn"",
+  ""issuing_authority"": ""Chủ tịch UBND thành phố X — Nguyễn Văn A"",
+  ""target_audience"": ""Các sở ban ngành thuộc UBND thành phố, UBND các xã/phường"",
   ""key_points"": [
     {""heading"": ""Điều 1: Mục tiêu tổng quát"", ""content"": ""Tốc độ tăng trưởng kinh tế đạt 8,5%; thu ngân sách 120 tỷ đồng""},
     {""heading"": ""Điều 2: Nhiệm vụ trọng tâm"", ""content"": ""5 nhiệm vụ: (1) Phát triển nông nghiệp công nghệ cao, (2) Thu hút đầu tư, (3) Đẩy mạnh cải cách hành chính, (4) Xây dựng NTM, (5) An sinh xã hội""},
@@ -87,7 +87,7 @@ Ví dụ output:
   ],
   ""legal_bases"": [
     ""Luật Tổ chức chính quyền địa phương 2015"",
-    ""Nghị quyết số 01/NQ-HĐND ngày 15/01/2026 của HĐND huyện""
+    ""Nghị quyết số 01/NQ-HĐND ngày 15/01/2026 của HĐND thành phố""
   ],
   ""effective_dates"": [""Có hiệu lực kể từ ngày ký (20/01/2026)"", ""Báo cáo kết quả trước 30/6/2026""],
   ""key_figures"": [""Tăng trưởng 8,5%"", ""Thu ngân sách 120 tỷ đồng"", ""Xây dựng 3 xã NTM nâng cao""],

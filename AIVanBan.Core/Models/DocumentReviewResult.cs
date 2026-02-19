@@ -33,7 +33,9 @@ public enum IssueCategory
     /// <summary>Nội dung mơ hồ</summary>
     Ambiguous,
     /// <summary>Đề xuất bổ sung</summary>
-    Enhancement
+    Enhancement,
+    /// <summary>Thể thức NĐ 30/2020</summary>
+    Format
 }
 
 /// <summary>
@@ -82,6 +84,7 @@ public class ReviewIssue
         "missing" => IssueCategory.Missing,
         "ambiguous" => IssueCategory.Ambiguous,
         "enhancement" => IssueCategory.Enhancement,
+        "format" => IssueCategory.Format,
         _ => IssueCategory.Enhancement
     };
 
@@ -104,6 +107,7 @@ public class ReviewIssue
         IssueCategory.Missing => "📋",
         IssueCategory.Ambiguous => "❓",
         IssueCategory.Enhancement => "💡",
+        IssueCategory.Format => "📐",
         _ => "📌"
     };
 
@@ -117,6 +121,7 @@ public class ReviewIssue
         IssueCategory.Missing => "Thiếu thành phần",
         IssueCategory.Ambiguous => "Nội dung mơ hồ",
         IssueCategory.Enhancement => "Đề xuất cải thiện",
+        IssueCategory.Format => "Thể thức NĐ30",
         _ => "Khác"
     };
 

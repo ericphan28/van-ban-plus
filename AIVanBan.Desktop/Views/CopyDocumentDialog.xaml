@@ -1,0 +1,134 @@
+<Window x:Class="AIVanBan.Desktop.Views.CopyDocumentDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="Sao Văn Bản — Điều 25-27, NĐ 30/2020"
+        Width="600" Height="580"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource MaterialDesign.Brush.Background}"
+        Style="{StaticResource MaterialDesignWindow}"
+        ResizeMode="NoResize">
+    
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header -->
+            <RowDefinition Height="Auto"/>  <!-- VB gốc info -->
+            <RowDefinition Height="Auto"/>  <!-- Separator -->
+            <RowDefinition Height="Auto"/>  <!-- Form -->
+            <RowDefinition Height="*"/>     <!-- Spacer -->
+            <RowDefinition Height="Auto"/>  <!-- Buttons -->
+        </Grid.RowDefinitions>
+        
+        <!-- HEADER -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="📋 SAO VĂN BẢN" FontSize="20" FontWeight="Bold"
+                      Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+            <TextBlock Text="Theo Điều 25-27, NĐ 30/2020/NĐ-CP. Bản sao có giá trị pháp lý như bản chính (Điều 26)."
+                      FontSize="12" Foreground="#666" TextWrapping="Wrap" Margin="0,4,0,0"/>
+        </StackPanel>
+        
+        <!-- VB GỐC INFO -->
+        <Border Grid.Row="1" Background="#F5F5F5" CornerRadius="8" Padding="16" Margin="0,0,0,12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Văn bản gốc:" FontWeight="SemiBold" Margin="0,0,12,4"/>
+                <TextBlock x:Name="txtOriginalTitle" Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Số ký hiệu:" Margin="0,0,12,4"/>
+                <TextBlock x:Name="txtOriginalNumber" Grid.Row="1" Grid.Column="1"/>
+                
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Cơ quan:" Margin="0,0,12,0"/>
+                <TextBlock x:Name="txtOriginalIssuer" Grid.Row="2" Grid.Column="1"/>
+            </Grid>
+        </Border>
+        
+        <Separator Grid.Row="2" Margin="0,0,0,12"/>
+        
+        <!-- FORM SAO VB -->
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Hình thức sao -->
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Hình thức sao *" 
+                      VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,0,12"/>
+            <ComboBox x:Name="cboCopyType" Grid.Row="0" Grid.Column="1" 
+                     materialDesign:HintAssist.Hint="Chọn hình thức sao"
+                     DisplayMemberPath="Value" SelectedValuePath="Key"
+                     SelectionChanged="CboCopyType_Changed"
+                     Margin="0,0,0,12"
+                     ToolTip="📐 Điều 25, NĐ 30/2020: Sao y (giữ nguyên), Sao lục (toàn bộ), Trích sao (một phần)"/>
+            
+            <!-- Mô tả hình thức sao -->
+            <TextBlock x:Name="txtCopyDescription" Grid.Row="1" Grid.ColumnSpan="2"
+                      TextWrapping="Wrap" FontSize="12" Foreground="#1565C0"
+                      Margin="0,0,0,12" FontStyle="Italic"/>
+            
+            <!-- Người ký bản sao -->
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Người ký bản sao *"
+                      VerticalAlignment="Center" Margin="0,0,0,12"/>
+            <Grid Grid.Row="2" Grid.Column="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="txtCopiedBy" Grid.Column="0"
+                        materialDesign:HintAssist.Hint="Họ và tên"
+                        Margin="0,0,8,0"
+                        ToolTip="📐 Điều 27, NĐ 30/2020: Họ tên người ký bản sao"/>
+                <TextBox x:Name="txtSigningTitle" Grid.Column="1"
+                        materialDesign:HintAssist.Hint="Chức vụ (VD: CHÁNH VĂN PHÒNG)"
+                        Margin="8,0,0,0"
+                        ToolTip="📐 Điều 27, NĐ 30/2020: Chức vụ người có thẩm quyền sao"/>
+            </Grid>
+            
+            <!-- Nơi nhận bản sao -->
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Nơi nhận *"
+                      VerticalAlignment="Top" Margin="0,0,0,12"/>
+            <TextBox x:Name="txtRecipients" Grid.Row="3" Grid.Column="1"
+                    materialDesign:HintAssist.Hint="Mỗi nơi nhận trên một dòng"
+                    AcceptsReturn="True" TextWrapping="Wrap" Height="70"
+                    VerticalScrollBarVisibility="Auto"
+                    Margin="0,0,0,12"
+                    ToolTip="📐 Điều 27, NĐ 30/2020: Nơi nhận bản sao. Nhớ ghi 'Lưu: VT' cuối cùng."/>
+            
+            <!-- Nội dung trích sao (chỉ hiện khi TrichSao) -->
+            <TextBlock x:Name="lblExtractedContent" Grid.Row="4" Grid.Column="0" 
+                      Text="Nội dung trích *"
+                      VerticalAlignment="Top" Margin="0,0,0,0"
+                      Visibility="Collapsed"/>
+            <TextBox x:Name="txtExtractedContent" Grid.Row="4" Grid.Column="1"
+                    materialDesign:HintAssist.Hint="Nhập phần nội dung cần trích sao"
+                    AcceptsReturn="True" TextWrapping="Wrap" Height="80"
+                    VerticalScrollBarVisibility="Auto"
+                    Visibility="Collapsed"/>
+        </Grid>
+        
+        <!-- BUTTONS -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Hủy" Click="Cancel_Click" IsCancel="True"
+                   Style="{StaticResource MaterialDesignFlatButton}"
+                   Margin="0,0,12,0"/>
+            <Button x:Name="btnSave" Content="📋 Tạo bản sao" Click="Save_Click"
+                   Style="{StaticResource MaterialDesignRaisedButton}"/>
+        </StackPanel>
+    </Grid>
+</Window>

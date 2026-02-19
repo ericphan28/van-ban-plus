@@ -82,22 +82,31 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="8"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Số văn bản:" 
-                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"/>
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       ToolTip="📐 Điều 8 khoản 2, NĐ 30/2020: Số và ký hiệu văn bản"/>
                             <TextBlock x:Name="txtNumber" Grid.Row="0" Grid.Column="2" 
                                        FontSize="14" FontWeight="Bold" Foreground="#1565C0"
                                        VerticalAlignment="Center"/>
                             
                             <TextBlock Grid.Row="0" Grid.Column="4" Text="Ngày ban hành:" 
-                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"/>
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       ToolTip="📐 Điều 8 khoản 4, NĐ 30/2020: Địa danh và ngày tháng năm"/>
                             <TextBlock x:Name="txtIssueDate" Grid.Row="0" Grid.Column="6" 
                                        FontSize="13" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                             
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Cơ quan ban hành:" 
-                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"/>
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       ToolTip="📐 Điều 8 khoản 1, NĐ 30/2020: Tên cơ quan, tổ chức ban hành"/>
                             <TextBlock x:Name="txtIssuer" Grid.Row="2" Grid.Column="2" 
                                        FontSize="13" TextWrapping="Wrap"
                                        VerticalAlignment="Center"/>
@@ -128,11 +137,62 @@
                             <TextBlock x:Name="txtCreatedDate" Grid.Row="6" Grid.Column="6" 
                                        FontSize="13" VerticalAlignment="Center"/>
                             
-                            <TextBlock Grid.Row="8" Grid.Column="0" Text="Tags:" 
+                            <!-- Mức độ khẩn, Độ mật — NĐ 30/2020 -->
+                            <TextBlock Grid.Row="8" Grid.Column="0" Text="Mức độ khẩn:" 
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       x:Name="lblUrgency" Visibility="Collapsed"
+                                       ToolTip="📐 Điều 8 khoản 3b, NĐ 30/2020: Dấu chỉ mức độ khẩn"/>
+                            <TextBlock x:Name="txtUrgency" Grid.Row="8" Grid.Column="2" 
+                                       FontSize="13" FontWeight="Bold" Foreground="#D32F2F"
+                                       VerticalAlignment="Center"/>
+                            
+                            <TextBlock Grid.Row="8" Grid.Column="4" Text="Độ mật:" 
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       x:Name="lblSecurity" Visibility="Collapsed"
+                                       ToolTip="📐 Luật BVBMNN 2018 + Điều 15, NĐ 30/2020: VB mật có hệ thống số riêng"/>
+                            <TextBlock x:Name="txtSecurity" Grid.Row="8" Grid.Column="6" 
+                                       FontSize="13" FontWeight="Bold" Foreground="#C62828"
+                                       VerticalAlignment="Center"/>
+                            
+                            <!-- Thông tin VB đến — Điều 22, 24 NĐ 30/2020 -->
+                            <TextBlock Grid.Row="10" Grid.Column="0" Text="Số đến:" 
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       x:Name="lblArrival" Visibility="Collapsed"
+                                       ToolTip="📐 Điều 22, NĐ 30/2020: Số đến liên tiếp theo thứ tự trong năm"/>
+                            <TextBlock x:Name="txtArrivalNumber" Grid.Row="10" Grid.Column="2" 
+                                       FontSize="13" FontWeight="SemiBold" Foreground="#E65100"
+                                       VerticalAlignment="Center"/>
+                            
+                            <TextBlock Grid.Row="10" Grid.Column="4" Text="Hạn xử lý:" 
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       x:Name="lblDueDate" Visibility="Collapsed"
+                                       ToolTip="📐 Điều 24, NĐ 30/2020: Thời hạn giải quyết VB đến"/>
+                            <TextBlock x:Name="txtDueDate" Grid.Row="10" Grid.Column="6" 
+                                       FontSize="13" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            
+                            <TextBlock Grid.Row="12" Grid.Column="0" Text="Người xử lý:" 
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       x:Name="lblAssignedTo" Visibility="Collapsed"
+                                       ToolTip="📐 Điều 24, NĐ 30/2020: Phân phối, chuyển giao VB đến"/>
+                            <TextBlock x:Name="txtAssignedTo" Grid.Row="12" Grid.Column="2" 
+                                       FontSize="13" VerticalAlignment="Center"
+                                       Grid.ColumnSpan="5"/>
+                            
+                            <TextBlock Grid.Row="14" Grid.Column="0" Text="Tags:" 
                                        FontSize="12" Foreground="#757575" VerticalAlignment="Top"
                                        x:Name="lblTags"/>
-                            <WrapPanel x:Name="tagPanel" Grid.Row="8" Grid.Column="2" 
+                            <WrapPanel x:Name="tagPanel" Grid.Row="14" Grid.Column="2" 
                                        Grid.ColumnSpan="5"/>
+                            
+                            <!-- Bản sao — Điều 25-27, NĐ 30/2020 -->
+                            <TextBlock Grid.Row="14" Grid.Column="4" Text="Bản sao:" 
+                                       FontSize="12" Foreground="#757575" VerticalAlignment="Center"
+                                       x:Name="lblCopyType" Visibility="Collapsed"
+                                       ToolTip="📐 Điều 25-27, NĐ 30/2020: Sao y, sao lục, trích sao văn bản"/>
+                            <TextBlock x:Name="txtCopyInfo" Grid.Row="14" Grid.Column="6" 
+                                       FontSize="13" VerticalAlignment="Center"
+                                       TextWrapping="Wrap" Visibility="Collapsed"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -143,7 +203,8 @@
                     <StackPanel>
                         <Border Background="#FFF3E0" CornerRadius="8,8,0,0" Padding="14,8">
                             <TextBlock Text="📌 TRÍCH YẾU" FontSize="12" FontWeight="Bold" 
-                                       Foreground="#E65100"/>
+                                       Foreground="#E65100"
+                                       ToolTip="📐 Điều 8 khoản 3a, NĐ 30/2020: Trích yếu nội dung văn bản"/>
                         </Border>
                         <TextBlock x:Name="txtSubject" Margin="14,10,14,14"
                                    FontSize="14" TextWrapping="Wrap" LineHeight="22"
@@ -157,7 +218,8 @@
                     <StackPanel>
                         <Border Background="#E8EAF6" CornerRadius="8,8,0,0" Padding="14,8">
                             <TextBlock Text="⚖️ CĂN CỨ PHÁP LÝ" FontSize="12" FontWeight="Bold" 
-                                       Foreground="#283593"/>
+                                       Foreground="#283593"
+                                       ToolTip="📐 Điều 8 khoản 5, NĐ 30/2020: Căn cứ ban hành văn bản"/>
                         </Border>
                         <TextBlock x:Name="txtBasedOn" Margin="14,10,14,14"
                                    FontSize="13" TextWrapping="Wrap" LineHeight="22"
@@ -171,7 +233,8 @@
                     <StackPanel>
                         <Border Background="#E0F2F1" CornerRadius="8,8,0,0" Padding="14,8">
                             <TextBlock Text="📬 NƠI NHẬN" FontSize="12" FontWeight="Bold" 
-                                       Foreground="#00695C"/>
+                                       Foreground="#00695C"
+                                       ToolTip="📐 Điều 8 khoản 9, NĐ 30/2020: Nơi nhận văn bản"/>
                         </Border>
                         <TextBlock x:Name="txtRecipients" Margin="14,10,14,14"
                                    FontSize="13" TextWrapping="Wrap" LineHeight="20"
@@ -186,7 +249,8 @@
                         <Border Background="#E8F5E9" CornerRadius="8,8,0,0" Padding="14,8">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📄 NỘI DUNG" FontSize="12" FontWeight="Bold" 
-                                           Foreground="#2E7D32" VerticalAlignment="Center"/>
+                                           Foreground="#2E7D32" VerticalAlignment="Center"
+                                           ToolTip="📐 Điều 8 khoản 6, NĐ 30/2020: Nội dung văn bản"/>
                                 <TextBlock x:Name="txtContentLength" FontSize="10" 
                                            Foreground="#9E9E9E" Margin="8,0,0,0"
                                            VerticalAlignment="Center"/>
@@ -242,6 +306,18 @@
                            VerticalAlignment="Center"/>
                 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="btnEdit" 
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Click="Edit_Click"
+                            Margin="0,0,8,0" Height="32"
+                            Foreground="#FF9800" BorderBrush="#FF9800">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" 
+                                                     Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Sửa" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    
                     <Button x:Name="btnOpenFile" 
                             Style="{StaticResource MaterialDesignOutlinedButton}"
                             Click="OpenFile_Click"

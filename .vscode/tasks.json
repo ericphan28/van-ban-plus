@@ -34,6 +34,35 @@
 			],
 			"dependsOrder": "sequence",
 			"group": "build"
+		},
+		{
+			"label": "Run VanBanPlus API Dev",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/vanbanplus-api"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Run VanBanPlus Dev Server",
+			"type": "shell",
+			"command": "cd D:\\AIVanBanCaNhan\\vanbanplus-api && npx next dev -p 3030",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run VanBanPlus Dev Server",
+			"type": "shell",
+			"command": "Set-Location D:\\AIVanBanCaNhan\\vanbanplus-api; npx next dev -p 3030",
+			"isBackground": true,
+			"problemMatcher": []
 		}
 	]
 }

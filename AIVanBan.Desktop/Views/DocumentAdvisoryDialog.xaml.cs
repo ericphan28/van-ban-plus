@@ -76,6 +76,8 @@ public partial class DocumentAdvisoryDialog : Window
 
     private async void QuickAction_Click(object sender, RoutedEventArgs e)
     {
+        if (!AiPromoHelper.CheckOrShowPromo(this)) return;
+
         var inputText = txtQuickInput.Text.Trim();
         if (string.IsNullOrWhiteSpace(inputText) || inputText.Length <= 10)
         {

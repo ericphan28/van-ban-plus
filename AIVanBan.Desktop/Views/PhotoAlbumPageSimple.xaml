@@ -9,6 +9,9 @@
     KeyDown="PhotoAlbumPage_KeyDown">
 
     <Page.Resources>
+        <!-- Null to Collapsed converter for EventDate -->
+        <local:NullToVisibilityConverter x:Key="NullToCollapsedConverter"/>
+        
         <!-- Grid View Panel -->
         <ItemsPanelTemplate x:Key="GridViewPanel">
             <WrapPanel Orientation="Horizontal"/>
@@ -199,6 +202,16 @@
                                                Foreground="#999" 
                                                Margin="5,0,0,0" 
                                                VerticalAlignment="Center"/>
+                                    <!-- Event Date badge -->
+                                    <Border Background="#E3F2FD" CornerRadius="8" Padding="6,2" Margin="10,0,0,0"
+                                            Visibility="{Binding EventDate, Converter={StaticResource NullToCollapsedConverter}, FallbackValue=Collapsed}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="CalendarStar" Width="12" Height="12" Foreground="#1565C0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding EventDate, StringFormat='{}{0:dd/MM/yyyy}'}" 
+                                                       FontSize="10" Foreground="#1565C0" FontWeight="SemiBold"
+                                                       Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
                             </Grid>
 
@@ -332,6 +345,16 @@
                                 <materialDesign:PackIcon Kind="CalendarOutline" Width="16" Height="16" Foreground="#999" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding CreatedDate, StringFormat='{}{0:dd/MM/yyyy}'}" FontSize="12" Foreground="#999" Margin="6,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
+                            <!-- Event Date badge -->
+                            <Border Background="#E3F2FD" CornerRadius="8" Padding="6,2" Margin="10,0,0,0"
+                                    Visibility="{Binding EventDate, Converter={StaticResource NullToCollapsedConverter}, FallbackValue=Collapsed}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="CalendarStar" Width="12" Height="12" Foreground="#1565C0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding EventDate, StringFormat='{}{0:dd/MM/yyyy}'}" 
+                                               FontSize="10" Foreground="#1565C0" FontWeight="SemiBold"
+                                               Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </Grid>
                 </Grid>
@@ -425,6 +448,16 @@
                             <TextBlock Text="{Binding PhotoCount}" FontSize="12" Foreground="#666" Margin="5,0,15,0" VerticalAlignment="Center"/>
                             <materialDesign:PackIcon Kind="CalendarOutline" Width="14" Height="14" Foreground="#999" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding CreatedDate, StringFormat='{}{0:dd/MM/yyyy}'}" FontSize="11" Foreground="#999" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                            <!-- Event Date badge -->
+                            <Border Background="#E3F2FD" CornerRadius="8" Padding="6,2" Margin="10,0,0,0"
+                                    Visibility="{Binding EventDate, Converter={StaticResource NullToCollapsedConverter}, FallbackValue=Collapsed}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="CalendarStar" Width="12" Height="12" Foreground="#1565C0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding EventDate, StringFormat='{}{0:dd/MM/yyyy}'}" 
+                                               FontSize="10" Foreground="#1565C0" FontWeight="SemiBold"
+                                               Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </StackPanel>
 
@@ -583,6 +616,36 @@
                             Padding="16,0"
                             FontSize="13"
                             FontWeight="SemiBold"/>
+                    <Button Click="DownloadFromWeb_Click"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Background="#1565C0"
+                            BorderBrush="#1565C0"
+                            Height="40"
+                            Padding="16,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Margin="10,0,0,0"
+                            ToolTip="Tải album từ website xã Gia Kiệm (xagiakiem.gov.vn)">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="CloudDownload" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Tải từ Website" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Click="UploadToWeb_Click"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Background="#E65100"
+                            BorderBrush="#E65100"
+                            Height="40"
+                            Padding="16,0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Margin="10,0,0,0"
+                            ToolTip="Upload album lên website xã Gia Kiệm (xagiakiem.gov.vn)">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="CloudUpload" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Upload lên Web" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Grid>
         </materialDesign:Card>

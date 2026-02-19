@@ -153,7 +153,7 @@ public partial class TemplateStoreDialog : Window
         }
     }
 
-    private async void DownloadAll_Click(object sender, RoutedEventArgs e)
+    private void DownloadAll_Click(object sender, RoutedEventArgs e)
     {
         var newCount = _allItems.Count(i => i.Status != StoreTemplateStatus.UpToDate);
         if (newCount == 0)

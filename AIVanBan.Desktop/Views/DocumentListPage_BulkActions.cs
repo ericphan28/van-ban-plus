@@ -48,26 +48,30 @@ public partial class DocumentListPage
                 return;
             }
             
-            var result = MessageBox.Show(
-                $"Bạn có chắc chắn muốn xóa {selectedDocs.Count} văn bản đã chọn?\n\n" +
-                "⚠️ Hành động này không thể hoàn tác!",
-                "Xác nhận xóa hàng loạt",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+            var message = _isTrashView
+                ? $"Xóa vĩnh viễn {selectedDocs.Count} văn bản?\n\n⚠️ Không thể hoàn tác!"
+                : $"Chuyển {selectedDocs.Count} văn bản vào thùng rác?";
+            var title = _isTrashView ? "Xóa vĩnh viễn" : "Xóa hàng loạt";
+            
+            var result = MessageBox.Show(message, title,
+                MessageBoxButton.YesNo, MessageBoxImage.Warning);
             
             if (result == MessageBoxResult.Yes)
             {
                 int successCount = 0;
                 foreach (var docVm in selectedDocs)
                 {
-                    if (_documentService.DeleteDocument(docVm.Id))
-                        successCount++;
+                    bool ok = _isTrashView
+                        ? _documentService.PermanentDeleteDocument(docVm.Id)
+                        : _documentService.SoftDeleteDocument(docVm.Id);
+                    if (ok) successCount++;
                 }
                 
                 LoadFolders();
                 LoadDocuments();
                 
-                MessageBox.Show($"✅ Đã xóa thành công {successCount}/{selectedDocs.Count} văn bản!",
+                var doneText = _isTrashView ? "xóa vĩnh viễn" : "chuyển vào thùng rác";
+                MessageBox.Show($"✅ Đã {doneText} {successCount}/{selectedDocs.Count} văn bản!",
                     "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }

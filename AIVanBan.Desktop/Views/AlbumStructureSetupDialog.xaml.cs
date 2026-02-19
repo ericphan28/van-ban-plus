@@ -330,7 +330,6 @@ public class SyncUrlInputDialog : Window
 
         cboOrganizationType = new ComboBox { Margin = new Thickness(0, 0, 0, 15) };
         cboOrganizationType.Items.Add(new ComboBoxItem { Content = "UBND Xã/Phường", Tag = "XaPhuong" });
-        cboOrganizationType.Items.Add(new ComboBoxItem { Content = "UBND Huyện", Tag = "Huyen" });
         cboOrganizationType.Items.Add(new ComboBoxItem { Content = "UBND Tỉnh", Tag = "Tinh" });
         cboOrganizationType.Items.Add(new ComboBoxItem { Content = "Hội Nông dân", Tag = "HoiNongDan" });
         cboOrganizationType.SelectedIndex = 0;

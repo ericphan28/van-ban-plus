@@ -17,11 +17,19 @@ public class OrganizationSetupService
     /// <summary>
     /// Tạo cấu trúc thư mục chuẩn cho cơ quan - theo loại cơ quan cụ thể
     /// </summary>
-    public void CreateDefaultStructure(string orgName, OrganizationType orgType)
+    public void CreateDefaultStructure(string orgName, OrganizationType orgType, string? abbreviation = null)
     {
         try
         {
             Console.WriteLine($"📁 Creating organization-specific folder structure for: {orgName} ({orgType})");
+            
+            // Lưu OrganizationConfig — bao gồm ký hiệu viết tắt CQ (Phụ lục VI, NĐ 30/2020)
+            var config = _documentService.GetOrganizationConfig();
+            config.Name = orgName;
+            config.Type = orgType;
+            if (!string.IsNullOrEmpty(abbreviation))
+                config.Abbreviation = abbreviation;
+            _documentService.SaveOrganizationConfig(config);
             
             // Xóa tất cả folders cũ nếu có
             var existingFolders = _documentService.GetAllFolders();
@@ -220,7 +228,6 @@ public class OrganizationSetupService
             {
                 ("Từ Trung ương (Chính phủ, Bộ)", "🏛️"),
                 ("Từ cấp Tỉnh (UBND, Sở)", "🏢"),
-                ("Từ cấp Huyện (UBND, Phòng)", "🏫"),
                 ("Từ các xã/phường", "🏘️"),
                 ("Từ tổ chức, cá nhân", "👥")
             });
@@ -585,8 +592,8 @@ public class OrganizationSetupService
         var bienBan = CreateFolder("05. BIÊN BẢN - HỘI NGHỊ - QUYẾT ĐỊNH", null, "📋", orgName, 5);
         CreateSubFolders(bienBan.Id, orgName, new[]
         {
-            ("HĐND huyện", "🏛️"),
-            ("UBND huyện", "⚖️"),
+            ("HĐND tỉnh", "🏛️"),
+            ("UBND tỉnh", "⚖️"),
             ("Ban thường vụ", "👔"),
             ("Hội nghị CB-VC", "👥")
         });
@@ -1490,10 +1497,10 @@ public class OrganizationSetupService
         });
     }
     
-    // === PHÒNG CẤP HUYỆN ===
-    private void CreateStructure_PhongCapHuyen(string orgName)
+    // === PHÒNG CẤP TỈNH/THÀNH PHỐ ===
+    private void CreateStructure_PhongCapTinh(string orgName)
     {
-        Console.WriteLine("  Creating PHÒNG CẤP HUYỆN structure...");
+        Console.WriteLine("  Creating PHÒNG CẤP TỈNH/THÀNH PHỐ structure...");
         
         // 01-02: VĂN BẢN ĐẾN/ĐI
         var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);

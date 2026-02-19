@@ -115,6 +115,37 @@
                                 <TextBlock Text="Xóa lọc" FontSize="12" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
+                        
+                        <!-- Thùng rác toggle -->
+                        <Button x:Name="btnTrashToggle"
+                               Style="{StaticResource MaterialDesignOutlinedButton}"
+                               Height="32" Padding="12,0"
+                               Click="TrashToggle_Click"
+                               Margin="8,0,0,0"
+                               BorderBrush="#9E9E9E">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="DeleteOutline" Width="16" Height="16" 
+                                                        VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBlock x:Name="txtTrashToggle" Text="Thùng rác" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <!-- Trash-mode buttons: chỉ hiện khi đang xem thùng rác -->
+                        <Button x:Name="btnEmptyTrash"
+                               Style="{StaticResource MaterialDesignOutlinedButton}"
+                               Height="32" Padding="12,0"
+                               Click="EmptyTrash_Click"
+                               Margin="8,0,0,0"
+                               BorderBrush="#C62828"
+                               Foreground="#C62828"
+                               Visibility="Collapsed"
+                               ToolTip="Xóa vĩnh viễn tất cả VB trong thùng rác">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="DeleteForever" Width="16" Height="16" 
+                                                        VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBlock Text="Dọn sạch" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                     
                     <!-- Action Buttons -->
@@ -137,34 +168,37 @@
                             </StackPanel>
                         </Button>
                         
-                        <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                                Click="GenerateDemo_Click" 
-                                ToolTip="Tạo 20 văn bản demo để test"
-                                Background="#FFF3E0"
-                                BorderBrush="#FF9800"
-                                Height="32"
-                                Margin="0,0,10,0">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="DatabasePlus" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#F57C00"/>
-                                <TextBlock Text="Demo" Foreground="#F57C00"/>
+                        <!-- Menu phụ: gom các chức năng ít dùng -->
+                        <materialDesign:PopupBox PlacementMode="BottomAndAlignRightEdges"
+                                                StaysOpen="False"
+                                                ToolTip="Thêm thao tác">
+                            <materialDesign:PopupBox.ToggleContent>
+                                <materialDesign:PackIcon Kind="DotsVertical" Width="24" Height="24"/>
+                            </materialDesign:PopupBox.ToggleContent>
+                            <StackPanel Width="220">
+                                <Button Click="Refresh_Click" HorizontalContentAlignment="Left" Padding="12,8">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Refresh" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Text="Làm mới danh sách" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Separator/>
+                                <Button Click="SetupOrganization_Click" HorizontalContentAlignment="Left" Padding="12,8">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="FolderCog" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Text="Thiết lập thư mục" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Separator/>
+                                <Button Click="GenerateDemo_Click" HorizontalContentAlignment="Left" Padding="12,8"
+                                        ToolTip="Tạo 20 văn bản mẫu (có hạn XL) để test">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="DatabasePlus" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#FF9800"/>
+                                        <TextBlock Text="Tạo dữ liệu demo" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
-                        </Button>
-                        
-                        <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                                Click="SetupOrganization_Click" 
-                                ToolTip="Thiết lập cấu trúc thư mục chuẩn"
-                                Height="32"
-                                Margin="0,0,10,0">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Cog" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                <TextBlock Text="Setup"/>
-                            </StackPanel>
-                        </Button>
-                        
-                        <Button Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
-                                Click="Refresh_Click" Height="32">
-                            <materialDesign:PackIcon Kind="Refresh"/>
-                        </Button>
+                        </materialDesign:PopupBox>
                     </StackPanel>
                 </Grid>
                 
@@ -468,6 +502,18 @@
                                     </StackPanel>
                                 </Button>
                                 
+                                <Button x:Name="btnCopyDocument" Click="CopyDocument_Click"
+                                       Style="{StaticResource MaterialDesignFlatButton}"
+                                       Height="32" Padding="8,0" Margin="0,0,4,0"
+                                       ToolTip="Sao văn bản (Sao y / Sao lục / Trích sao) — Điều 25, NĐ 30/2020">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="ContentCopy" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0"
+                                                                Foreground="#1565C0"/>
+                                        <TextBlock Text="Sao VB" FontSize="12"/>
+                                    </StackPanel>
+                                </Button>
+                                
                                 <Button x:Name="btnBulkDelete" Click="BulkDelete_Click"
                                        Style="{StaticResource MaterialDesignFlatButton}"
                                        Height="32" Padding="8,0" Margin="0,0,4,0"
@@ -566,6 +612,14 @@
                                     <Setter Property="Background" Value="#FAFAFA"/>
                                 </Trigger>
                                 
+                                <!-- Cảnh báo hạn xử lý — Điều 24, NĐ 30/2020 -->
+                                <DataTrigger Binding="{Binding RowBackground}" Value="#FFEBEE">
+                                    <Setter Property="Background" Value="#FFEBEE"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding RowBackground}" Value="#FFF3E0">
+                                    <Setter Property="Background" Value="#FFF3E0"/>
+                                </DataTrigger>
+                                
                                 <!-- Hover effect - priority cao hơn -->
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Background" Value="#E3F2FD"/>
@@ -627,22 +681,39 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         
-                        <DataGridTextColumn Header="Tiêu đề" Binding="{Binding Title}" Width="2*" MinWidth="200" SortMemberPath="Title" CanUserSort="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                    <Setter Property="ToolTip" Value="{Binding Title}"/>
-                                    <Setter Property="Margin" Value="4,2"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <!-- Selected row - white text -->
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-                                            <Setter Property="Foreground" Value="White"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Header="Tiêu đề" Width="2*" MinWidth="200" SortMemberPath="Title" CanUserSort="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Vertical" Margin="4,2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding Title}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding CopyIndicator}" FontSize="10" 
+                                                   Foreground="#1565C0" FontWeight="SemiBold">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsCopy}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         
                         <DataGridTemplateColumn Header="Loại" Width="100" MinWidth="90" SortMemberPath="Type" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
@@ -657,6 +728,24 @@
                                                   FontSize="10"
                                                   FontWeight="Bold"
                                                   TextTrimming="CharacterEllipsis"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Cột Hướng VB (Đi/Đến/NB) -->
+                        <DataGridTemplateColumn Header="Hướng" Width="55" MinWidth="50" SortMemberPath="Direction" CanUserSort="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding DirectionColor}" 
+                                           CornerRadius="3" 
+                                           Padding="5,2"
+                                           HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding DirectionText}" 
+                                                  Foreground="White" 
+                                                  FontSize="10"
+                                                  FontWeight="Bold"
+                                                  HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -677,6 +766,26 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
+                        
+                        <!-- Cột Hạn xử lý — Điều 24, NĐ 30/2020 -->
+                        <DataGridTemplateColumn Header="Hạn XL" Width="110" MinWidth="100" SortMemberPath="DueDate" CanUserSort="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DeadlineText}" 
+                                              FontSize="11" FontWeight="SemiBold"
+                                              Foreground="{Binding DeadlineColor}" 
+                                              TextTrimming="CharacterEllipsis"
+                                              VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock.ToolTip>
+                                            <TextBlock>
+                                                <Run Text="Hạn: "/>
+                                                <Run Text="{Binding DueDate, StringFormat='dd/MM/yyyy', TargetNullValue='Chưa có hạn'}"/>
+                                            </TextBlock>
+                                        </TextBlock.ToolTip>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         
                         <DataGridTemplateColumn Header="📎 File đính kèm" Width="120" MinWidth="110" SortMemberPath="AttachmentCount" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
@@ -727,14 +836,24 @@
                                         <Button Style="{StaticResource MaterialDesignIconButton}"
                                                 ToolTip="Sửa" Click="EditDocument_Click"
                                                 Tag="{Binding Id}"
-                                                Width="30" Height="30">
+                                                Width="30" Height="30"
+                                                Visibility="{Binding EditVisibility}">
                                             <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18"/>
                                         </Button>
                                         <Button Style="{StaticResource MaterialDesignIconButton}"
                                                 ToolTip="Xuất Word (.docx)" Click="ExportWord_Click"
                                                 Tag="{Binding Id}"
-                                                Width="30" Height="30">
+                                                Width="30" Height="30"
+                                                Visibility="{Binding EditVisibility}">
                                             <materialDesign:PackIcon Kind="FileWord" Width="18" Height="18" Foreground="#2B579A"/>
+                                        </Button>
+                                        <Button x:Name="btnRowRestore"
+                                                Style="{StaticResource MaterialDesignIconButton}"
+                                                ToolTip="Phục hồi" Click="RestoreDocument_Click"
+                                                Tag="{Binding Id}"
+                                                Width="30" Height="30"
+                                                Visibility="{Binding RestoreVisibility}">
+                                            <materialDesign:PackIcon Kind="Restore" Width="18" Height="18" Foreground="#2E7D32"/>
                                         </Button>
                                         <Button Style="{StaticResource MaterialDesignIconButton}"
                                                 ToolTip="Xóa" Click="DeleteDocument_Click"

@@ -1,4 +1,7 @@
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
 using System.Reflection;
 using System.Windows;
 using AutoUpdaterDotNET;
@@ -7,7 +10,8 @@ namespace AIVanBan.Desktop.Services;
 
 /// <summary>
 /// Service quản lý tự động cập nhật ứng dụng VanBanPlus.
-/// Sử dụng AutoUpdater.NET để kiểm tra và tải bản cập nhật mới.
+/// Sử dụng AutoUpdater.NET để kiểm tra version mới,
+/// và tự xử lý download bằng HttpClient (tránh lỗi WinForms ScaleHelper).
 /// </summary>
 public static class AppUpdateService
 {
@@ -17,7 +21,6 @@ public static class AppUpdateService
 
     /// <summary>
     /// URL tới file XML chứa thông tin version mới nhất.
-    /// Có thể host trên: GitHub Pages, Google Drive, Web server, v.v.
     /// </summary>
     private const string UpdateXmlUrl = "https://raw.githubusercontent.com/ericphan28/van-ban-plus-releases/main/update.xml";
 
@@ -101,6 +104,115 @@ public static class AppUpdateService
     }
 
     /// <summary>
+    /// Tự download installer bằng HttpClient (tránh lỗi WinForms ScaleHelper).
+    /// </summary>
+    private static async Task DownloadAndRunInstallerAsync(UpdateInfoEventArgs args)
+    {
+        var downloadUrl = args.DownloadURL;
+        var fileName = Path.GetFileName(new Uri(downloadUrl).LocalPath);
+        var tempPath = Path.Combine(Path.GetTempPath(), fileName);
+
+        try
+        {
+            using var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromMinutes(10);
+
+            // Hiển thị thông báo đang tải
+            MessageBox.Show(
+                $"Bắt đầu tải bản cập nhật...\n\n" +
+                $"File: {fileName}\n" +
+                $"Vui lòng đợi trong giây lát.\n\n" +
+                $"Nhấn OK để bắt đầu tải.",
+                $"{AppTitle} - Đang tải cập nhật",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            Console.WriteLine($"[UpdateService] Downloading: {downloadUrl}");
+            Console.WriteLine($"[UpdateService] Save to: {tempPath}");
+
+            // Download file
+            using var response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            var totalBytes = response.Content.Headers.ContentLength ?? -1;
+            Console.WriteLine($"[UpdateService] File size: {totalBytes / 1024.0 / 1024.0:F1} MB");
+
+            using var contentStream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+            var buffer = new byte[81920];
+            long totalRead = 0;
+            int bytesRead;
+
+            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await fileStream.WriteAsync(buffer, 0, bytesRead);
+                totalRead += bytesRead;
+
+                if (totalBytes > 0)
+                {
+                    var percent = (int)(totalRead * 100 / totalBytes);
+                    if (percent % 10 == 0)
+                        Console.WriteLine($"[UpdateService] Download progress: {percent}%");
+                }
+            }
+
+            Console.WriteLine($"[UpdateService] Download completed: {totalRead / 1024.0 / 1024.0:F1} MB");
+
+            // Chạy installer
+            var result = MessageBox.Show(
+                $"Đã tải bản cập nhật thành công!\n\n" +
+                $"File: {fileName}\n" +
+                $"Kích thước: {totalRead / 1024.0 / 1024.0:F1} MB\n\n" +
+                $"Nhấn OK để cài đặt. Ứng dụng sẽ đóng lại.",
+                $"{AppTitle} - Cập nhật sẵn sàng",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Information);
+
+            if (result == MessageBoxResult.OK)
+            {
+                // Chạy installer
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = tempPath,
+                    UseShellExecute = true,
+                    Verb = "runas" // Chạy với quyền admin
+                };
+
+                Process.Start(startInfo);
+
+                // Thoát app
+                Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[UpdateService] Download failed: {ex.Message}");
+
+            // Fallback: mở trình duyệt để download
+            var fallbackResult = MessageBox.Show(
+                $"Không thể tải tự động.\n\nLỗi: {ex.Message}\n\n" +
+                $"Bạn có muốn mở trình duyệt để tải thủ công không?",
+                $"{AppTitle} - Lỗi tải cập nhật",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (fallbackResult == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = downloadUrl,
+                        UseShellExecute = true
+                    });
+                }
+                catch { }
+            }
+        }
+    }
+
+    /// <summary>
     /// Xử lý kết quả kiểm tra update.
     /// </summary>
     private static void OnCheckForUpdateEvent(UpdateInfoEventArgs args)
@@ -123,22 +235,15 @@ public static class AppUpdateService
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    try
+                    // Sử dụng download thủ công thay vì AutoUpdater.DownloadUpdate
+                    // để tránh lỗi WinForms ScaleHelper trong self-contained publish
+                    _ = Task.Run(async () =>
                     {
-                        if (AutoUpdater.DownloadUpdate(args))
+                        await Application.Current.Dispatcher.InvokeAsync(async () =>
                         {
-                            // Thoát app để installer chạy
-                            Application.Current.Shutdown();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(
-                            $"Lỗi khi tải bản cập nhật:\n{ex.Message}",
-                            "Lỗi cập nhật",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
+                            await DownloadAndRunInstallerAsync(args);
+                        });
+                    });
                 }
             }
             else

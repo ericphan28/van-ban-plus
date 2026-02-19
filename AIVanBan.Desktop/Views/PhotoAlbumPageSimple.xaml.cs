@@ -1,16 +1,35 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using AIVanBan.Core.Models;
 using AIVanBan.Core.Services;
 
 namespace AIVanBan.Desktop.Views;
+
+/// <summary>
+/// Converter: null → Collapsed, not-null → Visible
+/// Dùng cho hiển thị EventDate badge khi có ngày diễn ra
+/// </summary>
+public class NullToVisibilityConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value == null ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 public enum AlbumViewMode
 {
@@ -870,9 +889,10 @@ public partial class PhotoAlbumPageSimple : Page
                     
                     Dispatcher.Invoke(() =>
                     {
-                        if (thumbImages[index] != null)
+                        var img = thumbImages[index];
+                        if (img != null)
                         {
-                            thumbImages[index].Source = bitmap;
+                            img.Source = bitmap;
                         }
                     });
                 }
@@ -988,6 +1008,60 @@ public partial class PhotoAlbumPageSimple : Page
             {
                 LoadAlbums();
             }
+        }
+    }
+
+    private void DownloadFromWeb_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dialog = new AlbumDownloadDialog(_albumService)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true && dialog.DownloadedCount > 0)
+            {
+                // Refresh album list after download
+                if (!string.IsNullOrEmpty(_currentFolderId))
+                    LoadAlbumsInFolder(_currentFolderId);
+                else
+                    LoadAlbums();
+                
+                LoadFolderTree();
+
+                MessageBox.Show(
+                    $"✅ Đã tải {dialog.DownloadedCount} album từ website!\nDanh sách album đã được cập nhật.",
+                    "Tải thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi mở trang tải album:\n{ex.Message}",
+                "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void UploadToWeb_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dialog = new AlbumUploadDialog(_allAlbums)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true && dialog.UploadedCount > 0)
+            {
+                MessageBox.Show(
+                    $"✅ Đã upload {dialog.UploadedCount} album lên website!\nAlbum đang ở trạng thái Nháp, cần duyệt trên web.",
+                    "Upload thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi mở trang upload:\n{ex.Message}",
+                "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

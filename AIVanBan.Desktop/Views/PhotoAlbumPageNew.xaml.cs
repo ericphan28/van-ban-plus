@@ -647,6 +647,33 @@ namespace AIVanBan.Desktop.Views
             }
         }
 
+        private void DownloadFromWeb_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var simpleAlbumService = new SimpleAlbumService();
+                var dialog = new AlbumDownloadDialog(simpleAlbumService)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (dialog.ShowDialog() == true && dialog.DownloadedCount > 0)
+                {
+                    // Refresh album list after download
+                    LoadAlbumTree();
+                    
+                    MessageBox.Show(
+                        $"✅ Đã tải {dialog.DownloadedCount} album từ website!\nDanh sách album đã được cập nhật.",
+                        "Tải thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi mở trang tải album:\n{ex.Message}",
+                    "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void EditAlbum_Click(object sender, RoutedEventArgs e)
         {
             if (_selectedAlbum == null || _selectedAlbum.Id == "") return;

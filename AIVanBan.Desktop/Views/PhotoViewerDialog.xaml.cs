@@ -8,8 +8,8 @@ namespace AIVanBan.Desktop.Views;
 
 public partial class PhotoViewerDialog : Window
 {
-    private readonly List<SimplePhoto> _photos;
-    private readonly string _albumFolderPath;
+    private readonly List<SimplePhoto> _photos = new();
+    private readonly string _albumFolderPath = string.Empty;
     private int _currentIndex;
 
     public PhotoViewerDialog(string initialPhotoPath, List<SimplePhoto> photos, string albumFolderPath)

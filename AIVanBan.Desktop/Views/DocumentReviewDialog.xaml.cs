@@ -301,6 +301,8 @@ public partial class DocumentReviewDialog : Window
 
     private async void QuickCheck_Click(object sender, RoutedEventArgs e)
     {
+        if (!AiPromoHelper.CheckOrShowPromo(this)) return;
+
         var inputText = txtQuickInput.Text.Trim();
         if (string.IsNullOrWhiteSpace(inputText) || inputText.Length <= 10)
         {
@@ -362,6 +364,7 @@ public class ReviewIssueViewModel
         IssueCategory.Missing => "#E8EAF6",
         IssueCategory.Ambiguous => "#FFF8E1",
         IssueCategory.Enhancement => "#E8F5E9",
+        IssueCategory.Format => "#FCE4EC",
         _ => "#F5F5F5"
     };
 
@@ -374,6 +377,7 @@ public class ReviewIssueViewModel
         IssueCategory.Missing => "#283593",
         IssueCategory.Ambiguous => "#F57F17",
         IssueCategory.Enhancement => "#2E7D32",
+        IssueCategory.Format => "#AD1457",
         _ => "#666666"
     };
 }

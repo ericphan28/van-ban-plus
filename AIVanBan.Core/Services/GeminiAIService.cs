@@ -93,8 +93,35 @@ public class GeminiAIService
     /// </summary>
     private string GeminiDirectKey => _useVanBanPlusApi ? _fallbackGeminiKey : _apiKey;
 
+    // ===== RETRY HELPER — tự động retry khi 429 (Too Many Requests) =====
+    private const int MAX_RETRIES = 3;
+    private static readonly int[] RETRY_WAIT_SECONDS = { 5, 10, 15 };
+
     /// <summary>
-    /// Tạo nội dung văn bản từ prompt
+    /// Gửi HTTP request với retry cho 429 (Rate Limit).
+    /// Dùng chung cho cả VanBanPlus API và Gemini trực tiếp.
+    /// </summary>
+    private async Task<HttpResponseMessage> SendWithRetryAsync(Func<Task<HttpResponseMessage>> sendFunc)
+    {
+        HttpResponseMessage? response = null;
+        for (int attempt = 0; attempt < MAX_RETRIES; attempt++)
+        {
+            response = await sendFunc();
+
+            if ((int)response.StatusCode == 429 && attempt < MAX_RETRIES - 1)
+            {
+                var waitSec = RETRY_WAIT_SECONDS[attempt];
+                Console.WriteLine($"⚠️ 429 Rate Limit — retry {attempt + 1}/{MAX_RETRIES} sau {waitSec}s...");
+                await Task.Delay(waitSec * 1000);
+                continue;
+            }
+            break;
+        }
+        return response!;
+    }
+
+    /// <summary>
+    /// Tạo nội dung văn bản từ prompt (có retry cho 429 Too Many Requests)
     /// </summary>
     public async Task<string> GenerateContentAsync(string prompt, string? systemInstruction = null)
     {
@@ -108,7 +135,9 @@ public class GeminiAIService
                     prompt = prompt,
                     systemInstruction = systemInstruction
                 };
-                var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/generate", body);
+
+                var vbpResponse = await SendWithRetryAsync(() =>
+                    _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/generate", body));
                 vbpResponse.EnsureSuccessStatusCode();
                 var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
                 return vbpResult?.Data?.Content ?? "Không thể tạo nội dung";
@@ -137,8 +166,9 @@ public class GeminiAIService
             }
 
             var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
-            
-            var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+
+            var response = await SendWithRetryAsync(() =>
+                _httpClient.PostAsJsonAsync(url, requestBody));
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
@@ -202,7 +232,8 @@ public class GeminiAIService
             Content = jsonContent
         };
 
-        var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        var response = await SendWithRetryAsync(() =>
+            _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead));
         response.EnsureSuccessStatusCode();
 
         var stream = await response.Content.ReadAsStreamAsync();
@@ -256,6 +287,8 @@ public class GeminiAIService
         public string[] NoiNhan { get; set; } = Array.Empty<string>();
         public string[] CanCu { get; set; } = Array.Empty<string>();
         public string HuongVanBan { get; set; } = ""; // Đi/Đến/Nội bộ
+        public string DoKhan { get; set; } = "Thuong"; // Mức độ khẩn: Thuong/Khan/ThuongKhan/HoaToc
+        public string DoMat { get; set; } = "Thuong"; // Độ mật: Thuong/Mat/ToiMat/TuyetMat
         public string LinhVuc { get; set; } = "";
         public string DiaDanh { get; set; } = ""; // Địa danh ban hành (VD: Gia Kiểm, Biên Hòa, Hà Nội)
         public string ChucDanhKy { get; set; } = ""; // Chức danh người ký (VD: CHỦ TỊCH, GIÁM ĐỐC)
@@ -297,7 +330,8 @@ public class GeminiAIService
             if (_useVanBanPlusApi)
             {
                 var body = new { base64Data, mimeType };
-                var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body);
+                var vbpResponse = await SendWithRetryAsync(() =>
+                    _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body));
                 vbpResponse.EnsureSuccessStatusCode();
                 var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
                 var text = vbpResult?.Data?.Content ?? "";
@@ -356,9 +390,14 @@ public class GeminiAIService
 QUY TẮC BẮT BUỘC:
 1. Số văn bản: đúng format gốc (VD: 15/GM-UBND, 108/2025/QH15)
 2. Ngày tháng: format dd/MM/yyyy
-3. loai_van_ban: chọn 1 trong CongVan|QuyetDinh|BaoCao|ToTrinh|KeHoach|ThongBao|NghiQuyet|ChiThi|HuongDan|Khac
+3. loai_van_ban: chọn 1 trong 32 loại sau (Điều 7, NĐ 30/2020):
+   - VBQPPL: Luat|NghiDinh|ThongTu
+   - 29 loại VB hành chính: NghiQuyet|QuyetDinh|ChiThi|QuyChE|QuyDinh|ThongCao|ThongBao|HuongDan|ChuongTrinh|KeHoach|PhuongAn|DeAn|DuAn|BaoCao|BienBan|ToTrinh|HopDong|CongVan|CongDien|BanGhiNho|BanThoaThuan|GiayUyQuyen|GiayMoi|GiayGioiThieu|GiayNghiPhep|PhieuGui|PhieuChuyen|PhieuBao|ThuCong
+   - Nếu không rõ: Khac
 4. huong_van_ban: chọn 1 trong Den|Di|NoiBo
-5. TRƯỜNG noi_dung — ĐÂY LÀ TRƯỜNG QUAN TRỌNG NHẤT:
+5. do_khan: nhận diện mức độ khẩn (nếu có ghi trên văn bản): Thuong|Khan|ThuongKhan|HoaToc. Mặc định: Thuong
+6. do_mat: nhận diện độ mật (nếu có ghi trên văn bản): Thuong|Mat|ToiMat|TuyetMat. Mặc định: Thuong
+7. TRƯỜNG noi_dung — ĐÂY LÀ TRƯỜNG QUAN TRỌNG NHẤT:
    - CHỈ lấy PHẦN NỘI DUNG CHÍNH của văn bản (từ sau phần căn cứ hoặc sau tiêu đề loại VB)
    - KHÔNG đưa vào: tên cơ quan, QUỐC HỘI, CỘNG HÒA XÃ HỘI..., Độc lập - Tự do - Hạnh phúc, số văn bản, ngày tháng ban hành, tên loại văn bản (Luật, Nghị định...), trích yếu
    - KHÔNG đưa vào: căn cứ pháp lý (căn cứ đã có trường can_cu riêng)
@@ -368,7 +407,7 @@ QUY TẮC BẮT BUỘC:
    - BẮT BUỘC dùng \n xuống dòng giữa các đoạn, điều, khoản, mục, chương
    - Mỗi Điều/Khoản/Chương/Mục PHẢI trên dòng mới
    - KHÔNG gộp thành 1 dòng liền nhau
-6. Giữ nguyên dấu tiếng Việt chính xác";
+8. Giữ nguyên dấu tiếng Việt chính xác";
 
         // JSON Schema cho Structured Output — Gemini đảm bảo 100% valid JSON
         var extractSchema = new
@@ -378,8 +417,10 @@ QUY TẮC BẮT BUỘC:
             {
                 ["so_van_ban"] = new { type = "string", description = "Số hiệu văn bản (VD: 15/GM-UBND)" },
                 ["trich_yeu"] = new { type = "string", description = "Trích yếu nội dung văn bản" },
-                ["loai_van_ban"] = new { type = "string", description = "Loại văn bản", @enum = new[] { "CongVan", "QuyetDinh", "BaoCao", "ToTrinh", "KeHoach", "ThongBao", "NghiQuyet", "ChiThi", "HuongDan", "Khac" } },
+                ["loai_van_ban"] = new { type = "string", description = "Loại văn bản theo Điều 7 NĐ 30/2020", @enum = new[] { "Luat", "NghiDinh", "ThongTu", "NghiQuyet", "QuyetDinh", "ChiThi", "QuyChE", "QuyDinh", "ThongCao", "ThongBao", "HuongDan", "ChuongTrinh", "KeHoach", "PhuongAn", "DeAn", "DuAn", "BaoCao", "BienBan", "ToTrinh", "HopDong", "CongVan", "CongDien", "BanGhiNho", "BanThoaThuan", "GiayUyQuyen", "GiayMoi", "GiayGioiThieu", "GiayNghiPhep", "PhieuGui", "PhieuChuyen", "PhieuBao", "ThuCong", "Khac" } },
                 ["ngay_ban_hanh"] = new { type = "string", description = "Ngày ban hành dd/MM/yyyy" },
+                ["do_khan"] = new { type = "string", description = "Mức độ khẩn cấp", @enum = new[] { "Thuong", "Khan", "ThuongKhan", "HoaToc" } },
+                ["do_mat"] = new { type = "string", description = "Mức độ bảo mật", @enum = new[] { "Thuong", "Mat", "ToiMat", "TuyetMat" } },
                 ["co_quan_ban_hanh"] = new { type = "string", description = "Tên cơ quan ban hành" },
                 ["nguoi_ky"] = new { type = "string", description = "Họ tên người ký" },
                 ["noi_dung"] = new { type = "string", description = "CHỈ phần NỘI DUNG CHÍNH (từ Chương/Điều đầu tiên). KHÔNG bao gồm: tiêu đề cơ quan, CỘNG HÒA XÃ HỘI, số văn bản, ngày ban hành, tên loại VB, trích yếu, căn cứ, nơi nhận, chữ ký. Dùng \\n xuống dòng giữa đoạn/điều/khoản/chương." },
@@ -433,7 +474,8 @@ QUY TẮC BẮT BUỘC:
         var json = JsonSerializer.Serialize(requestBody, jsonOptions);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.PostAsync(url, content);
+        var response = await SendWithRetryAsync(() =>
+            _httpClient.PostAsync(url, content));
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
@@ -484,7 +526,8 @@ QUY TẮC BẮT BUỘC:
         if (_useVanBanPlusApi)
         {
             var body = new { base64Data = base64, mimeType };
-            var vbpResponse = await _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/read-text", body);
+            var vbpResponse = await SendWithRetryAsync(() =>
+                _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/read-text", body));
             vbpResponse.EnsureSuccessStatusCode();
             var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
             return vbpResult?.Data?.Content ?? "";
@@ -516,7 +559,8 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
         var json = JsonSerializer.Serialize(requestBody, jsonOptions);
         var httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.PostAsync(url, httpContent);
+        var response = await SendWithRetryAsync(() =>
+            _httpClient.PostAsync(url, httpContent));
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
@@ -567,6 +611,8 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
                 NguoiKy = GetJsonString(root, "nguoi_ky"),
                 NoiDung = GetJsonString(root, "noi_dung"),
                 HuongVanBan = GetJsonString(root, "huong_van_ban"),
+                DoKhan = GetJsonString(root, "do_khan", "Thuong"),
+                DoMat = GetJsonString(root, "do_mat", "Thuong"),
                 LinhVuc = GetJsonString(root, "linh_vuc"),
                 DiaDanh = GetJsonString(root, "dia_danh"),
                 ChucDanhKy = GetJsonString(root, "chuc_danh_ky"),
@@ -600,6 +646,8 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
                 salvaged.CoQuanBanHanh = ExtractJsonField(jsonText, "co_quan_ban_hanh");
                 salvaged.NguoiKy = ExtractJsonField(jsonText, "nguoi_ky");
                 salvaged.HuongVanBan = ExtractJsonField(jsonText, "huong_van_ban");
+                salvaged.DoKhan = ExtractJsonField(jsonText, "do_khan");
+                salvaged.DoMat = ExtractJsonField(jsonText, "do_mat");
                 salvaged.LinhVuc = ExtractJsonField(jsonText, "linh_vuc");
                 salvaged.DiaDanh = ExtractJsonField(jsonText, "dia_danh");
                 salvaged.ChucDanhKy = ExtractJsonField(jsonText, "chuc_danh_ky");
@@ -745,11 +793,11 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
         return string.Join("\n", lines).Trim();
     }
 
-    private string GetJsonString(JsonElement root, string propertyName)
+    private string GetJsonString(JsonElement root, string propertyName, string defaultValue = "")
     {
         if (root.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.String)
-            return prop.GetString() ?? "";
-        return "";
+            return prop.GetString() ?? defaultValue;
+        return defaultValue;
     }
 
     /// <summary>

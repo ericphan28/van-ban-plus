@@ -85,6 +85,10 @@ public partial class ApiSettingsDialog : Window
 
         var settings = AppSettingsService.Load();
 
+        // Toggle AI
+        tglAiEnabled.IsChecked = settings.AiEnabled;
+        UpdateAiToggleVisual(settings.AiEnabled);
+
         // Chế độ API — mặc định VanBanPlus
         rbVanBanPlus.IsChecked = settings.UseVanBanPlusApi;
         rbGeminiDirect.IsChecked = !settings.UseVanBanPlusApi;
@@ -157,15 +161,32 @@ public partial class ApiSettingsDialog : Window
     {
         if (grpVanBanPlus == null || grpGeminiDirect == null) return;
 
+        var aiEnabled = tglAiEnabled.IsChecked == true;
         var useVanBanPlus = rbVanBanPlus.IsChecked == true;
 
-        // VanBanPlus group luôn hiện, dim khi không được chọn
+        // Nếu AI bị tắt → disable tất cả, không cần xét chế độ
+        if (!aiEnabled)
+        {
+            grpVanBanPlus.IsEnabled = false;
+            grpVanBanPlus.Opacity = 0.4;
+            if (_devModeActive)
+            {
+                grpModeSelector.IsEnabled = false;
+                grpModeSelector.Opacity = 0.4;
+                grpGeminiDirect.IsEnabled = false;
+                grpGeminiDirect.Opacity = 0.4;
+            }
+            return;
+        }
+
+        // AI đang bật → enable/disable theo chế độ kết nối
         grpVanBanPlus.IsEnabled = useVanBanPlus;
         grpVanBanPlus.Opacity = useVanBanPlus ? 1.0 : 0.4;
 
-        // Gemini Direct group chỉ hiện khi dev mode + được chọn
         if (_devModeActive)
         {
+            grpModeSelector.IsEnabled = true;
+            grpModeSelector.Opacity = 1.0;
             grpGeminiDirect.IsEnabled = !useVanBanPlus;
             grpGeminiDirect.Opacity = !useVanBanPlus ? 1.0 : 0.4;
         }
@@ -320,6 +341,9 @@ public partial class ApiSettingsDialog : Window
     {
         var settings = AppSettingsService.Load();
 
+        // AI toggle
+        settings.AiEnabled = tglAiEnabled.IsChecked == true;
+
         // Nếu dev mode đang bật → cho phép chọn chế độ, ngược lại luôn VanBanPlus
         settings.UseVanBanPlusApi = _devModeActive ? rbVanBanPlus.IsChecked == true : true;
         settings.VanBanPlusApiUrl = txtApiUrl.Text.Trim().TrimEnd('/');
@@ -339,16 +363,16 @@ public partial class ApiSettingsDialog : Window
         }
 
         // Validate
-        if (settings.UseVanBanPlusApi)
+        if (settings.AiEnabled && settings.UseVanBanPlusApi)
         {
             if (string.IsNullOrEmpty(settings.VanBanPlusApiKey))
             {
-                MessageBox.Show("Vui lòng nhập mã kích hoạt!\n\n📞 Liên hệ Zalo: Thắng Phan — 0907136029\n💰 Chỉ từ 99.000đ/tháng",
+                MessageBox.Show("Vui lòng nhập mã kích hoạt!\n\n📞 Liên hệ Zalo: Thắng Phan — 0907136029\n💰 Chỉ từ 79.000đ/tháng",
                     "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
         }
-        else
+        else if (settings.AiEnabled && !settings.UseVanBanPlusApi)
         {
             // Dev mode + Gemini trực tiếp
             if (string.IsNullOrEmpty(settings.GeminiApiKey))
@@ -370,6 +394,43 @@ public partial class ApiSettingsDialog : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private void AiToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        var enabled = tglAiEnabled.IsChecked == true;
+        UpdateAiToggleVisual(enabled);
+    }
+
+    private void UpdateAiToggleVisual(bool enabled)
+    {
+        if (grpVanBanPlus == null) return; // not yet loaded
+
+        // Khi toggle OFF → disable TẤT CẢ các group bên dưới
+        grpVanBanPlus.IsEnabled = enabled;
+        grpVanBanPlus.Opacity = enabled ? 1.0 : 0.4;
+
+        // Cũng disable dev mode groups nếu đang hiện
+        if (_devModeActive)
+        {
+            grpModeSelector.IsEnabled = enabled;
+            grpModeSelector.Opacity = enabled ? 1.0 : 0.4;
+            grpGeminiDirect.IsEnabled = enabled && (rbGeminiDirect.IsChecked == true);
+            grpGeminiDirect.Opacity = enabled && (rbGeminiDirect.IsChecked == true) ? 1.0 : 0.4;
+        }
+
+        if (enabled)
+        {
+            txtAiToggleHint.Text = "✅ Tính năng AI đã được bật";
+            brdAiToggle.BorderBrush = System.Windows.Media.Brushes.Green;
+            // Áp dụng lại visibility theo chế độ kết nối
+            UpdateVisibility();
+        }
+        else
+        {
+            txtAiToggleHint.Text = "Bật để sử dụng các tính năng AI nâng cao";
+            brdAiToggle.BorderBrush = (System.Windows.Media.Brush)FindResource("MaterialDesignDivider");
+        }
     }
 
     #region DTOs

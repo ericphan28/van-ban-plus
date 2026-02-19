@@ -68,6 +68,33 @@ public partial class OrganizationSetupDialog : Window
                         _selectedOrgType = Enum.Parse<OrganizationType>(tag);
                         
                         // Auto-suggest names based on organization type
+                        // Auto-suggest ký hiệu viết tắt CQ — Theo Phụ lục VI, NĐ 30/2020
+                        txtOrgAbbreviation.Text = _selectedOrgType switch
+                        {
+                            OrganizationType.UbndXa or OrganizationType.UbndTinh => "UBND",
+                            OrganizationType.HdndXa or OrganizationType.HdndTinh => "HĐND",
+                            OrganizationType.VanPhong => "VP",
+                            OrganizationType.TrungTamHanhChinh => "TTHCC",
+                            OrganizationType.DangUyXa => "ĐU",
+                            OrganizationType.DangUyTinh => "TU",
+                            OrganizationType.ChiBoDang => "CB",
+                            OrganizationType.DangBo => "ĐB",
+                            OrganizationType.BanDanVan => "BDV",
+                            OrganizationType.BanToChuc => "BTC",
+                            OrganizationType.BanTuyenGiao => "BTG",
+                            OrganizationType.BanKiemTra => "UBKT",
+                            OrganizationType.BanNoiChinh => "BNC",
+                            OrganizationType.BanKinhTe => "BKT",
+                            OrganizationType.BanVanHoa => "BVHXH",
+                            OrganizationType.MatTran => "UBMTTQ",
+                            OrganizationType.HoiNongDan => "HND",
+                            OrganizationType.HoiPhuNu => "HPN",
+                            OrganizationType.DoanThanhNien => "ĐTN",
+                            OrganizationType.HoiCuuChienBinh => "HCCB",
+                            OrganizationType.CongDoan => "CĐ",
+                            _ => "CQ"
+                        };
+                        
                         if (string.IsNullOrEmpty(txtOrgFullName.Text))
                         {
                             txtOrgFullName.Text = _selectedOrgType switch
@@ -129,12 +156,12 @@ public partial class OrganizationSetupDialog : Window
                                 OrganizationType.TruongTHPT => "TRƯỜNG THPT HÒA BÌNH",
                                 OrganizationType.TruongDaiHoc => "TRƯỜNG ĐẠI HỌC BẮC NINH",
                                 OrganizationType.TramYTe => "TRẠM Y TẾ XÃ HÒA BÌNH",
-                                OrganizationType.TrungTamYTe => "TRUNG TÂM Y TẾ HUYỆN ĐÔNG ANH",
-                                OrganizationType.BenhVien => "BỆNH VIỆN ĐA KHOA HUYỆN ĐÔNG ANH",
+                                OrganizationType.TrungTamYTe => "TRUNG TÂM Y TẾ THÀNH PHỐ ĐÔNG ANH",
+                                OrganizationType.BenhVien => "BỆNH VIỆN ĐA KHOA THÀNH PHỐ ĐÔNG ANH",
                                 
                                 // Khác
                                 OrganizationType.CongAn => "CÔNG AN XÃ HÒA BÌNH",
-                                OrganizationType.TrungTamVanHoa => "TRUNG TÂM VĂN HÓA - THỂ THAO HUYỆN ĐÔNG ANH",
+                                OrganizationType.TrungTamVanHoa => "TRUNG TÂM VĂN HÓA - THỂ THAO THÀNH PHỐ ĐÔNG ANH",
                                 OrganizationType.ThuVien => "THƯ VIỆN TỈNH BẮC NINH",
                                 OrganizationType.BaoTangVienDi => "BẢO TÀNG TỈNH BẮC NINH",
                                 OrganizationType.CongTyNhaNuoc => "CÔNG TY CỔ PHẦN ...",
@@ -165,6 +192,7 @@ public partial class OrganizationSetupDialog : Window
             // Lấy giá trị từ UI controls TRƯỚC KHI chạy background task
             var orgName = txtOrgFullName.Text;
             var orgType = _selectedOrgType;
+            var orgAbbreviation = txtOrgAbbreviation.Text?.Trim();
             
             // Disable buttons during operation
             btnComplete.IsEnabled = false;
@@ -177,7 +205,7 @@ public partial class OrganizationSetupDialog : Window
             // Run setup với captured variables
             await Task.Run(() =>
             {
-                _setupService.CreateDefaultStructure(orgName, orgType);
+                _setupService.CreateDefaultStructure(orgName, orgType, orgAbbreviation);
             });
             
             progressDialog.Close();

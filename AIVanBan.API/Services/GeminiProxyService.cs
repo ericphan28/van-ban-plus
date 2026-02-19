@@ -21,11 +21,12 @@ public class GeminiProxyService
     private readonly ILogger<GeminiProxyService> _logger;
     private const string API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
-    // Cost estimation: Gemini Flash giá rẻ
-    // Input: $0.075 / 1M tokens ≈ 1,900 VNĐ / 1M tokens
-    // Output: $0.30 / 1M tokens ≈ 7,600 VNĐ / 1M tokens
-    private const decimal COST_PER_INPUT_TOKEN = 0.0019m;   // VNĐ
-    private const decimal COST_PER_OUTPUT_TOKEN = 0.0076m;  // VNĐ
+    // Cost estimation: Gemini 2.5 Flash (Paid Tier 1)
+    // Input: $0.30 / 1M tokens × 25,300 VNĐ/USD = 7,590 VNĐ / 1M tokens
+    // Output (incl. thinking): $2.50 / 1M tokens × 25,300 VNĐ/USD = 63,250 VNĐ / 1M tokens
+    // Ref: https://ai.google.dev/gemini-api/docs/pricing#gemini-2.5-flash
+    private const decimal COST_PER_INPUT_TOKEN = 0.00759m;   // VNĐ
+    private const decimal COST_PER_OUTPUT_TOKEN = 0.06325m;  // VNĐ
 
     public GeminiProxyService(IConfiguration config, UsageService usageService, ILogger<GeminiProxyService> logger)
     {

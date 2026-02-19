@@ -4,17 +4,31 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using AIVanBan.Core.Models;
+using AIVanBan.Core.Services;
 
 namespace AIVanBan.Desktop.Views;
 
 public partial class DocumentViewDialog : Window
 {
     private Document _document;
+    private readonly DocumentService? _documentService;
     
-    public DocumentViewDialog(Document document)
+    /// <summary>
+    /// Cho biết văn bản đã được chỉnh sửa từ dialog này chưa.
+    /// Caller kiểm tra property này sau ShowDialog() để refresh danh sách.
+    /// </summary>
+    public bool IsEdited { get; private set; }
+    
+    public DocumentViewDialog(Document document, DocumentService? documentService = null)
     {
         InitializeComponent();
         _document = document;
+        _documentService = documentService;
+        
+        // Ẩn nút Sửa nếu không có DocumentService
+        if (_documentService == null && FindName("btnEdit") is UIElement btnEdit)
+            btnEdit.Visibility = Visibility.Collapsed;
+        
         LoadDocument(document);
     }
 
@@ -62,6 +76,54 @@ public partial class DocumentViewDialog : Window
         txtCreatedBy.Text = !string.IsNullOrEmpty(doc.CreatedBy) ? doc.CreatedBy : "—";
         txtCreatedDate.Text = doc.CreatedDate.ToString("dd/MM/yyyy HH:mm");
         
+        // Mức độ khẩn — Điều 8 khoản 3b, NĐ 30/2020
+        if (doc.UrgencyLevel != UrgencyLevel.Thuong)
+        {
+            lblUrgency.Visibility = Visibility.Visible;
+            txtUrgency.Text = $"⚡ {doc.UrgencyLevel.GetDisplayName()}";
+        }
+        
+        // Độ mật
+        if (doc.SecurityLevel != SecurityLevel.Thuong)
+        {
+            lblSecurity.Visibility = Visibility.Visible;
+            txtSecurity.Text = $"🔒 {doc.SecurityLevel.GetDisplayName()}";
+        }
+        
+        // VB đến — Điều 22, 24, NĐ 30/2020
+        if (doc.Direction == Direction.Den)
+        {
+            if (doc.ArrivalNumber > 0)
+            {
+                lblArrival.Visibility = Visibility.Visible;
+                txtArrivalNumber.Text = doc.ArrivalNumber.ToString();
+                if (doc.ArrivalDate.HasValue)
+                    txtArrivalNumber.Text += $" (Ngày đến: {doc.ArrivalDate:dd/MM/yyyy})";
+            }
+            
+            if (doc.DueDate.HasValue)
+            {
+                lblDueDate.Visibility = Visibility.Visible;
+                var isOverdue = doc.DueDate < DateTime.Now;
+                txtDueDate.Text = doc.DueDate.Value.ToString("dd/MM/yyyy");
+                if (isOverdue)
+                {
+                    txtDueDate.Text += " ⚠️ QUÁ HẠN";
+                    txtDueDate.Foreground = new SolidColorBrush(Color.FromRgb(0xC6, 0x28, 0x28));
+                }
+                else
+                {
+                    txtDueDate.Foreground = new SolidColorBrush(Color.FromRgb(0x2E, 0x7D, 0x32));
+                }
+            }
+            
+            if (!string.IsNullOrWhiteSpace(doc.AssignedTo))
+            {
+                lblAssignedTo.Visibility = Visibility.Visible;
+                txtAssignedTo.Text = doc.AssignedTo;
+            }
+        }
+        
         // Tags
         if (doc.Tags != null && doc.Tags.Length > 0)
         {
@@ -88,6 +150,25 @@ public partial class DocumentViewDialog : Window
         else
         {
             lblTags.Visibility = Visibility.Collapsed;
+        }
+        
+        // === BẢN SAO — Điều 25-27, NĐ 30/2020 ===
+        if (doc.CopyType != CopyType.None)
+        {
+            lblCopyType.Visibility = Visibility.Visible;
+            txtCopyInfo.Visibility = Visibility.Visible;
+            var copyLabel = doc.CopyType.GetDisplayName().ToUpper();
+            var copyText = $"📋 {copyLabel} — {doc.CopySymbol}";
+            if (!string.IsNullOrEmpty(doc.CopiedBy))
+            {
+                var sigTitle = !string.IsNullOrEmpty(doc.CopySigningTitle) ? doc.CopySigningTitle + " " : "";
+                copyText += $"\n✍️ {sigTitle}{doc.CopiedBy}";
+            }
+            if (doc.CopyDate.HasValue)
+                copyText += $"\n📅 {doc.CopyDate.Value:dd/MM/yyyy}";
+            txtCopyInfo.Text = copyText;
+            txtCopyInfo.Foreground = new SolidColorBrush(Color.FromRgb(0x15, 0x65, 0xC0));
+            txtCopyInfo.FontWeight = FontWeights.SemiBold;
         }
         
         // === CARD 2: TRÍCH YẾU ===
@@ -219,26 +300,39 @@ public partial class DocumentViewDialog : Window
         txtAuditInfo.Text = string.Join("  •  ", auditParts);
     }
     
-    private string GetDocumentTypeName(DocumentType type)
+    /// <summary>
+    /// Lấy tên hiển thị loại VB — delegate sang EnumDisplayHelper (đủ 29 loại, NĐ 30/2020)
+    /// </summary>
+    private string GetDocumentTypeName(DocumentType type) => type.GetDisplayName();
+    
+    private void Edit_Click(object sender, RoutedEventArgs e)
     {
-        return type switch
+        if (_documentService == null) return;
+        
+        try
         {
-            DocumentType.CongVan => "Công văn",
-            DocumentType.QuyetDinh => "Quyết định",
-            DocumentType.BaoCao => "Báo cáo",
-            DocumentType.ToTrinh => "Tờ trình",
-            DocumentType.KeHoach => "Kế hoạch",
-            DocumentType.ThongBao => "Thông báo",
-            DocumentType.NghiQuyet => "Nghị quyết",
-            DocumentType.ChiThi => "Chỉ thị",
-            DocumentType.HuongDan => "Hướng dẫn",
-            DocumentType.QuyDinh => "Quy định",
-            DocumentType.Luat => "Luật",
-            DocumentType.NghiDinh => "Nghị định",
-            DocumentType.ThongTu => "Thông tư",
-            DocumentType.Khac => "Khác",
-            _ => type.ToString()
-        };
+            var editDialog = new DocumentEditDialog(_document, null, _documentService)
+            {
+                Owner = this
+            };
+            
+            if (editDialog.ShowDialog() == true)
+            {
+                // Reload document mới nhất từ DB
+                var updated = _documentService.GetDocument(_document.Id);
+                if (updated != null)
+                {
+                    _document = updated;
+                    LoadDocument(updated);
+                }
+                IsEdited = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi mở chỉnh sửa:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
     
     private void OpenFile_Click(object sender, RoutedEventArgs e)

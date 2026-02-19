@@ -1,0 +1,329 @@
+<Page x:Class="AIVanBan.Desktop.Views.LegalReferencePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      Title="Tra cứu Pháp quy"
+      Background="{DynamicResource MaterialDesignPaper}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ═══════ HEADER ═══════ -->
+        <Border Grid.Row="0" Margin="0,0,0,12" Padding="16,14" CornerRadius="8"
+                Background="{DynamicResource MaterialDesignCardBackground}"
+                BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Icon accent -->
+                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="8" Margin="0,0,14,0"
+                        Background="{DynamicResource PrimaryHueLightBrush}" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="ScaleBalance" Width="24" Height="24" 
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                </Border>
+
+                <!-- Title + subtitle -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="TRA CỨU PHÁP QUY VĂN THƯ" FontSize="17" FontWeight="Bold" 
+                              Foreground="{DynamicResource MaterialDesignBody}"/>
+                    <TextBlock Text="Nghị định 30/2020/NĐ-CP — Về công tác văn thư  ·  38 Điều  ·  6 Phụ lục" 
+                              FontSize="12" Opacity="0.6" Margin="0,3,0,0"
+                              Foreground="{DynamicResource MaterialDesignBody}"/>
+                </StackPanel>
+
+                <!-- Search Box -->
+                <Border Grid.Column="2" VerticalAlignment="Center" MinWidth="320"
+                        CornerRadius="6" Padding="4,0"
+                        Background="{DynamicResource MaterialDesignToolBarBackground}"
+                        BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Kind="Magnify" Width="20" Height="20" 
+                                                VerticalAlignment="Center" Margin="8,0,4,0" Opacity="0.45"/>
+                        <TextBox x:Name="txtSearch" Grid.Column="1" 
+                                materialDesign:HintAssist.Hint="Tìm kiếm điều khoản, từ khóa..."
+                                materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                BorderThickness="0" FontSize="13" Padding="4,8"
+                                VerticalContentAlignment="Center"
+                                KeyDown="TxtSearch_KeyDown"
+                                TextChanged="TxtSearch_TextChanged"/>
+                        <Button x:Name="btnClearSearch" Grid.Column="2" 
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                Width="28" Height="28" Click="BtnClearSearch_Click"
+                                Visibility="Collapsed"
+                                ToolTip="Xóa tìm kiếm">
+                            <materialDesign:PackIcon Kind="Close" Width="16" Height="16"/>
+                        </Button>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ═══════ MAIN CONTENT ═══════ -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320" MinWidth="250"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ═══════ LEFT PANEL: Mục lục ═══════ -->
+            <materialDesign:Card Grid.Column="0" Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Mục lục Header -->
+                    <Border Grid.Row="0" Padding="12,10" 
+                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                            BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="📋 MỤC LỤC" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"
+                                      Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button x:Name="btnExpandAll" Style="{StaticResource MaterialDesignIconButton}"
+                                        Width="28" Height="28" ToolTip="Mở rộng tất cả" Click="BtnExpandAll_Click">
+                                    <materialDesign:PackIcon Kind="UnfoldMoreHorizontal" Width="18" Height="18"/>
+                                </Button>
+                                <Button x:Name="btnCollapseAll" Style="{StaticResource MaterialDesignIconButton}"
+                                        Width="28" Height="28" ToolTip="Thu gọn tất cả" Click="BtnCollapseAll_Click">
+                                    <materialDesign:PackIcon Kind="UnfoldLessHorizontal" Width="18" Height="18"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- TreeView -->
+                    <TreeView x:Name="treeViewLegal" Grid.Row="1" 
+                              Padding="4" BorderThickness="0"
+                              SelectedItemChanged="TreeViewLegal_SelectedItemChanged">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource MaterialDesignTreeViewItem}">
+                                <Setter Property="IsExpanded" Value="False"/>
+                                <Setter Property="Padding" Value="2,1"/>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Margin="2,3">
+                                    <materialDesign:PackIcon Kind="{Binding Icon}" Width="18" Height="18" 
+                                                            VerticalAlignment="Center" Margin="0,0,6,0"
+                                                            Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                    <TextBlock Text="{Binding Title}" FontSize="12.5" TextWrapping="Wrap" 
+                                              MaxWidth="240" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+
+                    <!-- Search Results Panel (hidden by default) -->
+                    <Border x:Name="pnlSearchResults" Grid.Row="1" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Padding="12,8" Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                    BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1">
+                                <TextBlock x:Name="txtSearchCount" Text="0 kết quả" FontSize="12" 
+                                          Foreground="{DynamicResource PrimaryHueMidBrush}" FontWeight="SemiBold"/>
+                            </Border>
+                            <ListBox x:Name="lstSearchResults" Grid.Row="1" 
+                                    Padding="4" BorderThickness="0"
+                                    SelectionChanged="LstSearchResults_SelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="4,6">
+                                            <TextBlock Text="{Binding BreadcrumbPath}" FontSize="10" 
+                                                      Foreground="{DynamicResource PrimaryHueMidBrush}" 
+                                                      Opacity="0.7" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Node.Title}" FontSize="12.5" FontWeight="SemiBold" 
+                                                      Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding MatchedText}" FontSize="11" 
+                                                      Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                      TextWrapping="Wrap" MaxHeight="40" TextTrimming="CharacterEllipsis"
+                                                      Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Center" 
+                         VerticalAlignment="Stretch" Background="Transparent"/>
+
+            <!-- ═══════ RIGHT PANEL: Nội dung ═══════ -->
+            <materialDesign:Card Grid.Column="2" Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Breadcrumb -->
+                    <Border Grid.Row="0" Padding="16,10"
+                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                            BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="txtBreadcrumb" Text="Chọn một mục bên trái để xem nội dung" 
+                                      FontSize="12" Opacity="0.7" VerticalAlignment="Center"
+                                      TextTrimming="CharacterEllipsis"/>
+                            <!-- Feature tags -->
+                            <StackPanel x:Name="pnlFeatureTags" Grid.Column="1" Orientation="Horizontal" 
+                                       Visibility="Collapsed">
+                                <materialDesign:PackIcon Kind="LinkVariant" Width="14" Height="14" 
+                                                        VerticalAlignment="Center" Margin="0,0,4,0" Opacity="0.5"/>
+                                <ItemsControl x:Name="icFeatureTags">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <materialDesign:Chip Content="{Binding}" 
+                                                                FontSize="10" Margin="2,0"
+                                                                Background="{DynamicResource PrimaryHueLightBrush}"
+                                                                Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Content Display -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,16">
+                        <StackPanel>
+                            <!-- Welcome/default state -->
+                            <StackPanel x:Name="pnlWelcome" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,60,0,0">
+                                <materialDesign:PackIcon Kind="ScaleBalance" Width="64" Height="64" 
+                                                        HorizontalAlignment="Center"
+                                                        Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.3"/>
+                                <TextBlock Text="Tra cứu Pháp quy Văn thư" FontSize="20" FontWeight="Bold"
+                                          TextAlignment="Center" Margin="0,16,0,8"
+                                          Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                <TextBlock Text="Chọn một Chương, Điều hoặc Phụ lục bên trái để xem nội dung chi tiết." 
+                                          FontSize="13" TextAlignment="Center" Opacity="0.6" MaxWidth="400" TextWrapping="Wrap"/>
+                                <TextBlock Text="Hoặc sử dụng ô tìm kiếm ở góc trên bên phải." 
+                                          FontSize="12" TextAlignment="Center" Opacity="0.5" Margin="0,8,0,0"/>
+
+                                <Border Margin="0,24,0,0" Padding="16" CornerRadius="8"
+                                        Background="{DynamicResource MaterialDesignToolBarBackground}" MaxWidth="500">
+                                    <StackPanel>
+                                        <TextBlock Text="📌 Gợi ý tra cứu:" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap" LineHeight="22">
+                                            <Run Text="• Điều 7 — 29 loại văn bản hành chính"/>
+                                            <LineBreak/>
+                                            <Run Text="• Điều 8 — Thể thức văn bản (12 thành phần)"/>
+                                            <LineBreak/>
+                                            <Run Text="• Điều 13 — Ký ban hành (TM., KT., TL., TUQ.)"/>
+                                            <LineBreak/>
+                                            <Run Text="• Điều 25-27 — Sao y, sao lục, trích sao"/>
+                                            <LineBreak/>
+                                            <Run Text="• Phụ lục I — Quy cách trình bày (font, cỡ chữ, lề)"/>
+                                            <LineBreak/>
+                                            <Run Text="• Phụ lục II — Quy tắc viết hoa"/>
+                                            <LineBreak/>
+                                            <Run Text="• Phụ lục III — Bảng viết tắt 29 loại + Mẫu trình bày"/>
+                                            <LineBreak/>
+                                            <Run Text="• Phụ lục VI — Chuẩn dữ liệu hệ thống điện tử"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Article content (shown when item selected) -->
+                            <StackPanel x:Name="pnlArticleContent" Visibility="Collapsed">
+                                <!-- Node Type Badge -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Border x:Name="badgeType" CornerRadius="4" Padding="8,3" 
+                                            Background="{DynamicResource PrimaryHueLightBrush}">
+                                        <TextBlock x:Name="txtNodeType" Text="Điều" FontSize="11" FontWeight="SemiBold"
+                                                  Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Title -->
+                                <TextBlock x:Name="txtArticleTitle" FontSize="20" FontWeight="Bold" 
+                                          TextWrapping="Wrap" Margin="0,0,0,12"
+                                          Foreground="{DynamicResource MaterialDesignBody}"/>
+
+                                <!-- Divider -->
+                                <Separator Margin="0,0,0,16"/>
+
+                                <!-- Content -->
+                                <TextBlock x:Name="txtArticleContent" FontSize="14" TextWrapping="Wrap" 
+                                          LineHeight="26" 
+                                          Foreground="{DynamicResource MaterialDesignBody}"/>
+
+                                <!-- Children summary (if node has children) -->
+                                <Border x:Name="pnlChildrenSummary" Margin="0,20,0,0" Padding="16" CornerRadius="8"
+                                        Background="{DynamicResource MaterialDesignToolBarBackground}" Visibility="Collapsed">
+                                    <StackPanel>
+                                        <TextBlock Text="📂 Nội dung con:" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                        <ItemsControl x:Name="icChildren">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                                            HorizontalContentAlignment="Left" Padding="8,4"
+                                                            Click="ChildItem_Click" Tag="{Binding}">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <materialDesign:PackIcon Kind="{Binding Icon}" Width="16" Height="16" 
+                                                                                    VerticalAlignment="Center" Margin="0,0,6,0"
+                                                                                    Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                                            <TextBlock Text="{Binding Title}" FontSize="12.5" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Footer info -->
+                    <Border Grid.Row="2" Padding="16,8"
+                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                            BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,1,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="InformationOutline" Width="14" Height="14" 
+                                                    VerticalAlignment="Center" Opacity="0.5" Margin="0,0,6,0"/>
+                            <TextBlock Text="Nguồn: Nghị định 30/2020/NĐ-CP, ngày 05/03/2020 của Chính phủ │ Hiệu lực: Còn hiệu lực"
+                                      FontSize="11" Opacity="0.5" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </materialDesign:Card>
+        </Grid>
+    </Grid>
+</Page>

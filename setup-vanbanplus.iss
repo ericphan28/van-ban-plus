@@ -4,12 +4,12 @@
 ; ============================================================
 
 #define MyAppName "VanBanPlus"
-#define MyAppVersion "1.0.7"
+#define MyAppVersion "1.0.9"
 #define MyAppPublisher "VanBanPlus Software"
 #define MyAppURL "https://vanbanplus.vn"
 #define MyAppExeName "AIVanBan.Desktop.exe"
 #define MyAppDescription "Phan mem quan ly van ban thong minh"
-#define PublishDir "D:\AIVanBanCaNhan\AIVanBan.Desktop\bin\Release\net9.0-windows\publish"
+#define PublishDir "D:\AIVanBanCaNhan\AIVanBan.Desktop\bin\Release\net9.0-windows\win-x64\publish"
 
 [Setup]
 AppId={{8A7B9C3D-4E5F-6A1B-2C3D-4E5F6A7B8C9D}

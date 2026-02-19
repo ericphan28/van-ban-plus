@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Title="Thêm văn bản mới" Height="700" Width="800"
+        Title="Thêm văn bản mới" Height="780" Width="850"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource MaterialDesignPaper}">
     
@@ -14,17 +14,57 @@
 
         <ScrollViewer Grid.Row="0">
             <StackPanel>
-                <!-- Số văn bản -->
-                <TextBox x:Name="txtNumber" 
-                         materialDesign:HintAssist.Hint="Số văn bản (VD: 123/CV-UBND)"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         Margin="0,0,0,15"/>
+                <!-- Số văn bản + Auto-increment -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBox x:Name="txtNumber" 
+                             materialDesign:HintAssist.Hint="Số văn bản * (VD: 123/CV-UBND)"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}">
+                        <TextBox.ToolTip>
+                            <ToolTip>
+                                <StackPanel MaxWidth="420">
+                                    <TextBlock FontWeight="Bold" Margin="0,0,0,5">📐 Theo NĐ 30/2020 — Số và ký hiệu:</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">Format chuẩn: Số: XX/Loại VB-Chữ viết tắt đơn vị</TextBlock>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" FontWeight="SemiBold">Ví dụ đúng:</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • Số: 15/QĐ-UBND (Quyết định)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • Số: 123/BC-VP (Báo cáo)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • Số: 45/CV-SGDĐT (Công văn)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#D32F2F" FontWeight="SemiBold">Sai phổ biến:</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  ✗ CV số 01 (thiếu ký hiệu đơn vị)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  ✗ Số 15-QĐ/UBND (dùng - thay /)</TextBlock>
+                                </StackPanel>
+                            </ToolTip>
+                        </TextBox.ToolTip>
+                    </TextBox>
+                    
+                    <Button x:Name="btnAutoNumber" Grid.Column="1" 
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Click="AutoNumber_Click" Height="36" Margin="10,0,0,0"
+                            ToolTip="Tự động cấp số theo Điều 15, NĐ 30/2020">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Counter" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="Cấp số" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
 
                 <!-- Tiêu đề -->
                 <TextBox x:Name="txtTitle" 
                          materialDesign:HintAssist.Hint="Tiêu đề văn bản *"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         Margin="0,0,0,15"/>
+                         Margin="0,0,0,15">
+                    <TextBox.ToolTip>
+                        <ToolTip>
+                            <TextBlock TextWrapping="Wrap" MaxWidth="350">
+                                📐 Theo Điều 8 khoản 3a, NĐ 30/2020: Trích yếu nội dung phải ngắn gọn, phản ánh khái quát nội dung chính của văn bản.
+                            </TextBlock>
+                        </ToolTip>
+                    </TextBox.ToolTip>
+                </TextBox>
 
                 <!-- Loại và Hướng -->
                 <Grid Margin="0,0,0,15">
@@ -35,33 +75,273 @@
                     </Grid.ColumnDefinitions>
 
                     <ComboBox x:Name="cboType" 
-                             materialDesign:HintAssist.Hint="Loại văn bản"
-                             Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                             materialDesign:HintAssist.Hint="Loại văn bản *"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                             SelectionChanged="CboType_Changed">
+                        <ComboBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="320">
+                                    📐 Theo Điều 7, NĐ 30/2020: 29 loại văn bản hành chính. Ký hiệu viết tắt theo Phụ lục VI.
+                                </TextBlock>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
 
                     <ComboBox x:Name="cboDirection" Grid.Column="2"
                              materialDesign:HintAssist.Hint="Hướng"
-                             Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                             SelectionChanged="CboDirection_Changed">
+                        <ComboBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                    📐 NĐ 30/2020: VB đi (Điều 17-20), VB đến (Điều 21-24). Hướng VB quyết định quy trình đăng ký và xử lý.
+                                </TextBlock>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
                 </Grid>
 
-                <!-- Ngày ban hành -->
-                <DatePicker x:Name="dpIssueDate" 
-                           materialDesign:HintAssist.Hint="Ngày ban hành"
-                           Style="{StaticResource MaterialDesignOutlinedDatePicker}"
-                           Margin="0,0,0,15"/>
+                <!-- Mức độ khẩn + Độ mật — Điều 8 khoản 3b, NĐ 30/2020 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Cơ quan ban hành -->
+                    <ComboBox x:Name="cboUrgency" 
+                             materialDesign:HintAssist.Hint="Mức độ khẩn"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                        <ComboBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                    Theo Điều 8 khoản 3b, NĐ 30/2020:
+                                    Dấu chỉ mức độ khẩn (Khẩn, Thượng khẩn, Hỏa tốc)
+                                </TextBlock>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
+
+                    <ComboBox x:Name="cboSecurity" Grid.Column="2"
+                             materialDesign:HintAssist.Hint="Độ mật"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                        <ComboBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                    Theo Luật Bảo vệ bí mật nhà nước 2018:
+                                    Mật, Tối mật, Tuyệt mật. Văn bản mật có hệ thống số riêng (Điều 15 NĐ 30/2020).
+                                </TextBlock>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                    </ComboBox>
+                </Grid>
+
+                <!-- Địa danh + Ngày ban hành — Điều 8 khoản 4, NĐ 30/2020 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="txtLocation" 
+                             materialDesign:HintAssist.Hint="Địa danh ban hành *"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}">
+                        <TextBox.ToolTip>
+                            <ToolTip>
+                                <StackPanel MaxWidth="400">
+                                    <TextBlock FontWeight="Bold" Margin="0,0,0,5">📐 Theo Điều 8 khoản 4, NĐ 30/2020 — Địa danh:</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">Là địa danh hành chính nơi cơ quan đóng trụ sở.</TextBlock>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" FontWeight="SemiBold">Ví dụ:</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • Hà Nội (cơ quan TW tại Hà Nội)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • TP. Hồ Chí Minh</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • Gia Kiệm (thị trấn)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • Thống Nhất (huyện)</TextBlock>
+                                </StackPanel>
+                            </ToolTip>
+                        </TextBox.ToolTip>
+                    </TextBox>
+
+                    <DatePicker x:Name="dpIssueDate" Grid.Column="2"
+                               materialDesign:HintAssist.Hint="Ngày ban hành *"
+                               Style="{StaticResource MaterialDesignOutlinedDatePicker}">
+                        <DatePicker.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                    📐 Theo Điều 8 khoản 4, NĐ 30/2020: Ngày, tháng, năm ban hành văn bản.
+                                </TextBlock>
+                            </ToolTip>
+                        </DatePicker.ToolTip>
+                    </DatePicker>
+                </Grid>
+
+                <!-- VB Đến: Số đến + Ngày đến — Điều 22, NĐ 30/2020 -->
+                <Grid x:Name="panelArrival" Margin="0,0,0,15" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="txtArrivalNumber" 
+                             materialDesign:HintAssist.Hint="Số đến (tự động)"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             IsReadOnly="True">
+                        <TextBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                    Theo Điều 22 NĐ 30/2020: Số đến liên tiếp theo thứ tự 
+                                    và trình tự thời gian trong năm.
+                                </TextBlock>
+                            </ToolTip>
+                        </TextBox.ToolTip>
+                    </TextBox>
+
+                    <DatePicker x:Name="dpArrivalDate" Grid.Column="2"
+                               materialDesign:HintAssist.Hint="Ngày đến"
+                               Style="{StaticResource MaterialDesignOutlinedDatePicker}">
+                        <DatePicker.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="280">
+                                    📐 Theo Điều 22, NĐ 30/2020: Ghi ngày, tháng, năm nhận văn bản đến.
+                                </TextBlock>
+                            </ToolTip>
+                        </DatePicker.ToolTip>
+                    </DatePicker>
+                </Grid>
+
+                <!-- Hạn xử lý + Người xử lý — Điều 24, NĐ 30/2020 -->
+                <Grid x:Name="panelProcessing" Margin="0,0,0,15" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <DatePicker x:Name="dpDueDate" 
+                               materialDesign:HintAssist.Hint="Hạn giải quyết"
+                               Style="{StaticResource MaterialDesignOutlinedDatePicker}">
+                        <DatePicker.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                    Theo Điều 24 NĐ 30/2020: Thời hạn giải quyết VB đến.
+                                    VB khẩn phải giải quyết ngay.
+                                </TextBlock>
+                            </ToolTip>
+                        </DatePicker.ToolTip>
+                    </DatePicker>
+
+                    <TextBox x:Name="txtAssignedTo" Grid.Column="2"
+                             materialDesign:HintAssist.Hint="Người/đơn vị xử lý"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}">
+                        <TextBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="280">
+                                    📐 Theo Điều 24, NĐ 30/2020: Phân phối, chuyển giao VB đến cho đơn vị, cá nhân xử lý.
+                                </TextBlock>
+                            </ToolTip>
+                        </TextBox.ToolTip>
+                    </TextBox>
+                </Grid>
+
+                <!-- Cơ quan ban hành — Điều 8 khoản 1, NĐ 30/2020 -->
                 <TextBox x:Name="txtIssuer" 
-                         materialDesign:HintAssist.Hint="Cơ quan ban hành"
+                         materialDesign:HintAssist.Hint="Cơ quan ban hành *"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         Margin="0,0,0,15"/>
+                         Margin="0,0,0,15">
+                    <TextBox.ToolTip>
+                        <ToolTip>
+                            <TextBlock TextWrapping="Wrap" MaxWidth="320">
+                                📐 Theo Điều 8 khoản 1, NĐ 30/2020: Tên cơ quan, tổ chức ban hành văn bản. Viết đầy đủ hoặc theo quy định.
+                            </TextBlock>
+                        </ToolTip>
+                    </TextBox.ToolTip>
+                </TextBox>
+
+                <!-- Thẩm quyền ký + Chức vụ + Họ tên — Điều 13, Điều 8 khoản 7 NĐ 30/2020 -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="140"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="cboSigningAuthority"
+                             materialDesign:HintAssist.Hint="Thẩm quyền ký"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                             IsEditable="False">
+                        <ComboBox.ToolTip>
+                            <ToolTip>
+                                <StackPanel MaxWidth="400">
+                                    <TextBlock FontWeight="Bold" Margin="0,0,0,5">📐 Theo Điều 13, NĐ 30/2020 — Thẩm quyền ký:</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">• (trống) — Ký trực tiếp (người đứng đầu cơ quan)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">• TM. — Thay mặt (cơ quan lãnh đạo tập thể)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">• KT. — Ký thay (cấp phó ký thay cấp trưởng)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">• TL. — Thừa lệnh (cấp dưới ký theo ủy quyền)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">• TUQ. — Thừa ủy quyền (người được ủy quyền ký)</TextBlock>
+                                </StackPanel>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                        <ComboBoxItem Content="(Ký trực tiếp)" Tag=""/>
+                        <ComboBoxItem Content="TM." Tag="TM."/>
+                        <ComboBoxItem Content="KT." Tag="KT."/>
+                        <ComboBoxItem Content="TL." Tag="TL."/>
+                        <ComboBoxItem Content="TUQ." Tag="TUQ."/>
+                        <ComboBoxItem Content="Q." Tag="Q."/>
+                    </ComboBox>
+
+                    <TextBox x:Name="txtSigningTitle" Grid.Column="2"
+                             materialDesign:HintAssist.Hint="Chức vụ (VD: GIÁM ĐỐC)"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}">
+                        <TextBox.ToolTip>
+                            <ToolTip>
+                                <StackPanel MaxWidth="400">
+                                    <TextBlock FontWeight="Bold" Margin="0,0,0,5">📐 Theo Điều 8 khoản 7, NĐ 30/2020:</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">Chức vụ người ký là thành phần bắt buộc.</TextBlock>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" FontWeight="SemiBold">Ví dụ:</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • CHỦ TỊCH</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • GIÁM ĐỐC</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • PHÓ GIÁM ĐỐC</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • TRƯỞNG PHÒNG</TextBlock>
+                                </StackPanel>
+                            </ToolTip>
+                        </TextBox.ToolTip>
+                    </TextBox>
+
+                    <TextBox x:Name="txtSignedBy" Grid.Column="4"
+                             materialDesign:HintAssist.Hint="Họ tên người ký"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}">
+                        <TextBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="320">
+                                    📐 Theo Điều 13, NĐ 30/2020: Ghi đầy đủ họ tên người ký văn bản.
+                                </TextBlock>
+                            </ToolTip>
+                        </TextBox.ToolTip>
+                    </TextBox>
+                </Grid>
 
                 <!-- Trích yếu -->
                 <TextBox x:Name="txtSubject" 
                          materialDesign:HintAssist.Hint="Trích yếu"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         Margin="0,0,0,15"/>
+                         Margin="0,0,0,15">
+                    <TextBox.ToolTip>
+                        <ToolTip>
+                            <StackPanel MaxWidth="400">
+                                <TextBlock FontWeight="Bold" Margin="0,0,0,5">📐 Theo NĐ 30/2020 — Trích yếu nội dung:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">Trích yếu phải ngắn gọn, phản ánh khái quát nội dung chính của văn bản.</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" FontWeight="SemiBold">Ví dụ:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">  • V/v phê duyệt kế hoạch tuyển dụng năm 2026</TextBlock>
+                                <TextBlock TextWrapping="Wrap">  • V/v báo cáo tình hình thực hiện ngân sách Q1/2026</TextBlock>
+                            </StackPanel>
+                        </ToolTip>
+                    </TextBox.ToolTip>
+                </TextBox>
 
-                <!-- Nơi nhận/Nơi gửi (Đồng kính gởi) -->
+                <!-- Nơi nhận/Nơi gửi -->
                 <TextBox x:Name="txtRecipients" 
                          materialDesign:HintAssist.Hint="Nơi nhận (mỗi dòng 1 đơn vị, VD: - Như trên)"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -69,9 +349,23 @@
                          TextWrapping="Wrap"
                          MinHeight="80"
                          VerticalScrollBarVisibility="Auto"
-                         Margin="0,0,0,15"/>
+                         Margin="0,0,0,15">
+                    <TextBox.ToolTip>
+                        <ToolTip>
+                            <StackPanel MaxWidth="400">
+                                <TextBlock FontWeight="Bold" Margin="0,0,0,5">📐 Theo NĐ 30/2020 — Nơi nhận:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">Liệt kê đầy đủ cơ quan nhận văn bản, mỗi dòng một đơn vị.</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" FontWeight="SemiBold">Ví dụ:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">  - Như trên;</TextBlock>
+                                <TextBlock TextWrapping="Wrap">  - Sở Tài chính;</TextBlock>
+                                <TextBlock TextWrapping="Wrap">  - VP UBND tỉnh;</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Foreground="#D32F2F" FontWeight="SemiBold">  - Lưu: VT, VP.  ← BẮT BUỘC theo NĐ 30</TextBlock>
+                            </StackPanel>
+                        </ToolTip>
+                    </TextBox.ToolTip>
+                </TextBox>
 
-                <!-- CĂN CỨ - Phần quan trọng trong văn bản hành chính VN -->
+                <!-- CĂN CỨ -->
                 <TextBox x:Name="txtBasedOn" 
                          materialDesign:HintAssist.Hint="Căn cứ pháp lý (mỗi dòng 1 căn cứ, VD: Căn cứ Luật ABC...)"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -83,7 +377,9 @@
                     <TextBox.ToolTip>
                         <ToolTip>
                             <StackPanel MaxWidth="400">
-                                <TextBlock FontWeight="Bold" Margin="0,0,0,5">Ví dụ căn cứ pháp lý:</TextBlock>
+                                <TextBlock FontWeight="Bold" Margin="0,0,0,5">📐 Theo Điều 8 khoản 5, NĐ 30/2020 — Căn cứ ban hành:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">Liệt kê đầy đủ cơ sở pháp lý, mỗi dòng 1 căn cứ.</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" FontWeight="SemiBold">Ví dụ:</TextBlock>
                                 <TextBlock TextWrapping="Wrap">
                                     Căn cứ Luật Tổ chức chính quyền địa phương ngày 19/6/2015;
                                 </TextBlock>
@@ -98,7 +394,27 @@
                     </TextBox.ToolTip>
                 </TextBox>
 
-                <!-- Nội dung -->
+                <!-- Ghi chú xử lý — Điều 24, NĐ 30/2020 -->
+                <TextBox x:Name="txtProcessingNotes" 
+                         materialDesign:HintAssist.Hint="Ý kiến chỉ đạo / Ghi chú xử lý"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="60"
+                         VerticalScrollBarVisibility="Auto"
+                         Margin="0,0,0,15"
+                         Visibility="Collapsed"
+                         x:FieldModifier="private">
+                    <TextBox.ToolTip>
+                        <ToolTip>
+                            <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                📐 Theo Điều 24, NĐ 30/2020: Ghi ý kiến chỉ đạo giải quyết và theo dõi, đôn đốc việc giải quyết VB đến.
+                            </TextBlock>
+                        </ToolTip>
+                    </TextBox.ToolTip>
+                </TextBox>
+
+                <!-- Nội dung — Điều 8 khoản 6, NĐ 30/2020 -->
                 <TextBox x:Name="txtContent" 
                          materialDesign:HintAssist.Hint="Nội dung văn bản"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -106,7 +422,85 @@
                          TextWrapping="Wrap"
                          MinHeight="150"
                          VerticalScrollBarVisibility="Auto"
-                         Margin="0,0,0,15"/>
+                         Margin="0,0,0,15">
+                    <TextBox.ToolTip>
+                        <ToolTip>
+                            <TextBlock TextWrapping="Wrap" MaxWidth="320">
+                                📐 Theo Điều 8 khoản 6, NĐ 30/2020: Nội dung văn bản phải rõ ràng, chính xác, không trái pháp luật, đúng thẩm quyền.
+                            </TextBlock>
+                        </ToolTip>
+                    </TextBox.ToolTip>
+                </TextBox>
+
+                <!-- Lĩnh vực + Trạng thái hiệu lực -->
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox x:Name="cboCategory"
+                             materialDesign:HintAssist.Hint="Lĩnh vực"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                             IsEditable="True">
+                        <ComboBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                    Phân loại văn bản theo lĩnh vực quản lý. Có thể chọn hoặc nhập lĩnh vực mới.
+                                </TextBlock>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                        <ComboBoxItem Content="Tổ chức - Cán bộ"/>
+                        <ComboBoxItem Content="Tài chính - Ngân sách"/>
+                        <ComboBoxItem Content="Đầu tư - Xây dựng"/>
+                        <ComboBoxItem Content="Giáo dục - Đào tạo"/>
+                        <ComboBoxItem Content="Y tế"/>
+                        <ComboBoxItem Content="Nông nghiệp"/>
+                        <ComboBoxItem Content="Giao thông - Vận tải"/>
+                        <ComboBoxItem Content="Tài nguyên - Môi trường"/>
+                        <ComboBoxItem Content="An ninh - Quốc phòng"/>
+                        <ComboBoxItem Content="Tư pháp"/>
+                        <ComboBoxItem Content="Lao động - Xã hội"/>
+                        <ComboBoxItem Content="Văn hóa - Thể thao"/>
+                        <ComboBoxItem Content="Khoa học - Công nghệ"/>
+                        <ComboBoxItem Content="Nội vụ"/>
+                        <ComboBoxItem Content="Khác"/>
+                    </ComboBox>
+
+                    <ComboBox x:Name="cboStatus" Grid.Column="2"
+                             materialDesign:HintAssist.Hint="Trạng thái hiệu lực"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                        <ComboBox.ToolTip>
+                            <ToolTip>
+                                <TextBlock TextWrapping="Wrap" MaxWidth="300">
+                                    Trạng thái hiệu lực của văn bản. Văn bản hết hiệu lực khi bị thay thế, bãi bỏ hoặc hết thời hạn.
+                                </TextBlock>
+                            </ToolTip>
+                        </ComboBox.ToolTip>
+                        <ComboBoxItem Content="Còn hiệu lực" IsSelected="True"/>
+                        <ComboBoxItem Content="Hết hiệu lực"/>
+                        <ComboBoxItem Content="Hết hiệu lực một phần"/>
+                        <ComboBoxItem Content="Chưa có hiệu lực"/>
+                    </ComboBox>
+                </Grid>
+
+                <!-- Nhãn / Tags -->
+                <TextBox x:Name="txtTags" 
+                         materialDesign:HintAssist.Hint="Nhãn (tags), phân cách bằng dấu phẩy"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         Margin="0,0,0,15">
+                    <TextBox.ToolTip>
+                        <ToolTip>
+                            <StackPanel MaxWidth="350">
+                                <TextBlock FontWeight="Bold" Margin="0,0,0,5">Nhãn phân loại văn bản:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">Nhập các nhãn phân cách bằng dấu phẩy để dễ tra cứu.</TextBlock>
+                                <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" FontWeight="SemiBold">Ví dụ:</TextBlock>
+                                <TextBlock TextWrapping="Wrap">  tuyển dụng, nhân sự, quý 2</TextBlock>
+                            </StackPanel>
+                        </ToolTip>
+                    </TextBox.ToolTip>
+                </TextBox>
 
                 <!-- File đính kèm -->
                 <Grid Margin="0,0,0,15">

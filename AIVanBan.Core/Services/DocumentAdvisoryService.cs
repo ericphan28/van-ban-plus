@@ -52,7 +52,7 @@ BẠN PHẢI PHÂN TÍCH 15 MỤC SAU:
 ═══════════════════════════════════════
 
 1. TÓM TẮT (summary): 3-5 câu ngắn gọn:
-   - Ai gửi? (cấp nào: TW/Tỉnh/Huyện/Đơn vị ngang cấp/Công dân)
+   - Ai gửi? (cấp nào: TW/Tỉnh-Thành phố/Đơn vị ngang cấp/Công dân)
    - Yêu cầu/nội dung chính là gì?
    - Đối với UBND xã/phường cần làm gì?
    - Có liên quan đến quyền lợi của dân không?
@@ -131,7 +131,7 @@ BẠN PHẢI PHÂN TÍCH 15 MỤC SAU:
 12. CẢNH BÁO RỦI RO (risk_warning): Nếu chậm xử lý thì sao?
     - Ví dụ: ""Quá hạn báo cáo → bị nhắc nhở, ảnh hưởng thi đua cuối năm""
     - Ví dụ: ""Chậm giải quyết đơn → công dân khiếu kiện vượt cấp""
-    - Ví dụ: ""Không triển khai kịp → ảnh hưởng tiến độ NTM của huyện""
+    - Ví dụ: ""Không triển khai kịp → ảnh hưởng tiến độ NTM của thành phố""
     - Nếu rủi ro thấp → ghi ""Không có rủi ro đáng kể""
 
 13. MỨC ƯU TIÊN (priority): Dựa trên TẤT CẢ yếu tố:

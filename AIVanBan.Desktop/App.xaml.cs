@@ -56,13 +56,13 @@ public partial class App : Application
         e.Handled = true; // Prevent crash
     }
     
-    private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+    private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
         LogAndShowError("TASK ERROR (UnobservedTaskException)", e.Exception);
         e.SetObserved(); // Prevent crash
     }
     
-    private void LogAndShowError(string title, Exception exception)
+    private void LogAndShowError(string title, Exception? exception)
     {
         if (exception == null) return;
         

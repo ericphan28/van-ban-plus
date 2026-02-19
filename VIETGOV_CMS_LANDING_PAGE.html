@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VietGov CMS — Nền tảng Chính quyền số cho Việt Nam</title>
+    <meta name="description" content="VietGov CMS — Nền tảng quản lý Cổng thông tin điện tử dành cho chính quyền Việt Nam. Từ cấp xã đến tỉnh, triển khai nhanh, bảo mật cao, chi phí hợp lý.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #C41E3A;
+            --primary-dark: #9B1830;
+            --secondary: #1E40AF;
+            --secondary-light: #3B82F6;
+            --accent: #FFD700;
+            --success: #10B981;
+            --bg: #FFFFFF;
+            --bg-alt: #F8FAFC;
+            --bg-dark: #0F172A;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --border: #E2E8F0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1);
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ===== NAVIGATION ===== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255,255,255,.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text);
+        }
+        .nav-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+        }
+        .nav-logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .nav-logo-text span { color: var(--primary); }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 500;
+            transition: color .2s;
+        }
+        .nav-links a:hover { color: var(--primary); }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all .3s ease;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 14px rgba(196,30,58,.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(196,30,58,.4);
+        }
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+        .btn-secondary:hover {
+            border-color: var(--secondary-light);
+            color: var(--secondary);
+        }
+        .btn-accent {
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            color: white;
+            box-shadow: 0 4px 14px rgba(30,64,175,.3);
+        }
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(30,64,175,.4);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 100px 24px 60px;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(196,30,58,.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(30,64,175,.05) 0%, transparent 50%),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
+        }
+        .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 100px;
+            background: rgba(196,30,58,.08);
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+        }
+        .hero h1 span { 
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-tagline {
+            font-size: 20px;
+            color: var(--text-light);
+            margin-bottom: 40px;
+            max-width: 520px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+        }
+        .hero-stat h3 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--secondary);
+        }
+        .hero-stat p {
+            font-size: 13px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        .hero-visual {
+            position: relative;
+        }
+        .hero-mockup {
+            width: 100%;
+            border-radius: 20px;
+            background: white;
+            box-shadow: var(--shadow-lg), 0 0 0 1px var(--border);
+            overflow: hidden;
+        }
+        .mockup-topbar {
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 8px;
+        }
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.3);
+        }
+        .mockup-url {
+            flex: 1;
+            margin-left: 8px;
+            height: 28px;
+            background: rgba(255,255,255,.15);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            color: rgba(255,255,255,.7);
+            font-size: 12px;
+        }
+        .mockup-body {
+            padding: 24px;
+            min-height: 320px;
+            background: linear-gradient(180deg, #f8fafc 0%, white 100%);
+        }
+        .mockup-sidebar {
+            display: flex;
+            gap: 16px;
+        }
+        .mockup-nav {
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .mockup-nav-item {
+            height: 32px;
+            border-radius: 8px;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 11px;
+            color: var(--text-light);
+            gap: 8px;
+        }
+        .mockup-nav-item.active {
+            background: linear-gradient(135deg, rgba(30,64,175,.1), rgba(59,130,246,.1));
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        .mockup-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .mockup-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .mockup-card-row {
+            display: flex;
+            gap: 12px;
+        }
+        .mockup-stat-card {
+            flex: 1;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+        .mockup-stat-num {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        .mockup-stat-label {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+        .mockup-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border);
+        }
+        .mockup-bar.filled {
+            background: linear-gradient(90deg, var(--secondary-light), var(--success));
+        }
+
+        /* ===== FEATURES ===== */
+        .features {
+            padding: 100px 24px;
+            background: var(--bg);
+        }
+        .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+        .section-label {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 100px;
+            background: rgba(30,64,175,.08);
+            color: var(--secondary);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .section-header h2 {
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+        .section-header p {
+            font-size: 18px;
+            color: var(--text-light);
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .feature-card {
+            padding: 32px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            transition: all .3s ease;
+            background: white;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--secondary-light);
+        }
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        /* ===== WORKFLOW ===== */
+        .workflow {
+            padding: 100px 24px;
+            background: var(--bg-alt);
+        }
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            position: relative;
+        }
+        .workflow-step {
+            text-align: center;
+            padding: 24px 16px;
+            border-radius: var(--radius);
+            background: white;
+            border: 2px solid var(--border);
+            position: relative;
+        }
+        .workflow-step.active {
+            border-color: var(--secondary-light);
+            background: linear-gradient(135deg, rgba(30,64,175,.02), rgba(59,130,246,.02));
+        }
+        .workflow-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin: 0 auto 12px;
+        }
+        .workflow-step h4 {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .workflow-step p {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+        .workflow-arrow {
+            position: absolute;
+            top: 50%;
+            right: -16px;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: var(--secondary-light);
+            z-index: 2;
+        }
+
+        /* ===== TECH STACK ===== */
+        .tech {
+            padding: 100px 24px;
+            background: var(--bg);
+        }
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+        .tech-card {
+            text-align: center;
+            padding: 32px 24px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            transition: all .3s ease;
+        }
+        .tech-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        .tech-logo {
+            font-size: 40px;
+            margin-bottom: 16px;
+        }
+        .tech-card h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .tech-card p {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        /* ===== PRICING ===== */
+        .pricing {
+            padding: 100px 24px;
+            background: var(--bg-alt);
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+        .price-card {
+            background: white;
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            overflow: hidden;
+            transition: all .3s ease;
+        }
+        .price-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        .price-card.featured {
+            border-color: var(--secondary-light);
+            position: relative;
+        }
+        .price-card.featured::before {
+            content: '⭐ PHỔ BIẾN NHẤT';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .price-header {
+            padding: 32px 32px 24px;
+            text-align: center;
+        }
+        .price-card.featured .price-header {
+            padding-top: 52px;
+        }
+        .price-header h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .price-header .desc {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+        .price-amount {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--secondary);
+        }
+        .price-amount span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        .price-features {
+            padding: 0 32px 24px;
+            list-style: none;
+        }
+        .price-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .price-features li:last-child { border: none; }
+        .check { color: var(--success); font-weight: 700; }
+        .price-cta {
+            padding: 0 32px 32px;
+            text-align: center;
+        }
+        .price-cta .btn { width: 100%; justify-content: center; }
+
+        /* ===== DEPLOYMENT ===== */
+        .deploy {
+            padding: 100px 24px;
+            background: var(--bg);
+        }
+        .deploy-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .deploy-card {
+            text-align: center;
+            padding: 40px 24px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--bg-alt), white);
+            border: 1px solid var(--border);
+        }
+        .deploy-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .deploy-card h4 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .deploy-card p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        /* ===== SECURITY ===== */
+        .security {
+            padding: 100px 24px;
+            background: var(--bg-dark);
+            color: white;
+        }
+        .security .section-header h2 { color: white; }
+        .security .section-header p { color: rgba(255,255,255,.6); }
+        .security .section-label { background: rgba(255,255,255,.1); color: var(--accent); }
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .security-item {
+            padding: 28px;
+            border-radius: var(--radius);
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.1);
+            text-align: center;
+        }
+        .security-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+        .security-item h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .security-item p {
+            font-size: 12px;
+            color: rgba(255,255,255,.5);
+        }
+
+        /* ===== CTA ===== */
+        .cta {
+            padding: 100px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 50%, var(--secondary) 100%);
+            text-align: center;
+            color: white;
+        }
+        .cta h2 {
+            font-size: 44px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+        .cta p {
+            font-size: 18px;
+            opacity: .85;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 48px;
+        }
+        .btn-white {
+            background: white;
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(0,0,0,.15);
+        }
+        .btn-white:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,.2);
+        }
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,.4);
+        }
+        .btn-outline:hover {
+            background: rgba(255,255,255,.1);
+            border-color: white;
+        }
+        .cta-contact {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .cta-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            opacity: .9;
+        }
+        .cta-contact-item a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: var(--bg-dark);
+            color: rgba(255,255,255,.6);
+            padding: 60px 24px 30px;
+        }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-brand h3 {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .footer-brand p {
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        .footer-col h4 {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .footer-col ul {
+            list-style: none;
+        }
+        .footer-col li {
+            margin-bottom: 10px;
+        }
+        .footer-col a {
+            color: rgba(255,255,255,.5);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color .2s;
+        }
+        .footer-col a:hover { color: white; }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,.1);
+            padding-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        .footer-social {
+            display: flex;
+            gap: 16px;
+        }
+        .footer-social a {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background .2s;
+        }
+        .footer-social a:hover { background: rgba(255,255,255,.2); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .hero-inner { grid-template-columns: 1fr; }
+            .hero-visual { display: none; }
+            .hero h1 { font-size: 44px; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .tech-grid { grid-template-columns: repeat(2, 1fr); }
+            .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+            .deploy-grid { grid-template-columns: 1fr; }
+            .security-grid { grid-template-columns: repeat(2, 1fr); }
+            .workflow-grid { grid-template-columns: 1fr; }
+            .workflow-arrow { display: none; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 32px; }
+            .hero-tagline { font-size: 16px; }
+            .hero-buttons { flex-direction: column; }
+            .hero-stats { flex-direction: column; gap: 16px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .tech-grid { grid-template-columns: 1fr; }
+            .security-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .cta h2 { font-size: 28px; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+            .cta-contact { flex-direction: column; align-items: center; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+            .section-header h2 { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav>
+    <div class="nav-inner">
+        <a href="#" class="nav-logo">
+            <div class="nav-logo-icon">V</div>
+            <div class="nav-logo-text">Viet<span>Gov</span> CMS</div>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">Tính năng</a></li>
+            <li><a href="#workflow">Quy trình</a></li>
+            <li><a href="#tech">Công nghệ</a></li>
+            <li><a href="#pricing">Bảng giá</a></li>
+            <li><a href="#security">Bảo mật</a></li>
+            <li><a href="#contact" class="btn btn-primary" style="padding: 8px 20px;">Liên hệ tư vấn</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="hero-inner">
+        <div>
+            <div class="hero-badge">🇻🇳 Sản phẩm Việt Nam — Made in Vietnam</div>
+            <h1>
+                <span>Chính quyền số</span><br>
+                Khởi đầu từ đây
+            </h1>
+            <p class="hero-tagline">
+                Nền tảng quản lý Cổng thông tin điện tử toàn diện cho chính quyền Việt Nam. 
+                Triển khai nhanh từ <strong>2 tuần</strong>, vận hành ổn định, bảo mật cao cấp.
+            </p>
+            <div class="hero-buttons">
+                <a href="#contact" class="btn btn-primary">📞 Liên hệ tư vấn miễn phí</a>
+                <a href="#features" class="btn btn-secondary">Xem tính năng →</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <h3>9+</h3>
+                    <p>Loại tổ chức hỗ trợ</p>
+                </div>
+                <div class="hero-stat">
+                    <h3>160+</h3>
+                    <p>Thủ tục hành chính</p>
+                </div>
+                <div class="hero-stat">
+                    <h3>24/7</h3>
+                    <p>Hoạt động liên tục</p>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-mockup">
+                <div class="mockup-topbar">
+                    <div class="mockup-dot"></div>
+                    <div class="mockup-dot"></div>
+                    <div class="mockup-dot"></div>
+                    <div class="mockup-url">🔒 ten-don-vi.gov.vn/admin</div>
+                </div>
+                <div class="mockup-body">
+                    <div class="mockup-sidebar">
+                        <div class="mockup-nav">
+                            <div class="mockup-nav-item active">📊 Dashboard</div>
+                            <div class="mockup-nav-item">📰 Tin tức</div>
+                            <div class="mockup-nav-item">📸 Album</div>
+                            <div class="mockup-nav-item">📅 Sự kiện</div>
+                            <div class="mockup-nav-item">📄 Văn bản</div>
+                            <div class="mockup-nav-item">🏛️ Tổ chức</div>
+                            <div class="mockup-nav-item">👥 Người dùng</div>
+                            <div class="mockup-nav-item">📋 Dịch vụ công</div>
+                        </div>
+                        <div class="mockup-content">
+                            <div class="mockup-card-row">
+                                <div class="mockup-stat-card">
+                                    <div class="mockup-stat-num">247</div>
+                                    <div class="mockup-stat-label">Tin tức</div>
+                                </div>
+                                <div class="mockup-stat-card">
+                                    <div class="mockup-stat-num">68</div>
+                                    <div class="mockup-stat-label">Tổ chức</div>
+                                </div>
+                                <div class="mockup-stat-card">
+                                    <div class="mockup-stat-num">156</div>
+                                    <div class="mockup-stat-label">Thủ tục</div>
+                                </div>
+                            </div>
+                            <div class="mockup-card">
+                                <div style="font-size:12px; font-weight:600; margin-bottom:8px;">📝 Tin chờ duyệt</div>
+                                <div class="mockup-bar filled" style="width: 75%; margin-bottom: 6px;"></div>
+                                <div class="mockup-bar" style="width: 100%; margin-bottom: 6px;"></div>
+                                <div class="mockup-bar filled" style="width: 45%;"></div>
+                            </div>
+                            <div class="mockup-card">
+                                <div style="font-size:12px; font-weight:600; margin-bottom:8px;">📈 Lượt truy cập hôm nay</div>
+                                <div style="display:flex; gap:4px; align-items:flex-end; height:60px;">
+                                    <div style="flex:1; background:var(--border); border-radius:4px 4px 0 0; height:40%;"></div>
+                                    <div style="flex:1; background:var(--secondary-light); border-radius:4px 4px 0 0; height:70%;"></div>
+                                    <div style="flex:1; background:var(--border); border-radius:4px 4px 0 0; height:55%;"></div>
+                                    <div style="flex:1; background:var(--secondary-light); border-radius:4px 4px 0 0; height:90%;"></div>
+                                    <div style="flex:1; background:var(--primary); border-radius:4px 4px 0 0; height:100%;"></div>
+                                    <div style="flex:1; background:var(--secondary-light); border-radius:4px 4px 0 0; height:65%;"></div>
+                                    <div style="flex:1; background:var(--border); border-radius:4px 4px 0 0; height:30%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features" id="features">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">✨ Tính năng</div>
+            <h2>Tất cả những gì chính quyền cần</h2>
+            <p>Giải pháp toàn diện từ quản lý nội dung, tổ chức, nhân sự đến dịch vụ công trực tuyến</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(30,64,175,.1);">📰</div>
+                <h3>Quản lý Tin tức & Nội dung</h3>
+                <p>Soạn thảo trực quan với AI hỗ trợ, quy trình duyệt 5 bước chuyên nghiệp. Quản lý đa danh mục, SEO tự động.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(196,30,58,.1);">🏛️</div>
+                <h3>Quản lý Tổ chức</h3>
+                <p>Hỗ trợ 9 loại tổ chức: chính quyền, đảng, đoàn thể, tôn giáo, ấp, trường học, lực lượng vũ trang... Tùy biến theo địa phương.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(16,185,129,.1);">📋</div>
+                <h3>Dịch vụ công trực tuyến</h3>
+                <p>Tra cứu 160+ thủ tục hành chính, hướng dẫn chi tiết hồ sơ, lệ phí, thời gian. Phân loại Công dân & Doanh nghiệp.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(245,158,11,.1);">📸</div>
+                <h3>Album ảnh & Sự kiện</h3>
+                <p>Quản lý thư viện ảnh đa album, gắn sự kiện. Bộ lọc thông minh, tối ưu ảnh tự động, trình chiếu gallery.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(139,92,246,.1);">📄</div>
+                <h3>Hệ thống Văn bản</h3>
+                <p>Lưu trữ & tra cứu quyết định, công văn, nghị quyết, thông báo. Lọc theo loại, lĩnh vực, năm. Tải file PDF/Word.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(6,182,212,.1);">👥</div>
+                <h3>Người dùng & Phân quyền</h3>
+                <p>Hệ thống RBAC tinh vi: nhóm quyền, vai trò trực tiếp, quyền bổ sung. Kiểm soát đến từng thao tác (tạo, duyệt, xuất bản).</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(236,72,153,.1);">🏢</div>
+                <h3>Danh bạ Doanh nghiệp</h3>
+                <p>Quản lý doanh nghiệp trên địa bàn: MST, lĩnh vực, địa chỉ, người đại diện. Công khai danh bạ cho người dân tra cứu.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(34,197,94,.1);">🧩</div>
+                <h3>Khối Trang chủ tùy biến</h3>
+                <p>Kéo-thả các block: slideshow, tin nổi bật, sự kiện, thống kê, liên kết nhanh. Admin tự thiết kế layout trang chủ.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(251,191,36,.1);">🤖</div>
+                <h3>AI hỗ trợ biên tập</h3>
+                <p>Tích hợp Google Gemini AI: tự sinh nội dung, gợi ý tiêu đề, tóm tắt bài viết, kiểm tra chính tả tự động.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CONTENT WORKFLOW ===== -->
+<section class="workflow" id="workflow">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">📝 Quy trình nội dung</div>
+            <h2>Quy trình phê duyệt 5 bước chuyên nghiệp</h2>
+            <p>Đảm bảo mọi nội dung được kiểm duyệt chặt chẽ trước khi đến với người dân</p>
+        </div>
+        <div class="workflow-grid">
+            <div class="workflow-step">
+                <div class="workflow-num">1</div>
+                <h4>Bản nháp</h4>
+                <p>Biên tập viên soạn bài, AI hỗ trợ nội dung</p>
+                <span class="workflow-arrow">→</span>
+            </div>
+            <div class="workflow-step">
+                <div class="workflow-num">2</div>
+                <h4>Chờ duyệt</h4>
+                <p>Gửi bài để cấp trên xem xét</p>
+                <span class="workflow-arrow">→</span>
+            </div>
+            <div class="workflow-step active">
+                <div class="workflow-num">3</div>
+                <h4>Đã duyệt sơ bộ</h4>
+                <p>Biên tập viên cấp cao kiểm tra</p>
+                <span class="workflow-arrow">→</span>
+            </div>
+            <div class="workflow-step">
+                <div class="workflow-num">4</div>
+                <h4>Phê duyệt</h4>
+                <p>Lãnh đạo phê duyệt chính thức</p>
+                <span class="workflow-arrow">→</span>
+            </div>
+            <div class="workflow-step">
+                <div class="workflow-num" style="background: var(--success);">5</div>
+                <h4>Xuất bản</h4>
+                <p>Công khai trên Cổng thông tin</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== TECH STACK ===== -->
+<section class="tech" id="tech">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">⚡ Công nghệ</div>
+            <h2>Nền tảng công nghệ hiện đại</h2>
+            <p>Xây dựng trên bộ công nghệ hàng đầu thế giới, đảm bảo tốc độ, ổn định và dễ mở rộng</p>
+        </div>
+        <div class="tech-grid">
+            <div class="tech-card">
+                <div class="tech-logo">⚛️</div>
+                <h4>Next.js 14</h4>
+                <p>Framework React hàng đầu với App Router, Server Components, Edge Runtime</p>
+            </div>
+            <div class="tech-card">
+                <div class="tech-logo">🔷</div>
+                <h4>TypeScript</h4>
+                <p>Strict mode, type-safe 100%, phát hiện lỗi sớm, code chất lượng cao</p>
+            </div>
+            <div class="tech-card">
+                <div class="tech-logo">🟢</div>
+                <h4>Supabase</h4>
+                <p>PostgreSQL + Auth + Storage + RLS. Backend mạnh mẽ, bảo mật cấp doanh nghiệp</p>
+            </div>
+            <div class="tech-card">
+                <div class="tech-logo">▲</div>
+                <h4>Vercel Edge</h4>
+                <p>CDN toàn cầu, tự động scale, SSL miễn phí, deploy một click</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SECURITY ===== -->
+<section class="security" id="security">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">🛡️ Bảo mật</div>
+            <h2>Bảo mật cấp chính phủ</h2>
+            <p>Nhiều lớp bảo vệ, đáp ứng tiêu chuẩn an ninh thông tin cho cơ quan nhà nước</p>
+        </div>
+        <div class="security-grid">
+            <div class="security-item">
+                <div class="security-icon">🔐</div>
+                <h4>Row Level Security</h4>
+                <p>Kiểm soát truy cập đến từng dòng dữ liệu trong database</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">🛑</div>
+                <h4>Chặn tự động</h4>
+                <p>Khóa IP khi đăng nhập sai >5 lần. Phát hiện brute-force tự động</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">📋</div>
+                <h4>Audit Log</h4>
+                <p>Ghi lại mọi thao tác: ai, làm gì, khi nào, ở đâu — truy vết 100%</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">🔔</div>
+                <h4>Cảnh báo thời gian thực</h4>
+                <p>Phát hiện truy cập bất thường, đăng nhập ngoài giờ, leo thang quyền</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">🌐</div>
+                <h4>HTTPS / SSL</h4>
+                <p>Mã hóa toàn bộ kết nối, chứng chỉ SSL tự động gia hạn</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">🗂️</div>
+                <h4>RBAC đa lớp</h4>
+                <p>Phân quyền: nhóm + vai trò + quyền bổ sung. Kiểm soát từng chức năng</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">💾</div>
+                <h4>Backup tự động</h4>
+                <p>Sao lưu dữ liệu hàng ngày, khôi phục nhanh khi cần</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">🧪</div>
+                <h4>Validate Input</h4>
+                <p>Kiểm tra dữ liệu đầu vào 100%, chống SQL Injection, XSS</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="pricing" id="pricing">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">💰 Bảng giá</div>
+            <h2>Chi phí hợp lý — Hiệu quả lâu dài</h2>
+            <p>Gói linh hoạt cho mọi quy mô, từ xã/phường đến tỉnh/thành phố. Bao gồm triển khai + đào tạo + hỗ trợ kỹ thuật.</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="price-header">
+                    <h3>🏘️ Starter</h3>
+                    <p class="desc">Xã / Phường / Thị trấn</p>
+                    <div class="price-amount">Liên hệ <span></span></div>
+                </div>
+                <ul class="price-features">
+                    <li><span class="check">✓</span> Quản lý tin tức & nội dung</li>
+                    <li><span class="check">✓</span> Quản lý tổ chức (tối đa 50)</li>
+                    <li><span class="check">✓</span> Dịch vụ công cơ bản</li>
+                    <li><span class="check">✓</span> Album ảnh & Sự kiện</li>
+                    <li><span class="check">✓</span> 10 tài khoản quản trị</li>
+                    <li><span class="check">✓</span> Hỗ trợ qua Zalo/Email</li>
+                    <li><span class="check">✓</span> Đào tạo trực tuyến 2 buổi</li>
+                </ul>
+                <div class="price-cta">
+                    <a href="#contact" class="btn btn-secondary">Tư vấn ngay</a>
+                </div>
+            </div>
+
+            <div class="price-card featured">
+                <div class="price-header">
+                    <h3>🏛️ Professional</h3>
+                    <p class="desc">Quận / Huyện / Thị xã</p>
+                    <div class="price-amount">Liên hệ <span></span></div>
+                </div>
+                <ul class="price-features">
+                    <li><span class="check">✓</span> <strong>Tất cả tính năng Starter</strong></li>
+                    <li><span class="check">✓</span> Tổ chức không giới hạn</li>
+                    <li><span class="check">✓</span> Quy trình phê duyệt 5 bước</li>
+                    <li><span class="check">✓</span> AI hỗ trợ biên tập (Gemini)</li>
+                    <li><span class="check">✓</span> Hệ thống văn bản pháp quy</li>
+                    <li><span class="check">✓</span> Danh bạ doanh nghiệp</li>
+                    <li><span class="check">✓</span> 50 tài khoản quản trị</li>
+                    <li><span class="check">✓</span> Tên miền riêng .gov.vn</li>
+                    <li><span class="check">✓</span> Đào tạo trực tiếp tại đơn vị</li>
+                    <li><span class="check">✓</span> Hỗ trợ ưu tiên 8h/ngày</li>
+                </ul>
+                <div class="price-cta">
+                    <a href="#contact" class="btn btn-accent">Liên hệ ngay →</a>
+                </div>
+            </div>
+
+            <div class="price-card">
+                <div class="price-header">
+                    <h3>🏙️ Enterprise</h3>
+                    <p class="desc">Tỉnh / Thành phố / Sở / Ngành</p>
+                    <div class="price-amount">Liên hệ <span></span></div>
+                </div>
+                <ul class="price-features">
+                    <li><span class="check">✓</span> <strong>Tất cả tính năng Pro</strong></li>
+                    <li><span class="check">✓</span> Multi-tenant (nhiều đơn vị)</li>
+                    <li><span class="check">✓</span> Tài khoản không giới hạn</li>
+                    <li><span class="check">✓</span> API tích hợp hệ thống khác</li>
+                    <li><span class="check">✓</span> Tùy biến giao diện theo yêu cầu</li>
+                    <li><span class="check">✓</span> Server riêng / On-premise</li>
+                    <li><span class="check">✓</span> SLA 99.9% uptime</li>
+                    <li><span class="check">✓</span> Hỗ trợ 24/7 hotline riêng</li>
+                    <li><span class="check">✓</span> Đào tạo tại chỗ không giới hạn</li>
+                </ul>
+                <div class="price-cta">
+                    <a href="#contact" class="btn btn-secondary">Tư vấn Enterprise</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== DEPLOYMENT TARGETS ===== -->
+<section class="deploy">
+    <div class="section-inner">
+        <div class="section-header">
+            <div class="section-label">🚀 Triển khai</div>
+            <h2>Phù hợp mọi cấp chính quyền</h2>
+            <p>Một source code — triển khai cho hàng nghìn đơn vị, tùy biến theo đặc thù địa phương</p>
+        </div>
+        <div class="deploy-grid">
+            <div class="deploy-card">
+                <div class="deploy-icon">🏘️</div>
+                <h4>Cấp Xã / Phường</h4>
+                <p>Cổng thông tin xã/phường/thị trấn. Quản lý ấp/khu phố, đoàn thể, trường học, tôn giáo. Dịch vụ công gần dân nhất.</p>
+            </div>
+            <div class="deploy-card">
+                <div class="deploy-icon">🏛️</div>
+                <h4>Cấp Huyện / Quận</h4>
+                <p>Cổng thông tin huyện/quận/thị xã. Quản lý đa xã/phường, phòng ban, sở ngành, cơ quan trực thuộc.</p>
+            </div>
+            <div class="deploy-card">
+                <div class="deploy-icon">🏙️</div>
+                <h4>Cấp Tỉnh / Sở / Ngành</h4>
+                <p>Hệ thống đa đơn vị. Tổng hợp dữ liệu từ các huyện/xã, dashboard cấp tỉnh, báo cáo thống kê toàn diện.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta" id="contact">
+    <h2>Sẵn sàng chuyển đổi số?</h2>
+    <p>Liên hệ ngay để được tư vấn miễn phí giải pháp phù hợp cho đơn vị của bạn. Đội ngũ kỹ sư sẽ phản hồi trong 24 giờ.</p>
+    <div class="cta-buttons">
+        <a href="tel:0907136029" class="btn btn-white">📞 Gọi ngay: 0907 136 029</a>
+        <a href="https://zalo.me/0907136029" class="btn btn-outline">💬 Nhắn Zalo tư vấn</a>
+    </div>
+    <div class="cta-contact">
+        <div class="cta-contact-item">
+            📞 <a href="tel:0907136029">0907 136 029</a>
+        </div>
+        <div class="cta-contact-item">
+            💬 Zalo: <a href="https://zalo.me/0907136029">0907 136 029</a>
+        </div>
+        <div class="cta-contact-item">
+            🌐 <a href="https://giakiemso.com">giakiemso.com</a>
+        </div>
+        <div class="cta-contact-item">
+            📘 <a href="https://www.facebook.com/profile.php?id=61577066581766">Facebook</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3>🇻🇳 VietGov CMS</h3>
+                <p>Nền tảng Quản lý Cổng thông tin điện tử dành cho chính quyền Việt Nam. Phát triển bởi Công ty TNHH Gia Kiệm Số — đơn vị chuyên giải pháp chuyển đổi số cho chính quyền địa phương.</p>
+                <p style="font-size: 12px;">
+                    <strong>CÔNG TY TNHH GIA KIỆM SỐ</strong><br>
+                    MST: 3604053835<br>
+                    📍 D2/062A Nam Sơn, Xã Gia Kiệm, Tỉnh Đồng Nai
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>Sản phẩm</h4>
+                <ul>
+                    <li><a href="#features">Tính năng</a></li>
+                    <li><a href="#pricing">Bảng giá</a></li>
+                    <li><a href="#tech">Công nghệ</a></li>
+                    <li><a href="#security">Bảo mật</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Tài liệu</h4>
+                <ul>
+                    <li><a href="HUONG_DAN_SU_DUNG_HE_THONG.html">Hướng dẫn sử dụng</a></li>
+                    <li><a href="#">API Documentation</a></li>
+                    <li><a href="#">Changelog</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Liên hệ</h4>
+                <ul>
+                    <li><a href="tel:0907136029">📞 0907 136 029</a></li>
+                    <li><a href="https://zalo.me/0907136029">💬 Zalo hỗ trợ</a></li>
+                    <li><a href="https://www.facebook.com/profile.php?id=61577066581766">📘 Facebook</a></li>
+                    <li><a href="https://giakiemso.com">🌐 giakiemso.com</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 VietGov CMS — Công ty TNHH Gia Kiệm Số. Chính quyền số — Khởi đầu từ đây.</p>
+            <div class="footer-social">
+                <a href="https://www.facebook.com/profile.php?id=61577066581766" title="Facebook">📘</a>
+                <a href="https://zalo.me/0907136029" title="Zalo">💬</a>
+                <a href="https://giakiemso.com" title="Website">🌐</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

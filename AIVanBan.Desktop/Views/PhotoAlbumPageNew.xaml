@@ -54,6 +54,18 @@
                             <TextBlock Text="Upload ảnh"/>
                         </StackPanel>
                     </Button>
+                    
+                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                            Click="DownloadFromWeb_Click"
+                            Background="#1565C0"
+                            BorderBrush="#1565C0"
+                            Margin="10,0,0,0"
+                            ToolTip="Tải album từ website xã Gia Kiệm (xagiakiem.gov.vn)">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="CloudDownload" Margin="0,0,5,0"/>
+                            <TextBlock Text="Tải từ Website"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Grid>
         </materialDesign:Card>

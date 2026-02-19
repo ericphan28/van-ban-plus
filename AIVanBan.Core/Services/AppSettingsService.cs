@@ -63,6 +63,17 @@ public class AppSettingsService
     }
 
     /// <summary>
+    /// Kiểm tra xem AI đã sẵn sàng sử dụng chưa (đã bật + có API key)
+    /// </summary>
+    public static bool IsAiReady()
+    {
+        var s = Load();
+        if (!s.AiEnabled) return false;
+        var key = GetEffectiveApiKey();
+        return !string.IsNullOrWhiteSpace(key);
+    }
+
+    /// <summary>
     /// Lấy API Key hiện tại (ưu tiên VanBanPlus, fallback Gemini trực tiếp)
     /// </summary>
     public static string GetEffectiveApiKey()
@@ -117,6 +128,12 @@ public static class DevModePolicy
 
 public class AppSettings
 {
+    // ===== Bật/tắt tính năng AI =====
+    /// <summary>
+    /// Mặc định false = tính năng AI chưa kích hoạt. Bật khi người dùng đăng ký và cấu hình API.
+    /// </summary>
+    public bool AiEnabled { get; set; } = false;
+
     // ===== Chế độ API =====
     /// <summary>
     /// true = Gọi qua VanBanPlus API (khuyến nghị), false = Gọi Gemini trực tiếp
@@ -124,7 +141,7 @@ public class AppSettings
     public bool UseVanBanPlusApi { get; set; } = true;
 
     // ===== VanBanPlus API (cloud) =====
-    public string VanBanPlusApiUrl { get; set; } = "https://vanbanplus-api-git-main-ericphan28s-projects.vercel.app";
+    public string VanBanPlusApiUrl { get; set; } = "https://vanbanplus.giakiemso.com";
     public string VanBanPlusApiKey { get; set; } = "";
     /// <summary>
     /// Token bypass Vercel Deployment Protection (Hobby plan không tắt được)

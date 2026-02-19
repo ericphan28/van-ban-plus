@@ -142,7 +142,17 @@
                                  materialDesign:HintAssist.Hint="🏷️ Tên viết tắt"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  FontSize="14"
+                                 Margin="0,0,0,15"
                                  Text="UBND xã Hòa Bình"/>
+                        
+                        <TextBox x:Name="txtOrgAbbreviation"
+                                 materialDesign:HintAssist.Hint="✏️ Ký hiệu viết tắt CQ (dùng trong số VB, VD: UBND, SYT, SGDDT)"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 FontSize="14"
+                                 Text="UBND"/>
+                        
+                        <TextBlock Text="ℹ️ Ký hiệu viết tắt sẽ dùng trong ký hiệu văn bản: Số/Loại-CQ (VD: 15/QĐ-UBND)"
+                                   FontSize="11" Foreground="#757575" Margin="0,8,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </materialDesign:Card>
                 

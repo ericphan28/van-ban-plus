@@ -407,6 +407,21 @@ public partial class MeetingListPage : Page
             tagsPanel.Children.Add(noDocBadge);
         }
         
+        // Album count badge
+        if (meeting.RelatedAlbumIds != null && meeting.RelatedAlbumIds.Length > 0)
+        {
+            var albumBadge = CreateBadge($"📷 {meeting.RelatedAlbumIds.Length} album", "#FCE4EC", "#AD1457");
+            albumBadge.Cursor = Cursors.Hand;
+            albumBadge.ToolTip = "Nhấn để xem album ảnh liên quan";
+            var capturedMeeting = meeting;
+            albumBadge.MouseLeftButtonUp += (s, ev) =>
+            {
+                ev.Handled = true;
+                OpenMeetingAlbumTab(capturedMeeting);
+            };
+            tagsPanel.Children.Add(albumBadge);
+        }
+        
         contentPanel.Children.Add(tagsPanel);
         
         // Personal notes preview
@@ -673,6 +688,33 @@ public partial class MeetingListPage : Page
         catch (Exception ex)
         {
             MessageBox.Show($"Lỗi khi mở cuộc họp:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+    
+    private void OpenMeetingAlbumTab(Meeting meeting)
+    {
+        try
+        {
+            var dialog = new MeetingEditDialog(meeting, _meetingService, _documentService)
+            {
+                Owner = Window.GetWindow(this)
+            };
+            dialog.Loaded += (s, ev) =>
+            {
+                // Tab 6 = Album ảnh (index 5)
+                dialog.tabControl.SelectedIndex = 5;
+            };
+            
+            if (dialog.ShowDialog() == true)
+            {
+                LoadMeetings();
+                LoadStatistics();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi mở album cuộc họp:\n{ex.Message}", "Lỗi",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }

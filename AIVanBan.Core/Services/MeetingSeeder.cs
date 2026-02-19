@@ -4,7 +4,7 @@ namespace AIVanBan.Core.Services;
 
 /// <summary>
 /// Service tạo dữ liệu demo cuộc họp sát thực tế
-/// Mô phỏng lịch họp của UBND xã Hòa Bình, huyện Tương Dương, tỉnh Nghệ An
+/// Mô phỏng lịch họp của UBND xã Hòa Bình, thành phố Tương Dương, tỉnh Nghệ An
 /// Bao gồm đầy đủ: giấy mời, tài liệu họp, biên bản, kết luận, nhiệm vụ, thành phần tham dự
 /// </summary>
 public class MeetingSeeder
@@ -14,7 +14,7 @@ public class MeetingSeeder
     // === CƠ CẤU TỔ CHỨC UBND XÃ HÒA BÌNH ===
     private const string OrgName = "UBND xã Hòa Bình";
     private const string OrgFull = "Ủy ban nhân dân xã Hòa Bình";
-    private const string HuyenName = "huyện Tương Dương";
+    private const string ThanhPhoName = "thành phố Tương Dương";
     private const string TinhName = "tỉnh Nghệ An";
     private const string DiaDanh = "Hòa Bình";
     
@@ -340,7 +340,7 @@ public class MeetingSeeder
                 new() { Name = BiThuDang, Position = ChucVuBiThu, Unit = "Đảng ủy xã", Role = AttendeeRole.Attendee, AttendanceStatus = AttendanceStatus.Attended },
                 new() { Name = ChuTichHdnd, Position = ChucVuCtHdnd, Unit = "HĐND xã", Role = AttendeeRole.Attendee, AttendanceStatus = AttendanceStatus.Attended },
                 new() { Name = ChuTichUbMttq, Position = ChucVuCtMttq, Unit = "UB MTTQ xã", Role = AttendeeRole.Attendee, AttendanceStatus = AttendanceStatus.Attended },
-                new() { Name = "Nguyễn Đức Hà", Position = "Phó Chủ tịch UBND huyện", Unit = "UBND huyện Tương Dương", Role = AttendeeRole.Observer, AttendanceStatus = AttendanceStatus.Attended, Note = "Phát biểu chỉ đạo" },
+                new() { Name = "Nguyễn Đức Hà", Position = "Phó Chủ tịch UBND thành phố", Unit = "UBND thành phố Tương Dương", Role = AttendeeRole.Observer, AttendanceStatus = AttendanceStatus.Attended, Note = "Phát biểu chỉ đạo" },
                 new() { Name = CbVpUbnd, Position = "VP-TK", Unit = OrgName, Role = AttendeeRole.Secretary, AttendanceStatus = AttendanceStatus.Attended },
                 new() { Name = CbTaiChinh, Position = "CB TC-KT", Unit = OrgName, Role = AttendeeRole.Attendee, AttendanceStatus = AttendanceStatus.Attended },
                 new() { Name = ChuTichHoiND, Position = "CT Hội Nông dân xã", Unit = "Hội Nông dân", Role = AttendeeRole.Attendee, AttendanceStatus = AttendanceStatus.Attended },
@@ -356,7 +356,7 @@ public class MeetingSeeder
 
 BUỔI CHIỀU (13h30 - 17h00):
 5. Phương hướng, nhiệm vụ trọng tâm năm 2026
-6. Phát biểu chỉ đạo của lãnh đạo huyện
+6. Phát biểu chỉ đạo của lãnh đạo thành phố
 7. Trao Giấy khen cho tập thể, cá nhân tiên tiến
 8. Bế mạc",
             Content = @"Báo cáo chính: Năm 2025, xã Hòa Bình đạt được nhiều kết quả tích cực:
@@ -371,7 +371,7 @@ BUỔI CHIỀU (13h30 - 17h00):
 3. Giảm tỷ lệ hộ nghèo xuống dưới 2%.
 4. Hoàn thành tuyến đường bản Bản Vẽ - Na Loi.
 5. Đẩy mạnh chuyển đổi số, ứng dụng CNTT trong quản lý hành chính.",
-            PersonalNotes = "Hội nghị thành công tốt đẹp. Đ/c PCT huyện đánh giá cao nỗ lực xã Hòa Bình trong xây dựng NTM. Cần lưu ý chỉ tiêu thu ngân sách năm 2026 khá tham vọng.",
+            PersonalNotes = "Hội nghị thành công tốt đẹp. Đ/c PCT thành phố đánh giá cao nỗ lực xã Hòa Bình trong xây dựng NTM. Cần lưu ý chỉ tiêu thu ngân sách năm 2026 khá tham vọng.",
             Tasks = new List<MeetingTask>
             {
                 new() { Title = "Hoàn thiện báo cáo tổng kết trình HĐND xã", AssignedTo = CbVpUbnd, AssignedUnit = "VP-TK", Deadline = new DateTime(2026, 1, 20), TaskStatus = MeetingTaskStatus.Completed, CompletionDate = new DateTime(2026, 1, 18), Priority = 4 },
@@ -604,19 +604,19 @@ BUỔI CHIỀU (13h30 - 17h00):
             Agenda = "1. Báo cáo tiến độ GPMB dự án\n2. Phương án bồi thường, hỗ trợ 07 hộ bị ảnh hưởng\n3. Lộ trình thi công",
             Content = "CB ĐC-XD báo cáo: 5/7 hộ đã đồng ý phương án bồi thường. 2 hộ còn lại (hộ ông Lô Văn Thanh, bà Hà Thị Ngân) chưa đồng ý vì cho rằng đơn giá thấp.",
             Conclusion = "Giao PCT KT-HT làm việc trực tiếp với 2 hộ, vận động MTTQ, trưởng bản hỗ trợ. Deadline hoàn tất GPMB: 28/02/2026.",
-            PersonalNotes = "Vụ này khá phức tạp, 2 hộ kiên quyết đòi giá cao hơn. Cần xin ý kiến huyện nếu không thỏa thuận được.",
+            PersonalNotes = "Vụ này khá phức tạp, 2 hộ kiên quyết đòi giá cao hơn. Cần xin ý kiến thành phố nếu không thỏa thuận được.",
             Tasks = new List<MeetingTask>
             {
                 new() { Title = "Làm việc trực tiếp với hộ ông Lô Văn Thanh về phương án GPMB", AssignedTo = PctKtHt, AssignedUnit = "UBND xã", Deadline = new DateTime(2026, 2, 15), TaskStatus = MeetingTaskStatus.InProgress, Priority = 5 },
                 new() { Title = "Vận động bà Hà Thị Ngân đồng ý phương án bồi thường", AssignedTo = ChuTichUbMttq, AssignedUnit = "MTTQ xã", Deadline = new DateTime(2026, 2, 15), TaskStatus = MeetingTaskStatus.InProgress, Priority = 5 },
-                new() { Title = "Hoàn thiện hồ sơ GPMB trình huyện phê duyệt", AssignedTo = CbDiaChinh, AssignedUnit = "ĐC-XD", Deadline = new DateTime(2026, 2, 28), TaskStatus = MeetingTaskStatus.NotStarted, Priority = 4 },
+                new() { Title = "Hoàn thiện hồ sơ GPMB trình thành phố phê duyệt", AssignedTo = CbDiaChinh, AssignedUnit = "ĐC-XD", Deadline = new DateTime(2026, 2, 28), TaskStatus = MeetingTaskStatus.NotStarted, Priority = 4 },
             },
             Documents = new List<MeetingDocument>
             {
                 new() { DocumentType = MeetingDocumentType.GiayMoi, Title = "Giấy mời họp chuyên đề GPMB dự án đường liên bản", DocumentNumber = "08/GM-UBND", IssuedDate = ngayHop.AddDays(-3), Issuer = OrgName },
                 new() { DocumentType = MeetingDocumentType.TaiLieuHop, Title = "Báo cáo tiến độ GPMB dự án đường Bản Vẽ - Na Loi", IssuedDate = ngayHop.AddDays(-1), Issuer = OrgName },
                 new() { DocumentType = MeetingDocumentType.TaiLieuHop, Title = "Phương án bồi thường, hỗ trợ tái định cư", IssuedDate = ngayHop.AddDays(-1), Issuer = OrgName },
-                new() { DocumentType = MeetingDocumentType.VanBanChiDao, Title = "Quyết định phê duyệt dự án đường liên bản Bản Vẽ - Na Loi", DocumentNumber = "456/QĐ-UBND", Issuer = "UBND huyện Tương Dương" },
+                new() { DocumentType = MeetingDocumentType.VanBanChiDao, Title = "Quyết định phê duyệt dự án đường liên bản Bản Vẽ - Na Loi", DocumentNumber = "456/QĐ-UBND", Issuer = "UBND thành phố Tương Dương" },
                 new() { DocumentType = MeetingDocumentType.BienBan, Title = "Biên bản họp chuyên đề GPMB", IssuedDate = ngayHop, Issuer = OrgName },
             },
             Tags = new[] { "GPMB", "đường liên bản", "bồi thường", "Bản Vẽ", "Na Loi" }
@@ -660,7 +660,7 @@ BUỔI CHIỀU (13h30 - 17h00):
             {
                 new() { DocumentType = MeetingDocumentType.GiayMoi, Title = "Giấy mời họp liên ngành PCTT&TKCN", DocumentNumber = "07/GM-UBND", IssuedDate = ngayHop.AddDays(-3), Issuer = OrgName },
                 new() { DocumentType = MeetingDocumentType.TaiLieuHop, Title = "Kế hoạch PCTT&TKCN năm 2026 (dự thảo)", IssuedDate = ngayHop.AddDays(-2), Issuer = OrgName },
-                new() { DocumentType = MeetingDocumentType.VanBanChiDao, Title = "Chỉ thị về công tác PCTT&TKCN năm 2026", DocumentNumber = "05/CT-UBND", Issuer = "UBND huyện Tương Dương" },
+                new() { DocumentType = MeetingDocumentType.VanBanChiDao, Title = "Chỉ thị về công tác PCTT&TKCN năm 2026", DocumentNumber = "05/CT-UBND", Issuer = "UBND thành phố Tương Dương" },
                 new() { DocumentType = MeetingDocumentType.BienBan, Title = "Biên bản họp liên ngành PCTT", IssuedDate = ngayHop, Issuer = OrgName },
             },
             Tags = new[] { "PCTT", "phòng chống thiên tai", "liên ngành", "sạt lở" }
@@ -874,7 +874,7 @@ BUỔI CHIỀU:
             {
                 new() { DocumentType = MeetingDocumentType.GiayMoi, Title = "Giấy mời họp triển khai SX vụ Xuân 2026", DocumentNumber = "09/GM-UBND", IssuedDate = new DateTime(2026, 2, 5), Issuer = OrgName },
                 new() { DocumentType = MeetingDocumentType.TaiLieuHop, Title = "Kế hoạch sản xuất nông nghiệp vụ Xuân 2026", DocumentNumber = "05/KH-UBND", IssuedDate = new DateTime(2026, 2, 3), Issuer = OrgName },
-                new() { DocumentType = MeetingDocumentType.VanBanChiDao, Title = "Hướng dẫn sản xuất vụ Xuân 2026", DocumentNumber = "15/HD-NNPTNT", Issuer = "Phòng NN&PTNT huyện" },
+                new() { DocumentType = MeetingDocumentType.VanBanChiDao, Title = "Hướng dẫn sản xuất vụ Xuân 2026", DocumentNumber = "15/HD-NNPTNT", Issuer = "Sở NN&PTNT tỉnh" },
             },
             Tags = new[] { "nông nghiệp", "vụ Xuân", "sản xuất", "2026" }
         };

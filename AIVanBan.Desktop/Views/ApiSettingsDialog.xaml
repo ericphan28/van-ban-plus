@@ -26,6 +26,23 @@
         <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
+                <!-- Toggle bật/tắt AI -->
+                <Border x:Name="brdAiToggle" CornerRadius="8" Padding="14" Margin="0,0,0,14"
+                        BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1">
+                    <DockPanel>
+                        <ToggleButton x:Name="tglAiEnabled" DockPanel.Dock="Right"
+                                      Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                      VerticalAlignment="Center"
+                                      Checked="AiToggle_Changed" Unchecked="AiToggle_Changed"/>
+                        <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                            <TextBlock Text="✨ Kích hoạt tính năng AI" FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="txtAiToggleHint" 
+                                       Text="Bật để sử dụng các tính năng AI nâng cao" 
+                                       FontSize="11" Opacity="0.6" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
                 <!-- Chế độ kết nối (ẩn, chỉ dev thấy) -->
                 <GroupBox x:Name="grpModeSelector" Header="Chế độ kết nối (Nâng cao)" Margin="0,0,0,12"
                           materialDesign:ColorZoneAssist.Mode="PrimaryLight"
@@ -56,7 +73,7 @@
                     <StackPanel Margin="8">
                         <TextBlock Text="Địa chỉ server" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
                         <TextBox x:Name="txtApiUrl" 
-                                 materialDesign:HintAssist.Hint="https://vanbanplus-api-xxx.vercel.app"
+                                 materialDesign:HintAssist.Hint="https://vanbanplus.giakiemso.com"
                                  Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                  Margin="0,0,0,12"/>
 
@@ -115,7 +132,7 @@
                         <Border Background="#FFF3E0" CornerRadius="6" Padding="10" Margin="0,8,0,0">
                             <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#E65100" 
                                        FontWeight="SemiBold" TextAlignment="Center">
-                                💰 Chỉ từ 99.000đ/tháng — Đầu tư nhỏ, hiệu quả lớn!
+                                💰 Chỉ từ 79.000đ/tháng — Đầu tư nhỏ, hiệu quả lớn!
                             </TextBlock>
                         </Border>
                     </StackPanel>

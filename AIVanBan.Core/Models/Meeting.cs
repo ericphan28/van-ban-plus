@@ -293,7 +293,6 @@ public enum MeetingLevel
 {
     CapDonVi,       // Cấp đơn vị / Cơ quan
     CapXa,          // Cấp xã / Phường / Thị trấn
-    CapHuyen,       // Cấp huyện / Quận / Thị xã
     CapTinh,        // Cấp tỉnh / Thành phố
     CapTrungUong,   // Cấp trung ương
     LienNganh       // Liên ngành / Liên cơ quan
@@ -435,7 +434,6 @@ public static class MeetingHelper
     {
         MeetingLevel.CapDonVi => "Cấp đơn vị",
         MeetingLevel.CapXa => "Cấp xã/phường",
-        MeetingLevel.CapHuyen => "Cấp huyện/quận",
         MeetingLevel.CapTinh => "Cấp tỉnh/TP",
         MeetingLevel.CapTrungUong => "Cấp trung ương",
         MeetingLevel.LienNganh => "Liên ngành",

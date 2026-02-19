@@ -32,7 +32,7 @@ public partial class ScanImportDialog : Window
     
     private void InitializeComboBoxes()
     {
-        // Loại văn bản
+        // Loại văn bản — 32 loại theo Điều 7, NĐ 30/2020 + VBQPPL
         var docTypes = new[]
         {
             new { Value = "CongVan", Display = "📨 Công văn" },
@@ -44,10 +44,29 @@ public partial class ScanImportDialog : Window
             new { Value = "NghiQuyet", Display = "📜 Nghị quyết" },
             new { Value = "ChiThi", Display = "🔖 Chỉ thị" },
             new { Value = "HuongDan", Display = "📝 Hướng dẫn" },
+            new { Value = "BienBan", Display = "📋 Biên bản" },
+            new { Value = "GiayMoi", Display = "💌 Giấy mời" },
+            new { Value = "HopDong", Display = "🤝 Hợp đồng" },
+            new { Value = "QuyChE", Display = "📘 Quy chế" },
+            new { Value = "QuyDinh", Display = "📘 Quy định" },
+            new { Value = "ChuongTrinh", Display = "📋 Chương trình" },
+            new { Value = "PhuongAn", Display = "📐 Phương án" },
+            new { Value = "DeAn", Display = "📑 Đề án" },
+            new { Value = "DuAn", Display = "🏗️ Dự án" },
+            new { Value = "CongDien", Display = "⚡ Công điện" },
+            new { Value = "ThongCao", Display = "📢 Thông cáo" },
+            new { Value = "BanGhiNho", Display = "📝 Bản ghi nhớ" },
+            new { Value = "BanThoaThuan", Display = "🤝 Bản thỏa thuận" },
+            new { Value = "GiayUyQuyen", Display = "📜 Giấy ủy quyền" },
+            new { Value = "GiayGioiThieu", Display = "📨 Giấy giới thiệu" },
+            new { Value = "GiayNghiPhep", Display = "🏖️ Giấy nghỉ phép" },
+            new { Value = "PhieuGui", Display = "📨 Phiếu gửi" },
+            new { Value = "PhieuChuyen", Display = "📨 Phiếu chuyển" },
+            new { Value = "PhieuBao", Display = "📨 Phiếu báo" },
+            new { Value = "ThuCong", Display = "✉️ Thư công" },
             new { Value = "Luat", Display = "⚖️ Luật" },
             new { Value = "NghiDinh", Display = "📕 Nghị định" },
             new { Value = "ThongTu", Display = "📗 Thông tư" },
-            new { Value = "QuyDinh", Display = "📘 Quy định" },
             new { Value = "Khac", Display = "📎 Khác" }
         };
         cboLoaiVanBan.ItemsSource = docTypes;
@@ -66,6 +85,32 @@ public partial class ScanImportDialog : Window
         cboHuongVanBan.DisplayMemberPath = "Display";
         cboHuongVanBan.SelectedValuePath = "Value";
         cboHuongVanBan.SelectedIndex = 0;
+
+        // Mức độ khẩn
+        var urgencies = new[]
+        {
+            new { Value = "Thuong", Display = "⚪ Thường" },
+            new { Value = "Khan", Display = "🟡 Khẩn" },
+            new { Value = "ThuongKhan", Display = "🟠 Thượng khẩn" },
+            new { Value = "HoaToc", Display = "🔴 Hỏa tốc" }
+        };
+        cboDoKhan.ItemsSource = urgencies;
+        cboDoKhan.DisplayMemberPath = "Display";
+        cboDoKhan.SelectedValuePath = "Value";
+        cboDoKhan.SelectedIndex = 0;
+
+        // Độ mật
+        var securities = new[]
+        {
+            new { Value = "Thuong", Display = "⚪ Thường" },
+            new { Value = "Mat", Display = "🟡 Mật" },
+            new { Value = "ToiMat", Display = "🟠 Tối mật" },
+            new { Value = "TuyetMat", Display = "🔴 Tuyệt mật" }
+        };
+        cboDoMat.ItemsSource = securities;
+        cboDoMat.DisplayMemberPath = "Display";
+        cboDoMat.SelectedValuePath = "Value";
+        cboDoMat.SelectedIndex = 0;
     }
 
     private void ChooseFile_Click(object sender, RoutedEventArgs e)
@@ -140,6 +185,7 @@ public partial class ScanImportDialog : Window
     private async void Analyze_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrEmpty(_selectedFilePath)) return;
+        if (!AiPromoHelper.CheckOrShowPromo(this)) return;
         
         // Check file size (Gemini inline limit ~20MB)
         var fileInfo = new FileInfo(_selectedFilePath);
@@ -276,6 +322,36 @@ public partial class ScanImportDialog : Window
             }
         }
         
+        // Map độ khẩn
+        if (!string.IsNullOrEmpty(data.DoKhan))
+        {
+            for (int i = 0; i < cboDoKhan.Items.Count; i++)
+            {
+                var item = cboDoKhan.Items[i];
+                var value = item?.GetType().GetProperty("Value")?.GetValue(item)?.ToString();
+                if (value != null && value.Equals(data.DoKhan, StringComparison.OrdinalIgnoreCase))
+                {
+                    cboDoKhan.SelectedIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        // Map độ mật
+        if (!string.IsNullOrEmpty(data.DoMat))
+        {
+            for (int i = 0; i < cboDoMat.Items.Count; i++)
+            {
+                var item = cboDoMat.Items[i];
+                var value = item?.GetType().GetProperty("Value")?.GetValue(item)?.ToString();
+                if (value != null && value.Equals(data.DoMat, StringComparison.OrdinalIgnoreCase))
+                {
+                    cboDoMat.SelectedIndex = i;
+                    break;
+                }
+            }
+        }
+        
         // Căn cứ + Nơi nhận
         if (data.CanCu.Length > 0)
             txtCanCu.Text = string.Join("\n", data.CanCu);
@@ -322,6 +398,30 @@ public partial class ScanImportDialog : Window
         var dirValue = cboHuongVanBan.SelectedValue?.ToString() ?? "Den";
         if (Enum.TryParse<Direction>(dirValue, out var dir))
             doc.Direction = dir;
+        
+        // Parse urgency
+        var urgencyValue = cboDoKhan.SelectedValue?.ToString() ?? "Thuong";
+        var urgencyMap = new Dictionary<string, UrgencyLevel>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Thuong"] = UrgencyLevel.Thuong,
+            ["Khan"] = UrgencyLevel.Khan,
+            ["ThuongKhan"] = UrgencyLevel.ThuongKhan,
+            ["HoaToc"] = UrgencyLevel.HoaToc
+        };
+        if (urgencyMap.TryGetValue(urgencyValue, out var urgency))
+            doc.UrgencyLevel = urgency;
+        
+        // Parse security
+        var securityValue = cboDoMat.SelectedValue?.ToString() ?? "Thuong";
+        var securityMap = new Dictionary<string, SecurityLevel>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Thuong"] = SecurityLevel.Thuong,
+            ["Mat"] = SecurityLevel.Mat,
+            ["ToiMat"] = SecurityLevel.ToiMat,
+            ["TuyetMat"] = SecurityLevel.TuyetMat
+        };
+        if (securityMap.TryGetValue(securityValue, out var security))
+            doc.SecurityLevel = security;
         
         // Parse recipients
         if (!string.IsNullOrWhiteSpace(txtNoiNhan.Text))

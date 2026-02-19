@@ -8,7 +8,7 @@ public class AlbumStructureTemplate
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty; // "Cấu trúc cơ quan Xã/Phường"
-    public string OrganizationType { get; set; } = string.Empty; // "XaPhuong", "Huyen", "Tinh", "HoiNongDan", v.v.
+    public string OrganizationType { get; set; } = string.Empty; // "XaPhuong", "Tinh", "HoiNongDan", v.v.
     public string Version { get; set; } = "1.0"; // Version để update
     public string Description { get; set; } = string.Empty;
     
