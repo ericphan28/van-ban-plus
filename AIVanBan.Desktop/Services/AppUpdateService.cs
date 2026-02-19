@@ -222,21 +222,23 @@ public static class AppUpdateService
             if (args.IsUpdateAvailable)
             {
                 Console.WriteLine($"[UpdateService] New version available: {args.CurrentVersion}");
+                Console.WriteLine($"[UpdateService] Mandatory update: {args.Mandatory?.Value}");
 
-                var result = MessageBox.Show(
-                    $"Đã có phiên bản mới!\n\n" +
-                    $"Phiên bản hiện tại: {GetCurrentVersion()}\n" +
-                    $"Phiên bản mới: {args.CurrentVersion}\n\n" +
-                    $"{(string.IsNullOrEmpty(args.ChangelogURL) ? "" : "Xem chi tiết thay đổi sau khi cập nhật.\n\n")}" +
-                    $"Bạn có muốn cập nhật ngay không?",
-                    $"{AppTitle} - Cập nhật phần mềm",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Information);
-
-                if (result == MessageBoxResult.Yes)
+                // Nếu mandatory → không cho skip, chỉ có nút OK
+                bool isMandatory = args.Mandatory?.Value == true;
+                
+                if (isMandatory)
                 {
-                    // Sử dụng download thủ công thay vì AutoUpdater.DownloadUpdate
-                    // để tránh lỗi WinForms ScaleHelper trong self-contained publish
+                    MessageBox.Show(
+                        $"Phiên bản hiện tại ({GetCurrentVersion()}) đã cũ và cần cập nhật.\n\n" +
+                        $"Phiên bản mới: {args.CurrentVersion}\n\n" +
+                        $"Bản cập nhật này là BẮT BUỘC để sửa lỗi quan trọng.\n" +
+                        $"Nhấn OK để tải và cài đặt ngay.",
+                        $"{AppTitle} - Cập nhật bắt buộc",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    
+                    // Tự động download
                     _ = Task.Run(async () =>
                     {
                         await Application.Current.Dispatcher.InvokeAsync(async () =>
@@ -244,6 +246,29 @@ public static class AppUpdateService
                             await DownloadAndRunInstallerAsync(args);
                         });
                     });
+                }
+                else
+                {
+                    var result = MessageBox.Show(
+                        $"Đã có phiên bản mới!\n\n" +
+                        $"Phiên bản hiện tại: {GetCurrentVersion()}\n" +
+                        $"Phiên bản mới: {args.CurrentVersion}\n\n" +
+                        $"{(string.IsNullOrEmpty(args.ChangelogURL) ? "" : "Xem chi tiết thay đổi sau khi cập nhật.\n\n")}" +
+                        $"Bạn có muốn cập nhật ngay không?",
+                        $"{AppTitle} - Cập nhật phần mềm",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Information);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        _ = Task.Run(async () =>
+                        {
+                            await Application.Current.Dispatcher.InvokeAsync(async () =>
+                            {
+                                await DownloadAndRunInstallerAsync(args);
+                            });
+                        });
+                    }
                 }
             }
             else
