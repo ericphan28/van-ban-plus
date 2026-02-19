@@ -1,5 +1,6 @@
 using LiteDB;
 using AIVanBan.Core.Models;
+using AIVanBan.Core.Data;
 using SystemJsonSerializer = System.Text.Json.JsonSerializer;
 using System.Text.Json;
 using System.Net.Http;
@@ -35,6 +36,7 @@ public class AlbumStructureService : IDisposable
         Directory.CreateDirectory(_photosBasePath);
 
         var dbPath = Path.Combine(_dataPath, "documents.db");
+        LiteDbConfig.ConfigureGlobalMapper();
         _db = new LiteDatabase($"Filename={dbPath};Connection=Shared");
 
         // Indexes

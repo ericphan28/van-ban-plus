@@ -1,5 +1,6 @@
 using LiteDB;
 using AIVanBan.Core.Models;
+using AIVanBan.Core.Data;
 
 namespace AIVanBan.Core.Services;
 
@@ -22,6 +23,7 @@ public class MeetingService : IDisposable
         Directory.CreateDirectory(dataPath);
         
         var dbPath = Path.Combine(dataPath, "documents.db");
+        LiteDbConfig.ConfigureGlobalMapper();
         _db = new LiteDatabase($"Filename={dbPath};Connection=Shared");
         
         // Tạo indexes cho collection meetings

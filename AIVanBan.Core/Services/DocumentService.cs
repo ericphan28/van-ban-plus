@@ -1,5 +1,6 @@
 using LiteDB;
 using AIVanBan.Core.Models;
+using AIVanBan.Core.Data;
 
 namespace AIVanBan.Core.Services;
 
@@ -13,6 +14,9 @@ public class DocumentService : IDisposable
     
     public DocumentService(string? databasePath = null)
     {
+        // Cấu hình BsonMapper an toàn cho enum deserialization
+        LiteDbConfig.ConfigureGlobalMapper();
+        
         // Mặc định lưu trong My Documents
         _dataPath = databasePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
