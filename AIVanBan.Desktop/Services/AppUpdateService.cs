@@ -111,13 +111,17 @@ public static class AppUpdateService
         var downloadUrl = args.DownloadURL;
         var fileName = Path.GetFileName(new Uri(downloadUrl).LocalPath);
         var tempPath = Path.Combine(Path.GetTempPath(), fileName);
+        long totalRead = 0;
 
         try
         {
-            using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromMinutes(10);
+            // Xóa file cũ nếu tồn tại (tránh lock từ lần download trước)
+            if (File.Exists(tempPath))
+            {
+                try { File.Delete(tempPath); }
+                catch { /* Bỏ qua nếu không xóa được */ }
+            }
 
-            // Hiển thị thông báo đang tải
             MessageBox.Show(
                 $"Bắt đầu tải bản cập nhật...\n\n" +
                 $"File: {fileName}\n" +
@@ -130,36 +134,47 @@ public static class AppUpdateService
             Console.WriteLine($"[UpdateService] Downloading: {downloadUrl}");
             Console.WriteLine($"[UpdateService] Save to: {tempPath}");
 
-            // Download file
-            using var response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-
-            var totalBytes = response.Content.Headers.ContentLength ?? -1;
-            Console.WriteLine($"[UpdateService] File size: {totalBytes / 1024.0 / 1024.0:F1} MB");
-
-            using var contentStream = await response.Content.ReadAsStreamAsync();
-            using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-
-            var buffer = new byte[81920];
-            long totalRead = 0;
-            int bytesRead;
-
-            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            // Download file — dùng using BLOCK (không phải using var)
+            // để đảm bảo TẤT CẢ streams được đóng TRƯỚC khi chạy installer
+            using (var httpClient = new HttpClient())
             {
-                await fileStream.WriteAsync(buffer, 0, bytesRead);
-                totalRead += bytesRead;
+                httpClient.Timeout = TimeSpan.FromMinutes(10);
 
-                if (totalBytes > 0)
+                using (var response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
                 {
-                    var percent = (int)(totalRead * 100 / totalBytes);
-                    if (percent % 10 == 0)
-                        Console.WriteLine($"[UpdateService] Download progress: {percent}%");
-                }
-            }
+                    response.EnsureSuccessStatusCode();
+
+                    var totalBytes = response.Content.Headers.ContentLength ?? -1;
+                    Console.WriteLine($"[UpdateService] File size: {totalBytes / 1024.0 / 1024.0:F1} MB");
+
+                    using (var contentStream = await response.Content.ReadAsStreamAsync())
+                    using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                    {
+                        var buffer = new byte[81920];
+                        int bytesRead;
+
+                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            totalRead += bytesRead;
+
+                            if (totalBytes > 0)
+                            {
+                                var percent = (int)(totalRead * 100 / totalBytes);
+                                if (percent % 10 == 0)
+                                    Console.WriteLine($"[UpdateService] Download progress: {percent}%");
+                            }
+                        }
+                    } // fileStream + contentStream ĐÓNG ở đây
+                } // response ĐÓNG ở đây
+            } // httpClient ĐÓNG ở đây
 
             Console.WriteLine($"[UpdateService] Download completed: {totalRead / 1024.0 / 1024.0:F1} MB");
 
-            // Chạy installer
+            // Đợi 1 giây để OS release file lock hoàn toàn
+            await Task.Delay(1000);
+
+            // Chạy installer — file đã được giải phóng hoàn toàn
             var result = MessageBox.Show(
                 $"Đã tải bản cập nhật thành công!\n\n" +
                 $"File: {fileName}\n" +
@@ -171,23 +186,20 @@ public static class AppUpdateService
 
             if (result == MessageBoxResult.OK)
             {
-                // Chạy installer
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = tempPath,
                     UseShellExecute = true,
-                    Verb = "runas" // Chạy với quyền admin
+                    Verb = "runas"
                 };
 
                 Process.Start(startInfo);
-
-                // Thoát app
                 Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UpdateService] Download failed: {ex.Message}");
+            Console.WriteLine($"[UpdateService] Download/Install failed: {ex.Message}");
 
             // Fallback: mở trình duyệt để download
             var fallbackResult = MessageBox.Show(
