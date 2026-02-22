@@ -342,6 +342,14 @@
                                 <TextBlock Text="Cuộc họp"/>
                             </StackPanel>
                         </Button>
+                        <Button Style="{StaticResource TocButton}" Tag="secCalendar" Click="TocItem_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="CalendarMonth" Width="18" Height="18" 
+                                                        VerticalAlignment="Center" Margin="0,0,8,0"
+                                                        Foreground="#1565C0"/>
+                                <TextBlock Text="Lịch tổng hợp" Foreground="#1565C0" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
 
                         <!-- 5. Hệ thống -->
                         <TextBlock Text="HỆ THỐNG" FontSize="10" FontWeight="Bold" 
@@ -579,7 +587,7 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Trang chủ</Bold> — Bảng tổng quan, thống kê, cảnh báo</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Văn bản</Bold> — Quản lý tài liệu, Mẫu văn bản, Tra cứu pháp quy, Thống kê</TextBlock>
-                            <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Công việc</Bold> — Album ảnh, Cuộc họp</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Công việc</Bold> — Album ảnh, Cuộc họp, Lịch tổng hợp</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>✨ AI Nâng cao</Bold> — Soạn VB, Báo cáo, Scan OCR, Kiểm tra, Tham mưu, Tóm tắt</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Hệ thống</Bold> — Cấu hình Album, Sao lưu, Trợ giúp</TextBlock>
                             <Border Style="{StaticResource TipCard}" Margin="16,8,0,4">
@@ -742,9 +750,23 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                     <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• Quốc hiệu + Tiêu ngữ đầy đủ</TextBlock>
                     <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• Khối ký tên + chức danh đúng chuẩn</TextBlock>
                     <TextBlock Style="{StaticResource BodyText}">
-                        Để xuất: Chọn văn bản → Nhấn nút <Bold>Xuất Word</Bold> trên thanh công cụ. 
-                        Xuất nhiều văn bản cùng lúc: Chọn nhiều → <Bold>Hành động hàng loạt → Xuất Excel/Word</Bold>.
+                        Để xuất Word: Chọn văn bản → Nhấn nút <Bold>Xuất Word</Bold> trên thanh công cụ.
                     </TextBlock>
+
+                    <TextBlock Style="{StaticResource SubSectionHeader}" Margin="0,12,0,0">▸ Xuất Excel (mới v1.0.10)</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}">
+                        <Bold>Danh sách VB:</Bold> Chọn nhiều văn bản → <Bold>Hành động hàng loạt → Xuất Excel</Bold>.
+                        File Excel gồm 12 cột: STT, Số VB, Tiêu đề, Loại, Hướng, Ngày BH, Cơ quan, Khẩn, Mật, Hạn XL, Trạng thái, Người XL.
+                        Văn bản quá hạn được tô đỏ nổi bật.
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}">
+                        <Bold>Báo cáo thống kê:</Bold> Vào <Bold>Thống kê → Xuất Excel</Bold> — file gồm 5 sheet:
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">1. <Bold>Tổng quan</Bold> — So sánh kỳ, hiệu suất xử lý</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">2. <Bold>Phân loại VB</Bold> — Theo loại văn bản</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">3. <Bold>Khẩn &amp; Mật</Bold> — Phân bổ mức độ khẩn, độ mật</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">4. <Bold>Xu hướng 12 tháng</Bold> — Biến động theo từng tháng</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">5. <Bold>DS VB chi tiết</Bold> — Toàn bộ văn bản trong kỳ</TextBlock>
                 </StackPanel>
 
 
@@ -780,12 +802,18 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Mẫu văn bản"/>
                     </TextBlock>
                     <TextBlock Style="{StaticResource BodyText}">
-                        Hệ thống cung cấp <Bold>40+ mẫu văn bản</Bold> theo NĐ 30/2020, mỗi mẫu bao gồm:
+                        Hệ thống cung cấp <Bold>65+ mẫu văn bản</Bold> theo NĐ 30/2020, mỗi mẫu bao gồm:
                     </TextBlock>
                     <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• Tên mẫu và loại văn bản tương ứng</TextBlock>
                     <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• Prompt AI đã được tối ưu cho từng loại</TextBlock>
                     <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• Danh sách trường bắt buộc cần điền</TextBlock>
                     <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• Kịch bản mẫu để thử nghiệm</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" FontWeight="SemiBold" Margin="0,8,0,4">
+                        🏥 Mẫu VB theo chuyên ngành (mới v1.0.10):
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Y tế</Bold> (8 mẫu): BC tình hình dịch, Giấy chuyển viện, KH phòng chống dịch, Biên bản hội chẩn...</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Giáo dục</Bold> (8 mẫu): KH năm học, QĐ khen thưởng HS, BC chất lượng GD, Giấy CN tốt nghiệp...</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>UBND xã/phường</Bold> (8 mẫu): Giấy XN cư trú, BC KT-XH, KH phòng chống thiên tai, KH xây dựng NTM...</TextBlock>
                     <TextBlock Style="{StaticResource BodyText}">
                         Bạn có thể tạo mẫu mới, chỉnh sửa mẫu có sẵn, hoặc tải thêm mẫu từ 
                         <Bold>Kho mẫu trực tuyến</Bold> (nút 🌐 Kho mẫu).
@@ -848,7 +876,8 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>So sánh kỳ trước:</Bold> Hiển thị số lượng VB Đến, VB Đi, Nội bộ so với kỳ trước (tăng/giảm %).</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Hiệu suất xử lý:</Bold> Theo dõi VB đến có hạn — bao nhiêu đúng hạn, bao nhiêu quá hạn, bao nhiêu đang chờ.</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Biểu đồ:</Bold> Phân bổ theo loại VB, theo lĩnh vực, theo hướng (đi/đến/nội bộ).</TextBlock>
-                            <TextBlock Style="{StaticResource BodyText}"><Bold>Xuất CSV:</Bold> Nhấn nút <Bold>📥 Xuất CSV</Bold> để tải dữ liệu thống kê ra file Excel.</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}"><Bold>Xuất Excel:</Bold> Nhấn nút <Bold>📊 Xuất Excel</Bold> để tải báo cáo chi tiết 5 sheet (Tổng quan, Phân loại, Khẩn &amp; Mật, Xu hướng 12 tháng, DS VB).</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}"><Bold>Xuất CSV:</Bold> Nhấn nút <Bold>📥 Xuất CSV</Bold> để tải dữ liệu thống kê dạng bảng đơn giản.</TextBlock>
                         </StackPanel>
                     </Border>
 
@@ -1251,6 +1280,43 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
 
 
                 <!-- ════════════════════════════════════════════════ -->
+                <!-- SECTION: LỊCH TỔNG HỢP -->
+                <!-- ════════════════════════════════════════════════ -->
+                <StackPanel x:Name="secCalendar">
+                    <TextBlock Style="{StaticResource SectionHeader}">
+                        <Run Text="📅"/>
+                        <Run Text=" Lịch tổng hợp"/>
+                    </TextBlock>
+
+                    <TextBlock Style="{StaticResource BodyText}" FontStyle="Italic" Opacity="0.8">
+                        ⚡ Tính năng mới v1.0.10 — Xem tất cả deadline VB, cuộc họp và nhiệm vụ trên 1 lịch tháng.
+                    </TextBlock>
+
+                    <Border Style="{StaticResource StepCard}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 1:</Bold> Vào <Bold>📅 Lịch</Bold> ở sidebar (nhóm Công việc).</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 2:</Bold> Xem lưới tháng — mỗi ngày có sự kiện sẽ hiển thị chấm màu.</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 3:</Bold> Click vào ngày để xem chi tiết tất cả sự kiện trong panel bên phải.</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 4:</Bold> Dùng nút ◀ ▶ để chuyển tháng, nút <Bold>Hôm nay</Bold> để quay về ngày hiện tại.</TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Style="{StaticResource BodyText}" FontWeight="SemiBold" Margin="0,8,0,4">Mã màu sự kiện:</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">🔴 <Bold>Quá hạn</Bold> — Văn bản đã quá hạn xử lý (cần ưu tiên)</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">🟡 <Bold>Sắp hạn</Bold> — Văn bản sắp đến hạn (trong 3 ngày)</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">🔵 <Bold>Cuộc họp</Bold> — Cuộc họp đã lên lịch</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">🟢 <Bold>Nhiệm vụ</Bold> — Task từ cuộc họp (có deadline)</TextBlock>
+
+                    <Border Style="{StaticResource TipCard}">
+                        <TextBlock Style="{StaticResource BodyText}" Margin="0">
+                            <Run Text="💡 Mẹo:" FontWeight="SemiBold"/>
+                            <Run Text=" Lịch tự động tải dữ liệu từ Quản lý VB + Cuộc họp. Đảm bảo đã nhập Hạn xử lý cho VB đến và Deadline cho nhiệm vụ họp để hiển thị đầy đủ."/>
+                        </TextBlock>
+                    </Border>
+                </StackPanel>
+
+
+                <!-- ════════════════════════════════════════════════ -->
                 <!-- SECTION: SAO LƯU -->
                 <!-- ════════════════════════════════════════════════ -->
                 <StackPanel x:Name="secBackup">
@@ -1568,17 +1634,33 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- Version 1.6 (v1.0.9) -->
+                    <!-- Version 1.7 (v1.0.10) -->
                     <Border Style="{StaticResource ChangelogCard}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#4CAF50" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
-                                    <TextBlock Text="v1.6 — Tháng 2/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                    <TextBlock Text="v1.7 — Tháng 2/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
                                 </Border>
                                 <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
                                     <TextBlock Text="MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Lịch tổng hợp</Bold> — Xem deadline VB + cuộc họp + tasks trên 1 lịch tháng</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Xuất Excel báo cáo</Bold> — 5 sheet chi tiết: Tổng quan, Phân loại, Khẩn &amp; Mật, Xu hướng, DS VB</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>24 mẫu VB chuyên ngành</Bold> — Y tế (8), Giáo dục (8), UBND xã (8)</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Mã màu sự kiện</Bold> — 🔴 Quá hạn, 🟡 Sắp hạn, 🔵 Cuộc họp, 🟢 Task</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Nút Xuất Excel</Bold> trên Thống kê + Danh sách VB (hành động hàng loạt)</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ Dọn dẹp dead code, tối ưu hiệu năng</TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Version 1.6 (v1.0.9) -->
+                    <Border Style="{StaticResource StepCard}">
+                        <StackPanel>
+                            <Border Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="4" 
+                                    Padding="8,2" Margin="0,0,0,6" HorizontalAlignment="Left">
+                                <TextBlock Text="v1.6 — Tháng 2/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                            </Border>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>29 loại VB hành chính</Bold> đầy đủ theo Điều 7 NĐ 30/2020 (thêm 9 loại mới)</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Mức độ khẩn</Bold> (Thường/Khẩn/Thượng khẩn/Hỏa tốc) + <Bold>Độ mật</Bold> (Mật/Tối mật/Tuyệt mật)</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Tự động cấp số</Bold> văn bản đi/đến theo Điều 15, 22</TextBlock>
