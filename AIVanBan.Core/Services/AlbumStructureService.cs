@@ -20,11 +20,7 @@ public class AlbumStructureService : IDisposable
 
     public AlbumStructureService(string? databasePath = null)
     {
-        _dataPath = databasePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "AIVanBan",
-            "Data"
-        );
+        _dataPath = databasePath ?? DatabaseFactory.DataPath;
 
         _photosBasePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -35,9 +31,8 @@ public class AlbumStructureService : IDisposable
         Directory.CreateDirectory(_dataPath);
         Directory.CreateDirectory(_photosBasePath);
 
-        var dbPath = Path.Combine(_dataPath, "documents.db");
-        LiteDbConfig.ConfigureGlobalMapper();
-        _db = new LiteDatabase($"Filename={dbPath};Connection=Shared");
+        // Dùng shared database instance — tránh file lock conflict
+        _db = DatabaseFactory.GetDatabase(databasePath);
 
         // Indexes
         var templates = _db.GetCollection<AlbumStructureTemplate>("albumTemplates");
@@ -1202,7 +1197,7 @@ public class AlbumStructureService : IDisposable
 
     public void Dispose()
     {
-        _db?.Dispose();
+        // Không dispose _db — DatabaseFactory quản lý vòng đời shared instance
         _httpClient?.Dispose();
     }
 }

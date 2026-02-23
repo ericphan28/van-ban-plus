@@ -14,17 +14,12 @@ public class AlbumFolderService : IDisposable
 
     public AlbumFolderService(string? databasePath = null)
     {
-        _dataPath = databasePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "AIVanBan",
-            "Data"
-        );
+        _dataPath = databasePath ?? DatabaseFactory.DataPath;
 
         Directory.CreateDirectory(_dataPath);
 
-        var dbPath = Path.Combine(_dataPath, "documents.db");
-        LiteDbConfig.ConfigureGlobalMapper();
-        _db = new LiteDatabase($"Filename={dbPath};Connection=Shared");
+        // Dùng shared database instance — tránh file lock conflict
+        _db = DatabaseFactory.GetDatabase(databasePath);
 
         // Indexes
         var folders = _db.GetCollection<AlbumFolder>("albumFolders");
@@ -338,6 +333,6 @@ public class AlbumFolderService : IDisposable
 
     public void Dispose()
     {
-        _db?.Dispose();
+        // Không dispose _db — DatabaseFactory quản lý vòng đời shared instance
     }
 }

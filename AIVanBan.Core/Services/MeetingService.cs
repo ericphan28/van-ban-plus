@@ -14,17 +14,12 @@ public class MeetingService : IDisposable
     
     public MeetingService(string? databasePath = null)
     {
-        var dataPath = databasePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "AIVanBan",
-            "Data"
-        );
+        var dataPath = databasePath ?? DatabaseFactory.DataPath;
         
         Directory.CreateDirectory(dataPath);
         
-        var dbPath = Path.Combine(dataPath, "documents.db");
-        LiteDbConfig.ConfigureGlobalMapper();
-        _db = new LiteDatabase($"Filename={dbPath};Connection=Shared");
+        // Dùng shared database instance — tránh file lock conflict
+        _db = DatabaseFactory.GetDatabase(databasePath);
         
         // Tạo indexes cho collection meetings
         var meetings = _db.GetCollection<Meeting>("meetings");
@@ -408,6 +403,6 @@ public class MeetingService : IDisposable
     
     public void Dispose()
     {
-        _db?.Dispose();
+        // Không dispose _db — DatabaseFactory quản lý vòng đời shared instance
     }
 }

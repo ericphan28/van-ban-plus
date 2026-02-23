@@ -14,20 +14,13 @@ public class DocumentService : IDisposable
     
     public DocumentService(string? databasePath = null)
     {
-        // Cấu hình BsonMapper an toàn cho enum deserialization
-        LiteDbConfig.ConfigureGlobalMapper();
-        
         // Mặc định lưu trong My Documents
-        _dataPath = databasePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "AIVanBan",
-            "Data"
-        );
+        _dataPath = databasePath ?? DatabaseFactory.DataPath;
         
         Directory.CreateDirectory(_dataPath);
         
-        var dbPath = Path.Combine(_dataPath, "documents.db");
-        _db = new LiteDatabase($"Filename={dbPath};Connection=Shared");
+        // Dùng shared database instance — tránh file lock conflict
+        _db = DatabaseFactory.GetDatabase(databasePath);
         
         // Tạo indexes
         var documents = _db.GetCollection<Document>("documents");
@@ -786,6 +779,6 @@ public class DocumentService : IDisposable
     
     public void Dispose()
     {
-        _db?.Dispose();
+        // Không dispose _db — DatabaseFactory quản lý vòng đời shared instance
     }
 }

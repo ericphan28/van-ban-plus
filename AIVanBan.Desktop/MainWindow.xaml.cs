@@ -134,11 +134,8 @@ public partial class MainWindow : Window
                     "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             
-            // Seed demo meetings
-            Console.WriteLine("🔧 Seeding demo meetings...");
-            var meetingService = new MeetingService();
-            var meetingSeeder = new MeetingSeeder(meetingService);
-            meetingSeeder.SeedDemoMeetings();
+            // Không auto-seed demo meetings — user tự tạo khi cần
+            // Nút "Tạo dữ liệu demo" vẫn có sẵn trong trang Lịch họp
         }
         catch (Exception ex)
         {

@@ -308,7 +308,7 @@ public partial class ApiSettingsDialog : Window
 
             if (response.IsSuccessStatusCode)
             {
-                txtDirectConnectionStatus.Text = "✅ API key hợp lệ! Kết nối Gemini thành công.";
+                txtDirectConnectionStatus.Text = "✅ API key hợp lệ! Kết nối AI trực tiếp thành công.";
                 txtDirectConnectionStatus.Foreground = System.Windows.Media.Brushes.Green;
             }
             else

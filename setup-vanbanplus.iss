@@ -129,3 +129,35 @@ begin
   Exec('taskkill', '/F /IM {#MyAppExeName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Sleep(500);
 end;
+
+// Hỏi user có muốn xóa dữ liệu khi gỡ cài đặt
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  UserDataDir: String;
+  MsgResult: Integer;
+  NL: String;
+begin
+  if CurUninstallStep = usPostUninstall then
+  begin
+    UserDataDir := ExpandConstant('{userdocs}\AIVanBan');
+    NL := Chr(13) + Chr(10);
+    
+    if DirExists(UserDataDir) then
+    begin
+      MsgResult := MsgBox(
+        'Ban co muon xoa toan bo du lieu VanBanPlus khong?' + NL +
+        NL +
+        'Bao gom: van ban, cuoc hop, anh, cau hinh, ban sao luu...' + NL +
+        'Thu muc: ' + UserDataDir + NL +
+        NL +
+        '  YES = Xoa sach (khong the khoi phuc)' + NL +
+        '  NO  = Giu lai du lieu (de cai lai sau)',
+        mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
+      
+      if MsgResult = IDYES then
+      begin
+        DelTree(UserDataDir, True, True, True);
+      end;
+    end;
+  end;
+end;

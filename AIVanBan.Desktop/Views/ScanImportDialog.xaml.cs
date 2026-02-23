@@ -233,11 +233,11 @@ public partial class ScanImportDialog : Window
             elapsed++;
             var statusText = elapsed switch
             {
-                <= 10 => $"🤖 Đang gửi file lên Gemini AI... ({elapsed}s)",
+                <= 10 => $"🤖 Đang gửi file lên máy chủ AI... ({elapsed}s)",
                 <= 30 => $"🔍 AI đang đọc và phân tích văn bản... ({elapsed}s)",
                 <= 60 => $"📝 AI đang trích xuất nội dung chi tiết... ({elapsed}s)",
                 <= 120 => $"⏳ File lớn — AI cần thêm thời gian... ({elapsed}s)",
-                <= 180 => $"🔄 Đang chờ phản hồi từ Gemini... ({elapsed}s)",
+                <= 180 => $"🔄 Đang chờ phản hồi từ máy chủ AI... ({elapsed}s)",
                 _ => $"⏳ Vẫn đang xử lý, xin kiên nhẫn... ({elapsed}s)"
             };
             txtLoadingStatus.Text = statusText;
@@ -245,7 +245,7 @@ public partial class ScanImportDialog : Window
         
         try
         {
-            txtLoadingStatus.Text = "🤖 Đang gửi file lên Gemini AI Vision...";
+            txtLoadingStatus.Text = "🤖 Đang gửi file lên máy chủ AI...";
             progressTimer.Start();
             
             _extractedData = await _aiService.ExtractDocumentFromFileAsync(_selectedFilePath);

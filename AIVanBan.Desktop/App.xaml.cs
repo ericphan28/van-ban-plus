@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using AIVanBan.Core.Data;
 using AIVanBan.Desktop.Services;
 
 namespace AIVanBan.Desktop;
@@ -23,6 +24,9 @@ public partial class App : Application
         TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
         
         Console.WriteLine("✅ Global exception handlers registered");
+        
+        // Khởi tạo shared database trước tất cả services
+        DatabaseFactory.GetDatabase();
         
         // Auto-update: check for updates on startup
         AppUpdateService.Initialize();
@@ -48,6 +52,12 @@ public partial class App : Application
     {
         var exception = e.ExceptionObject as Exception;
         LogAndShowError("FATAL ERROR (UnhandledException)", exception);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        DatabaseFactory.Shutdown();
+        base.OnExit(e);
     }
     
     private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
