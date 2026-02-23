@@ -332,6 +332,16 @@ public class GeminiAIService
                 var body = new { base64Data, mimeType };
                 var vbpResponse = await SendWithRetryAsync(() =>
                     _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body));
+                
+                // Xử lý lỗi 413 (file quá lớn cho server)
+                if (vbpResponse.StatusCode == System.Net.HttpStatusCode.RequestEntityTooLarge)
+                {
+                    var sizeMB = base64Data.Length * 3.0 / 4.0 / 1024.0 / 1024.0;
+                    throw new Exception(
+                        $"File quá lớn (~{sizeMB:F1} MB). Máy chủ chỉ hỗ trợ tối đa 4.5MB mỗi lần gửi. " +
+                        $"Hãy giảm dung lượng file hoặc chụp ảnh từng trang.");
+                }
+                
                 vbpResponse.EnsureSuccessStatusCode();
                 var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
                 var text = vbpResult?.Data?.Content ?? "";

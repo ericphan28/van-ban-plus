@@ -187,15 +187,33 @@ public partial class ScanImportDialog : Window
         if (string.IsNullOrEmpty(_selectedFilePath)) return;
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
         
-        // Check file size (Gemini inline limit ~20MB)
+        // Check file size — Vercel/API giới hạn body ~4.5MB, base64 tăng ~33%
+        // => file gốc tối đa ~3MB để an toàn qua API
         var fileInfo = new FileInfo(_selectedFilePath);
-        if (fileInfo.Length > 20 * 1024 * 1024)
+        var fileSizeMB = fileInfo.Length / (1024.0 * 1024.0);
+        
+        if (fileSizeMB > 20)
         {
             MessageBox.Show(
-                "File quá lớn (> 20MB). AI hỗ trợ tối đa 20MB mỗi file.\n\n" +
+                $"📁 File quá lớn ({fileSizeMB:F1} MB)\n\n" +
+                "AI hỗ trợ tối đa 20MB mỗi file.\n" +
                 "Hãy giảm kích thước file hoặc chia thành nhiều file nhỏ hơn.",
                 "File quá lớn", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
+        }
+        
+        if (fileSizeMB > 3)
+        {
+            var result = MessageBox.Show(
+                $"📁 File khá lớn ({fileSizeMB:F1} MB)\n\n" +
+                "File trên 3MB có thể bị từ chối bởi máy chủ.\n\n" +
+                "💡 Gợi ý:\n" +
+                "• Chụp ảnh rõ nét thay vì scan cả file PDF\n" +
+                "• Giảm dung lượng bằng cách nén PDF\n" +
+                "• Chia file nhiều trang thành từng trang riêng\n\n" +
+                "Bạn vẫn muốn thử gửi?",
+                "Cảnh báo dung lượng file", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.No) return;
         }
         
         // Start analysis
@@ -250,17 +268,59 @@ public partial class ScanImportDialog : Window
             loadingPanel.Visibility = Visibility.Collapsed;
             txtExtractionStatus.Text = "❌ Lỗi phân tích";
             
-            // Phân biệt lỗi timeout vs lỗi khác
-            var isTimeout = ex.Message.Contains("Timeout") || ex.Message.Contains("timeout") 
-                || ex.Message.Contains("Không thể trích xuất sau");
-            var errorDetail = isTimeout
-                ? $"⏰ Quá thời gian chờ ({elapsed}s)\n\n" +
-                  "Nguyên nhân: File quá lớn hoặc mạng chậm.\n" +
-                  "Gợi ý: Thử lại hoặc dùng file nhỏ hơn."
-                : $"Lỗi khi phân tích file:\n\n{ex.Message}\n\n" +
-                  "Hãy thử lại hoặc chọn file khác.";
+            // Phân loại lỗi và hiển thị thông báo thân thiện
+            var msg = ex.Message + (ex.InnerException?.Message ?? "");
+            string errorTitle;
+            string errorDetail;
             
-            MessageBox.Show(errorDetail, "Lỗi AI", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (msg.Contains("413") || msg.Contains("Entity Too Large") || msg.Contains("Payload Too Large"))
+            {
+                errorTitle = "File quá lớn";
+                errorDetail = $"📁 File {Path.GetFileName(_selectedFilePath)} ({fileSizeMB:F1} MB) vượt quá giới hạn của máy chủ.\n\n" +
+                    "💡 Cách khắc phục:\n" +
+                    "  • Chụp ảnh từng trang thay vì gửi cả file PDF\n" +
+                    "  • Nén PDF bằng công cụ online (smallpdf.com, ilovepdf.com)\n" +
+                    "  • Giảm độ phân giải ảnh scan (300 DPI là đủ)\n" +
+                    "  • Chia file nhiều trang thành từng phần nhỏ\n\n" +
+                    "📌 Khuyến nghị: File dưới 3MB sẽ xử lý nhanh và ổn định nhất.";
+            }
+            else if (msg.Contains("Timeout") || msg.Contains("timeout") || msg.Contains("Không thể trích xuất sau"))
+            {
+                errorTitle = "Quá thời gian chờ";
+                errorDetail = $"⏰ AI không phản hồi sau {elapsed} giây.\n\n" +
+                    "💡 Nguyên nhân có thể:\n" +
+                    "  • File quá lớn, AI cần nhiều thời gian hơn\n" +
+                    "  • Kết nối mạng không ổn định\n" +
+                    "  • Máy chủ AI đang quá tải\n\n" +
+                    "Gợi ý: Thử lại sau ít phút hoặc dùng file nhỏ hơn.";
+            }
+            else if (msg.Contains("401") || msg.Contains("Unauthorized") || msg.Contains("API key"))
+            {
+                errorTitle = "Lỗi xác thực";
+                errorDetail = "🔑 Phiên đăng nhập đã hết hạn hoặc API key không hợp lệ.\n\n" +
+                    "Hãy đăng xuất và đăng nhập lại.";
+            }
+            else if (msg.Contains("429") || msg.Contains("quota") || msg.Contains("rate"))
+            {
+                errorTitle = "Hết lượt sử dụng";
+                errorDetail = "📊 Bạn đã hết lượt AI trong tháng này.\n\n" +
+                    "Nâng cấp gói dịch vụ để có thêm lượt sử dụng.";
+            }
+            else if (msg.Contains("No such host") || msg.Contains("network") || msg.Contains("SocketException"))
+            {
+                errorTitle = "Lỗi kết nối";
+                errorDetail = "🌐 Không thể kết nối đến máy chủ.\n\n" +
+                    "Kiểm tra kết nối Internet và thử lại.";
+            }
+            else
+            {
+                errorTitle = "Lỗi phân tích";
+                errorDetail = $"Không thể phân tích file này.\n\n" +
+                    $"Chi tiết: {ex.Message}\n\n" +
+                    "Hãy thử lại hoặc chọn file khác.";
+            }
+            
+            MessageBox.Show(errorDetail, errorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         finally
         {
