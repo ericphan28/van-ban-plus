@@ -37,9 +37,9 @@ public partial class MainWindow : Window
             Console.WriteLine("🔧 Seeding default data...");
             InitializeDefaultData();
             
-            // Check album setup on first run
-            Console.WriteLine("🔧 Checking album setup...");
-            CheckAlbumSetup();
+            // Unified first-run setup — tạo cả thư mục tài liệu + album ảnh
+            Console.WriteLine("🔧 Checking first-run setup...");
+            CheckFirstRunSetup();
             
             Console.WriteLine("🔧 Loading statistics...");
             LoadStatistics();
@@ -461,35 +461,38 @@ public partial class MainWindow : Window
         MainFrame.Navigate(new Views.AdminDashboardPage());
     }
 
-    private void CheckAlbumSetup()
+    /// <summary>
+    /// Kiểm tra lần chạy đầu: nếu chưa có cấu hình cơ quan VÀ chưa có album → hiển thị Unified Wizard.
+    /// Wizard tạo đồng thời: thư mục tài liệu + album ảnh + cấu hình CQ.
+    /// </summary>
+    private void CheckFirstRunSetup()
     {
         try
         {
-            var activeTemplate = _albumService.GetActiveTemplate();
-            if (activeTemplate == null)
+            var orgConfig = _documentService.GetOrganizationConfig();
+            var hasOrgConfig = !string.IsNullOrEmpty(orgConfig.Name);
+            var hasAlbumTemplate = _albumService.GetActiveTemplate() != null;
+            var hasFolders = _documentService.GetAllFolders().Count >= 5;
+            
+            // Chỉ hiện wizard nếu CHƯA setup gì cả
+            if (!hasOrgConfig && !hasAlbumTemplate && !hasFolders)
             {
-                // First time - show info dialog
-                var result = MessageBox.Show(
-                    "🖼️ THIẾT LẬP ALBUM ẢNH\n\n" +
-                    "Bạn chưa thiết lập cấu trúc Album theo nghiệp vụ cơ quan.\n\n" +
-                    "Hệ thống sẽ giúp bạn:\n" +
-                    "• Tạo cấu trúc folder chuẩn (12 danh mục, 70+ phân loại)\n" +
-                    "• Tự động phân loại theo lĩnh vực\n" +
-                    "• Gợi ý tags cho mỗi album\n\n" +
-                    "Bạn có muốn thiết lập ngay bây giờ?",
-                    "Thiết lập Album",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
+                Console.WriteLine("🏛️ First run detected — showing Unified Setup Wizard...");
+                
+                var wizard = new Views.UnifiedSetupWizard(_documentService, _albumService)
                 {
-                    SetupAlbumStructure(null, null);
-                }
+                    Owner = this
+                };
+                wizard.ShowDialog();
+            }
+            else
+            {
+                Console.WriteLine($"✅ Setup already done (org={hasOrgConfig}, album={hasAlbumTemplate}, folders={hasFolders})");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️ Warning: Album setup check failed: {ex.Message}");
+            Console.WriteLine($"⚠️ Warning: First-run setup check failed: {ex.Message}");
         }
     }
 

@@ -126,12 +126,17 @@ public class StoreTemplateViewModel
 
 /// <summary>
 /// Service quản lý kho mẫu văn bản online (Template Store).
-/// Tải danh sách từ GitHub JSON, so sánh với local LiteDB, cho phép download/update.
+/// Tải danh sách từ VanBanPlus API, so sánh với local LiteDB, cho phép download/update.
 /// </summary>
 public class TemplateStoreService
 {
-    // URL tới JSON store trên GitHub (raw)
-    private const string StoreUrl = "https://raw.githubusercontent.com/ericphan28/van-ban-plus/main/template-store.json";
+    // URL chính tới JSON store trên VanBanPlus API (Vercel)
+    private static string GetStoreUrl()
+    {
+        var settings = AppSettingsService.Load();
+        var baseUrl = settings.VanBanPlusApiUrl?.TrimEnd('/') ?? "https://vanbanplus.giakiemso.com";
+        return $"{baseUrl}/template-store.json";
+    }
     
     private static readonly HttpClient _httpClient = new()
     {
@@ -146,11 +151,23 @@ public class TemplateStoreService
     }
     
     /// <summary>
-    /// Tải danh sách template từ store online
+    /// Tải danh sách template từ store online, fallback sang local nếu lỗi mạng
     /// </summary>
     public async Task<List<StoreTemplateViewModel>> FetchStoreTemplatesAsync()
     {
-        var json = await _httpClient.GetStringAsync(StoreUrl);
+        string json;
+        
+        try
+        {
+            json = await _httpClient.GetStringAsync(GetStoreUrl());
+        }
+        catch (Exception)
+        {
+            // Fallback: đọc từ file local nếu không kết nối được server
+            json = TryLoadLocalStoreJson();
+            if (string.IsNullOrEmpty(json))
+                throw new Exception("Không thể kết nối kho mẫu online và không tìm thấy dữ liệu local.");
+        }
         
         var options = new JsonSerializerOptions
         {
@@ -196,6 +213,28 @@ public class TemplateStoreService
         }
         
         return result;
+    }
+    
+    /// <summary>
+    /// Fallback: Đọc template-store.json từ thư mục cài đặt app
+    /// </summary>
+    private static string TryLoadLocalStoreJson()
+    {
+        try
+        {
+            // Tìm file template-store.json cạnh executable
+            var appDir = AppDomain.CurrentDomain.BaseDirectory;
+            var localPath = Path.Combine(appDir, "template-store.json");
+            
+            if (File.Exists(localPath))
+                return File.ReadAllText(localPath);
+            
+            return string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
     }
     
     /// <summary>

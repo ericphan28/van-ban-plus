@@ -1484,6 +1484,79 @@ public partial class MeetingEditDialog : Window
             return;
         }
         
+        // === KIỂM TRA TRÙNG LỊCH ===
+        try
+        {
+            var checkDate = dpStartDate.SelectedDate!.Value;
+            DateTime checkStart, checkEnd;
+            
+            // Xác định thời gian bắt đầu
+            if (tpStartTime.SelectedTime.HasValue)
+            {
+                var t = tpStartTime.SelectedTime.Value;
+                checkStart = new DateTime(checkDate.Year, checkDate.Month, checkDate.Day, t.Hour, t.Minute, 0);
+            }
+            else
+            {
+                checkStart = checkDate.Date.AddHours(8);
+            }
+            
+            // Xác định thời gian kết thúc
+            if (dpEndDate.SelectedDate.HasValue && tpEndTime.SelectedTime.HasValue)
+            {
+                var endDate = dpEndDate.SelectedDate.Value;
+                var t = tpEndTime.SelectedTime.Value;
+                checkEnd = new DateTime(endDate.Year, endDate.Month, endDate.Day, t.Hour, t.Minute, 0);
+            }
+            else if (tpEndTime.SelectedTime.HasValue)
+            {
+                var t = tpEndTime.SelectedTime.Value;
+                checkEnd = new DateTime(checkDate.Year, checkDate.Month, checkDate.Day, t.Hour, t.Minute, 0);
+            }
+            else
+            {
+                checkEnd = checkStart.AddHours(1); // Mặc định 1 giờ
+            }
+            
+            // Lấy các cuộc họp cùng ngày
+            var sameDayMeetings = _meetingService.GetMeetingsByDateRange(
+                checkDate.Date, checkDate.Date.AddDays(1).AddTicks(-1));
+            
+            // Loại trừ cuộc họp hiện tại (nếu đang sửa)
+            var conflicts = sameDayMeetings
+                .Where(m => m.Id != _meeting.Id) // Bỏ qua chính nó
+                .Where(m =>
+                {
+                    var mEnd = m.EndTime ?? m.StartTime.AddHours(1);
+                    // Overlap: A.Start < B.End && A.End > B.Start
+                    return checkStart < mEnd && checkEnd > m.StartTime;
+                })
+                .ToList();
+            
+            if (conflicts.Count > 0)
+            {
+                var conflictList = string.Join("\n", conflicts.Select(c =>
+                    $"  • {c.Title} ({c.StartTime:HH:mm} - {(c.EndTime?.ToString("HH:mm") ?? "?")})"));
+                
+                var result = MessageBox.Show(
+                    $"⚠️ Phát hiện {conflicts.Count} cuộc họp trùng giờ:\n\n" +
+                    $"{conflictList}\n\n" +
+                    $"Cuộc họp mới: {checkStart:HH:mm} - {checkEnd:HH:mm}\n\n" +
+                    $"Bạn vẫn muốn lưu?",
+                    "Cảnh báo trùng lịch",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                
+                if (result == MessageBoxResult.No)
+                    return;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Không block save nếu check conflict lỗi
+            Console.WriteLine($"⚠️ Conflict check error: {ex.Message}");
+        }
+        
         try
         {
             // Collect data from all tabs

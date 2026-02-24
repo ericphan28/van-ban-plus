@@ -31,8 +31,13 @@ public partial class CalendarPage : Page
         _documentService = documentService;
         _meetingService = new MeetingService();
         _currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        _selectedDate = DateTime.Today; // Auto-select hôm nay
         
-        Loaded += (s, e) => RenderCalendar();
+        Loaded += (s, e) =>
+        {
+            RenderCalendar();
+            ShowDayDetail(DateTime.Today); // Hiện sự kiện hôm nay ngay khi mở
+        };
     }
 
     #region Navigation
@@ -117,59 +122,104 @@ public partial class CalendarPage : Page
         // Container
         var border = new Border
         {
-            BorderBrush = new SolidColorBrush(isSelected ? Color.FromRgb(25, 118, 210) : Color.FromRgb(224, 224, 224)),
-            BorderThickness = new Thickness(isSelected ? 2 : 0.5),
-            Margin = new Thickness(1),
-            CornerRadius = new CornerRadius(4),
+            BorderBrush = new SolidColorBrush(isSelected 
+                ? Color.FromRgb(25, 118, 210) 
+                : isToday 
+                    ? Color.FromRgb(100, 181, 246) 
+                    : Color.FromRgb(230, 230, 230)),
+            BorderThickness = new Thickness(isSelected ? 2.5 : isToday ? 1.5 : 0.5),
+            Margin = new Thickness(1.5),
+            CornerRadius = new CornerRadius(8),
             Background = isToday
                 ? new SolidColorBrush(Color.FromRgb(227, 242, 253)) // light blue
                 : isSelected
                     ? new SolidColorBrush(Color.FromRgb(232, 245, 253))
-                    : Brushes.White,
+                    : isWeekend && isCurrentMonth
+                        ? new SolidColorBrush(Color.FromRgb(255, 253, 248)) // warm tint for weekends
+                        : Brushes.White,
             Cursor = Cursors.Hand,
-            Tag = date
+            Tag = date,
+            MinHeight = 80
         };
 
         border.MouseLeftButtonDown += DayCell_Click;
 
-        var stack = new StackPanel { Margin = new Thickness(4, 2, 4, 2) };
+        // Hover effect
+        border.MouseEnter += (s, e) =>
+        {
+            if (!isSelected && !isToday)
+                border.Background = new SolidColorBrush(Color.FromRgb(245, 248, 255));
+        };
+        border.MouseLeave += (s, e) =>
+        {
+            if (!isSelected && !isToday)
+                border.Background = isWeekend && isCurrentMonth
+                    ? new SolidColorBrush(Color.FromRgb(255, 253, 248))
+                    : Brushes.White;
+        };
 
-        // Day number
+        var stack = new StackPanel { Margin = new Thickness(6, 4, 6, 4) };
+
+        // Day number — bigger + bolder
         var dayText = new TextBlock
         {
             Text = date.Day.ToString(),
-            FontSize = 13,
-            FontWeight = isToday ? FontWeights.Bold : FontWeights.Normal,
+            FontSize = 15,
+            FontWeight = isToday ? FontWeights.ExtraBold : FontWeights.SemiBold,
             Foreground = !isCurrentMonth
-                ? new SolidColorBrush(Color.FromRgb(189, 189, 189))
+                ? new SolidColorBrush(Color.FromRgb(200, 200, 200))
                 : isToday
                     ? new SolidColorBrush(Color.FromRgb(21, 101, 192))
                     : isWeekend
-                        ? new SolidColorBrush(Color.FromRgb(198, 40, 40))
+                        ? (date.DayOfWeek == DayOfWeek.Sunday
+                            ? new SolidColorBrush(Color.FromRgb(198, 40, 40))
+                            : new SolidColorBrush(Color.FromRgb(230, 81, 0)))
                         : new SolidColorBrush(Color.FromRgb(55, 71, 79)),
             HorizontalAlignment = HorizontalAlignment.Right,
-            Margin = new Thickness(0, 0, 2, 0)
+            Margin = new Thickness(0, 0, 2, 2)
         };
-        stack.Children.Add(dayText);
 
-        // Event indicators (max 3 visible, then "+N")
+        // Today badge — circle behind number
+        if (isToday)
+        {
+            var todayBadge = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(21, 101, 192)),
+                CornerRadius = new CornerRadius(14),
+                Width = 28, Height = 28,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 0, 0, 2)
+            };
+            dayText.Foreground = Brushes.White;
+            dayText.HorizontalAlignment = HorizontalAlignment.Center;
+            dayText.VerticalAlignment = VerticalAlignment.Center;
+            dayText.Margin = new Thickness(0);
+            todayBadge.Child = dayText;
+            stack.Children.Add(todayBadge);
+        }
+        else
+        {
+            stack.Children.Add(dayText);
+        }
+
+        // Event indicators (max 3 visible, then "+N") — bigger and more readable
         int shown = 0;
         foreach (var evt in events.Take(3))
         {
             var indicator = new Border
             {
                 Background = new SolidColorBrush(evt.Color),
-                CornerRadius = new CornerRadius(2),
-                Padding = new Thickness(3, 1, 3, 1),
-                Margin = new Thickness(0, 1, 0, 0)
+                CornerRadius = new CornerRadius(3),
+                Padding = new Thickness(4, 2, 4, 2),
+                Margin = new Thickness(0, 2, 0, 0)
             };
             var label = new TextBlock
             {
                 Text = evt.ShortLabel,
-                FontSize = 9,
+                FontSize = 11,
+                FontWeight = FontWeights.Medium,
                 Foreground = Brushes.White,
-                TextTrimming = TextTrimming.CharacterEllipsis,
-                MaxWidth = 120
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
             indicator.Child = label;
             stack.Children.Add(indicator);
@@ -180,10 +230,11 @@ public partial class CalendarPage : Page
         {
             var moreText = new TextBlock
             {
-                Text = $"+{events.Count - 3} khác",
-                FontSize = 9,
-                Foreground = new SolidColorBrush(Color.FromRgb(136, 136, 136)),
-                Margin = new Thickness(2, 1, 0, 0)
+                Text = $"+{events.Count - 3} sự kiện khác",
+                FontSize = 11,
+                FontWeight = FontWeights.Medium,
+                Foreground = new SolidColorBrush(Color.FromRgb(100, 100, 100)),
+                Margin = new Thickness(2, 2, 0, 0)
             };
             stack.Children.Add(moreText);
         }
@@ -243,7 +294,7 @@ public partial class CalendarPage : Page
             var evt = new CalendarEvent
             {
                 Type = isOverdue ? EventType.Overdue : isDueSoon ? EventType.DueSoon : EventType.Document,
-                ShortLabel = $"📄 {TruncateText(doc.Number, 12)}",
+                ShortLabel = $"📄 {TruncateText(doc.Number, 18)}",
                 FullLabel = $"{doc.Number} — {doc.Title}",
                 Detail = $"Hạn: {doc.DueDate:dd/MM/yyyy}\nLoại: {doc.Type.GetDisplayName()}\nCơ quan: {doc.Issuer}",
                 Color = isOverdue
@@ -266,13 +317,14 @@ public partial class CalendarPage : Page
                 var evt = new CalendarEvent
                 {
                     Type = EventType.Meeting,
-                    ShortLabel = $"🔵 {TruncateText(meeting.Title, 12)}",
+                    ShortLabel = $"🔵 {TruncateText(meeting.Title, 18)}",
                     FullLabel = meeting.Title,
                     Detail = $"Thời gian: {meeting.StartTime:HH:mm} - {meeting.EndTime:HH:mm}\n" +
                              $"Địa điểm: {meeting.Location}\n" +
                              $"Chủ trì: {meeting.ChairPerson}\n" +
                              $"Trạng thái: {MeetingHelper.GetStatusName(meeting.Status)}",
-                    Color = Color.FromRgb(21, 101, 192) // Blue
+                    Color = Color.FromRgb(21, 101, 192), // Blue
+                    MeetingId = meeting.Id
                 };
                 AddEvent(meetDate, evt);
 
@@ -287,7 +339,7 @@ public partial class CalendarPage : Page
                         var taskEvt = new CalendarEvent
                         {
                             Type = isTaskDone ? EventType.TaskDone : isTaskOverdue ? EventType.Overdue : EventType.Task,
-                            ShortLabel = isTaskDone ? $"✅ {TruncateText(task.Title, 11)}" : $"📋 {TruncateText(task.Title, 11)}",
+                            ShortLabel = isTaskDone ? $"✅ {TruncateText(task.Title, 16)}" : $"📋 {TruncateText(task.Title, 16)}",
                             FullLabel = task.Title,
                             Detail = $"Từ họp: {meeting.Title}\nGiao: {task.AssignedTo}\nHạn: {task.Deadline:dd/MM/yyyy}\n" +
                                      $"TT: {MeetingHelper.GetTaskStatusName(task.TaskStatus)}",
@@ -321,19 +373,61 @@ public partial class CalendarPage : Page
 
     private void ShowDayDetail(DateTime date)
     {
-        var vietnameseDays = new[] { "Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7" };
+        var vietnameseDays = new[] { "Chủ nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy" };
         txtSelectedDate.Text = $"{vietnameseDays[(int)date.DayOfWeek]}, {date:dd/MM/yyyy}";
 
         var events = _monthEvents.ContainsKey(date.Date) ? _monthEvents[date.Date] : new List<CalendarEvent>();
         txtEventSummary.Text = events.Count > 0
-            ? $"{events.Count} sự kiện"
-            : "Không có sự kiện";
+            ? $"📌 {events.Count} sự kiện"
+            : "Không có sự kiện nào";
 
         // Clear old items, keep emptyState
         var toRemove = eventListPanel.Children.Cast<UIElement>()
             .Where(c => c != emptyEventState).ToList();
         foreach (var child in toRemove)
             eventListPanel.Children.Remove(child);
+
+        // === NÚT THÊM CUỘC HỌP ===
+        var addMeetingBtn = new Button
+        {
+            Content = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children =
+                {
+                    new MaterialDesignThemes.Wpf.PackIcon
+                    {
+                        Kind = MaterialDesignThemes.Wpf.PackIconKind.Plus,
+                        Width = 18, Height = 18,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(0, 0, 8, 0)
+                    },
+                    new TextBlock
+                    {
+                        Text = "Thêm cuộc họp",
+                        VerticalAlignment = VerticalAlignment.Center,
+                        FontSize = 14,
+                        FontWeight = FontWeights.Medium
+                    }
+                }
+            },
+            Tag = date,
+            Padding = new Thickness(16, 10, 16, 10),
+            Margin = new Thickness(0, 0, 0, 14),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Cursor = Cursors.Hand,
+            Background = new SolidColorBrush(Color.FromRgb(21, 101, 192)),
+            Foreground = Brushes.White,
+            BorderThickness = new Thickness(0),
+            FontSize = 14
+        };
+        // Round corners via style
+        addMeetingBtn.Resources.Add(typeof(Border), new Style(typeof(Border))
+        {
+            Setters = { new Setter(Border.CornerRadiusProperty, new CornerRadius(8)) }
+        });
+        addMeetingBtn.Click += AddMeetingFromCalendar_Click;
+        eventListPanel.Children.Add(addMeetingBtn);
 
         if (events.Count == 0)
         {
@@ -360,30 +454,30 @@ public partial class CalendarPage : Page
             var card = new Border
             {
                 BorderBrush = new SolidColorBrush(evt.Color),
-                BorderThickness = new Thickness(3, 0, 0, 0),
+                BorderThickness = new Thickness(4, 0, 0, 0),
                 Background = Brushes.White,
-                CornerRadius = new CornerRadius(4),
-                Padding = new Thickness(12, 8, 12, 8),
-                Margin = new Thickness(0, 0, 0, 8),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(16, 12, 16, 12),
+                Margin = new Thickness(0, 0, 0, 10),
                 Effect = new System.Windows.Media.Effects.DropShadowEffect
                 {
                     Color = Colors.Black,
-                    Opacity = 0.08,
-                    BlurRadius = 6,
-                    ShadowDepth = 1
+                    Opacity = 0.1,
+                    BlurRadius = 10,
+                    ShadowDepth = 2
                 }
             };
 
             var cardStack = new StackPanel();
 
-            // Event type badge
+            // Event type badge — bigger, more visible
             var typeBadge = new Border
             {
-                Background = new SolidColorBrush(Color.FromArgb(30, evt.Color.R, evt.Color.G, evt.Color.B)),
-                CornerRadius = new CornerRadius(3),
-                Padding = new Thickness(6, 2, 6, 2),
+                Background = new SolidColorBrush(Color.FromArgb(35, evt.Color.R, evt.Color.G, evt.Color.B)),
+                CornerRadius = new CornerRadius(5),
+                Padding = new Thickness(10, 4, 10, 4),
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Margin = new Thickness(0, 0, 0, 4)
+                Margin = new Thickness(0, 0, 0, 6)
             };
             typeBadge.Child = new TextBlock
             {
@@ -397,34 +491,237 @@ public partial class CalendarPage : Page
                     EventType.Document => "📄 VĂN BẢN",
                     _ => ""
                 },
-                FontSize = 10,
+                FontSize = 12,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(evt.Color)
             };
             cardStack.Children.Add(typeBadge);
 
-            // Title
+            // Title — bigger, more prominent
             cardStack.Children.Add(new TextBlock
             {
                 Text = evt.FullLabel,
-                FontSize = 13,
+                FontSize = 15,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(55, 71, 79)),
+                Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
                 TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(0, 2, 0, 4)
+                Margin = new Thickness(0, 2, 0, 6)
             });
 
-            // Detail
+            // Detail — bigger, better line spacing
             cardStack.Children.Add(new TextBlock
             {
                 Text = evt.Detail,
-                FontSize = 11,
-                Foreground = new SolidColorBrush(Color.FromRgb(117, 117, 117)),
-                TextWrapping = TextWrapping.Wrap
+                FontSize = 13,
+                Foreground = new SolidColorBrush(Color.FromRgb(100, 100, 100)),
+                TextWrapping = TextWrapping.Wrap,
+                LineHeight = 20
             });
 
             card.Child = cardStack;
+
+            // Nếu là cuộc họp → click để mở sửa
+            if (evt.Type == EventType.Meeting && !string.IsNullOrEmpty(evt.MeetingId))
+            {
+                card.Cursor = Cursors.Hand;
+                card.Tag = evt.MeetingId;
+                card.MouseLeftButtonDown += EventCard_OpenMeeting;
+                card.ToolTip = "Click để mở cuộc họp";
+            }
+
             eventListPanel.Children.Add(card);
+        }
+        
+        // === SẮP TỚI TRONG TUẦN ===
+        ShowUpcomingThisWeek(date);
+    }
+    
+    /// <summary>
+    /// Hiển thị danh sách cuộc họp sắp tới trong tuần (dưới phần chi tiết ngày đã chọn).
+    /// </summary>
+    private void ShowUpcomingThisWeek(DateTime selectedDate)
+    {
+        try
+        {
+            var today = DateTime.Today;
+            var weekEnd = today.AddDays(7);
+            var upcoming = _meetingService.GetMeetingsByDateRange(today, weekEnd)
+                .Where(m => m.StartTime.Date != selectedDate.Date) // Bỏ ngày đang xem
+                .Where(m => m.StartTime >= DateTime.Now) // Chỉ lấy cuộc họp chưa diễn ra
+                .OrderBy(m => m.StartTime)
+                .Take(5)
+                .ToList();
+            
+            if (upcoming.Count == 0) return;
+            
+            // Separator
+            var separator = new Border
+            {
+                BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
+                BorderThickness = new Thickness(0, 1, 0, 0),
+                Margin = new Thickness(0, 18, 0, 14)
+            };
+            eventListPanel.Children.Add(separator);
+            
+            // Title
+            var sectionTitle = new TextBlock
+            {
+                Text = "📆 SẮP TỚI TRONG TUẦN",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(100, 100, 100)),
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            eventListPanel.Children.Add(sectionTitle);
+            
+            foreach (var meeting in upcoming)
+            {
+                var meetingCard = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(245, 249, 255)),
+                    CornerRadius = new CornerRadius(8),
+                    Padding = new Thickness(14, 10, 14, 10),
+                    Margin = new Thickness(0, 0, 0, 6),
+                    Cursor = Cursors.Hand,
+                    Tag = meeting.Id
+                };
+                meetingCard.MouseLeftButtonDown += EventCard_OpenMeeting;
+                meetingCard.ToolTip = "Click để mở cuộc họp";
+                
+                var meetingStack = new StackPanel();
+                
+                // Time + Title
+                var relTime = GetRelativeTimeText(meeting.StartTime);
+                meetingStack.Children.Add(new TextBlock
+                {
+                    Text = $"{meeting.StartTime:dd/MM HH:mm} — {meeting.Title}",
+                    FontSize = 14,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(33, 33, 33)),
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                });
+                
+                // Relative time + location
+                var subText = relTime;
+                if (!string.IsNullOrEmpty(meeting.Location))
+                    subText += $" • {meeting.Location}";
+                meetingStack.Children.Add(new TextBlock
+                {
+                    Text = subText,
+                    FontSize = 12,
+                    Foreground = new SolidColorBrush(Color.FromRgb(130, 130, 130)),
+                    Margin = new Thickness(0, 3, 0, 0)
+                });
+                
+                meetingCard.Child = meetingStack;
+                eventListPanel.Children.Add(meetingCard);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ Calendar: Error loading upcoming: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Tính thời gian tương đối (VD: "Sau 2 giờ", "Ngày mai", "Còn 3 ngày")
+    /// </summary>
+    private static string GetRelativeTimeText(DateTime meetingTime)
+    {
+        var now = DateTime.Now;
+        var diff = meetingTime - now;
+        
+        if (diff.TotalMinutes < 0 && diff.TotalMinutes > -60)
+            return "Vừa qua";
+        if (diff.TotalMinutes < 0)
+        {
+            if (diff.TotalHours > -24) return $"{Math.Abs((int)diff.TotalHours)} giờ trước";
+            return $"{Math.Abs((int)diff.TotalDays)} ngày trước";
+        }
+        
+        if (diff.TotalMinutes < 30) return $"Sau {(int)diff.TotalMinutes} phút";
+        if (diff.TotalHours < 1) return "Sau 30 phút";
+        if (diff.TotalHours < 24) return $"Sau {(int)diff.TotalHours} giờ";
+        if (diff.TotalDays < 2) return "Ngày mai";
+        return $"Còn {(int)diff.TotalDays} ngày";
+    }
+
+    #endregion
+
+    #region Meeting Interactions
+
+    /// <summary>
+    /// Click nút "Thêm cuộc họp" trong panel chi tiết ngày → mở dialog tạo mới, pre-set ngày đã chọn.
+    /// </summary>
+    private void AddMeetingFromCalendar_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is DateTime selectedDate)
+        {
+            try
+            {
+                // Mở dialog ở chế độ "thêm mới" (null = new)
+                var dialog = new MeetingEditDialog(null, _meetingService, _documentService)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                
+                // Pre-set ngày đã chọn trên lịch thay vì ngày hôm nay
+                dialog.Loaded += (s, ev) =>
+                {
+                    dialog.dpStartDate.SelectedDate = selectedDate;
+                    dialog.tpStartTime.SelectedTime = selectedDate.Date.AddHours(8);
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    // Refresh lịch sau khi thêm
+                    RenderCalendar();
+                    ShowDayDetail(selectedDate);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tạo cuộc họp:\n{ex.Message}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Click vào event card cuộc họp trong panel chi tiết → mở dialog sửa cuộc họp.
+    /// </summary>
+    private void EventCard_OpenMeeting(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is Border card && card.Tag is string meetingId)
+        {
+            try
+            {
+                var meeting = _meetingService.GetMeetingById(meetingId);
+                if (meeting == null)
+                {
+                    MessageBox.Show("Không tìm thấy cuộc họp!", "Lỗi",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var dialog = new MeetingEditDialog(meeting, _meetingService, _documentService)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    // Refresh lịch sau khi sửa
+                    RenderCalendar();
+                    if (_selectedDate.HasValue)
+                        ShowDayDetail(_selectedDate.Value);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi mở cuộc họp:\n{ex.Message}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 
@@ -459,6 +756,7 @@ public partial class CalendarPage : Page
         public string FullLabel { get; set; } = "";    // Tiêu đề đầy đủ (panel bên phải)
         public string Detail { get; set; } = "";       // Chi tiết (panel bên phải)
         public Color Color { get; set; }
+        public string? MeetingId { get; set; }         // ID cuộc họp (để mở sửa khi click)
     }
 
     #endregion

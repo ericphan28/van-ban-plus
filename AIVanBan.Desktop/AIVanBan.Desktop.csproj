@@ -4,6 +4,13 @@
     <ProjectReference Include="..\AIVanBan.Core\AIVanBan.Core.csproj" />
   </ItemGroup>
 
+  <!-- Fallback local cho Kho mẫu online -->
+  <ItemGroup>
+    <None Include="..\template-store.json" Link="template-store.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />

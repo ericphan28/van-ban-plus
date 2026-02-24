@@ -56,6 +56,7 @@
                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
                         materialDesign:HintAssist.IsFloating="False"
                         KeyDown="TxtSearch_KeyDown"
+                        TextChanged="TxtSearch_TextChanged"
                         Padding="8,6"/>
                 
                 <!-- Type Filter -->
@@ -108,23 +109,115 @@
             </WrapPanel>
         </Border>
         
-        <!-- ============ ROW 2: STATS BAR ============ -->
-        <Border Grid.Row="2" Background="#FFF3E0" Padding="16,8" 
+        <!-- ============ ROW 2: STATS DASHBOARD ============ -->
+        <Border Grid.Row="2" Background="{DynamicResource MaterialDesignCardBackground}" Padding="12,8" 
                 BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1">
-            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="txtTotalMeetings" Text="📋 Tổng: 0 cuộc họp" 
-                          FontSize="13" FontWeight="SemiBold" Margin="0,0,24,0"
-                          VerticalAlignment="Center"/>
-                <TextBlock x:Name="txtThisMonth" Text="📅 Tháng này: 0" 
-                          FontSize="13" Margin="0,0,24,0" VerticalAlignment="Center"/>
-                <TextBlock x:Name="txtUpcoming" Text="⏰ Sắp tới: 0" 
-                          FontSize="13" Margin="0,0,24,0" VerticalAlignment="Center"/>
-                <TextBlock x:Name="txtPendingTasks" Text="📌 NV chưa xong: 0" 
-                          FontSize="13" Margin="0,0,24,0" VerticalAlignment="Center"/>
-                <TextBlock x:Name="txtOverdueTasks" Text="🔴 NV quá hạn: 0" 
-                          FontSize="13" Foreground="#E53935" FontWeight="SemiBold"
-                          VerticalAlignment="Center"/>
-            </WrapPanel>
+            <UniformGrid Columns="5" x:Name="statsDashboard">
+                <!-- Card 1: Tổng -->
+                <Border Background="White" CornerRadius="8" Margin="4" Padding="12,8"
+                        BorderBrush="#E0E0E0" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="#E3F2FD" CornerRadius="6" Width="36" Height="36" 
+                                VerticalAlignment="Center" Margin="0,0,10,0">
+                            <materialDesign:PackIcon Kind="ClipboardList" Width="20" Height="20"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                     Foreground="#1976D2"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtStatTotal" Text="0" FontSize="20" FontWeight="Bold" Foreground="#1976D2"/>
+                            <TextBlock Text="cuộc họp" FontSize="10" Foreground="#9E9E9E"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <!-- Card 2: Tháng này -->
+                <Border Background="White" CornerRadius="8" Margin="4" Padding="12,8"
+                        BorderBrush="#E0E0E0" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="#E8F5E9" CornerRadius="6" Width="36" Height="36" 
+                                VerticalAlignment="Center" Margin="0,0,10,0">
+                            <materialDesign:PackIcon Kind="CalendarMonth" Width="20" Height="20"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                     Foreground="#2E7D32"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtStatMonth" Text="0" FontSize="20" FontWeight="Bold" Foreground="#2E7D32"/>
+                            <TextBlock Text="tháng này" FontSize="10" Foreground="#9E9E9E"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <!-- Card 3: Sắp tới -->
+                <Border Background="White" CornerRadius="8" Margin="4" Padding="12,8"
+                        BorderBrush="#E0E0E0" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="#FFF3E0" CornerRadius="6" Width="36" Height="36" 
+                                VerticalAlignment="Center" Margin="0,0,10,0">
+                            <materialDesign:PackIcon Kind="ClockAlertOutline" Width="20" Height="20"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                     Foreground="#E65100"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtStatUpcoming" Text="0" FontSize="20" FontWeight="Bold" Foreground="#E65100"/>
+                            <TextBlock Text="sắp tới" FontSize="10" Foreground="#9E9E9E"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <!-- Card 4: NV chưa xong -->
+                <Border Background="White" CornerRadius="8" Margin="4" Padding="12,8"
+                        BorderBrush="#E0E0E0" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="#E8EAF6" CornerRadius="6" Width="36" Height="36" 
+                                VerticalAlignment="Center" Margin="0,0,10,0">
+                            <materialDesign:PackIcon Kind="ClipboardCheck" Width="20" Height="20"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                     Foreground="#283593"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtStatPending" Text="0" FontSize="20" FontWeight="Bold" Foreground="#283593"/>
+                            <TextBlock Text="NV chưa xong" FontSize="10" Foreground="#9E9E9E"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <!-- Card 5: NV quá hạn -->
+                <Border x:Name="cardOverdue" Background="White" CornerRadius="8" Margin="4" Padding="12,8"
+                        BorderBrush="#E0E0E0" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="iconBgOverdue" Background="#FFEBEE" CornerRadius="6" Width="36" Height="36" 
+                                VerticalAlignment="Center" Margin="0,0,10,0">
+                            <materialDesign:PackIcon Kind="AlertCircle" Width="20" Height="20"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                     Foreground="#E53935"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtStatOverdue" Text="0" FontSize="20" FontWeight="Bold" Foreground="#E53935"/>
+                            <TextBlock x:Name="txtOverdueLabel" Text="quá hạn" FontSize="10" Foreground="#9E9E9E"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </UniformGrid>
         </Border>
         
         <!-- ============ ROW 3: MEETING LIST ============ -->

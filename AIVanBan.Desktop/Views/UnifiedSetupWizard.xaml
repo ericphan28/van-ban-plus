@@ -1,0 +1,296 @@
+<Window x:Class="AIVanBan.Desktop.Views.UnifiedSetupWizard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="🏛️ THIẾT LẬP CƠ QUAN — VanBanPlus" 
+        Width="780" Height="680"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="{DynamicResource MaterialDesignPaper}">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1565C0" Padding="25,18">
+            <StackPanel>
+                <TextBlock Text="🏛️ THIẾT LẬP CƠ QUAN LẦN ĐẦU" 
+                           FontSize="24" FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Hệ thống sẽ tự động tạo cấu trúc Thư mục Tài liệu và Album Ảnh phù hợp" 
+                           FontSize="13" Foreground="#B3D4FC"
+                           HorizontalAlignment="Center"
+                           Margin="0,6,0,0"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Step Indicator -->
+        <Border Grid.Row="1" Background="#E3F2FD" Padding="20,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Border x:Name="stepIndicator1" Background="#1565C0" CornerRadius="15" Padding="12,5" Margin="0,0,8,0">
+                    <TextBlock Text="❶ Loại cơ quan" FontSize="13" Foreground="White" FontWeight="SemiBold"/>
+                </Border>
+                <TextBlock Text="→" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#90CAF9"/>
+                <Border x:Name="stepIndicator2" Background="#90CAF9" CornerRadius="15" Padding="12,5" Margin="0,0,8,0">
+                    <TextBlock x:Name="txtStep2Label" Text="❷ Thông tin" FontSize="13" Foreground="White"/>
+                </Border>
+                <TextBlock Text="→" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#90CAF9"/>
+                <Border x:Name="stepIndicator3" Background="#90CAF9" CornerRadius="15" Padding="12,5">
+                    <TextBlock x:Name="txtStep3Label" Text="❸ Xác nhận" FontSize="13" Foreground="White"/>
+                </Border>
+            </StackPanel>
+        </Border>
+        
+        <!-- Content -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="25,15,25,0">
+            <Grid>
+                
+                <!-- STEP 1: Chọn loại cơ quan -->
+                <materialDesign:Card x:Name="step1Panel" Padding="22" Visibility="Visible">
+                    <StackPanel>
+                        <TextBlock Text="Bước 1: Chọn loại cơ quan của bạn" 
+                                   FontSize="18" FontWeight="Bold"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="Chọn đúng loại để hệ thống tạo cấu trúc phù hợp nhất" 
+                                   FontSize="12" Foreground="Gray" Margin="0,0,0,18"/>
+                        
+                        <ComboBox x:Name="cboOrganizationType"
+                                  materialDesign:HintAssist.Hint="🏛️ Loại cơ quan"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  FontSize="14"
+                                  MaxDropDownHeight="350"
+                                  SelectionChanged="OrganizationType_SelectionChanged">
+                            
+                            <!-- CƠ QUAN CHÍNH QUYỀN -->
+                            <ComboBoxItem Content="━━━ CƠ QUAN CHÍNH QUYỀN ━━━" IsEnabled="False" FontWeight="Bold" Foreground="#1976D2"/>
+                            <ComboBoxItem Content="  ▪ UBND Xã/Phường/Thị trấn" Tag="UbndXa"/>
+                            <ComboBoxItem Content="  ▪ UBND Tỉnh/Thành phố TW" Tag="UbndTinh"/>
+                            <ComboBoxItem Content="  ▪ HĐND Xã/Phường/Thị trấn" Tag="HdndXa"/>
+                            <ComboBoxItem Content="  ▪ HĐND Tỉnh/Thành phố" Tag="HdndTinh"/>
+                            <ComboBoxItem Content="  ▪ Văn phòng UBND/HĐND" Tag="VanPhong"/>
+                            <ComboBoxItem Content="  ▪ Trung tâm Hành chính công" Tag="TrungTamHanhChinh"/>
+                            
+                            <!-- CƠ QUAN ĐẢNG -->
+                            <ComboBoxItem Content="━━━ CƠ QUAN ĐẢNG ━━━" IsEnabled="False" FontWeight="Bold" Foreground="#D32F2F"/>
+                            <ComboBoxItem Content="  ▪ Đảng ủy Xã/Phường/Thị trấn" Tag="DangUyXa"/>
+                            <ComboBoxItem Content="  ▪ Tỉnh ủy/Thành ủy" Tag="DangUyTinh"/>
+                            <ComboBoxItem Content="  ▪ Chi bộ Đảng" Tag="ChiBoDang"/>
+                            <ComboBoxItem Content="  ▪ Đảng bộ cơ quan" Tag="DangBo"/>
+                            
+                            <!-- BAN CỦA TỈNH ỦY -->
+                            <ComboBoxItem Content="━━━ BAN CỦA TỈNH ỦY ━━━" IsEnabled="False" FontWeight="Bold" Foreground="#D32F2F"/>
+                            <ComboBoxItem Content="  ▪ Ban Dân vận" Tag="BanDanVan"/>
+                            <ComboBoxItem Content="  ▪ Ban Tổ chức" Tag="BanToChuc"/>
+                            <ComboBoxItem Content="  ▪ Ban Tuyên giáo" Tag="BanTuyenGiao"/>
+                            <ComboBoxItem Content="  ▪ Ban Kiểm tra" Tag="BanKiemTra"/>
+                            <ComboBoxItem Content="  ▪ Ban Nội chính" Tag="BanNoiChinh"/>
+                            <ComboBoxItem Content="  ▪ Ban Kinh tế" Tag="BanKinhTe"/>
+                            <ComboBoxItem Content="  ▪ Ban Văn hóa - Xã hội" Tag="BanVanHoa"/>
+                            
+                            <!-- MẶT TRẬN - ĐOÀN THỂ -->
+                            <ComboBoxItem Content="━━━ MẶT TRẬN - ĐOÀN THỂ ━━━" IsEnabled="False" FontWeight="Bold" Foreground="#388E3C"/>
+                            <ComboBoxItem Content="  ▪ Mặt trận Tổ quốc" Tag="MatTran"/>
+                            <ComboBoxItem Content="  ▪ Hội Nông dân" Tag="HoiNongDan"/>
+                            <ComboBoxItem Content="  ▪ Hội Phụ nữ" Tag="HoiPhuNu"/>
+                            <ComboBoxItem Content="  ▪ Đoàn Thanh niên" Tag="DoanThanhNien"/>
+                            <ComboBoxItem Content="  ▪ Hội Cựu chiến binh" Tag="HoiCuuChienBinh"/>
+                            <ComboBoxItem Content="  ▪ Công đoàn" Tag="CongDoan"/>
+                            <ComboBoxItem Content="  ▪ Hội Chữ thập đỏ" Tag="HoiChapThap"/>
+                            <ComboBoxItem Content="  ▪ Hội Khuyến học" Tag="HoiKhuyenHoc"/>
+                            
+                            <!-- SỞ - BAN - NGÀNH -->
+                            <ComboBoxItem Content="━━━ SỞ - BAN - NGÀNH (CẤP TỈNH) ━━━" IsEnabled="False" FontWeight="Bold" Foreground="#F57C00"/>
+                            <ComboBoxItem Content="  ▪ Sở Nội vụ" Tag="SoNoiVu"/>
+                            <ComboBoxItem Content="  ▪ Sở Tài chính" Tag="SoTaiChinh"/>
+                            <ComboBoxItem Content="  ▪ Sở Kế hoạch &amp; Đầu tư" Tag="SoKhoHo"/>
+                            <ComboBoxItem Content="  ▪ Sở Giáo dục &amp; Đào tạo" Tag="SoGiaoDuc"/>
+                            <ComboBoxItem Content="  ▪ Sở Y tế" Tag="SoYTe"/>
+                            <ComboBoxItem Content="  ▪ Sở Nông nghiệp &amp; PTNT" Tag="SoNongNghiep"/>
+                            <ComboBoxItem Content="  ▪ Sở Công thương" Tag="SoCongThuong"/>
+                            <ComboBoxItem Content="  ▪ Sở Văn hóa, TT &amp; DL" Tag="SoVanHoa"/>
+                            <ComboBoxItem Content="  ▪ Sở Tài nguyên &amp; MT" Tag="SoTaiNguyen"/>
+                            <ComboBoxItem Content="  ▪ Sở Xây dựng" Tag="SoXayDung"/>
+                            <ComboBoxItem Content="  ▪ Sở Giao thông Vận tải" Tag="SoGiaoThong"/>
+                            <ComboBoxItem Content="  ▪ Sở Tư pháp" Tag="SoTuPhap"/>
+                            <ComboBoxItem Content="  ▪ Sở Thông tin &amp; TT" Tag="SoThongTin"/>
+                            <ComboBoxItem Content="  ▪ Sở Lao động TBXH" Tag="SoLaoDong"/>
+                            <ComboBoxItem Content="  ▪ Sở Khoa học &amp; CN" Tag="SoKhoaHoc"/>
+                            
+                            <!-- GIÁO DỤC & Y TẾ -->
+                            <ComboBoxItem Content="━━━ GIÁO DỤC &amp; Y TẾ ━━━" IsEnabled="False" FontWeight="Bold" Foreground="#7B1FA2"/>
+                            <ComboBoxItem Content="  ▪ Trường Mầm non" Tag="TruongMamNon"/>
+                            <ComboBoxItem Content="  ▪ Trường Tiểu học" Tag="TruongTieuHoc"/>
+                            <ComboBoxItem Content="  ▪ Trường THCS" Tag="TruongTHCS"/>
+                            <ComboBoxItem Content="  ▪ Trường THPT" Tag="TruongTHPT"/>
+                            <ComboBoxItem Content="  ▪ Trường Đại học/Cao đẳng" Tag="TruongDaiHoc"/>
+                            <ComboBoxItem Content="  ▪ Trạm Y tế Xã" Tag="TramYTe"/>
+                            <ComboBoxItem Content="  ▪ Trung tâm Y tế" Tag="TrungTamYTe"/>
+                            <ComboBoxItem Content="  ▪ Bệnh viện" Tag="BenhVien"/>
+                            
+                            <!-- CƠ QUAN KHÁC -->
+                            <ComboBoxItem Content="━━━ CƠ QUAN KHÁC ━━━" IsEnabled="False" FontWeight="Bold" Foreground="#455A64"/>
+                            <ComboBoxItem Content="  ▪ Công an" Tag="CongAn"/>
+                            <ComboBoxItem Content="  ▪ Trung tâm Văn hóa" Tag="TrungTamVanHoa"/>
+                            <ComboBoxItem Content="  ▪ Thư viện" Tag="ThuVien"/>
+                            <ComboBoxItem Content="  ▪ Bảo tàng/Viện/Di tích" Tag="BaoTangVienDi"/>
+                            <ComboBoxItem Content="  ▪ Công ty Nhà nước" Tag="CongTyNhaNuoc"/>
+                            <ComboBoxItem Content="  ▪ Cơ quan Tùy chọn" Tag="CoQuanTuyChon"/>
+                        </ComboBox>
+                        
+                        <!-- Info box -->
+                        <Border Background="#FFF3E0" CornerRadius="6" Padding="14" Margin="0,18,0,0">
+                            <StackPanel>
+                                <TextBlock Text="💡 Thiết lập này sẽ tạo đồng thời:" 
+                                           FontWeight="SemiBold" FontSize="13" Margin="0,0,0,8"/>
+                                <TextBlock Text="📂 Cấu trúc thư mục Quản lý Tài liệu (VB đến, VB đi, hồ sơ...)" 
+                                           FontSize="12" Margin="12,2"/>
+                                <TextBlock Text="🖼️ Cấu trúc Album Ảnh theo nghiệp vụ (sự kiện, công trình, lễ hội...)" 
+                                           FontSize="12" Margin="12,2"/>
+                                <TextBlock Text="⚙️ Cấu hình ký hiệu viết tắt CQ dùng trong ký hiệu văn bản" 
+                                           FontSize="12" Margin="12,2"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </materialDesign:Card>
+                
+                <!-- STEP 2: Nhập thông tin cơ quan -->
+                <materialDesign:Card x:Name="step2Panel" Padding="22" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Text="Bước 2: Nhập thông tin cơ quan" 
+                                   FontSize="18" FontWeight="Bold"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="Thông tin này dùng cho ký hiệu văn bản và phân loại tài liệu" 
+                                   FontSize="12" Foreground="Gray" Margin="0,0,0,18"/>
+                        
+                        <TextBox x:Name="txtOrgFullName"
+                                 materialDesign:HintAssist.Hint="📋 Tên đầy đủ cơ quan (VD: ỦY BAN NHÂN DÂN XÃ HÒA BÌNH)"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 FontSize="14"
+                                 Margin="0,0,0,15"
+                                 TextChanged="OrgName_TextChanged"/>
+                        
+                        <TextBox x:Name="txtOrgAbbreviation"
+                                 materialDesign:HintAssist.Hint="✏️ Ký hiệu viết tắt CQ (VD: UBND, SYT, SGDDT)"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                 FontSize="14"
+                                 Margin="0,0,0,8"/>
+                        
+                        <TextBlock Text="ℹ️ Ký hiệu viết tắt dùng trong số hiệu văn bản: Số/Loại-CQ (VD: 15/QĐ-UBND) — Phụ lục VI, NĐ 30/2020"
+                                   FontSize="11" Foreground="#757575" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </materialDesign:Card>
+                
+                <!-- STEP 3: Xác nhận & Preview -->
+                <materialDesign:Card x:Name="step3Panel" Padding="22" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Text="Bước 3: Xác nhận thiết lập" 
+                                   FontSize="18" FontWeight="Bold"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="Kiểm tra thông tin trước khi hệ thống tạo cấu trúc" 
+                                   FontSize="12" Foreground="Gray" Margin="0,0,0,18"/>
+                        
+                        <!-- Org info summary -->
+                        <Border Background="#E8F5E9" CornerRadius="6" Padding="14" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="📌 Thông tin cơ quan:" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="txtSummaryOrgName" FontSize="13" Margin="12,2" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="txtSummaryOrgType" FontSize="13" Margin="12,2"/>
+                                <TextBlock x:Name="txtSummaryAbbrev" FontSize="13" Margin="12,2"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Two columns: Document + Album -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Document structure preview -->
+                            <Border Grid.Column="0" Background="#E3F2FD" CornerRadius="6" Padding="12">
+                                <StackPanel>
+                                    <TextBlock Text="📂 THƯ MỤC TÀI LIỆU" FontWeight="Bold" FontSize="13" Margin="0,0,0,8"/>
+                                    <TextBlock x:Name="txtDocStructurePreview" FontSize="11" TextWrapping="Wrap"
+                                               Foreground="#37474F" LineHeight="20"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Album structure preview -->
+                            <Border Grid.Column="2" Background="#FFF3E0" CornerRadius="6" Padding="12">
+                                <StackPanel>
+                                    <TextBlock Text="🖼️ ALBUM ẢNH" FontWeight="Bold" FontSize="13" Margin="0,0,0,8"/>
+                                    <TextBlock x:Name="txtAlbumStructurePreview" FontSize="11" TextWrapping="Wrap"
+                                               Foreground="#37474F" LineHeight="20"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                        
+                        <!-- Demo data option -->
+                        <Border Background="#EDE7F6" CornerRadius="6" Padding="14" Margin="0,15,0,0">
+                            <StackPanel>
+                                <CheckBox x:Name="chkSeedDemoData" IsChecked="True" Margin="0,0,0,8">
+                                    <TextBlock Text="📦 Tạo dữ liệu demo để tham khảo (khuyến nghị cho lần đầu)" 
+                                               FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap"/>
+                                </CheckBox>
+                                <TextBlock Text="Hệ thống sẽ tạo sẵn dữ liệu mẫu giống thực tế để bạn tham khảo cách sử dụng:" 
+                                           FontSize="11" Foreground="#5E35B1" Margin="26,0,0,6" TextWrapping="Wrap"/>
+                                <TextBlock Text="  📄 50 văn bản mẫu (công văn, quyết định, báo cáo, tờ trình... đủ 25+ loại VB)" 
+                                           FontSize="11" Foreground="#37474F" Margin="26,0,0,2"/>
+                                <TextBlock Text="  📅 17 cuộc họp mẫu (giao ban, triển khai, chuyên đề... có đầy đủ tài liệu)" 
+                                           FontSize="11" Foreground="#37474F" Margin="26,0,0,2"/>
+                                <TextBlock Text="  💡 Bạn có thể xóa dữ liệu demo bất cứ lúc nào sau khi đã quen phần mềm" 
+                                           FontSize="11" Foreground="#9E9E9E" Margin="26,4,0,0" FontStyle="Italic"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </materialDesign:Card>
+                
+            </Grid>
+        </ScrollViewer>
+        
+        <!-- Footer Buttons -->
+        <Border Grid.Row="3" BorderThickness="0,1,0,0" BorderBrush="#E0E0E0" Padding="25,15">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Content="✖ Bỏ qua"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Click="Skip_Click"
+                            Width="100" Height="38"
+                            Foreground="Gray"/>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="btnBack"
+                            Content="← Quay lại"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Click="Back_Click"
+                            Visibility="Collapsed"
+                            Margin="0,0,10,0"
+                            Width="120" Height="38"/>
+                    
+                    <Button x:Name="btnNext"
+                            Content="Tiếp theo →"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Click="Next_Click"
+                            IsEnabled="False"
+                            Width="130" Height="38"/>
+                    
+                    <Button x:Name="btnComplete"
+                            Content="✅ Hoàn thành thiết lập"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Click="Complete_Click"
+                            Visibility="Collapsed"
+                            Width="180" Height="38"
+                            Background="#2E7D32"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

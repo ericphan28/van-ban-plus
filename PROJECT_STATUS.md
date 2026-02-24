@@ -117,10 +117,20 @@
 ### A5. Cuộc họp (Meetings)
 | # | Tính năng | File chính | Ghi chú |
 |---|-----------|-----------|---------|
-| ✅ | Danh sách cuộc họp (timeline) | `MeetingPage.xaml` | 22 loại họp |
-| ✅ | Tạo/Sửa cuộc họp | `MeetingEditDialog.xaml` | Người tham dự, nhiệm vụ, tài liệu |
+| ✅ | Danh sách cuộc họp (timeline) | `MeetingListPage.xaml` | 22 loại họp, grouped by date |
+| ✅ | Tạo/Sửa cuộc họp (6 tab) | `MeetingEditDialog.xaml` | Người tham dự, nhiệm vụ, tài liệu, album |
 | ✅ | Xuất Word: Biên bản, Kết luận, BC | `MeetingMinuteService.cs` | 3 loại xuất |
-| ✅ | Lọc theo loại, trạng thái | `MeetingPage.xaml.cs` | |
+| ✅ | Lọc theo loại, trạng thái, ngày | `MeetingListPage.xaml.cs` | |
+| ✅ | Tìm kiếm realtime (debounce 300ms) | `MeetingListPage.xaml.cs` | 2026-02-24 |
+| ✅ | Dashboard 5 stat cards | `MeetingListPage.xaml` | Tổng, Tháng, Sắp tới, NV, Quá hạn |
+| ✅ | Card meeting: live badge + relative time | `MeetingListPage.xaml.cs` | "● LIVE", "Sau 2h", "Ngày mai" |
+| ✅ | Card meeting: status tint + hover + strikethrough | `MeetingListPage.xaml.cs` | 2026-02-24 |
+| ✅ | Task progress bar trên card | `MeetingListPage.xaml.cs` | Mini progress bar 50px |
+| ✅ | Cảnh báo trùng lịch khi lưu | `MeetingEditDialog.xaml.cs` | Overlap detection + confirm |
+| ✅ | Calendar: auto-load hôm nay | `CalendarPage.xaml.cs` | Mở → thấy sự kiện ngay |
+| ✅ | Calendar: click ngày → tạo cuộc họp | `CalendarPage.xaml.cs` | Pre-set date |
+| ✅ | Calendar: click event → mở sửa họp | `CalendarPage.xaml.cs` | MeetingId on CalendarEvent |
+| ✅ | Calendar: "Sắp tới trong tuần" | `CalendarPage.xaml.cs` | 5 cuộc họp kế tiếp |
 
 ### A6. Album ảnh
 | # | Tính năng | File chính | Ghi chú |
@@ -228,7 +238,7 @@ Nhắc nhở khi mở app + Toast notification.
 |---|------|--------|-------------------|---------|
 | B3.1 | UI `CalendarPage.xaml` — lịch tháng với event markers | [x] ✅ 2025-01 | `AIVanBan.Desktop/Views/` | WPF Calendar control + overlay |
 | B3.2 | Load events: VB deadline (PersonalDeadline) + Meeting + Task từ meeting | [x] ✅ 2025-01 | `CalendarPage.xaml.cs` | |
-| B3.3 | Click event → mở VB/họp/task tương ứng | [ ] | `CalendarPage.xaml.cs` | |
+| B3.3 | Click event → mở VB/họp/task tương ứng | [x] ✅ 2026-02-24 | `CalendarPage.xaml.cs` | Click meeting card → MeetingEditDialog |
 | B3.4 | Color-code: 🔴 quá hạn, 🟡 sắp hạn, 🔵 họp, 🟢 task hoàn thành | [x] ✅ 2025-01 | `CalendarPage.xaml` | |
 | B3.5 | Toast notification khi mở app (VB quá hạn, sắp hạn, họp hôm nay) | [ ] | `App.xaml.cs` | Snackbar hoặc MaterialDesign dialog |
 | B3.6 | Thêm vào sidebar + navigation | [x] ✅ 2025-01 | `MainWindow.xaml` | |

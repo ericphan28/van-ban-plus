@@ -18,14 +18,16 @@ public partial class AIComposeDialog : Window
     private readonly GeminiAIService _aiService;
     private DocumentTemplate? _selectedTemplate;
     private readonly Dictionary<string, TextBox> _fieldInputs = new();
+    private readonly string? _preSelectedTemplateId;
 
     public Document? GeneratedDocument { get; private set; }
 
-    public AIComposeDialog(DocumentService documentService, string? geminiApiKey = null)
+    public AIComposeDialog(DocumentService documentService, string? geminiApiKey = null, string? preSelectedTemplateId = null)
     {
         InitializeComponent();
         _documentService = documentService;
         _aiService = string.IsNullOrEmpty(geminiApiKey) ? new GeminiAIService() : new GeminiAIService(geminiApiKey);
+        _preSelectedTemplateId = preSelectedTemplateId;
         
         LoadTemplates();
     }
@@ -34,6 +36,17 @@ public partial class AIComposeDialog : Window
     {
         var templates = _documentService.GetAllTemplates();
         TemplateComboBox.ItemsSource = templates.OrderBy(t => t.Type).ThenBy(t => t.Name);
+        
+        // Nếu có pre-selected template, auto-select nó
+        if (!string.IsNullOrEmpty(_preSelectedTemplateId))
+        {
+            var preSelected = templates.FirstOrDefault(t => t.Id == _preSelectedTemplateId);
+            if (preSelected != null)
+            {
+                TemplateComboBox.SelectedItem = preSelected;
+                return;
+            }
+        }
         
         if (templates.Count > 0)
         {
@@ -66,7 +79,15 @@ public partial class AIComposeDialog : Window
         
         if (_selectedTemplate.RequiredFields != null && _selectedTemplate.RequiredFields.Length > 0)
         {
-            RequiredFieldsText.Text = $"✅ Các trường cần nhập: {string.Join(", ", _selectedTemplate.RequiredFields)}";
+            var fieldLabels = _selectedTemplate.RequiredFields.Select(f => {
+                var label = GetFieldLabel(f);
+                // Bỏ emoji ở đầu label (emoji là surrogate pair, không dùng TrimStart char được)
+                var idx = 0;
+                while (idx < label.Length && (char.IsHighSurrogate(label[idx]) || label[idx] > 0x2000))
+                    idx += char.IsHighSurrogate(label[idx]) ? 2 : 1;
+                return label.Substring(idx).Trim();
+            });
+            RequiredFieldsText.Text = $"✅ Các trường cần nhập: {string.Join(", ", fieldLabels)}";
         }
         else
         {
@@ -711,73 +732,332 @@ public partial class AIComposeDialog : Window
     {
         return field switch
         {
-            "from_org" => "🏢 Cơ quan gửi",
+            // === Thông tin cơ quan ===
+            "from_org" => "🏢 Cơ quan ban hành",
             "to_org" => "📨 Cơ quan nhận",
             "to_department" => "🏛️ Sở/Ban/Ngành nhận",
+            "org_name" => "🏛️ Tên cơ quan/tổ chức",
+            "from_unit" => "🏢 Đơn vị cũ",
+            "to_unit" => "🏢 Đơn vị mới/nhận",
+            "copy_org" => "🏢 Cơ quan sao lục",
+            "implementing_unit" => "⚙️ Đơn vị thực hiện",
+            
+            // === Nội dung văn bản ===
             "subject" => "📋 Vấn đề/Tiêu đề",
             "content" => "📝 Nội dung chính",
+            "reason" => "💡 Lý do",
+            "purpose" => "🎯 Mục đích",
+            "proposal" => "📊 Đề xuất",
+            "proposals" => "💡 Đề xuất, kiến nghị",
+            "objectives" => "🎯 Mục tiêu",
+            "tasks" => "📋 Nhiệm vụ",
+            "articles" => "📜 Các điều khoản",
+            "program" => "📜 Chương trình",
+            "agenda" => "📋 Nội dung cuộc họp",
+            "conclusion" => "✅ Kết luận",
+            "legal_basis" => "📖 Căn cứ pháp lý",
+            
+            // === Người ký / Người liên quan ===
             "signer_name" => "✍️ Người ký",
             "signer_title" => "👔 Chức danh người ký",
-            "recipient" => "📬 Đơn vị nhận",
-            "reason" => "💡 Lý do",
-            "proposal" => "📊 Đề xuất",
-            "reply_to_number" => "🔢 Trả lời công văn số",
+            "signer" => "✍️ Người ký",
+            "chairman_name" => "👨‍💼 Chủ tịch",
+            "principal_name" => "👨‍💼 Hiệu trưởng",
             "person_name" => "👤 Họ tên cán bộ",
+            "person" => "👤 Họ tên",
+            "citizen_name" => "👤 Họ tên công dân",
+            "patient_name" => "🧑‍⚕️ Họ tên bệnh nhân",
+            "student_name" => "🎓 Họ tên học sinh",
+            "recipient" => "📬 Đơn vị/Người nhận",
+            "recipients" => "📬 Nơi nhận",
+            "grantor" => "👤 Người ủy quyền",
+            "grantee" => "👤 Người được ủy quyền",
+            "participants" => "👥 Thành phần tham dự",
+            "members" => "👥 Danh sách thành viên",
+            "students" => "🎓 Danh sách học sinh",
+            "beneficiaries" => "👥 Đối tượng thụ hưởng",
+            
+            // === Chức vụ / Vị trí ===
             "current_position" => "💼 Chức vụ hiện tại",
-            "from_unit" => "🏢 Đơn vị cũ",
-            "to_unit" => "🏢 Đơn vị mới",
             "new_position" => "⭐ Chức vụ mới",
+            "level" => "🏛️ Cấp (Tỉnh/Huyện/Xã)",
+            "ranking" => "🏅 Xếp loại",
+            
+            // === Thời gian / Địa điểm ===
+            "time" => "⏰ Thời gian",
+            "time_place" => "⏰ Thời gian, địa điểm",
+            "location" => "📍 Địa điểm",
+            "address" => "📍 Địa chỉ",
             "effective_date" => "📅 Ngày hiệu lực",
+            "period" => "📆 Kỳ báo cáo/kế hoạch",
+            "from_date" => "📅 Từ ngày",
+            "to_date" => "📅 Đến ngày",
+            "birth_date" => "📅 Ngày sinh",
+            "exam_date" => "📅 Ngày khám",
+            "meeting_time" => "⏰ Thời gian họp",
+            "graduation_year" => "📅 Năm tốt nghiệp",
+            "school_year" => "📅 Năm học",
+            "year" => "📅 Năm",
+            
+            // === Khen thưởng / Kỷ luật ===
             "award_type" => "🏆 Hình thức khen thưởng",
             "achievement" => "✨ Thành tích",
-            "org_name" => "🏛️ Tên tổ chức",
-            "members" => "👥 Danh sách thành viên",
-            "tasks" => "📋 Nhiệm vụ",
-            "project_name" => "🎯 Tên đề án/dự án",
-            "objectives" => "🎯 Mục tiêu",
-            "budget" => "💰 Kinh phí",
-            "implementing_unit" => "⚙️ Đơn vị thực hiện",
-            "period" => "📆 Kỳ báo cáo/kế hoạch",
             "achievements" => "✅ Kết quả đạt được",
-            "challenges" => "⚠️ Tồn tại, hạn chế",
-            "future_plans" => "🚀 Phương hướng tiếp theo",
-            "field" => "📂 Lĩnh vực",
+            "reward_type" => "🏆 Hình thức khen thưởng",
+            "reward_proposal" => "🏆 Đề nghị khen thưởng",
+            "collective_achievements" => "✅ Thành tích tập thể",
+            "violation" => "⚠️ Hành vi vi phạm",
+            "penalty" => "⚖️ Hình thức xử phạt",
+            "discipline_type" => "⚠️ Hình thức kỷ luật",
+            
+            // === Báo cáo / Đánh giá ===
             "situation" => "📊 Tình hình",
             "results" => "📈 Kết quả",
-            "proposals" => "💡 Đề xuất, kiến nghị",
-            "task_name" => "📌 Nhiệm vụ/Kế hoạch",
+            "result" => "📈 Kết quả",
+            "challenges" => "⚠️ Tồn tại, hạn chế",
+            "future_plans" => "🚀 Phương hướng tiếp theo",
+            "next_plan" => "🚀 Kế hoạch tiếp theo",
             "evaluation" => "⭐ Đánh giá",
-            "time_place" => "⏰ Thời gian, địa điểm",
-            "purpose" => "🎯 Mục đích",
-            "program" => "📜 Chương trình",
+            "task_name" => "📌 Nhiệm vụ/Kế hoạch",
+            "field" => "📂 Lĩnh vực",
+            "solutions" => "💡 Giải pháp thực hiện",
+            "targets" => "🎯 Chỉ tiêu",
+            "implementation" => "⚙️ Tổ chức thực hiện",
+            "year_targets" => "🎯 Chỉ tiêu năm",
+            "criteria_status" => "📊 Tình trạng các tiêu chí",
+            
+            // === Sự kiện / Hội nghị ===
             "event_name" => "🎉 Tên sự kiện",
             "meeting_name" => "🤝 Tên cuộc họp",
-            "time" => "⏰ Thời gian",
-            "location" => "📍 Địa điểm",
-            "participants" => "👥 Thành phần tham dự",
-            "agenda" => "📋 Nội dung họp",
-            "conclusion" => "✅ Kết luận",
-            "level" => "🏛️ Cấp (Tỉnh/Thành phố/Xã)",
-            "articles" => "📜 Các điều khoản",
-            "chairman_name" => "👨‍💼 Chủ tịch",
-            "violation" => "⚠️ Hành vi vi phạm",
-            "legal_basis" => "📖 Căn cứ pháp lý",
-            "penalty" => "⚖️ Hình thức xử phạt",
-            _ => field
+            "reply_to_number" => "🔢 Trả lời công văn số",
+            
+            // === Dự án / Tài chính ===
+            "project_name" => "🎯 Tên đề án/dự án",
+            "budget" => "💰 Kinh phí",
+            "support_type" => "📋 Hình thức hỗ trợ",
+            "support_amount" => "💰 Mức hỗ trợ",
+            
+            // === Trường học ===
+            "school_name" => "🏫 Tên trường",
+            "grade" => "📚 Khối/Lớp",
+            "class_name" => "📚 Tên lớp",
+            "curriculum_plan" => "📖 Chương trình dạy học",
+            "student_count" => "👥 Số lượng học sinh",
+            "quality_stats" => "📊 Thống kê chất lượng",
+            
+            // === Y tế ===
+            "medical_unit" => "🏥 Cơ sở y tế",
+            "hospital" => "🏥 Bệnh viện",
+            "from_hospital" => "🏥 Bệnh viện chuyển",
+            "to_hospital" => "🏥 Bệnh viện nhận",
+            "disease_name" => "🩺 Tên bệnh/dịch",
+            "diagnosis" => "🩺 Chẩn đoán",
+            "transfer_reason" => "📋 Lý do chuyển viện",
+            "prevention_measures" => "🛡️ Biện pháp phòng chống",
+            "measures" => "📋 Biện pháp thực hiện",
+            "statistics" => "📊 Số liệu thống kê",
+            "patient_count" => "👥 Số lượng bệnh nhân",
+            "clinical_results" => "📈 Kết quả lâm sàng",
+            "treatment_plan" => "📋 Phác đồ điều trị",
+            "procedure_name" => "📋 Tên quy trình",
+            "test_type" => "🔬 Loại xét nghiệm",
+            "test_result" => "📈 Kết quả xét nghiệm",
+            "area" => "📍 Khu vực/Địa bàn",
+            
+            // === Hành chính xã/phường ===
+            "ward_name" => "🏘️ Tên xã/phường",
+            "marital_status" => "👪 Tình trạng hôn nhân",
+            "population" => "👥 Dân số",
+            "birth_death_rate" => "📊 Tỷ lệ sinh/tử",
+            "economy" => "📈 Kinh tế",
+            "social" => "🏘️ Xã hội",
+            "disaster_type" => "⚠️ Loại thiên tai",
+            "risk_areas" => "📍 Vùng có nguy cơ",
+            "rescue_forces" => "🚑 Lực lượng cứu hộ",
+            "evacuation_plan" => "🗺️ Phương án sơ tán",
+            "reform_content" => "📋 Nội dung cải cách",
+            "procedures" => "📋 Thủ tục",
+            
+            // === Sao lục / Phụ lục ===
+            "original_document" => "📄 Văn bản gốc",
+            "original_saoy" => "📄 Bản gốc sao y",
+            "extract_section" => "📋 Phần trích sao",
+            "document_ref" => "📎 Số hiệu văn bản",
+            "documents" => "📎 Danh sách văn bản",
+            "parent_document" => "📄 Văn bản chính",
+            "appendix_title" => "📋 Tiêu đề phụ lục",
+            
+            _ => $"📝 {FormatFieldName(field)}"
         };
+    }
+    
+    /// <summary>
+    /// Chuyển field name kỹ thuật thành tên thân thiện (fallback)
+    /// VD: "school_name" → "Tên trường", "from_date" → "Từ ngày"
+    /// </summary>
+    private static string FormatFieldName(string field)
+    {
+        // Thay _ thành khoảng trắng, viết hoa chữ đầu
+        var words = field.Split('_');
+        return string.Join(" ", words.Select(w => 
+            w.Length > 0 ? char.ToUpper(w[0]) + w[1..] : w));
     }
 
     private string GetFieldHint(string field)
     {
         return field switch
         {
+            // Cơ quan
             "from_org" => "Ví dụ: UBND xã Tân Thành",
-            "to_org" => "Ví dụ: UBND thành phố Bình Chánh",
+            "to_org" => "Ví dụ: Sở Nội vụ tỉnh Bình Dương",
+            "to_department" => "Ví dụ: Sở Giáo dục và Đào tạo",
+            "org_name" => "Ví dụ: UBND xã Tân Phú",
+            "copy_org" => "Ví dụ: Văn phòng UBND huyện",
+            "implementing_unit" => "Ví dụ: Phòng Tài chính - Kế hoạch",
+            "from_unit" => "Ví dụ: Phòng Nội vụ huyện ABC",
+            "to_unit" => "Ví dụ: UBND xã XYZ",
+            
+            // Nội dung
             "subject" => "Vấn đề văn bản cần soạn",
             "content" => "Nội dung chi tiết văn bản...",
+            "reason" => "Lý do ban hành văn bản",
+            "purpose" => "Mục đích của sự kiện/hoạt động",
+            "proposal" => "Nội dung đề xuất, kiến nghị",
+            "proposals" => "Các đề xuất, kiến nghị cụ thể...",
+            "objectives" => "Các mục tiêu cần đạt được...",
+            "tasks" => "Danh sách nhiệm vụ cụ thể...",
+            "articles" => "Nội dung các điều khoản...",
+            "program" => "Chương trình, kịch bản chi tiết...",
+            "agenda" => "Nội dung các phần trong cuộc họp...",
+            "conclusion" => "Kết luận, quyết nghị...",
+            "legal_basis" => "Căn cứ Luật, Nghị định, Thông tư...",
+            "solutions" => "Các giải pháp cụ thể...",
+            
+            // Người ký
             "signer_name" => "Ví dụ: Nguyễn Văn A",
             "signer_title" => "Ví dụ: Chủ tịch UBND",
-            _ => $"Nhập {field}..."
+            "signer" => "Ví dụ: Nguyễn Văn A - Chủ tịch",
+            "chairman_name" => "Ví dụ: Trần Văn B",
+            "principal_name" => "Ví dụ: Lê Thị C",
+            "person_name" => "Ví dụ: Nguyễn Văn A",
+            "person" => "Ví dụ: Nguyễn Văn A",
+            "citizen_name" => "Ví dụ: Trần Thị B",
+            "patient_name" => "Ví dụ: Nguyễn Văn C",
+            "student_name" => "Ví dụ: Lê Văn D",
+            "recipient" => "Ví dụ: Sở Nội vụ tỉnh ABC",
+            "recipients" => "Danh sách nơi nhận...",
+            "grantor" => "Người ủy quyền",
+            "grantee" => "Người được ủy quyền",
+            "participants" => "Thành phần tham dự cuộc họp...",
+            "members" => "Danh sách các thành viên...",
+            "students" => "Danh sách học sinh...",
+            "beneficiaries" => "Đối tượng được hỗ trợ...",
+            
+            // Chức vụ
+            "current_position" => "Ví dụ: Trưởng phòng Nội vụ",
+            "new_position" => "Ví dụ: Phó Chủ tịch UBND",
+            "level" => "Ví dụ: Tỉnh, Huyện, hoặc Xã",
+            "ranking" => "Ví dụ: Giỏi, Khá, Trung bình",
+            
+            // Thời gian
+            "time" => "Ví dụ: 08h00 ngày 15/3/2026",
+            "time_place" => "Ví dụ: 08h00, ngày 15/3/2026 tại Hội trường UBND",
+            "location" => "Ví dụ: Hội trường UBND xã",
+            "address" => "Ví dụ: 123 Nguyễn Huệ, phường 1, TP. HCM",
+            "effective_date" => "Ví dụ: 01/01/2026",
+            "period" => "Ví dụ: Quý I/2026 hoặc Năm 2025",
+            "from_date" => "Ví dụ: 01/03/2026",
+            "to_date" => "Ví dụ: 15/03/2026",
+            "birth_date" => "Ví dụ: 15/05/1990",
+            "exam_date" => "Ví dụ: 20/03/2026",
+            "meeting_time" => "Ví dụ: 14h00, thứ Sáu ngày 21/3/2026",
+            "graduation_year" => "Ví dụ: 2025",
+            "school_year" => "Ví dụ: 2025-2026",
+            "year" => "Ví dụ: 2026",
+            
+            // Khen thưởng / Kỷ luật
+            "award_type" => "Ví dụ: Bằng khen, Giấy khen",
+            "achievement" => "Mô tả thành tích cụ thể...",
+            "achievements" => "Các kết quả đạt được...",
+            "reward_type" => "Ví dụ: Bằng khen, Chiến sĩ thi đua",
+            "reward_proposal" => "Đề nghị khen thưởng tập thể...",
+            "collective_achievements" => "Thành tích tập thể trong năm...",
+            "violation" => "Mô tả hành vi vi phạm...",
+            "penalty" => "Hình thức xử phạt áp dụng...",
+            "discipline_type" => "Ví dụ: Khiển trách, Cảnh cáo",
+            
+            // Báo cáo
+            "situation" => "Mô tả tình hình hiện tại...",
+            "results" or "result" => "Kết quả đạt được...",
+            "challenges" => "Khó khăn, tồn tại, hạn chế...",
+            "future_plans" or "next_plan" => "Phương hướng, nhiệm vụ tiếp theo...",
+            "evaluation" => "Nhận xét, đánh giá...",
+            "task_name" => "Ví dụ: Kiểm tra ATTP Quý I/2026",
+            "field" => "Ví dụ: Giáo dục, Y tế, Nông nghiệp",
+            "targets" or "year_targets" => "Các chỉ tiêu cần đạt...",
+            "criteria_status" => "Tình trạng đạt/chưa đạt các tiêu chí...",
+            "implementation" => "Cách tổ chức thực hiện...",
+            
+            // Sự kiện
+            "event_name" => "Ví dụ: Lễ kỷ niệm 30/4",
+            "meeting_name" => "Ví dụ: Họp UBND xã tháng 3/2026",
+            "reply_to_number" => "Ví dụ: 123/UBND-VP ngày 01/3/2026",
+            
+            // Tài chính
+            "project_name" => "Ví dụ: Xây dựng đường liên xã",
+            "budget" => "Ví dụ: 500.000.000 đồng",
+            "support_type" => "Ví dụ: Tiền mặt, Hiện vật",
+            "support_amount" => "Ví dụ: 2.000.000 đồng/hộ",
+            
+            // Trường học
+            "school_name" => "Ví dụ: Trường THCS Nguyễn Du",
+            "grade" => "Ví dụ: Khối 9 hoặc Lớp 9A1",
+            "class_name" => "Ví dụ: 9A1",
+            "curriculum_plan" => "Nội dung chương trình giảng dạy...",
+            "student_count" => "Ví dụ: 450 học sinh",
+            "quality_stats" => "Thống kê tỷ lệ giỏi/khá/TB...",
+            
+            // Y tế
+            "medical_unit" => "Ví dụ: Trạm Y tế xã Tân Phú",
+            "hospital" => "Ví dụ: Bệnh viện Đa khoa tỉnh",
+            "from_hospital" => "Ví dụ: BV Đa khoa huyện ABC",
+            "to_hospital" => "Ví dụ: BV Chợ Rẫy TP.HCM",
+            "disease_name" => "Ví dụ: Sốt xuất huyết, COVID-19",
+            "diagnosis" => "Chẩn đoán bệnh...",
+            "transfer_reason" => "Lý do cần chuyển viện...",
+            "prevention_measures" or "measures" => "Các biện pháp phòng chống...",
+            "statistics" => "Số liệu ca bệnh, tử vong...",
+            "patient_count" => "Ví dụ: 1.200 lượt",
+            "clinical_results" => "Kết quả điều trị lâm sàng...",
+            "treatment_plan" => "Phác đồ, kế hoạch điều trị...",
+            "procedure_name" => "Ví dụ: Quy trình khám sức khỏe",
+            "test_type" => "Ví dụ: Xét nghiệm máu, PCR",
+            "test_result" => "Kết quả xét nghiệm...",
+            "area" => "Ví dụ: Xã Tân Phú, huyện ABC",
+            
+            // Hành chính xã/phường
+            "ward_name" => "Ví dụ: Xã Tân Thành",
+            "marital_status" => "Ví dụ: Độc thân, Đã kết hôn",
+            "population" => "Ví dụ: 12.500 người",
+            "birth_death_rate" => "Ví dụ: Sinh 1.2%, Tử 0.5%",
+            "economy" => "Tình hình kinh tế địa phương...",
+            "social" => "Tình hình xã hội, an ninh...",
+            "disaster_type" => "Ví dụ: Bão, Lũ lụt, Sạt lở",
+            "risk_areas" => "Khu vực có nguy cơ cao...",
+            "rescue_forces" => "Lực lượng, phương tiện cứu hộ...",
+            "evacuation_plan" => "Phương án di dời, sơ tán...",
+            "reform_content" => "Nội dung cải cách hành chính...",
+            "procedures" => "Các thủ tục hành chính...",
+            
+            // Sao lục / Phụ lục
+            "original_document" or "original_saoy" => "Ví dụ: QĐ số 123/QĐ-UBND ngày 01/3/2026",
+            "extract_section" => "Phần nội dung cần trích sao...",
+            "document_ref" => "Ví dụ: Số 456/BC-UBND",
+            "documents" => "Danh sách văn bản kèm theo...",
+            "parent_document" => "Ví dụ: QĐ số 789/QĐ-UBND",
+            "appendix_title" => "Ví dụ: Danh sách cán bộ",
+            
+            _ => $"Nhập thông tin {FormatFieldName(field).ToLower()}..."
         };
     }
 
@@ -785,9 +1065,18 @@ public partial class AIComposeDialog : Window
     {
         return field switch
         {
+            // Các trường cần nhập nhiều dòng
             "content" or "achievements" or "challenges" or "tasks" or "proposals" 
                 or "situation" or "results" or "members" or "articles" or "program"
-                or "future_plans" or "legal_basis" or "violation" or "penalty" => 120,
+                or "future_plans" or "legal_basis" or "violation" or "penalty"
+                or "objectives" or "conclusion" or "agenda" or "participants"
+                or "students" or "measures" or "prevention_measures" or "statistics"
+                or "clinical_results" or "treatment_plan" or "procedures"
+                or "curriculum_plan" or "quality_stats" or "rescue_forces"
+                or "evacuation_plan" or "reform_content" or "economy" or "social"
+                or "collective_achievements" or "implementation" or "criteria_status"
+                or "next_plan" or "solutions" or "beneficiaries" or "recipients"
+                or "documents" or "extract_section" or "risk_areas" => 120,
             _ => 40
         };
     }

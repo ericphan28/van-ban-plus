@@ -217,14 +217,24 @@ public partial class DocumentListPage : Page
         var folders = _documentService.GetAllFolders();
         
         // Nếu chưa có folder hoặc ít hơn 5 folders -> chạy setup
+        // (Unified Wizard ở MainWindow đã xử lý first-run, đây là fallback)
         if (folders.Count < 5)
         {
+            var orgConfig = _documentService.GetOrganizationConfig();
+            if (!string.IsNullOrEmpty(orgConfig.Name))
+            {
+                // Đã có org config (từ Unified Wizard) nhưng folders bị mất → tạo lại
+                var setupService = new OrganizationSetupService(_documentService);
+                setupService.CreateDefaultStructure(orgConfig.Name, orgConfig.Type, orgConfig.Abbreviation);
+                LoadFolders();
+                return;
+            }
+            
             var result = MessageBox.Show(
-                "🏛️ CHÀO MỪNG BẠN ĐẾN VỚI AI VĂN BẢN!\n\n" +
-                "Đây là lần đầu bạn sử dụng hệ thống.\n" +
+                "🏛️ CẤU TRÚC THƯ MỤC CHƯA ĐƯỢC THIẾT LẬP\n\n" +
                 "Bạn có muốn thiết lập cấu trúc thư mục chuẩn cho cơ quan không?\n\n" +
-                "Hệ thống sẽ tự động tạo 11 phần chính với hơn 100 thư mục con theo quy định văn thư Nhà nước.",
-                "Thiết lập lần đầu",
+                "Hệ thống sẽ tự động tạo cấu trúc phù hợp với loại cơ quan.",
+                "Thiết lập thư mục",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
             
@@ -235,13 +245,11 @@ public partial class DocumentListPage : Page
                 
                 if (setupDialog.ShowDialog() == true)
                 {
-                    // Reload folders after setup
                     LoadFolders();
                 }
             }
             else
             {
-                // Tạo default folders cũ
                 _documentService.InitializeDefaultFolders();
             }
         }

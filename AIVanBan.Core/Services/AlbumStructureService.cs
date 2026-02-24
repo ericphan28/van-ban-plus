@@ -115,6 +115,24 @@ public class AlbumStructureService : IDisposable
             var truongTHCSTemplate = CreateTruongTHCSTemplate();
             collection.Insert(truongTHCSTemplate);
 
+            // CẤP TỈNH / HUYỆN — SỞ BAN NGÀNH
+            var soBanNganhTemplate = CreateSoBanNganhTemplate();
+            collection.Insert(soBanNganhTemplate);
+
+            // ĐƠN VỊ SỰ NGHIỆP
+            var benhVienTemplate = CreateBenhVienTemplate();
+            collection.Insert(benhVienTemplate);
+
+            var truongTHPTTemplate = CreateTruongTHPTTemplate();
+            collection.Insert(truongTHPTTemplate);
+
+            // ĐOÀN THỂ / TỔ CHỨC BỔ SUNG
+            var congDoanTemplate = CreateCongDoanTemplate();
+            collection.Insert(congDoanTemplate);
+
+            var trungTamVHTemplate = CreateTrungTamVanHoaTemplate();
+            collection.Insert(trungTamVHTemplate);
+
         }
     }
 
@@ -439,46 +457,46 @@ public class AlbumStructureService : IDisposable
         {
             Name = "Cấu trúc Album - Hội Nông dân",
             OrganizationType = "HoiNongDan",
-            Version = "1.0",
-            Description = "Cấu trúc album cho tổ chức Hội Nông dân",
+            Version = "2.0",
+            Description = "Cấu trúc album cho tổ chức Hội Nông dân các cấp",
             Source = "local",
             IsActive = true,
             Categories = new List<AlbumCategory>
             {
-                new AlbumCategory
-                {
-                    Name = "Đại hội - Hội nghị",
-                    Icon = "🎉",
-                    SortOrder = 1,
-                    SubCategories = new List<AlbumSubCategory>
-                    {
-                        new() { Name = "Đại hội Hội Nông dân", Icon = "🏛️", SortOrder = 1, AutoCreateYearFolder = true },
-                        new() { Name = "Hội nghị Ban chấp hành", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true },
-                    }
-                },
-                new AlbumCategory
-                {
-                    Name = "Hoạt động sản xuất",
-                    Icon = "🌾",
-                    SortOrder = 2,
-                    SubCategories = new List<AlbumSubCategory>
-                    {
-                        new() { Name = "Mô hình nông nghiệp", Icon = "🚜", SortOrder = 1, AutoCreateYearFolder = true },
-                        new() { Name = "Tập huấn kỹ thuật", Icon = "👨‍🌾", SortOrder = 2, AutoCreateYearFolder = true },
-                        new() { Name = "Chợ phiên - Hội chợ", Icon = "🛒", SortOrder = 3, AutoCreateYearFolder = true },
-                    }
-                },
-                new AlbumCategory
-                {
-                    Name = "Hoạt động xã hội",
-                    Icon = "❤️",
-                    SortOrder = 3,
-                    SubCategories = new List<AlbumSubCategory>
-                    {
-                        new() { Name = "Từ thiện - An sinh", Icon = "🎁", SortOrder = 1, AutoCreateYearFolder = true },
-                        new() { Name = "Văn nghệ - Thể thao", Icon = "🎤", SortOrder = 2, AutoCreateYearFolder = true },
-                    }
-                }
+                new AlbumCategory { Name = "Đại hội - Hội nghị", Icon = "🎉", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Đại hội Hội Nông dân", Icon = "🏛️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị Ban chấp hành", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tổng kết công tác Hội", Icon = "📊", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày thành lập HND 14/10", Icon = "🚩", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Sản xuất nông nghiệp", Icon = "🌾", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Mô hình nông nghiệp tiêu biểu", Icon = "🚜", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Nông nghiệp công nghệ cao", Icon = "🌱", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Chăn nuôi - Thủy sản", Icon = "🐄", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Trồng trọt - Vườn mẫu", Icon = "🌿", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Tập huấn - Chuyển giao", Icon = "🎓", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tập huấn kỹ thuật nông nghiệp", Icon = "👨‍🌾", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Chuyển giao khoa học kỹ thuật", Icon = "🔬", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Đào tạo nghề nông thôn", Icon = "📚", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Tham quan học tập mô hình", Icon = "🚌", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Kinh tế - Hợp tác", Icon = "💰", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Hợp tác xã nông nghiệp", Icon = "🤝", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Quỹ hỗ trợ nông dân", Icon = "💵", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Chợ phiên - Hội chợ nông sản", Icon = "🛒", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Sản phẩm OCOP", Icon = "⭐", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Nông thôn mới", Icon = "🏡", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Xây dựng nông thôn mới", Icon = "🏘️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Vệ sinh môi trường", Icon = "🌿", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Đường hoa - công trình", Icon = "🌸", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Hoạt động xã hội", Icon = "❤️", SortOrder = 6, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Từ thiện - An sinh", Icon = "🎁", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Văn nghệ - Thể thao", Icon = "🎵", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Nông dân sáng tạo", Icon = "🌟", SortOrder = 3, AutoCreateYearFolder = true }
+                }}
             }
         };
     }
@@ -489,28 +507,49 @@ public class AlbumStructureService : IDisposable
         {
             Name = "Đảng ủy Xã/Phường",
             OrganizationType = "DangUyXa",
-            Version = "1.0",
-            Description = "Cấu trúc album cho Đảng ủy cấp xã",
+            Version = "2.0",
+            Description = "Cấu trúc album cho Đảng ủy cấp xã/phường/thị trấn",
             Source = "local",
             IsActive = false,
             Categories = new List<AlbumCategory>
             {
                 new AlbumCategory { Name = "Đại hội Đảng", Icon = "🏛️", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Đại hội nhiệm kỳ", Icon = "🎉", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Đại hội điểm", Icon = "📍", SortOrder = 2, AutoCreateYearFolder = true }
+                    new() { Name = "Đại hội nhiệm kỳ Đảng bộ", Icon = "🎉", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Đại hội Chi bộ trực thuộc", Icon = "📍", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị giữa nhiệm kỳ", Icon = "📋", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Tổng kết công tác Đảng", Icon = "📊", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
                 new AlbumCategory { Name = "Sinh hoạt Đảng", Icon = "📋", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
                     new() { Name = "Hội nghị Ban chấp hành", Icon = "👥", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Sinh hoạt Chi bộ", Icon = "🏢", SortOrder = 2, AutoCreateYearFolder = true },
-                    new() { Name = "Học tập lý luận", Icon = "📚", SortOrder = 3, AutoCreateYearFolder = true }
+                    new() { Name = "Sinh hoạt Chi bộ định kỳ", Icon = "🏢", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Sinh hoạt chuyên đề", Icon = "📚", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Kết nạp Đảng viên mới", Icon = "⭐", SortOrder = 4, AutoCreateYearFolder = true },
+                    new() { Name = "Chuyển đảng chính thức", Icon = "🎖️", SortOrder = 5, AutoCreateYearFolder = true },
+                    new() { Name = "Trao tặng Huy hiệu Đảng", Icon = "🏅", SortOrder = 6, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Kiểm tra - Giám sát", Icon = "🔍", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Kiểm tra nội bộ", Icon = "✅", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Giám sát cơ sở", Icon = "👀", SortOrder = 2, AutoCreateYearFolder = true }
+                new AlbumCategory { Name = "Tổ chức - Cán bộ", Icon = "👔", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Quy hoạch cán bộ", Icon = "📋", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Bổ nhiệm - Luân chuyển", Icon = "🔄", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Đào tạo - Bồi dưỡng CB", Icon = "🎓", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Đánh giá xếp loại đảng viên", Icon = "📝", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Tuyên giáo", Icon = "📢", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Tuyên truyền", Icon = "📣", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Văn hóa - Văn nghệ", Icon = "🎭", SortOrder = 2, AutoCreateYearFolder = true }
+                new AlbumCategory { Name = "Kiểm tra - Giám sát", Icon = "🔍", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Kiểm tra tổ chức Đảng", Icon = "✅", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Giám sát đảng viên", Icon = "👀", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Xử lý kỷ luật Đảng", Icon = "⚖️", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Giải quyết khiếu nại, tố cáo", Icon = "📨", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Tuyên giáo - Dân vận", Icon = "📢", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tuyên truyền chủ trương, NQ", Icon = "📣", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Học tập tư tưởng HCM", Icon = "📖", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Văn hóa - Văn nghệ Đảng bộ", Icon = "🎭", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Công tác dân vận", Icon = "🤝", SortOrder = 4, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày thành lập Đảng 3/2", Icon = "🚩", SortOrder = 5, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Sơ kết - Tổng kết", Icon = "📊", SortOrder = 6, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Sơ kết 6 tháng", Icon = "📈", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Tổng kết năm", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị điển hình tiên tiến", Icon = "🌟", SortOrder = 3, AutoCreateYearFolder = true }
                 }}
             }
         };
@@ -522,8 +561,8 @@ public class AlbumStructureService : IDisposable
         {
             Name = "HĐND Xã/Phường",
             OrganizationType = "HDNDXa",
-            Version = "1.0",
-            Description = "Cấu trúc album cho Hội đồng nhân dân cấp xã",
+            Version = "2.0",
+            Description = "Cấu trúc album cho Hội đồng nhân dân cấp xã/phường/thị trấn",
             Source = "local",
             IsActive = false,
             Categories = new List<AlbumCategory>
@@ -531,15 +570,30 @@ public class AlbumStructureService : IDisposable
                 new AlbumCategory { Name = "Kỳ họp HĐND", Icon = "🏛️", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
                     new() { Name = "Kỳ họp thường lệ", Icon = "📋", SortOrder = 1, AutoCreateYearFolder = true },
                     new() { Name = "Kỳ họp bất thường", Icon = "⚡", SortOrder = 2, AutoCreateYearFolder = true },
-                    new() { Name = "Tiếp xúc cử tri", Icon = "👥", SortOrder = 3, AutoCreateYearFolder = true }
+                    new() { Name = "Kỳ họp chuyên đề", Icon = "📝", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Phên thảo luận - chất vấn", Icon = "🗣️", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
                 new AlbumCategory { Name = "Giám sát", Icon = "🔍", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
                     new() { Name = "Giám sát chuyên đề", Icon = "📊", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Giám sát định kỳ", Icon = "📅", SortOrder = 2, AutoCreateYearFolder = true }
+                    new() { Name = "Giám sát định kỳ", Icon = "📅", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Giám sát đầu tư công", Icon = "🏗️", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Giám sát nghi quyết", Icon = "📄", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Đại biểu HĐND", Icon = "👤", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Hoạt động đại biểu", Icon = "💼", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Bầu cử", Icon = "🗳️", SortOrder = 2, AutoCreateYearFolder = true }
+                new AlbumCategory { Name = "Tiếp xúc cử tri", Icon = "👥", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tiếp xúc trước kỳ họp", Icon = "🗣️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Tiếp xúc sau kỳ họp", Icon = "💬", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tiếp công dân", Icon = "🤝", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Giải quyết kiến nghị", Icon = "📨", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Bầu cử - Nhân sự", Icon = "🗳️", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Bầu cử đại biểu HĐND", Icon = "🗳️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Bầu cử bổ sung", Icon = "✅", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Bầu Trưởng, Phó thôn/ấp/khu", Icon = "👤", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Sơ kết - Tổng kết", Icon = "📊", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tổng kết nhiệm kỳ", Icon = "📈", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Tổng kết công tác năm", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Khen thưởng đại biểu", Icon = "🏅", SortOrder = 3, AutoCreateYearFolder = true }
                 }}
             }
         };
@@ -551,8 +605,8 @@ public class AlbumStructureService : IDisposable
         {
             Name = "Công an Xã/Phường",
             OrganizationType = "CongAnXa",
-            Version = "1.0",
-            Description = "Cấu trúc album cho Công an cấp xã",
+            Version = "2.0",
+            Description = "Cấu trúc album cho Công an cấp xã/phường/thị trấn",
             Source = "local",
             IsActive = false,
             Categories = new List<AlbumCategory>
@@ -560,16 +614,35 @@ public class AlbumStructureService : IDisposable
                 new AlbumCategory { Name = "An ninh - Trật tự", Icon = "🚔", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
                     new() { Name = "Tuần tra kiểm soát", Icon = "👮", SortOrder = 1, AutoCreateYearFolder = true },
                     new() { Name = "Bảo vệ sự kiện", Icon = "🛡️", SortOrder = 2, AutoCreateYearFolder = true },
-                    new() { Name = "Phòng cháy chữa cháy", Icon = "🚒", SortOrder = 3, AutoCreateYearFolder = true }
+                    new() { Name = "Phòng cháy chữa cháy", Icon = "🚒", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "An toàn giao thông", Icon = "🚦", SortOrder = 4, AutoCreateYearFolder = true },
+                    new() { Name = "Phòng chống tội phạm", Icon = "⛔", SortOrder = 5, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Hành chính", Icon = "📋", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Cấp CCCD", Icon = "🪪", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Đăng ký tạm trú", Icon = "🏠", SortOrder = 2, AutoCreateYearFolder = true },
-                    new() { Name = "Quản lý cư trú", Icon = "📝", SortOrder = 3, AutoCreateYearFolder = true }
+                new AlbumCategory { Name = "Dịch vụ hành chính", Icon = "📋", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Cấp CCCD / Định danh", Icon = "🪪", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Đăng ký tạm trú/cư trú", Icon = "🏠", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Dịch vụ công trực tuyến", Icon = "📱", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Cấp giấy phép, giấy tờ", Icon = "📝", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Tuyên truyền", Icon = "📢", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                new AlbumCategory { Name = "Phong trào - Thi đua", Icon = "🏅", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Phong trào Toàn dân BVANTQ", Icon = "🤝", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Hội thi nghiệp vụ", Icon = "🏆", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Chiến sĩ thi đua", Icon = "⭐", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Tuyên truyền - Pháp luật", Icon = "📢", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
                     new() { Name = "Tuyên truyền pháp luật", Icon = "⚖️", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Phổ biến kiến thức", Icon = "📚", SortOrder = 2, AutoCreateYearFolder = true }
+                    new() { Name = "Phòng chống ma túy", Icon = "🚫", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "An toàn mạng", Icon = "🔒", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Huấn luyện - Đào tạo", Icon = "🎓", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Huấn luyện nghiệp vụ", Icon = "💪", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Đào tạo bồi dưỡng", Icon = "📚", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Diễn tập PCCC - CNCH", Icon = "🚒", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Lễ kỷ niệm - Tổng kết", Icon = "🎉", SortOrder = 6, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Ngày truyền thống CA 19/8", Icon = "🚩", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Tổng kết công tác năm", Icon = "📊", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Khen thưởng - Ghi công", Icon = "🏆", SortOrder = 3, AutoCreateYearFolder = true }
                 }}
             }
         };
@@ -581,24 +654,38 @@ public class AlbumStructureService : IDisposable
         {
             Name = "Ban CHQS Xã/Phường",
             OrganizationType = "QuanSuXa",
-            Version = "1.0",
-            Description = "Cấu trúc album cho Ban Chỉ huy Quân sự cấp xã",
+            Version = "2.0",
+            Description = "Cấu trúc album cho Ban Chỉ huy Quân sự cấp xã/phường/thị trấn",
             Source = "local",
             IsActive = false,
             Categories = new List<AlbumCategory>
             {
                 new AlbumCategory { Name = "Huấn luyện - Diễn tập", Icon = "⚔️", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Huấn luyện dân quân", Icon = "🎖️", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Diễn tập chiến đấu", Icon = "💪", SortOrder = 2, AutoCreateYearFolder = true },
-                    new() { Name = "Hội thao - Hội thi", Icon = "🏅", SortOrder = 3, AutoCreateYearFolder = true }
+                    new() { Name = "Huấn luyện dân quân tự vệ", Icon = "🎖️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Diễn tập chiến đấu trị an", Icon = "💪", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Hội thao quân sự - thể thao", Icon = "🏅", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Bắn đạn thật", Icon = "🎯", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Tuyển quân", Icon = "🪖", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Tuyển chọn", Icon = "✅", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Giao quân", Icon = "🚌", SortOrder = 2, AutoCreateYearFolder = true }
+                new AlbumCategory { Name = "Tuyển quân - Nghĩa vụ", Icon = "🪖", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Khám tuyển nghĩa vụ QS", Icon = "✅", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Lễ giao nhận quân", Icon = "🚌", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Đón quân nhân xuất ngũ", Icon = "🎉", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Giáo dục QP-AN", Icon = "📚", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
                 new AlbumCategory { Name = "Phòng thủ dân sự", Icon = "🛡️", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
                     new() { Name = "Phòng chống thiên tai", Icon = "🌊", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Cứu nạn cứu hộ", Icon = "🚑", SortOrder = 2, AutoCreateYearFolder = true }
+                    new() { Name = "Cứu nạn cứu hộ", Icon = "🚑", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Khắc phục hậu quả", Icon = "🛠️", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Chính sách hậu phương", Icon = "❤️", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Thăm gia đình chính sách", Icon = "🏠", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Dặt vòng hoa, tưởng niệm", Icon = "🕯️", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tặng quà quân nhân, gia đình", Icon = "🎁", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Lễ kỷ niệm - Tổng kết", Icon = "🎉", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Ngày thành lập QĐND 22/12", Icon = "🚩", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Tổng kết công tác QS-QP năm", Icon = "📊", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Khen thưởng - Ghi công", Icon = "🏆", SortOrder = 3, AutoCreateYearFolder = true }
                 }}
             }
         };
@@ -716,28 +803,44 @@ public class AlbumStructureService : IDisposable
         {
             Name = "Hội Cựu chiến binh",
             OrganizationType = "HoiCCB",
-            Version = "1.0",
-            Description = "Cấu trúc album cho Hội Cựu chiến binh cấp xã",
+            Version = "2.0",
+            Description = "Cấu trúc album cho Hội Cựu chiến binh các cấp",
             Source = "local",
             IsActive = false,
             Categories = new List<AlbumCategory>
             {
                 new AlbumCategory { Name = "Đại hội - Hội nghị", Icon = "🎖️", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Đại hội Hội CCB", Icon = "🏛️", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Hội nghị Ban chấp hành", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true }
+                    new() { Name = "Đại hội Hội CCB nhiệm kỳ", Icon = "🏛️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị Ban chấp hành", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tổng kết công tác Hội", Icon = "📊", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày thành lập Hội CCB 6/12", Icon = "🚩", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Hoạt động Hội", Icon = "👥", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Sinh hoạt Hội", Icon = "🏢", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Học tập chính trị", Icon = "📚", SortOrder = 2, AutoCreateYearFolder = true }
+                new AlbumCategory { Name = "Sinh hoạt Hội", Icon = "👥", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Sinh hoạt Chi hội định kỳ", Icon = "🏢", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Học tập chính trị", Icon = "📚", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Kết nạp hội viên mới", Icon = "⭐", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Phát triển hội viên", Icon = "📈", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Hoạt động xã hội", Icon = "❤️", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                new AlbumCategory { Name = "Truyền thống - Tưởng niệm", Icon = "🕯️", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
                     new() { Name = "Uống nước nhớ nguồn", Icon = "🙏", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Từ thiện - Tương trợ", Icon = "🎁", SortOrder = 2, AutoCreateYearFolder = true },
-                    new() { Name = "Ngày thương binh liệt sĩ", Icon = "🕯️", SortOrder = 3, AutoCreateYearFolder = true }
+                    new() { Name = "Ngày thương binh liệt sĩ 27/7", Icon = "🕯️", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Thăm chiến trường xưa", Icon = "🌾", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Gặp mặt truyền thống", Icon = "🤝", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Phát triển kinh tế", Icon = "💰", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Mô hình kinh tế", Icon = "🏪", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Giúp đỡ hội viên", Icon = "🤝", SortOrder = 2, AutoCreateYearFolder = true }
+                new AlbumCategory { Name = "Từ thiện - Tương trợ", Icon = "❤️", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Giúp đỡ hội viên khó khăn", Icon = "🎁", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Xây sửa nhà tình nghĩa", Icon = "🏠", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tặng quà Tết, lễ", Icon = "🎁", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Phát triển kinh tế", Icon = "💰", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Mô hình kinh tế giỏi", Icon = "🏪", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Hợp tác xã CCB", Icon = "🤝", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Dạy nghề - Việc làm", Icon = "💼", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "An ninh - Trật tự", Icon = "🛡️", SortOrder = 6, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Bảo vệ ANTQ", Icon = "🚔", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Phòng chống tệ nạn XH", Icon = "⛔", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tự quản khu dân cư", Icon = "🏡", SortOrder = 3, AutoCreateYearFolder = true }
                 }}
             }
         };
@@ -749,29 +852,39 @@ public class AlbumStructureService : IDisposable
         {
             Name = "Hội Người cao tuổi",
             OrganizationType = "HoiNCT",
-            Version = "1.0",
-            Description = "Cấu trúc album cho Hội Người cao tuổi cấp xã",
+            Version = "2.0",
+            Description = "Cấu trúc album cho Hội Người cao tuổi các cấp",
             Source = "local",
             IsActive = false,
             Categories = new List<AlbumCategory>
             {
                 new AlbumCategory { Name = "Đại hội - Hội nghị", Icon = "👴", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Đại hội Hội NCT", Icon = "🎉", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Hội nghị Ban chấp hành", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true }
+                    new() { Name = "Đại hội Hội NCT nhiệm kỳ", Icon = "🎉", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị Ban chấp hành", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tổng kết công tác năm", Icon = "📊", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày Quốc tế NCT 1/10", Icon = "🚩", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
                 new AlbumCategory { Name = "Chăm sóc sức khỏe", Icon = "❤️", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
                     new() { Name = "Khám bệnh từ thiện", Icon = "🏥", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Tư vấn sức khỏe", Icon = "👨‍⚕️", SortOrder = 2, AutoCreateYearFolder = true }
+                    new() { Name = "Tư vấn sức khỏe", Icon = "👨‍⚕️", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Cấp thuốc miễn phí", Icon = "💊", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Tập dưỡng sinh - Yoga", Icon = "🧘", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Hoạt động vui chơi", Icon = "🎭", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Văn nghệ", Icon = "🎤", SortOrder = 1, AutoCreateYearFolder = true },
+                new AlbumCategory { Name = "Văn hóa - Văn nghệ", Icon = "🎭", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Văn nghệ quần chúng", Icon = "🎵", SortOrder = 1, AutoCreateYearFolder = true },
                     new() { Name = "Thể dục - Thể thao", Icon = "🧘", SortOrder = 2, AutoCreateYearFolder = true },
-                    new() { Name = "Du lịch", Icon = "🚌", SortOrder = 3, AutoCreateYearFolder = true }
+                    new() { Name = "Câu lạc bộ NCT", Icon = "🎶", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Du lịch, tham quan", Icon = "🚌", SortOrder = 4, AutoCreateYearFolder = true }
                 }},
-                new AlbumCategory { Name = "Hoạt động xã hội", Icon = "🎁", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
-                    new() { Name = "Tết Sum vầy", Icon = "🏮", SortOrder = 1, AutoCreateYearFolder = true },
-                    new() { Name = "Mừng thọ", Icon = "🎂", SortOrder = 2, AutoCreateYearFolder = true },
-                    new() { Name = "Tặng quà", Icon = "🎁", SortOrder = 3, AutoCreateYearFolder = true }
+                new AlbumCategory { Name = "Mừng thọ - Lễ hội", Icon = "🎂", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Lễ mừng thọ", Icon = "🎂", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Tết Sum vầy", Icon = "🏮", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tặng quà dịp lễ, Tết", Icon = "🎁", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Hoạt động xã hội", Icon = "🤝", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tư vấn pháp luật, hòa giải", Icon = "⚖️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Xây dựng gia đình gương mẫu", Icon = "🏠", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Người cao tuổi làm kinh tế giỏi", Icon = "🌟", SortOrder = 3, AutoCreateYearFolder = true }
                 }}
             }
         };
@@ -916,6 +1029,253 @@ public class AlbumStructureService : IDisposable
         };
     }
 
+    // ===== TEMPLATES MỚI: Sở/Ban/Ngành, Bệnh viện, THPT, Công đoàn, TT Văn hóa =====
+
+    private AlbumStructureTemplate CreateSoBanNganhTemplate()
+    {
+        return new AlbumStructureTemplate
+        {
+            Name = "Sở / Phòng / Ban ngành",
+            OrganizationType = "SoBanNganh",
+            Version = "1.0",
+            Description = "Cấu trúc album cho Sở, Phòng, Ban ngành cấp tỉnh/huyện",
+            Source = "local",
+            IsActive = false,
+            Categories = new List<AlbumCategory>
+            {
+                new AlbumCategory { Name = "Hội nghị - Hội thảo", Icon = "🏛️", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Hội nghị triển khai nhiệm vụ", Icon = "📋", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Hội thảo khoa học", Icon = "🔬", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị sơ kết, tổng kết", Icon = "📊", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị chuyên đề", Icon = "📝", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Hoạt động chuyên môn", Icon = "💼", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Kiểm tra - Thanh tra", Icon = "🔍", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Khảo sát thực địa", Icon = "📍", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Nghiệm thu - Thẩm định", Icon = "✅", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Ban hành văn bản, NQ", Icon = "📄", SortOrder = 4, AutoCreateYearFolder = true },
+                    new() { Name = "Tiếp công dân - Giải quyết ĐT", Icon = "🤝", SortOrder = 5, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Đào tạo - Tập huấn", Icon = "🎓", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tập huấn nghiệp vụ", Icon = "📚", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Đào tạo, bồi dưỡng CBCC", Icon = "👨‍💼", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Hướng dẫn cơ sở", Icon = "📋", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Công trình - Dự án", Icon = "🏗️", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Khởi công công trình", Icon = "🎉", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Khánh thành - Bàn giao", Icon = "✂️", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Giám sát tiến độ", Icon = "📊", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Chương trình, đề án trọng điểm", Icon = "📈", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Thi đua - Khen thưởng", Icon = "🏆", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Hội nghị điển hình tiên tiến", Icon = "🌟", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Khen thưởng - Ghi công", Icon = "🏅", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Hội thi - Hội thao ngành", Icon = "🎯", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Lễ kỷ niệm - Đối ngoại", Icon = "🎉", SortOrder = 6, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Ngày truyền thống ngành", Icon = "🚩", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Lễ kỷ niệm thành lập", Icon = "🎊", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tiếp đoàn - Hợp tác", Icon = "🤝", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Ký kết liên tịch", Icon = "📝", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Đảng - Đoàn thể cơ quan", Icon = "📋", SortOrder = 7, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Sinh hoạt Đảng bộ/Chi bộ", Icon = "🏛️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Công đoàn cơ quan", Icon = "👥", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Đoàn Thanh niên cơ quan", Icon = "🎗️", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Phụ nữ cơ quan", Icon = "👩", SortOrder = 4, AutoCreateYearFolder = true }
+                }}
+            }
+        };
+    }
+
+    private AlbumStructureTemplate CreateBenhVienTemplate()
+    {
+        return new AlbumStructureTemplate
+        {
+            Name = "Bệnh viện / Trung tâm Y tế",
+            OrganizationType = "BenhVien",
+            Version = "1.0",
+            Description = "Cấu trúc album cho Bệnh viện, Trung tâm Y tế các cấp",
+            Source = "local",
+            IsActive = false,
+            Categories = new List<AlbumCategory>
+            {
+                new AlbumCategory { Name = "Khám chữa bệnh", Icon = "🏥", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Hoạt động khám bệnh", Icon = "👨‍⚕️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Phẫu thuật - Thủ thuật", Icon = "🩺", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Cấp cứu", Icon = "🚑", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Trang thiết bị y tế mới", Icon = "💉", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Y tế dự phòng", Icon = "💊", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tiêm chủng mở rộng", Icon = "💉", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Phòng chống dịch bệnh", Icon = "😷", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Dinh dưỡng - VSATTP", Icon = "🥗", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Sức khỏe cộng đồng", Icon = "🌿", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Đào tạo - Nghiên cứu", Icon = "🎓", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Đào tạo liên tục", Icon = "📚", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Nghiên cứu khoa học", Icon = "🔬", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Chuyển giao kỹ thuật", Icon = "🏥", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị khoa học", Icon = "📊", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Khám từ thiện - Cộng đồng", Icon = "❤️", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Khám bệnh từ thiện", Icon = "🤝", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Phát thuốc miễn phí", Icon = "💊", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Chăm sóc bà mẹ trẻ em", Icon = "👶", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Truyền thông sức khỏe", Icon = "📢", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Thi đua - Khen thưởng", Icon = "🏆", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Ngày Thầy thuốc VN 27/2", Icon = "🚩", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Hội thi tay nghề", Icon = "🎯", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Khen thưởng - Ghi công", Icon = "🏅", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Cơ sở vật chất", Icon = "🏗️", SortOrder = 6, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Xây dựng, nâng cấp BV", Icon = "🏗️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Khánh thành khoa/phòng mới", Icon = "✂️", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tiếp nhận trang thiết bị", Icon = "📦", SortOrder = 3, AutoCreateYearFolder = true }
+                }}
+            }
+        };
+    }
+
+    private AlbumStructureTemplate CreateTruongTHPTTemplate()
+    {
+        return new AlbumStructureTemplate
+        {
+            Name = "Trường THPT",
+            OrganizationType = "TruongTHPT",
+            Version = "1.0",
+            Description = "Cấu trúc album cho Trường Trung học phổ thông",
+            Source = "local",
+            IsActive = false,
+            Categories = new List<AlbumCategory>
+            {
+                new AlbumCategory { Name = "Hoạt động giảng dạy", Icon = "📖", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Lớp học - Giờ dạy", Icon = "✍️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Dự giờ - Thao giảng", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Thí nghiệm - Thực hành", Icon = "🔬", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Hoạt động ngoại khóa", Icon = "🎨", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Đoàn - Hội học sinh", Icon = "🎗️", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Đại hội Đoàn trường", Icon = "🏛️", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Kết nạp Đoàn viên", Icon = "🎊", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Tình nguyện - Thanh niên", Icon = "❤️", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Câu lạc bộ học sinh", Icon = "🎶", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Sự kiện - Lễ hội", Icon = "🎉", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Khai giảng - Bế giảng", Icon = "🏫", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày nhà giáo 20/11", Icon = "👩‍🏫", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Lễ trưởng thành", Icon = "🎓", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày thành lập Đoàn 26/3", Icon = "🎗️", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Thi cử - Tuyển sinh", Icon = "🏆", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Học sinh giỏi cấp trường", Icon = "🌟", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "HSG cấp tỉnh / quốc gia", Icon = "🥇", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Thi tốt nghiệp THPT", Icon = "📝", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Tư vấn tuyển sinh ĐH", Icon = "🎓", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Thể thao - Văn nghệ", Icon = "⚽", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Hội khỏe Phù Đổng", Icon = "🏃", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Giải thể thao trường", Icon = "⚽", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Văn nghệ - Hội diễn", Icon = "🎤", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Cơ sở vật chất", Icon = "🏫", SortOrder = 6, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Phòng học - Thư viện", Icon = "📚", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Phòng thí nghiệm", Icon = "🔬", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Sân trường - Cảnh quan", Icon = "🌳", SortOrder = 3, AutoCreateYearFolder = true }
+                }}
+            }
+        };
+    }
+
+    private AlbumStructureTemplate CreateCongDoanTemplate()
+    {
+        return new AlbumStructureTemplate
+        {
+            Name = "Công đoàn",
+            OrganizationType = "CongDoan",
+            Version = "1.0",
+            Description = "Cấu trúc album cho tổ chức Công đoàn các cấp",
+            Source = "local",
+            IsActive = false,
+            Categories = new List<AlbumCategory>
+            {
+                new AlbumCategory { Name = "Đại hội - Hội nghị", Icon = "🏛️", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Đại hội Công đoàn", Icon = "🎉", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị Ban chấp hành", Icon = "📋", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Hội nghị cán bộ, công chức", Icon = "👥", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày thành lập CĐ VN 28/7", Icon = "🚩", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Chăm lo đời sống", Icon = "❤️", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tết Sum vầy", Icon = "🏮", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Tháng Công nhân", Icon = "👷", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Thăm ĐV ốm đau, khó khăn", Icon = "🤝", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Nhà ở Mái ấm CĐ", Icon = "🏠", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Thi đua - Phong trào", Icon = "🏆", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Lao động giỏi, sáng tạo", Icon = "⭐", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Phong trào xanh-sạch-đẹp", Icon = "🌿", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Giỏi việc nước, đảm việc nhà", Icon = "👩", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Hội thi - Hội thao CĐ", Icon = "🎯", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Văn hóa - Thể thao", Icon = "🎭", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Văn nghệ chào mừng", Icon = "🎤", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Giải thể thao CĐ", Icon = "⚽", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày Quốc tế Phụ nữ 8/3", Icon = "🌹", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày Phụ nữ VN 20/10", Icon = "🌸", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Đào tạo - Pháp luật", Icon = "📚", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Tập huấn cán bộ CĐ", Icon = "🎓", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Tuyên truyền Luật LĐ", Icon = "⚖️", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Đối thoại, thương lượng", Icon = "💬", SortOrder = 3, AutoCreateYearFolder = true }
+                }}
+            }
+        };
+    }
+
+    private AlbumStructureTemplate CreateTrungTamVanHoaTemplate()
+    {
+        return new AlbumStructureTemplate
+        {
+            Name = "Trung tâm VH / Thư viện / Bảo tàng",
+            OrganizationType = "TrungTamVanHoa",
+            Version = "1.0",
+            Description = "Cấu trúc album cho Trung tâm Văn hóa, Thư viện, Bảo tàng",
+            Source = "local",
+            IsActive = false,
+            Categories = new List<AlbumCategory>
+            {
+                new AlbumCategory { Name = "Sự kiện văn hóa", Icon = "🎭", SortOrder = 1, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Biểu diễn nghệ thuật", Icon = "🎤", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Liên hoan văn nghệ", Icon = "🎶", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Ngày Sách VN 21/4", Icon = "📖", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Lễ hội truyền thống", Icon = "🏮", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Triển lãm - Trưng bày", Icon = "🖼️", SortOrder = 2, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Triển lãm ảnh", Icon = "📸", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Triển lãm hiện vật", Icon = "🏺", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Trưng bày chuyên đề", Icon = "🎨", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Hoạt động cộng đồng", Icon = "🤝", SortOrder = 3, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Sinh hoạt CLB", Icon = "👥", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Lớp học năng khiếu", Icon = "🎨", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Đọc sách cộng đồng", Icon = "📚", SortOrder = 3, AutoCreateYearFolder = true },
+                    new() { Name = "Xe thư viện lưu động", Icon = "🚌", SortOrder = 4, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Di sản - Bảo tồn", Icon = "🏛️", SortOrder = 4, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Di tích lịch sử", Icon = "🗿", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Di sản văn hóa phi vật thể", Icon = "🎭", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Sưu tầm hiện vật", Icon = "🔍", SortOrder = 3, AutoCreateYearFolder = true }
+                }},
+                new AlbumCategory { Name = "Cơ sở vật chất", Icon = "🏗️", SortOrder = 5, SubCategories = new List<AlbumSubCategory> {
+                    new() { Name = "Nâng cấp, sửa chữa", Icon = "🔧", SortOrder = 1, AutoCreateYearFolder = true },
+                    new() { Name = "Thiết bị mới", Icon = "📦", SortOrder = 2, AutoCreateYearFolder = true },
+                    new() { Name = "Không gian - Cảnh quan", Icon = "🌳", SortOrder = 3, AutoCreateYearFolder = true }
+                }}
+            }
+        };
+    }
+
     public List<AlbumStructureTemplate> GetAllTemplates()
     {
         var collection = _db.GetCollection<AlbumStructureTemplate>("albumTemplates");
@@ -949,6 +1309,103 @@ public class AlbumStructureService : IDisposable
             return true;
         }
         return false;
+    }
+
+    /// <summary>
+    /// Mapping từ OrganizationType enum → album template OrganizationType string.
+    /// Cho phép Unified Wizard kích hoạt đúng album template theo loại cơ quan.
+    /// </summary>
+    public bool ActivateTemplateByOrgType(OrganizationType orgType)
+    {
+        var templateOrgTypeString = MapOrgTypeToTemplateKey(orgType);
+        var collection = _db.GetCollection<AlbumStructureTemplate>("albumTemplates");
+        
+        // Tìm template phù hợp
+        var template = collection.FindAll()
+            .FirstOrDefault(t => t.OrganizationType == templateOrgTypeString);
+        
+        if (template == null)
+        {
+            // Fallback: dùng XaPhuong (đầy đủ nhất) nếu không tìm thấy template chuyên biệt
+            template = collection.FindAll()
+                .FirstOrDefault(t => t.OrganizationType == "XaPhuong");
+        }
+        
+        if (template != null)
+        {
+            return SetActiveTemplate(template.Id);
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// Mapping OrganizationType enum → string key dùng trong album templates
+    /// </summary>
+    public static string MapOrgTypeToTemplateKey(OrganizationType orgType)
+    {
+        return orgType switch
+        {
+            // Chính quyền cấp xã/phường → XaPhuong (đầy đủ nhất)
+            OrganizationType.UbndXa => "XaPhuong",
+            OrganizationType.UbndTinh => "SoBanNganh",
+            OrganizationType.VanPhong => "SoBanNganh",
+            OrganizationType.TrungTamHanhChinh => "SoBanNganh",
+            
+            // HĐND
+            OrganizationType.HdndXa or OrganizationType.HdndTinh => "HDNDXa",
+            
+            // Đảng
+            OrganizationType.DangUyXa or OrganizationType.DangUyTinh
+                or OrganizationType.ChiBoDang or OrganizationType.DangBo => "DangUyXa",
+            
+            // Ban của Đảng → dùng DangUyXa (cùng hệ thống Đảng)
+            OrganizationType.BanDanVan or OrganizationType.BanToChuc
+                or OrganizationType.BanTuyenGiao or OrganizationType.BanKiemTra
+                or OrganizationType.BanNoiChinh or OrganizationType.BanKinhTe
+                or OrganizationType.BanVanHoa => "DangUyXa",
+            
+            // Mặt trận - Đoàn thể
+            OrganizationType.MatTran => "MTTQ",
+            OrganizationType.HoiNongDan => "HoiNongDan",
+            OrganizationType.HoiPhuNu => "HoiPhuNu",
+            OrganizationType.DoanThanhNien => "DoanTN",
+            OrganizationType.HoiCuuChienBinh => "HoiCCB",
+            OrganizationType.CongDoan => "CongDoan",
+            OrganizationType.HoiChapThap => "MTTQ",
+            OrganizationType.HoiKhuyenHoc => "HoiNCT",
+            
+            // Sở - Ban - Ngành → SoBanNganh (template chuyên dụng)
+            OrganizationType.SoNoiVu or OrganizationType.SoTaiChinh
+                or OrganizationType.SoKhoHo or OrganizationType.SoGiaoDuc
+                or OrganizationType.SoYTe or OrganizationType.SoNongNghiep
+                or OrganizationType.SoCongThuong or OrganizationType.SoVanHoa
+                or OrganizationType.SoTaiNguyen or OrganizationType.SoXayDung
+                or OrganizationType.SoGiaoThong or OrganizationType.SoTuPhap
+                or OrganizationType.SoThongTin or OrganizationType.SoLaoDong
+                or OrganizationType.SoKhoaHoc => "SoBanNganh",
+            
+            // Giáo dục
+            OrganizationType.TruongMamNon => "TruongMN",
+            OrganizationType.TruongTieuHoc => "TruongTH",
+            OrganizationType.TruongTHCS => "TruongTHCS",
+            OrganizationType.TruongTHPT => "TruongTHPT",
+            OrganizationType.TruongDaiHoc => "TruongTHPT",  // Gần nhất
+            
+            // Y tế
+            OrganizationType.TramYTe => "TramYTe",
+            OrganizationType.TrungTamYTe or OrganizationType.BenhVien => "BenhVien",
+            
+            // Công an
+            OrganizationType.CongAn => "CongAnXa",
+
+            // Văn hóa - Sự nghiệp
+            OrganizationType.TrungTamVanHoa or OrganizationType.ThuVien
+                or OrganizationType.BaoTangVienDi => "TrungTamVanHoa",
+            
+            // Khác → XaPhuong (đầy đủ nhất)
+            _ => "XaPhuong"
+        };
     }
 
     #endregion

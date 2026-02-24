@@ -163,13 +163,39 @@ public partial class TemplateManagementPage : Page
             var template = _documentService.GetTemplateById(id);
             if (template != null)
             {
-                // Increment usage count
-                template.UsageCount++;
-                _documentService.UpdateTemplate(template);
-                
-                // Navigate to AI Generator with this template pre-loaded
-                MessageBox.Show($"Sử dụng mẫu: {template.Name}\n\nChức năng này sẽ chuyển đến trang AI Generator và tự động load mẫu.", 
-                    "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    // Mở AI Compose Dialog với template đã chọn sẵn
+                    var dialog = new AIComposeDialog(_documentService, preSelectedTemplateId: template.Id);
+                    dialog.Owner = Window.GetWindow(this);
+                    
+                    if (dialog.ShowDialog() == true && dialog.GeneratedDocument != null)
+                    {
+                        // Tăng usage count
+                        template.UsageCount++;
+                        _documentService.UpdateTemplate(template);
+                        
+                        // Lưu document vào DB
+                        _documentService.AddDocument(dialog.GeneratedDocument);
+                        
+                        MessageBox.Show(
+                            $"✅ Đã tạo và lưu văn bản:\n\n" +
+                            $"📋 {dialog.GeneratedDocument.Title}\n" +
+                            $"📁 Loại: {dialog.GeneratedDocument.Type.GetDisplayName()}\n" +
+                            $"🏢 Cơ quan: {dialog.GeneratedDocument.Issuer}",
+                            "Thành công",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"❌ Lỗi khi tạo văn bản:\n{ex.Message}",
+                        "Lỗi",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
             }
         }
     }

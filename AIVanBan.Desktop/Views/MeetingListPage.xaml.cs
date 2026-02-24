@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using AIVanBan.Core.Models;
 using AIVanBan.Core.Services;
 using MaterialDesignThemes.Wpf;
@@ -19,11 +20,25 @@ public partial class MeetingListPage : Page
     private List<Meeting> _currentMeetings = new();
     private bool _isLoading = true; // Block filter events during initialization
     
+    // Debounce timer cho tìm kiếm realtime
+    private readonly DispatcherTimer _searchDebounceTimer;
+    
     public MeetingListPage(DocumentService documentService)
     {
         InitializeComponent();
         _meetingService = new MeetingService();
         _documentService = documentService;
+        
+        // Khởi tạo debounce timer (300ms) cho tìm kiếm realtime
+        _searchDebounceTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(300)
+        };
+        _searchDebounceTimer.Tick += (s, e) =>
+        {
+            _searchDebounceTimer.Stop();
+            if (!_isLoading) LoadMeetings();
+        };
         
         InitializeFilters();
         
@@ -182,29 +197,65 @@ public partial class MeetingListPage : Page
     }
     
     /// <summary>
-    /// Tạo card hiển thị cuộc họp
+    /// Tạo card hiển thị cuộc họp — với trạng thái trực quan, relative time, hover effects
     /// </summary>
     private UIElement CreateMeetingCard(Meeting meeting)
     {
+        // Xác định trạng thái hiện tại
+        var now = DateTime.Now;
+        bool isHappeningNow = meeting.Status == MeetingStatus.InProgress ||
+            (meeting.StartTime <= now && (meeting.EndTime == null || meeting.EndTime.Value >= now) 
+             && meeting.Status == MeetingStatus.Scheduled);
+        bool isToday = meeting.StartTime.Date == DateTime.Today;
+        
+        // B4: Card background tint theo status
+        var cardBg = meeting.Status switch
+        {
+            MeetingStatus.Completed => Color.FromRgb(0xF9, 0xFB, 0xF9),  // Light green
+            MeetingStatus.Cancelled => Color.FromRgb(0xFA, 0xFA, 0xFA),  // Light gray
+            MeetingStatus.Postponed => Color.FromRgb(0xFF, 0xFB, 0xF0),  // Light orange
+            _ when isHappeningNow => Color.FromRgb(0xFF, 0xF5, 0xF5),    // Light red for live
+            _ when isToday => Color.FromRgb(0xF5, 0xF9, 0xFF),           // Light blue for today
+            _ => Color.FromRgb(0xFF, 0xFF, 0xFF)                         // White default
+        };
+        
         var card = new Card
         {
             Margin = new Thickness(0, 0, 0, 8),
             Padding = new Thickness(0),
             UniformCornerRadius = 8,
             Tag = meeting.Id,
-            Cursor = Cursors.Hand
+            Cursor = Cursors.Hand,
+            Background = new SolidColorBrush(cardBg)
+        };
+        
+        // B4: Hover effect
+        var defaultBg = cardBg;
+        card.MouseEnter += (s, e) =>
+        {
+            card.Background = new SolidColorBrush(Color.FromRgb(
+                (byte)Math.Max(0, defaultBg.R - 8),
+                (byte)Math.Max(0, defaultBg.G - 4),
+                (byte)Math.Max(0, defaultBg.B - 2)));
+            ElevationAssist.SetElevation(card, Elevation.Dp4);
+        };
+        card.MouseLeave += (s, e) =>
+        {
+            card.Background = new SolidColorBrush(defaultBg);
+            ElevationAssist.SetElevation(card, Elevation.Dp1);
         };
         
         // Outer border with left color strip
         var outerGrid = new Grid();
-        outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(5) });
+        outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(meeting.Priority >= 4 ? 8 : 5) }); // B4: wider strip for high priority
         outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         
         // Color strip based on status
         var statusColor = MeetingHelper.GetStatusColor(meeting.Status);
+        var stripColor = isHappeningNow ? "#E53935" : statusColor; // Red for live meetings
         var colorStrip = new Border
         {
-            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(statusColor)),
+            Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(stripColor)),
             CornerRadius = new CornerRadius(8, 0, 0, 8)
         };
         Grid.SetColumn(colorStrip, 0);
@@ -212,21 +263,44 @@ public partial class MeetingListPage : Page
         
         // Main content
         var mainGrid = new Grid { Margin = new Thickness(16, 12, 16, 12) };
-        mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(70) });  // Time
+        mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });  // Time
         mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Content
         mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); // Actions
         Grid.SetColumn(mainGrid, 1);
         outerGrid.Children.Add(mainGrid);
         
-        // === Column 0: Time ===
+        // === Column 0: Time + Relative time ===
         var timePanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        
+        // B2: "ĐANG DIỄN RA" badge
+        if (isHappeningNow)
+        {
+            var liveBadge = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(0xE5, 0x39, 0x35)),
+                CornerRadius = new CornerRadius(3),
+                Padding = new Thickness(4, 1, 4, 1),
+                Margin = new Thickness(0, 0, 0, 3),
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            liveBadge.Child = new TextBlock
+            {
+                Text = "● LIVE",
+                FontSize = 8,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White
+            };
+            timePanel.Children.Add(liveBadge);
+        }
         
         var timeText = new TextBlock
         {
             Text = meeting.IsAllDay ? "Cả ngày" : meeting.StartTime.ToString("HH:mm"),
             FontSize = meeting.IsAllDay ? 13 : 20,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x19, 0x76, 0xD2)),
+            Foreground = isHappeningNow 
+                ? new SolidColorBrush(Color.FromRgb(0xE5, 0x39, 0x35))
+                : new SolidColorBrush(Color.FromRgb(0x19, 0x76, 0xD2)),
             HorizontalAlignment = HorizontalAlignment.Center
         };
         timePanel.Children.Add(timeText);
@@ -243,19 +317,24 @@ public partial class MeetingListPage : Page
             timePanel.Children.Add(endTimeText);
         }
         
-        // Duration
-        if (meeting.EndTime.HasValue)
+        // B2: Relative time label
+        var relativeTime = GetRelativeTimeText(meeting);
+        if (!string.IsNullOrEmpty(relativeTime))
         {
-            var duration = meeting.EndTime.Value - meeting.StartTime;
-            var durationText = new TextBlock
+            var relColor = isHappeningNow ? Color.FromRgb(0xE5, 0x39, 0x35) :
+                meeting.StartTime > now ? Color.FromRgb(0xE6, 0x51, 0x00) :
+                Color.FromRgb(0x9E, 0x9E, 0x9E);
+            timePanel.Children.Add(new TextBlock
             {
-                Text = duration.TotalHours >= 1 ? $"{duration.TotalHours:0.#}h" : $"{duration.TotalMinutes:0}p",
-                FontSize = 10,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E)),
+                Text = relativeTime,
+                FontSize = 9,
+                FontWeight = isHappeningNow ? FontWeights.Bold : FontWeights.Normal,
+                Foreground = new SolidColorBrush(relColor),
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 2, 0, 0)
-            };
-            timePanel.Children.Add(durationText);
+                Margin = new Thickness(0, 2, 0, 0),
+                TextAlignment = TextAlignment.Center,
+                TextWrapping = TextWrapping.Wrap
+            });
         }
         
         Grid.SetColumn(timePanel, 0);
@@ -287,7 +366,12 @@ public partial class MeetingListPage : Page
             FontSize = 15,
             FontWeight = FontWeights.SemiBold,
             TextTrimming = TextTrimming.CharacterEllipsis,
-            MaxWidth = 500
+            MaxWidth = 500,
+            // B4: Strikethrough for cancelled meetings
+            TextDecorations = meeting.Status == MeetingStatus.Cancelled ? TextDecorations.Strikethrough : null,
+            Foreground = meeting.Status == MeetingStatus.Cancelled 
+                ? new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E))
+                : new SolidColorBrush(Color.FromRgb(0x21, 0x21, 0x21))
         };
         titlePanel.Children.Add(titleBlock);
         contentPanel.Children.Add(titlePanel);
@@ -384,6 +468,27 @@ public partial class MeetingListPage : Page
             
             var taskBadge = CreateBadge(taskText, taskBg, taskColor);
             tagsPanel.Children.Add(taskBadge);
+            
+            // B2: Mini progress bar cho nhiệm vụ
+            var progressRatio = (double)completedTasks / totalTasks;
+            var progressBar = new Border
+            {
+                Width = 50,
+                Height = 4,
+                CornerRadius = new CornerRadius(2),
+                Background = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0)),
+                Margin = new Thickness(0, 0, 6, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = new Border
+                {
+                    Width = 50 * progressRatio,
+                    Height = 4,
+                    CornerRadius = new CornerRadius(2),
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(taskColor)),
+                    HorizontalAlignment = HorizontalAlignment.Left
+                }
+            };
+            tagsPanel.Children.Add(progressBar);
         }
         
         // Attendees count
@@ -551,21 +656,77 @@ public partial class MeetingListPage : Page
         };
     }
     
+    /// <summary>
+    /// B2: Tính thời gian tương đối cho cuộc họp (VD: "Bây giờ", "Sau 2 giờ", "Ngày mai")
+    /// </summary>
+    private static string GetRelativeTimeText(Meeting meeting)
+    {
+        var now = DateTime.Now;
+        var diff = meeting.StartTime - now;
+        var endTime = meeting.EndTime ?? meeting.StartTime.AddHours(1);
+        
+        // Đang diễn ra
+        if (meeting.StartTime <= now && endTime >= now)
+            return "Bây giờ";
+        
+        // Đã qua
+        if (diff.TotalMinutes < 0)
+        {
+            if (meeting.StartTime.Date == DateTime.Today)
+            {
+                var elapsed = Math.Abs((int)diff.TotalHours);
+                return elapsed < 1 ? "Vừa qua" : $"{elapsed}h trước";
+            }
+            if (meeting.StartTime.Date == DateTime.Today.AddDays(-1))
+                return "Hôm qua";
+            if (Math.Abs(diff.TotalDays) < 7)
+                return $"{Math.Abs((int)diff.TotalDays)} ngày trước";
+            return ""; // Quá xa, không hiện
+        }
+        
+        // Sắp tới
+        if (diff.TotalMinutes <= 30)
+            return $"Sau {Math.Max(1, (int)diff.TotalMinutes)}p";
+        if (diff.TotalHours < 1)
+            return "Sau 30p";
+        if (meeting.StartTime.Date == DateTime.Today)
+            return $"Sau {(int)diff.TotalHours}h";
+        if (meeting.StartTime.Date == DateTime.Today.AddDays(1))
+            return "Ngày mai";
+        if (diff.TotalDays < 7)
+            return $"Còn {(int)diff.TotalDays} ngày";
+        return ""; // Quá xa, không hiện
+    }
+    
     private void LoadStatistics()
     {
         try
         {
-            txtTotalMeetings.Text = $"📋 Tổng: {_meetingService.GetTotalMeetings()} cuộc họp";
-            txtThisMonth.Text = $"📅 Tháng này: {_meetingService.GetMeetingsCountThisMonth()}";
-            txtUpcoming.Text = $"⏰ Sắp tới: {_meetingService.GetUpcomingCount()}";
-            txtPendingTasks.Text = $"📌 NV chưa xong: {_meetingService.GetPendingTaskCount()}";
+            txtStatTotal.Text = _meetingService.GetTotalMeetings().ToString();
+            txtStatMonth.Text = _meetingService.GetMeetingsCountThisMonth().ToString();
+            txtStatUpcoming.Text = _meetingService.GetUpcomingCount().ToString();
+            txtStatPending.Text = _meetingService.GetPendingTaskCount().ToString();
             
             var overdue = _meetingService.GetOverdueTaskCount();
-            txtOverdueTasks.Text = $"🔴 NV quá hạn: {overdue}";
-            txtOverdueTasks.Foreground = overdue > 0 
-                ? new SolidColorBrush(Color.FromRgb(0xE5, 0x39, 0x35)) 
-                : new SolidColorBrush(Color.FromRgb(0x75, 0x75, 0x75));
-            txtOverdueTasks.FontWeight = overdue > 0 ? FontWeights.Bold : FontWeights.Normal;
+            txtStatOverdue.Text = overdue.ToString();
+            
+            // Highlight overdue card nếu có NV quá hạn
+            if (overdue > 0)
+            {
+                cardOverdue.Background = new SolidColorBrush(Color.FromRgb(0xFF, 0xEB, 0xEE));
+                cardOverdue.BorderBrush = new SolidColorBrush(Color.FromRgb(0xE5, 0x39, 0x35));
+                txtOverdueLabel.Text = "QUÁ HẠN!";
+                txtOverdueLabel.Foreground = new SolidColorBrush(Color.FromRgb(0xE5, 0x39, 0x35));
+                txtOverdueLabel.FontWeight = FontWeights.Bold;
+            }
+            else
+            {
+                cardOverdue.Background = Brushes.White;
+                cardOverdue.BorderBrush = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xE0));
+                txtOverdueLabel.Text = "quá hạn";
+                txtOverdueLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x9E, 0x9E, 0x9E));
+                txtOverdueLabel.FontWeight = FontWeights.Normal;
+            }
         }
         catch (Exception ex)
         {
@@ -581,8 +742,19 @@ public partial class MeetingListPage : Page
     {
         if (e.Key == Key.Enter)
         {
+            _searchDebounceTimer.Stop(); // Hủy debounce nếu đang chờ
             LoadMeetings();
         }
+    }
+    
+    /// <summary>
+    /// Tìm kiếm realtime: gõ tới đâu lọc tới đó (debounce 300ms).
+    /// </summary>
+    private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_isLoading) return;
+        _searchDebounceTimer.Stop();
+        _searchDebounceTimer.Start();
     }
     
     private void Filter_Changed(object sender, object e)

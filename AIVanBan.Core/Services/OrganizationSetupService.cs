@@ -109,10 +109,19 @@ public class OrganizationSetupService
                     break;
                     
                 case OrganizationType.HoiCuuChienBinh:
+                    CreateStructure_HoiCuuChienBinh(orgName);
+                    break;
+                    
                 case OrganizationType.CongDoan:
+                    CreateStructure_CongDoan(orgName);
+                    break;
+                    
                 case OrganizationType.HoiChapThap:
+                    CreateStructure_HoiChapThap(orgName);
+                    break;
+                    
                 case OrganizationType.HoiKhuyenHoc:
-                    CreateStructure_DoanTheKhac(orgName);
+                    CreateStructure_HoiKhuyenHoc(orgName);
                     break;
                     
                 // === SỞ - BAN - NGÀNH ===
@@ -155,10 +164,19 @@ public class OrganizationSetupService
                     break;
                     
                 case OrganizationType.TrungTamVanHoa:
+                    CreateStructure_TrungTamVanHoa(orgName);
+                    break;
+                    
                 case OrganizationType.ThuVien:
+                    CreateStructure_ThuVien(orgName);
+                    break;
+                    
                 case OrganizationType.BaoTangVienDi:
+                    CreateStructure_BaoTang(orgName);
+                    break;
+                    
                 case OrganizationType.CongTyNhaNuoc:
-                    CreateStructure_Generic(orgName);
+                    CreateStructure_CongTyNhaNuoc(orgName);
                     break;
                     
                 default:
@@ -174,273 +192,6 @@ public class OrganizationSetupService
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
             throw new Exception($"Không thể tạo cấu trúc thư mục: {ex.Message}", ex);
         }
-    }
-    
-    private void Create01_VanBanPhapLuat(string orgName)
-    {
-        var root = CreateFolder("01. VĂN BẢN PHÁP LUẬT", null, "⚖️", orgName, 1);
-        
-        CreateSubFolders(root.Id, orgName, new[]
-        {
-            ("Hiến pháp", "📜"),
-            ("Luật", "📕"),
-            ("Pháp lệnh", "📘"),
-            ("Nghị quyết (Quốc hội, HĐND)", "📗"),
-            ("Nghị định (Chính phủ)", "📙"),
-            ("Thông tư (Bộ, ngành)", "📑"),
-            ("Quyết định (UBND các cấp)", "📋"),
-            ("Chỉ thị", "📌"),
-            ("Hướng dẫn, Quy định", "📝")
-        });
-    }
-    
-    private void Create02_VanBanDi(string orgName)
-    {
-        var root = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
-        
-        // Tạo folders theo năm (2024 đến hiện tại)
-        for (int year = 2024; year <= DateTime.Now.Year; year++)
-        {
-            var yearFolder = CreateFolder($"[Năm {year}]", root.Id, "📅", orgName);
-            
-            CreateSubFolders(yearFolder.Id, orgName, new[]
-            {
-                ("Công văn đi", "📄"),
-                ("Quyết định", "📋"),
-                ("Thông báo", "📢"),
-                ("Báo cáo (gửi cấp trên)", "📊"),
-                ("Tờ trình", "📝"),
-                ("Kế hoạch", "📅")
-            });
-        }
-    }
-    
-    private void Create03_VanBanDen(string orgName)
-    {
-        var root = CreateFolder("03. VĂN BẢN ĐẾN", null, "📥", orgName, 3);
-        
-        // Tạo folders theo năm + nguồn
-        for (int year = 2024; year <= DateTime.Now.Year; year++)
-        {
-            var yearFolder = CreateFolder($"[Năm {year}]", root.Id, "📅", orgName);
-            
-            CreateSubFolders(yearFolder.Id, orgName, new[]
-            {
-                ("Từ Trung ương (Chính phủ, Bộ)", "🏛️"),
-                ("Từ cấp Tỉnh (UBND, Sở)", "🏢"),
-                ("Từ các xã/phường", "🏘️"),
-                ("Từ tổ chức, cá nhân", "👥")
-            });
-        }
-    }
-    
-    private void Create04_HoSoCongViec(string orgName, OrganizationType orgType)
-    {
-        var root = CreateFolder("04. HỒ SƠ CÔNG VIỆC", null, "💼", orgName, 4);
-        
-        // 1. Nội vụ - Tổ chức
-        var nvFolder = CreateFolder("Nội vụ - Tổ chức", root.Id, "👔", orgName);
-        CreateSubFolders(nvFolder.Id, orgName, new[]
-        {
-            ("Biên chế, tuyển dụng", "📋"),
-            ("Đào tạo, bồi dưỡng", "🎓"),
-            ("Khen thưởng, kỷ luật", "🏆")
-        });
-        
-        // 2. Tài chính - Ngân sách
-        var tcFolder = CreateFolder("Tài chính - Ngân sách", root.Id, "💰", orgName);
-        CreateSubFolders(tcFolder.Id, orgName, new[]
-        {
-            ("Dự toán", "📊"),
-            ("Quyết toán", "📈"),
-            ("Thu chi", "💵")
-        });
-        
-        // 3. Đất đai - Xây dựng
-        var ddFolder = CreateFolder("Đất đai - Xây dựng", root.Id, "🏗️", orgName);
-        CreateSubFolders(ddFolder.Id, orgName, new[]
-        {
-            ("Cấp giấy CNQSD đất", "📜"),
-            ("Giấy phép xây dựng", "🏠"),
-            ("Quy hoạch", "🗺️")
-        });
-        
-        // 4. Văn hóa - Xã hội
-        var vhFolder = CreateFolder("Văn hóa - Xã hội", root.Id, "🎭", orgName);
-        CreateSubFolders(vhFolder.Id, orgName, new[]
-        {
-            ("Giáo dục", "🎓"),
-            ("Y tế", "🏥"),
-            ("Thể thao, văn nghệ", "⚽")
-        });
-        
-        // 5. Kinh tế - Phát triển
-        var ktFolder = CreateFolder("Kinh tế - Phát triển", root.Id, "📈", orgName);
-        CreateSubFolders(ktFolder.Id, orgName, new[]
-        {
-            ("Nông nghiệp", "🌾"),
-            ("Công nghiệp, thương mại", "🏭"),
-            ("Du lịch", "✈️")
-        });
-        
-        // 6. An ninh - Trật tự
-        CreateFolder("An ninh - Trật tự", root.Id, "🚔", orgName);
-    }
-    
-    private void Create05_HoSoDuAn(string orgName)
-    {
-        var root = CreateFolder("05. HỒ SƠ DỰ ÁN - CÔNG TRÌNH", null, "🏗️", orgName, 5);
-        
-        // Tạo template folder cho dự án mẫu
-        var exampleProject = CreateFolder("[Mẫu] Tên dự án", root.Id, "📁", orgName);
-        CreateSubFolders(exampleProject.Id, orgName, new[]
-        {
-            ("Văn bản phê duyệt", "✅"),
-            ("Hồ sơ thiết kế", "📐"),
-            ("Hợp đồng, thầu", "📝"),
-            ("Tiến độ thi công", "⏱️"),
-            ("Nghiệm thu", "✔️"),
-            ("Album ảnh công trình", "📷")
-        });
-    }
-    
-    private void Create06_AlbumAnh(string orgName)
-    {
-        var root = CreateFolder("06. ALBUM ẢNH - HÌNH ẢNH", null, "📷", orgName, 6);
-        
-        // Sự kiện - Hội nghị
-        var sukienFolder = CreateFolder("Sự kiện - Hội nghị", root.Id, "🎉", orgName);
-        CreateSubFolders(sukienFolder.Id, orgName, new[]
-        {
-            ($"[{DateTime.Now.Year}] Đại hội Đảng bộ", "🎊"),
-            ($"[{DateTime.Now.Year}] Lễ khánh thành", "🎗️"),
-            ($"[{DateTime.Now.Year}] Hội nghị cán bộ", "👥")
-        });
-        
-        // Hoạt động thường xuyên
-        var hoatdongFolder = CreateFolder("Hoạt động thường xuyên", root.Id, "📅", orgName);
-        CreateSubFolders(hoatdongFolder.Id, orgName, new[]
-        {
-            ("Lễ chào cờ", "🇻🇳"),
-            ("Sinh hoạt Đảng, Đoàn", "🏛️"),
-            ("Họp giao ban", "💼")
-        });
-        
-        // Công trình - Dự án
-        var congtrinh = CreateFolder("Công trình - Dự án", root.Id, "🏗️", orgName);
-        CreateSubFolders(congtrinh.Id, orgName, new[]
-        {
-            ("Trước thi công", "📸"),
-            ("Trong thi công", "🏗️"),
-            ("Sau hoàn thành", "✅")
-        });
-        
-        // Khảo sát - Thực địa
-        var khaosat = CreateFolder("Khảo sát - Thực địa", root.Id, "🔍", orgName);
-        CreateSubFolders(khaosat.Id, orgName, new[]
-        {
-            ("Khảo sát đất đai", "🗺️"),
-            ("Kiểm tra hiện trường", "📋"),
-            ("Làm việc với dân", "👥")
-        });
-        
-        // Văn hóa - Lễ hội
-        var vanhoa = CreateFolder("Văn hóa - Lễ hội", root.Id, "🎭", orgName);
-        CreateSubFolders(vanhoa.Id, orgName, new[]
-        {
-            ("Tết Nguyên Đán", "🧧"),
-            ("Ngày lễ lớn", "🎊"),
-            ("Lễ hội địa phương", "🎉")
-        });
-        
-        // Tập thể - Cá nhân
-        var taphte = CreateFolder("Tập thể - Cá nhân", root.Id, "👥", orgName);
-        CreateSubFolders(taphte.Id, orgName, new[]
-        {
-            ("Ảnh tập thể lãnh đạo", "📸"),
-            ("Hoạt động CBCC", "👔")
-        });
-    }
-    
-    private void Create07_MauVanBan(string orgName)
-    {
-        var root = CreateFolder("07. MẪU VĂN BẢN - TEMPLATE", null, "📋", orgName, 7);
-        
-        // Mẫu theo loại
-        var mauTheoLoai = CreateFolder("Mẫu theo loại", root.Id, "📄", orgName);
-        CreateSubFolders(mauTheoLoai.Id, orgName, new[]
-        {
-            ("Công văn.docx", "📄"),
-            ("Báo cáo.docx", "📊"),
-            ("Tờ trình.docx", "📝"),
-            ("Quyết định.docx", "📋"),
-            ("Kế hoạch.docx", "📅")
-        });
-        
-        // Mẫu theo lĩnh vực
-        var mauTheoLinhVuc = CreateFolder("Mẫu theo lĩnh vực", root.Id, "📂", orgName);
-        CreateSubFolders(mauTheoLinhVuc.Id, orgName, new[]
-        {
-            ("Nội vụ", "👔"),
-            ("Tài chính", "💰"),
-            ("Đất đai", "🏗️"),
-            ("Văn hóa - Xã hội", "🎭")
-        });
-    }
-    
-    private void Create08_BaoCaoThongKe(string orgName)
-    {
-        var root = CreateFolder("08. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 8);
-        
-        // Báo cáo định kỳ
-        var dinhky = CreateFolder("Báo cáo định kỳ", root.Id, "📅", orgName);
-        CreateSubFolders(dinhky.Id, orgName, new[]
-        {
-            ("Tuần", "📆"),
-            ("Tháng", "📅"),
-            ("Quý", "📊"),
-            ("Năm", "📈")
-        });
-        
-        // Báo cáo chuyên đề
-        CreateFolder("Báo cáo chuyên đề", root.Id, "📋", orgName);
-    }
-    
-    private void Create09_TaiLieuHocTap(string orgName)
-    {
-        var root = CreateFolder("09. TÀI LIỆU HỌC TẬP - NGHIỆP VỤ", null, "📚", orgName, 9);
-        
-        CreateSubFolders(root.Id, orgName, new[]
-        {
-            ("Tài liệu đào tạo", "🎓"),
-            ("Hướng dẫn nghiệp vụ", "📖"),
-            ("Sách chuyên ngành", "📕"),
-            ("Bài giảng, slide", "📊")
-        });
-    }
-    
-    private void Create10_LuuTru(string orgName)
-    {
-        var root = CreateFolder("10. LƯU TRỮ - ĐÃ HẾT HIỆU LỰC", null, "📦", orgName, 10);
-        
-        CreateSubFolders(root.Id, orgName, new[]
-        {
-            ("Văn bản cũ (trước 2020)", "📜"),
-            ("Văn bản đã thay thế", "🔄"),
-            ("Hồ sơ đã đóng", "📁")
-        });
-    }
-    
-    private void Create11_CaNhan(string orgName)
-    {
-        var root = CreateFolder("11. CÁ NHÂN (Workspace riêng)", null, "👤", orgName, 11);
-        
-        CreateSubFolders(root.Id, orgName, new[]
-        {
-            ("Văn bản nháp", "📝"),
-            ("Ghi chú công việc", "📋"),
-            ("Tài liệu cá nhân", "📄")
-        });
     }
     
     // ===============================================
@@ -1497,98 +1248,6 @@ public class OrganizationSetupService
         });
     }
     
-    // === PHÒNG CẤP TỈNH/THÀNH PHỐ ===
-    private void CreateStructure_PhongCapTinh(string orgName)
-    {
-        Console.WriteLine("  Creating PHÒNG CẤP TỈNH/THÀNH PHỐ structure...");
-        
-        // 01-02: VĂN BẢN ĐẾN/ĐI
-        var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
-        for (int year = 2024; year <= DateTime.Now.Year; year++)
-        {
-            CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
-        }
-        
-        var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
-        for (int year = 2024; year <= DateTime.Now.Year; year++)
-        {
-            CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
-        }
-        
-        // 03. TỔ CHỨC - HÀNH CHÍNH
-        var toChuc = CreateFolder("03. TỔ CHỨC - HÀNH CHÍNH", null, "🏛️", orgName, 3);
-        CreateSubFolders(toChuc.Id, orgName, new[]
-        {
-            ("Tổ chức bộ máy", "⚙️"),
-            ("Biên chế cán bộ", "👥"),
-            ("Thi đua khen thưởng", "🏆"),
-            ("Quản lý con dấu", "🔐")
-        });
-        
-        // 04. TÀI CHÍNH - KẾ TOÁN
-        var taiChinh = CreateFolder("04. TÀI CHÍNH - KẾ TOÁN", null, "💰", orgName, 4);
-        CreateSubFolders(taiChinh.Id, orgName, new[]
-        {
-            ("Dự toán", "📊"),
-            ("Quyết toán", "📝"),
-            ("Thu chi", "💵")
-        });
-        
-        // 05. KẾ HOẠCH - CHƯƠNG TRÌNH
-        var keHoach = CreateFolder("05. KẾ HOẠCH - CHƯƠNG TRÌNH", null, "📅", orgName, 5);
-        CreateSubFolders(keHoach.Id, orgName, new[]
-        {
-            ("Kế hoạch năm", "📆"),
-            ("Kế hoạch tháng", "📋"),
-            ("Chương trình công tác", "🎯")
-        });
-        
-        // 06. CÔNG TÁC CHUYÊN MÔN
-        var chuyenMon = CreateFolder("06. CÔNG TÁC CHUYÊN MÔN", null, "💼", orgName, 6);
-        CreateSubFolders(chuyenMon.Id, orgName, new[]
-        {
-            ("Quản lý nhà nước", "🏛️"),
-            ("Hướng dẫn nghiệp vụ", "📖"),
-            ("Thẩm định hồ sơ", "📋"),
-            ("Cấp phép", "📄"),
-            ("Thanh tra kiểm tra", "🔍")
-        });
-        
-        // 07. HỘI NGHỊ - BIÊN BẢN
-        var hoiNghi = CreateFolder("07. HỘI NGHỊ - BIÊN BẢN", null, "🎭", orgName, 7);
-        CreateSubFolders(hoiNghi.Id, orgName, new[]
-        {
-            ("Hội nghị cán bộ", "👥"),
-            ("Biên bản họp", "📋")
-        });
-        
-        // 08. ĐƠN VỊ TRỰC THUỘC
-        var donVi = CreateFolder("08. ĐƠN VỊ TRỰC THUỘC", null, "🏢", orgName, 8);
-        CreateSubFolders(donVi.Id, orgName, new[]
-        {
-            ("Đơn vị cấp xã", "🏘️"),
-            ("Cơ sở trực thuộc", "🏫")
-        });
-        
-        // 09. BÁO CÁO - THỐNG KÊ
-        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
-        CreateSubFolders(baoCao.Id, orgName, new[]
-        {
-            ("Báo cáo định kỳ", "📅"),
-            ("Thống kê", "📈"),
-            ("Tổng kết", "📝")
-        });
-        
-        // 10. TÀI LIỆU KHÁC
-        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
-        CreateSubFolders(taiLieu.Id, orgName, new[]
-        {
-            ("Văn bản hướng dẫn", "📜"),
-            ("Tài liệu nghiệp vụ", "📖"),
-            ("Lưu trữ", "🗄️")
-        });
-    }
-    
     // === Y TẾ (TRẠM/TRUNG TÂM/BỆNH VIỆN) ===
     private void CreateStructure_YTe(string orgName)
     {
@@ -1959,31 +1618,27 @@ public class OrganizationSetupService
         });
     }
     
-    // === ĐOÀN THỂ KHÁC (Hội CCB, Công đoàn, Hội Chữ thập đỏ, Hội Khuyến học) ===
-    private void CreateStructure_DoanTheKhac(string orgName)
+    // === HỘI CỰU CHIẾN BINH ===
+    private void CreateStructure_HoiCuuChienBinh(string orgName)
     {
-        Console.WriteLine("  Creating ĐOÀN THỂ KHÁC structure...");
+        Console.WriteLine("  Creating HỘI CỰU CHIẾN BINH structure...");
         
         // 01-02: VĂN BẢN ĐẾN/ĐI
         var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
         for (int year = 2024; year <= DateTime.Now.Year; year++)
-        {
             CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
-        }
         
         var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
         for (int year = 2024; year <= DateTime.Now.Year; year++)
-        {
             CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
-        }
         
-        // 03. TỔ CHỨC - XÂY DỰNG
-        var toChuc = CreateFolder("03. TỔ CHỨC - XÂY DỰNG", null, "🏛️", orgName, 3);
+        // 03. TỔ CHỨC - XÂY DỰNG HỘI
+        var toChuc = CreateFolder("03. TỔ CHỨC - XÂY DỰNG HỘI", null, "🏛️", orgName, 3);
         CreateSubFolders(toChuc.Id, orgName, new[]
         {
             ("Tổ chức bộ máy", "⚙️"),
             ("Phát triển hội viên", "👥"),
-            ("Quản lý cán bộ", "📋"),
+            ("Quản lý cán bộ Hội", "📋"),
             ("Quản lý con dấu", "🔐")
         });
         
@@ -1993,7 +1648,8 @@ public class OrganizationSetupService
         {
             ("Dự toán kinh phí", "📊"),
             ("Quyết toán", "📝"),
-            ("Hội phí", "💵")
+            ("Hội phí", "💵"),
+            ("Quỹ hỗ trợ CCB", "🤝")
         });
         
         // 05. ĐẠI HỘI - HỘI NGHỊ
@@ -2005,13 +1661,14 @@ public class OrganizationSetupService
             ("Biên bản nghị quyết", "📋")
         });
         
-        // 06. CHƯƠNG TRÌNH - HOẠT ĐỘNG
-        var chuongTrinh = CreateFolder("06. CHƯƠNG TRÌNH - HOẠT ĐỘNG", null, "🎯", orgName, 6);
-        CreateSubFolders(chuongTrinh.Id, orgName, new[]
+        // 06. CÔNG TÁC TRUYỀN THỐNG
+        var truyenThong = CreateFolder("06. CÔNG TÁC TRUYỀN THỐNG", null, "⭐", orgName, 6);
+        CreateSubFolders(truyenThong.Id, orgName, new[]
         {
-            ("Chương trình năm", "📅"),
-            ("Phong trào", "🚩"),
-            ("Tuyên truyền", "📢")
+            ("Giáo dục truyền thống", "🎖️"),
+            ("Phát huy phẩm chất Bộ đội Cụ Hồ", "🇻🇳"),
+            ("Kỷ niệm - Tri ân", "💐"),
+            ("Bảo vệ Đảng - Chính quyền", "🛡️")
         });
         
         // 07. QUẢN LÝ HỘI VIÊN
@@ -2019,23 +1676,685 @@ public class OrganizationSetupService
         CreateSubFolders(hoiVien.Id, orgName, new[]
         {
             ("Danh sách hội viên", "📜"),
-            ("Thẻ hội viên", "🎫"),
+            ("Chế độ chính sách CCB", "📋"),
+            ("Khen thưởng kỷ luật", "🏆"),
+            ("Thẻ hội viên", "🎫")
+        });
+        
+        // 08. HOẠT ĐỘNG XÃ HỘI
+        var xaHoi = CreateFolder("08. HOẠT ĐỘNG XÃ HỘI", null, "🤝", orgName, 8);
+        CreateSubFolders(xaHoi.Id, orgName, new[]
+        {
+            ("Giúp nhau giảm nghèo", "💪"),
+            ("Phong trào thi đua", "🚩"),
+            ("Hoạt động tình nghĩa", "❤️"),
+            ("Xóa đói giảm nghèo", "🌾")
+        });
+        
+        // 09. BÁO CÁO - THỐNG KÊ
+        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
+        CreateSubFolders(baoCao.Id, orgName, new[]
+        {
+            ("Báo cáo định kỳ", "📅"),
+            ("Báo cáo tổng kết", "📝"),
+            ("Thống kê hội viên", "📈")
+        });
+        
+        // 10. TÀI LIỆU KHÁC
+        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
+        CreateSubFolders(taiLieu.Id, orgName, new[]
+        {
+            ("Văn bản pháp luật CCB", "📜"),
+            ("Tài liệu nghiệp vụ", "📖"),
+            ("Lưu trữ", "🗄️")
+        });
+    }
+    
+    // === CÔNG ĐOÀN ===
+    private void CreateStructure_CongDoan(string orgName)
+    {
+        Console.WriteLine("  Creating CÔNG ĐOÀN structure...");
+        
+        // 01-02: VĂN BẢN ĐẾN/ĐI
+        var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
+        
+        var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
+        
+        // 03. TỔ CHỨC - XÂY DỰNG CÔNG ĐOÀN
+        var toChuc = CreateFolder("03. TỔ CHỨC - XÂY DỰNG CĐ", null, "🏛️", orgName, 3);
+        CreateSubFolders(toChuc.Id, orgName, new[]
+        {
+            ("Tổ chức bộ máy", "⚙️"),
+            ("Phát triển đoàn viên", "👥"),
+            ("Quản lý cán bộ CĐ", "📋"),
+            ("Quản lý con dấu", "🔐")
+        });
+        
+        // 04. TÀI CHÍNH CÔNG ĐOÀN
+        var taiChinh = CreateFolder("04. TÀI CHÍNH CÔNG ĐOÀN", null, "💰", orgName, 4);
+        CreateSubFolders(taiChinh.Id, orgName, new[]
+        {
+            ("Dự toán kinh phí", "📊"),
+            ("Quyết toán", "📝"),
+            ("Đoàn phí", "💵"),
+            ("Quản lý quỹ CĐ", "🏦")
+        });
+        
+        // 05. ĐẠI HỘI - HỘI NGHỊ
+        var daiHoi = CreateFolder("05. ĐẠI HỘI - HỘI NGHỊ", null, "🎭", orgName, 5);
+        CreateSubFolders(daiHoi.Id, orgName, new[]
+        {
+            ("Đại hội Công đoàn", "🎪"),
+            ("Hội nghị BCH", "👥"),
+            ("Hội nghị CNVC-LĐ", "🏭"),
+            ("Biên bản nghị quyết", "📋")
+        });
+        
+        // 06. CHẾ ĐỘ CHÍNH SÁCH
+        var cheDo = CreateFolder("06. CHẾ ĐỘ CHÍNH SÁCH", null, "⚖️", orgName, 6);
+        CreateSubFolders(cheDo.Id, orgName, new[]
+        {
+            ("Bảo vệ quyền lợi NLĐ", "🛡️"),
+            ("Tiền lương - Bảo hiểm", "💵"),
+            ("An toàn vệ sinh lao động", "⚠️"),
+            ("Thỏa ước lao động", "📝")
+        });
+        
+        // 07. PHONG TRÀO THI ĐUA
+        var phongTrao = CreateFolder("07. PHONG TRÀO THI ĐUA", null, "🏆", orgName, 7);
+        CreateSubFolders(phongTrao.Id, orgName, new[]
+        {
+            ("Thi đua lao động sáng tạo", "💡"),
+            ("Phong trào văn nghệ - TDTT", "🎭"),
+            ("Khen thưởng", "🏅"),
+            ("Hoạt động xã hội", "🤝")
+        });
+        
+        // 08. QUẢN LÝ ĐOÀN VIÊN
+        var doanVien = CreateFolder("08. QUẢN LÝ ĐOÀN VIÊN", null, "👥", orgName, 8);
+        CreateSubFolders(doanVien.Id, orgName, new[]
+        {
+            ("Danh sách đoàn viên", "📜"),
+            ("Thẻ đoàn viên", "🎫"),
+            ("Sổ đoàn viên", "📖"),
+            ("Kỷ luật đoàn viên", "📋")
+        });
+        
+        // 09. BÁO CÁO - THỐNG KÊ
+        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
+        CreateSubFolders(baoCao.Id, orgName, new[]
+        {
+            ("Báo cáo định kỳ", "📅"),
+            ("Báo cáo tổng kết", "📝"),
+            ("Thống kê đoàn viên", "📈")
+        });
+        
+        // 10. TÀI LIỆU KHÁC
+        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
+        CreateSubFolders(taiLieu.Id, orgName, new[]
+        {
+            ("Luật Công đoàn", "📜"),
+            ("Tài liệu nghiệp vụ", "📖"),
+            ("Lưu trữ", "🗄️")
+        });
+    }
+    
+    // === HỘI CHỮ THẬP ĐỎ ===
+    private void CreateStructure_HoiChapThap(string orgName)
+    {
+        Console.WriteLine("  Creating HỘI CHỮ THẬP ĐỎ structure...");
+        
+        // 01-02: VĂN BẢN ĐẾN/ĐI
+        var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
+        
+        var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
+        
+        // 03. TỔ CHỨC - XÂY DỰNG HỘI
+        var toChuc = CreateFolder("03. TỔ CHỨC - XÂY DỰNG HỘI", null, "🏛️", orgName, 3);
+        CreateSubFolders(toChuc.Id, orgName, new[]
+        {
+            ("Tổ chức bộ máy", "⚙️"),
+            ("Phát triển hội viên", "👥"),
+            ("Quản lý tình nguyện viên", "🙋"),
+            ("Quản lý con dấu", "🔐")
+        });
+        
+        // 04. TÀI CHÍNH
+        var taiChinh = CreateFolder("04. TÀI CHÍNH", null, "💰", orgName, 4);
+        CreateSubFolders(taiChinh.Id, orgName, new[]
+        {
+            ("Dự toán kinh phí", "📊"),
+            ("Quyết toán", "📝"),
+            ("Quỹ nhân đạo", "❤️"),
+            ("Tiếp nhận tài trợ", "🤝")
+        });
+        
+        // 05. ĐẠI HỘI - HỘI NGHỊ
+        var daiHoi = CreateFolder("05. ĐẠI HỘI - HỘI NGHỊ", null, "🎭", orgName, 5);
+        CreateSubFolders(daiHoi.Id, orgName, new[]
+        {
+            ("Đại hội", "🎪"),
+            ("Hội nghị BCH", "👥"),
+            ("Biên bản nghị quyết", "📋")
+        });
+        
+        // 06. NHÂN ĐẠO - TỪ THIỆN
+        var nhanDao = CreateFolder("06. NHÂN ĐẠO - TỪ THIỆN", null, "❤️", orgName, 6);
+        CreateSubFolders(nhanDao.Id, orgName, new[]
+        {
+            ("Cứu trợ thiên tai", "🌊"),
+            ("Hỗ trợ người yếu thế", "🤲"),
+            ("Hoạt động tình nguyện", "🙋"),
+            ("Tặng quà nhân đạo", "🎁"),
+            ("Xây nhà tình nghĩa", "🏠")
+        });
+        
+        // 07. SỨC KHỎE CỘNG ĐỒNG
+        var sucKhoe = CreateFolder("07. SỨC KHỎE CỘNG ĐỒNG", null, "🏥", orgName, 7);
+        CreateSubFolders(sucKhoe.Id, orgName, new[]
+        {
+            ("Hiến máu tình nguyện", "🩸"),
+            ("Sơ cấp cứu", "🚑"),
+            ("Chăm sóc sức khỏe", "💊"),
+            ("Phòng chống dịch bệnh", "🛡️")
+        });
+        
+        // 08. TRUYỀN THÔNG - VẬN ĐỘNG
+        var truyenThong = CreateFolder("08. TRUYỀN THÔNG - VẬN ĐỘNG", null, "📢", orgName, 8);
+        CreateSubFolders(truyenThong.Id, orgName, new[]
+        {
+            ("Tuyên truyền nhân đạo", "📣"),
+            ("Vận động gây quỹ", "💰"),
+            ("Sự kiện truyền thông", "🎤")
+        });
+        
+        // 09. BÁO CÁO - THỐNG KÊ
+        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
+        CreateSubFolders(baoCao.Id, orgName, new[]
+        {
+            ("Báo cáo định kỳ", "📅"),
+            ("Báo cáo tổng kết", "📝"),
+            ("Thống kê hoạt động nhân đạo", "📈")
+        });
+        
+        // 10. TÀI LIỆU KHÁC
+        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
+        CreateSubFolders(taiLieu.Id, orgName, new[]
+        {
+            ("Luật nhân đạo", "📜"),
+            ("Tài liệu tập huấn", "📖"),
+            ("Lưu trữ", "🗄️")
+        });
+    }
+    
+    // === HỘI KHUYẾN HỌC ===
+    private void CreateStructure_HoiKhuyenHoc(string orgName)
+    {
+        Console.WriteLine("  Creating HỘI KHUYẾN HỌC structure...");
+        
+        // 01-02: VĂN BẢN ĐẾN/ĐI
+        var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
+        
+        var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
+        
+        // 03. TỔ CHỨC - XÂY DỰNG HỘI
+        var toChuc = CreateFolder("03. TỔ CHỨC - XÂY DỰNG HỘI", null, "🏛️", orgName, 3);
+        CreateSubFolders(toChuc.Id, orgName, new[]
+        {
+            ("Tổ chức bộ máy", "⚙️"),
+            ("Phát triển hội viên", "👥"),
+            ("Quản lý chi hội", "📋"),
+            ("Quản lý con dấu", "🔐")
+        });
+        
+        // 04. TÀI CHÍNH
+        var taiChinh = CreateFolder("04. TÀI CHÍNH", null, "💰", orgName, 4);
+        CreateSubFolders(taiChinh.Id, orgName, new[]
+        {
+            ("Dự toán kinh phí", "📊"),
+            ("Quyết toán", "📝"),
+            ("Quỹ khuyến học", "🎓"),
+            ("Tài trợ học bổng", "💵")
+        });
+        
+        // 05. ĐẠI HỘI - HỘI NGHỊ
+        var daiHoi = CreateFolder("05. ĐẠI HỘI - HỘI NGHỊ", null, "🎭", orgName, 5);
+        CreateSubFolders(daiHoi.Id, orgName, new[]
+        {
+            ("Đại hội", "🎪"),
+            ("Hội nghị BCH", "👥"),
+            ("Biên bản nghị quyết", "📋")
+        });
+        
+        // 06. KHUYẾN HỌC - KHUYẾN TÀI
+        var khuyenHoc = CreateFolder("06. KHUYẾN HỌC - KHUYẾN TÀI", null, "🎓", orgName, 6);
+        CreateSubFolders(khuyenHoc.Id, orgName, new[]
+        {
+            ("Học bổng", "🏅"),
+            ("Khen thưởng HS-SV giỏi", "🏆"),
+            ("Gia đình hiếu học", "👪"),
+            ("Dòng họ hiếu học", "📜"),
+            ("Cộng đồng học tập", "🏘️")
+        });
+        
+        // 07. XÂY DỰNG XÃ HỘI HỌC TẬP
+        var xhht = CreateFolder("07. XÂY DỰNG XÃ HỘI HỌC TẬP", null, "📚", orgName, 7);
+        CreateSubFolders(xhht.Id, orgName, new[]
+        {
+            ("Mô hình xã hội học tập", "🏫"),
+            ("Trung tâm học tập cộng đồng", "🏛️"),
+            ("Công dân học tập", "👤"),
+            ("Đơn vị học tập", "📋")
+        });
+        
+        // 08. QUẢN LÝ HỘI VIÊN
+        var hoiVien = CreateFolder("08. QUẢN LÝ HỘI VIÊN", null, "👥", orgName, 8);
+        CreateSubFolders(hoiVien.Id, orgName, new[]
+        {
+            ("Danh sách hội viên", "📜"),
+            ("Phát triển hội viên", "📈"),
             ("Khen thưởng kỷ luật", "🏆")
         });
         
-        // 08. BÁO CÁO - THỐNG KÊ
-        var baoCao = CreateFolder("08. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 8);
+        // 09. BÁO CÁO - THỐNG KÊ
+        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
         CreateSubFolders(baoCao.Id, orgName, new[]
         {
-            ("Báo cáo tổng kết", "📅"),
-            ("Thống kê", "📈")
+            ("Báo cáo định kỳ", "📅"),
+            ("Báo cáo tổng kết", "📝"),
+            ("Thống kê phong trào KH", "📈")
         });
         
-        // 09. TÀI LIỆU KHÁC
-        var taiLieu = CreateFolder("09. TÀI LIỆU KHÁC", null, "📚", orgName, 9);
+        // 10. TÀI LIỆU KHÁC
+        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
         CreateSubFolders(taiLieu.Id, orgName, new[]
         {
+            ("Văn bản pháp luật", "📜"),
+            ("Tài liệu nghiệp vụ KH", "📖"),
+            ("Lưu trữ", "🗄️")
+        });
+    }
+    
+    // === TRUNG TÂM VĂN HÓA ===
+    private void CreateStructure_TrungTamVanHoa(string orgName)
+    {
+        Console.WriteLine("  Creating TRUNG TÂM VĂN HÓA structure...");
+        
+        // 01-02: VĂN BẢN ĐẾN/ĐI
+        var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
+        
+        var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
+        
+        // 03. TỔ CHỨC - HÀNH CHÍNH
+        var toChuc = CreateFolder("03. TỔ CHỨC - HÀNH CHÍNH", null, "🏛️", orgName, 3);
+        CreateSubFolders(toChuc.Id, orgName, new[]
+        {
+            ("Tổ chức bộ máy", "⚙️"),
+            ("Quản lý cán bộ", "👥"),
+            ("Thi đua khen thưởng", "🏆"),
+            ("Quản lý con dấu", "🔐")
+        });
+        
+        // 04. TÀI CHÍNH
+        var taiChinh = CreateFolder("04. TÀI CHÍNH", null, "💰", orgName, 4);
+        CreateSubFolders(taiChinh.Id, orgName, new[]
+        {
+            ("Dự toán kinh phí", "📊"),
+            ("Quyết toán", "📝"),
+            ("Thu chi hoạt động", "💵")
+        });
+        
+        // 05. HOẠT ĐỘNG VĂN HÓA
+        var vanHoa = CreateFolder("05. HOẠT ĐỘNG VĂN HÓA", null, "🎭", orgName, 5);
+        CreateSubFolders(vanHoa.Id, orgName, new[]
+        {
+            ("Lễ hội truyền thống", "🏮"),
+            ("Liên hoan văn nghệ", "🎵"),
+            ("Triển lãm", "🖼️"),
+            ("Chiếu phim - Biểu diễn", "🎬"),
+            ("Nếp sống văn minh", "🌸")
+        });
+        
+        // 06. HOẠT ĐỘNG THỂ THAO
+        var theThao = CreateFolder("06. HOẠT ĐỘNG THỂ THAO", null, "⚽", orgName, 6);
+        CreateSubFolders(theThao.Id, orgName, new[]
+        {
+            ("Giải đấu thể thao", "🏆"),
+            ("Hội khỏe Phù Đổng", "🏃"),
+            ("CLB thể dục thể thao", "🏋️"),
+            ("Thể thao quần chúng", "👥")
+        });
+        
+        // 07. ĐÀO TẠO - CÂU LẠC BỘ
+        var daoTao = CreateFolder("07. ĐÀO TẠO - CÂU LẠC BỘ", null, "🎓", orgName, 7);
+        CreateSubFolders(daoTao.Id, orgName, new[]
+        {
+            ("Lớp năng khiếu", "🎨"),
+            ("CLB văn nghệ", "🎵"),
+            ("CLB thể thao", "⚽"),
+            ("Hoạt động hè", "☀️")
+        });
+        
+        // 08. QUẢN LÝ CƠ SỞ VẬT CHẤT
+        var csvc = CreateFolder("08. QUẢN LÝ CƠ SỞ VẬT CHẤT", null, "🏢", orgName, 8);
+        CreateSubFolders(csvc.Id, orgName, new[]
+        {
+            ("Thiết bị âm thanh - ánh sáng", "🔊"),
+            ("Sân khấu - Hội trường", "🎪"),
+            ("Sân bãi thể thao", "🏟️"),
+            ("Bảo trì sửa chữa", "🔧")
+        });
+        
+        // 09. BÁO CÁO - THỐNG KÊ
+        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
+        CreateSubFolders(baoCao.Id, orgName, new[]
+        {
+            ("Báo cáo định kỳ", "📅"),
+            ("Báo cáo tổng kết", "📝"),
+            ("Thống kê hoạt động", "📈")
+        });
+        
+        // 10. TÀI LIỆU KHÁC
+        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
+        CreateSubFolders(taiLieu.Id, orgName, new[]
+        {
+            ("Văn bản hướng dẫn", "📜"),
+            ("Tài liệu nghiệp vụ", "📖"),
+            ("Lưu trữ", "🗄️")
+        });
+    }
+    
+    // === THƯ VIỆN ===
+    private void CreateStructure_ThuVien(string orgName)
+    {
+        Console.WriteLine("  Creating THƯ VIỆN structure...");
+        
+        // 01-02: VĂN BẢN ĐẾN/ĐI
+        var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
+        
+        var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
+        
+        // 03. TỔ CHỨC - HÀNH CHÍNH
+        var toChuc = CreateFolder("03. TỔ CHỨC - HÀNH CHÍNH", null, "🏛️", orgName, 3);
+        CreateSubFolders(toChuc.Id, orgName, new[]
+        {
+            ("Tổ chức bộ máy", "⚙️"),
+            ("Quản lý cán bộ", "👥"),
+            ("Quản lý con dấu", "🔐")
+        });
+        
+        // 04. TÀI CHÍNH
+        var taiChinh = CreateFolder("04. TÀI CHÍNH", null, "💰", orgName, 4);
+        CreateSubFolders(taiChinh.Id, orgName, new[]
+        {
+            ("Dự toán kinh phí", "📊"),
+            ("Quyết toán", "📝"),
+            ("Mua sắm tài liệu", "📖")
+        });
+        
+        // 05. QUẢN LÝ TÀI LIỆU
+        var taiLieuQL = CreateFolder("05. QUẢN LÝ TÀI LIỆU", null, "📚", orgName, 5);
+        CreateSubFolders(taiLieuQL.Id, orgName, new[]
+        {
+            ("Sách - Báo - Tạp chí", "📰"),
+            ("Tài liệu số", "💿"),
+            ("Tài liệu quý hiếm", "👑"),
+            ("Biên mục - Phân loại", "🏷️"),
+            ("Kiểm kê kho sách", "📋")
+        });
+        
+        // 06. PHỤC VỤ BẠN ĐỌC
+        var banDoc = CreateFolder("06. PHỤC VỤ BẠN ĐỌC", null, "👥", orgName, 6);
+        CreateSubFolders(banDoc.Id, orgName, new[]
+        {
+            ("Phát hành thẻ bạn đọc", "🎫"),
+            ("Mượn trả sách", "🔄"),
+            ("Phòng đọc", "📖"),
+            ("Luân chuyển sách", "🚚")
+        });
+        
+        // 07. HOẠT ĐỘNG CHUYÊN ĐỀ
+        var chuyenDe = CreateFolder("07. HOẠT ĐỘNG CHUYÊN ĐỀ", null, "🎯", orgName, 7);
+        CreateSubFolders(chuyenDe.Id, orgName, new[]
+        {
+            ("Triển lãm sách", "🖼️"),
+            ("Giới thiệu sách mới", "📢"),
+            ("Ngày hội đọc sách", "📅"),
+            ("Cuộc thi đọc sách", "🏆")
+        });
+        
+        // 08. CÔNG NGHỆ THÔNG TIN
+        var cntt = CreateFolder("08. CÔNG NGHỆ THÔNG TIN", null, "💻", orgName, 8);
+        CreateSubFolders(cntt.Id, orgName, new[]
+        {
+            ("Thư viện số", "🌐"),
+            ("Phần mềm quản lý TV", "🖥️"),
+            ("Cơ sở dữ liệu", "🗄️")
+        });
+        
+        // 09. BÁO CÁO - THỐNG KÊ
+        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
+        CreateSubFolders(baoCao.Id, orgName, new[]
+        {
+            ("Báo cáo định kỳ", "📅"),
+            ("Thống kê bạn đọc", "📈"),
+            ("Thống kê tài liệu", "📊")
+        });
+        
+        // 10. TÀI LIỆU KHÁC
+        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
+        CreateSubFolders(taiLieu.Id, orgName, new[]
+        {
+            ("Văn bản hướng dẫn", "📜"),
+            ("Quy chế thư viện", "📋"),
+            ("Lưu trữ", "🗄️")
+        });
+    }
+    
+    // === BẢO TÀNG / VIỆN / DI TÍCH ===
+    private void CreateStructure_BaoTang(string orgName)
+    {
+        Console.WriteLine("  Creating BẢO TÀNG / DI TÍCH structure...");
+        
+        // 01-02: VĂN BẢN ĐẾN/ĐI
+        var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
+        
+        var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
+        
+        // 03. TỔ CHỨC - HÀNH CHÍNH
+        var toChuc = CreateFolder("03. TỔ CHỨC - HÀNH CHÍNH", null, "🏛️", orgName, 3);
+        CreateSubFolders(toChuc.Id, orgName, new[]
+        {
+            ("Tổ chức bộ máy", "⚙️"),
+            ("Quản lý cán bộ", "👥"),
+            ("Quản lý con dấu", "🔐")
+        });
+        
+        // 04. TÀI CHÍNH
+        var taiChinh = CreateFolder("04. TÀI CHÍNH", null, "💰", orgName, 4);
+        CreateSubFolders(taiChinh.Id, orgName, new[]
+        {
+            ("Dự toán kinh phí", "📊"),
+            ("Quyết toán", "📝"),
+            ("Thu phí tham quan", "🎫")
+        });
+        
+        // 05. SƯU TẦM - KIỂM KÊ
+        var suuTam = CreateFolder("05. SƯU TẦM - KIỂM KÊ", null, "🏺", orgName, 5);
+        CreateSubFolders(suuTam.Id, orgName, new[]
+        {
+            ("Hiện vật - Cổ vật", "🏺"),
+            ("Sưu tầm tài liệu", "📜"),
+            ("Bảo quản hiện vật", "🛡️"),
+            ("Kiểm kê kho", "📋"),
+            ("Phục chế - Tu bổ", "🔧")
+        });
+        
+        // 06. TRƯNG BÀY - TRIỂN LÃM
+        var trungBay = CreateFolder("06. TRƯNG BÀY - TRIỂN LÃM", null, "🖼️", orgName, 6);
+        CreateSubFolders(trungBay.Id, orgName, new[]
+        {
+            ("Trưng bày thường xuyên", "🏛️"),
+            ("Triển lãm chuyên đề", "🎨"),
+            ("Triển lãm lưu động", "🚚"),
+            ("Hồ sơ di tích", "📁")
+        });
+        
+        // 07. NGHIÊN CỨU KHOA HỌC
+        var nghienCuu = CreateFolder("07. NGHIÊN CỨU KHOA HỌC", null, "🔬", orgName, 7);
+        CreateSubFolders(nghienCuu.Id, orgName, new[]
+        {
+            ("Đề tài nghiên cứu", "📝"),
+            ("Tài liệu khảo cổ", "⛏️"),
+            ("Hội thảo khoa học", "🎓"),
+            ("Xuất bản ấn phẩm", "📚")
+        });
+        
+        // 08. GIÁO DỤC - TRUYỀN THÔNG
+        var giaoDoc = CreateFolder("08. GIÁO DỤC - TRUYỀN THÔNG", null, "📢", orgName, 8);
+        CreateSubFolders(giaoDoc.Id, orgName, new[]
+        {
+            ("Giáo dục di sản", "🏛️"),
+            ("Hướng dẫn tham quan", "🎤"),
+            ("Truyền thông quảng bá", "📣"),
+            ("Hoạt động cộng đồng", "👥")
+        });
+        
+        // 09. BÁO CÁO - THỐNG KÊ
+        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
+        CreateSubFolders(baoCao.Id, orgName, new[]
+        {
+            ("Báo cáo định kỳ", "📅"),
+            ("Thống kê khách tham quan", "📈"),
+            ("Tổng kết hoạt động", "📝")
+        });
+        
+        // 10. TÀI LIỆU KHÁC
+        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
+        CreateSubFolders(taiLieu.Id, orgName, new[]
+        {
+            ("Văn bản pháp luật di sản", "📜"),
             ("Tài liệu chuyên môn", "📖"),
+            ("Lưu trữ", "🗄️")
+        });
+    }
+    
+    // === CÔNG TY NHÀ NƯỚC / DOANH NGHIỆP ===
+    private void CreateStructure_CongTyNhaNuoc(string orgName)
+    {
+        Console.WriteLine("  Creating CÔNG TY NHÀ NƯỚC structure...");
+        
+        // 01-02: VĂN BẢN ĐẾN/ĐI
+        var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
+        
+        var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
+        for (int year = 2024; year <= DateTime.Now.Year; year++)
+            CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
+        
+        // 03. TỔ CHỨC - NHÂN SỰ
+        var toChuc = CreateFolder("03. TỔ CHỨC - NHÂN SỰ", null, "🏛️", orgName, 3);
+        CreateSubFolders(toChuc.Id, orgName, new[]
+        {
+            ("Tổ chức bộ máy", "⚙️"),
+            ("Tuyển dụng nhân sự", "📋"),
+            ("Hợp đồng lao động", "📝"),
+            ("Đào tạo phát triển", "🎓"),
+            ("Thi đua khen thưởng", "🏆")
+        });
+        
+        // 04. TÀI CHÍNH - KẾ TOÁN
+        var taiChinh = CreateFolder("04. TÀI CHÍNH - KẾ TOÁN", null, "💰", orgName, 4);
+        CreateSubFolders(taiChinh.Id, orgName, new[]
+        {
+            ("Báo cáo tài chính", "📊"),
+            ("Kế toán", "📝"),
+            ("Thuế", "💵"),
+            ("Kiểm toán", "🔍"),
+            ("Quản lý tài sản", "🏢")
+        });
+        
+        // 05. SẢN XUẤT - KINH DOANH
+        var sanXuat = CreateFolder("05. SẢN XUẤT - KINH DOANH", null, "🏭", orgName, 5);
+        CreateSubFolders(sanXuat.Id, orgName, new[]
+        {
+            ("Kế hoạch SX-KD", "📅"),
+            ("Hợp đồng kinh tế", "📝"),
+            ("Quản lý dự án", "📋"),
+            ("Tiếp thị - Bán hàng", "📣")
+        });
+        
+        // 06. KỸ THUẬT - CHẤT LƯỢNG
+        var kyThuat = CreateFolder("06. KỸ THUẬT - CHẤT LƯỢNG", null, "🔧", orgName, 6);
+        CreateSubFolders(kyThuat.Id, orgName, new[]
+        {
+            ("Quy trình kỹ thuật", "⚙️"),
+            ("Kiểm tra chất lượng", "✅"),
+            ("An toàn lao động", "⚠️"),
+            ("Tiêu chuẩn - Quy chuẩn", "📏")
+        });
+        
+        // 07. HỘI ĐỒNG QUẢN TRỊ
+        var hdqt = CreateFolder("07. HỘI ĐỒNG QUẢN TRỊ", null, "👔", orgName, 7);
+        CreateSubFolders(hdqt.Id, orgName, new[]
+        {
+            ("Nghị quyết HĐQT", "📋"),
+            ("Biên bản họp HĐQT", "📝"),
+            ("Quyết định", "📄"),
+            ("Đại hội cổ đông", "🎭")
+        });
+        
+        // 08. PHÁP CHẾ - HỢP ĐỒNG
+        var phapChe = CreateFolder("08. PHÁP CHẾ - HỢP ĐỒNG", null, "⚖️", orgName, 8);
+        CreateSubFolders(phapChe.Id, orgName, new[]
+        {
+            ("Hợp đồng", "📝"),
+            ("Tranh chấp pháp lý", "⚖️"),
+            ("Tuân thủ pháp luật", "📜"),
+            ("Giấy phép", "📄")
+        });
+        
+        // 09. BÁO CÁO - THỐNG KÊ
+        var baoCao = CreateFolder("09. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 9);
+        CreateSubFolders(baoCao.Id, orgName, new[]
+        {
+            ("Báo cáo định kỳ", "📅"),
+            ("Thống kê sản xuất", "📈"),
+            ("Báo cáo doanh thu", "💰"),
+            ("Tổng kết năm", "📝")
+        });
+        
+        // 10. TÀI LIỆU KHÁC
+        var taiLieu = CreateFolder("10. TÀI LIỆU KHÁC", null, "📚", orgName, 10);
+        CreateSubFolders(taiLieu.Id, orgName, new[]
+        {
+            ("Văn bản pháp luật DN", "📜"),
+            ("Tài liệu nội bộ", "📖"),
             ("Lưu trữ", "🗄️")
         });
     }
@@ -2044,25 +2363,62 @@ public class OrganizationSetupService
     {
         Console.WriteLine("  Creating GENERIC (default) structure...");
         
-        // Cấu trúc chung cho các loại còn lại
+        // Cấu trúc chung cho các loại còn lại / Cơ quan tùy chọn
         var vbDen = CreateFolder("01. VĂN BẢN ĐẾN", null, "📥", orgName, 1);
         for (int year = 2024; year <= DateTime.Now.Year; year++)
-        {
             CreateFolder($"Năm {year}", vbDen.Id, "📅", orgName);
-        }
         
         var vbDi = CreateFolder("02. VĂN BẢN ĐI", null, "📤", orgName, 2);
         for (int year = 2024; year <= DateTime.Now.Year; year++)
-        {
             CreateFolder($"Năm {year}", vbDi.Id, "📅", orgName);
-        }
         
-        CreateFolder("03. HÀNH CHÍNH - TỔ CHỨC", null, "🏛️", orgName, 3);
-        CreateFolder("04. TÀI CHÍNH", null, "💰", orgName, 4);
-        CreateFolder("05. HỘI NGHỊ - BIÊN BẢN", null, "📋", orgName, 5);
-        CreateFolder("06. HOẠT ĐỘNG CHUYÊN MÔN", null, "💼", orgName, 6);
-        CreateFolder("07. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 7);
-        CreateFolder("08. TÀI LIỆU KHÁC", null, "📚", orgName, 8);
+        var hcTc = CreateFolder("03. HÀNH CHÍNH - TỔ CHỨC", null, "🏛️", orgName, 3);
+        CreateSubFolders(hcTc.Id, orgName, new[]
+        {
+            ("Tổ chức bộ máy", "⚙️"),
+            ("Quản lý cán bộ", "👥"),
+            ("Quản lý con dấu", "🔐")
+        });
+        
+        var taiChinh = CreateFolder("04. TÀI CHÍNH", null, "💰", orgName, 4);
+        CreateSubFolders(taiChinh.Id, orgName, new[]
+        {
+            ("Dự toán kinh phí", "📊"),
+            ("Quyết toán", "📝"),
+            ("Thu chi", "💵")
+        });
+        
+        var hoiNghi = CreateFolder("05. HỘI NGHỊ - BIÊN BẢN", null, "📋", orgName, 5);
+        CreateSubFolders(hoiNghi.Id, orgName, new[]
+        {
+            ("Hội nghị", "👥"),
+            ("Biên bản họp", "📝"),
+            ("Nghị quyết - Quyết định", "📄")
+        });
+        
+        var chuyenMon = CreateFolder("06. HOẠT ĐỘNG CHUYÊN MÔN", null, "💼", orgName, 6);
+        CreateSubFolders(chuyenMon.Id, orgName, new[]
+        {
+            ("Kế hoạch công tác", "📅"),
+            ("Chương trình hành động", "🎯"),
+            ("Tài liệu nghiệp vụ", "📖")
+        });
+        
+        var baoCao = CreateFolder("07. BÁO CÁO - THỐNG KÊ", null, "📊", orgName, 7);
+        CreateSubFolders(baoCao.Id, orgName, new[]
+        {
+            ("Báo cáo định kỳ", "📅"),
+            ("Thống kê", "📈"),
+            ("Tổng kết", "📝")
+        });
+        
+        var taiLieu = CreateFolder("08. TÀI LIỆU KHÁC", null, "📚", orgName, 8);
+        CreateSubFolders(taiLieu.Id, orgName, new[]
+        {
+            ("Văn bản hướng dẫn", "📜"),
+            ("Mẫu biểu", "📋"),
+            ("Lưu trữ", "🗄️")
+        });
     }
     
     // Helper methods
