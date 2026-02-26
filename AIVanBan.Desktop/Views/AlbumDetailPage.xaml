@@ -64,7 +64,7 @@
                         <Button Content="📤 Upload ảnh"
                                 Click="Upload_Click"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
-                                Background="#4CAF50"
+                                Background="#4CAF50" Foreground="White"
                                 BorderBrush="#4CAF50"
                                 Padding="15,6"/>
                         
@@ -111,7 +111,7 @@
                                 x:Name="btnBulkDelete"
                                 Click="BulkDelete_Click"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
-                                Background="#F44336"
+                                Background="#F44336" Foreground="White"
                                 BorderBrush="#F44336"
                                 Margin="0,0,10,0"
                                 Padding="10,6"/>

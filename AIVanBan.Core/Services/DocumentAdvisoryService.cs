@@ -22,19 +22,21 @@ public class DocumentAdvisoryService
     }
 
     /// <summary>
-    /// Phân tích văn bản đến và đưa ra tham mưu xử lý
+    /// Phân tích văn bản đến và đưa ra tham mưu xử lý.
+    /// Overload mới nhận đầy đủ metadata từ Document model.
     /// </summary>
     public async Task<DocumentAdvisory> AdviseAsync(
         string content,
         string documentType = "",
         string title = "",
-        string issuer = "")
+        string issuer = "",
+        DocumentAdvisoryContext? context = null)
     {
         if (string.IsNullOrWhiteSpace(content))
             throw new ArgumentException("Nội dung văn bản không được để trống.");
 
         var systemPrompt = BuildSystemPrompt();
-        var userPrompt = BuildUserPrompt(content, documentType, title, issuer);
+        var userPrompt = BuildUserPrompt(content, documentType, title, issuer, context);
 
         var responseText = await _aiService.GenerateContentAsync(userPrompt, systemPrompt);
 
@@ -177,16 +179,60 @@ QUY TẮC QUAN TRỌNG:
 - Phân biệt rõ: VB chỉ để biết vs. VB cần hành động vs. VB cần trả lời";
     }
 
-    private string BuildUserPrompt(string content, string documentType, string title, string issuer)
+    private string BuildUserPrompt(string content, string documentType, string title, string issuer,
+        DocumentAdvisoryContext? ctx = null)
     {
         var parts = new List<string>();
 
+        // === Thông tin cơ bản ===
         if (!string.IsNullOrWhiteSpace(documentType))
             parts.Add($"LOẠI VĂN BẢN: {documentType}");
         if (!string.IsNullOrWhiteSpace(title))
             parts.Add($"TRÍCH YẾU: {title}");
         if (!string.IsNullOrWhiteSpace(issuer))
             parts.Add($"CƠ QUAN GỬI: {issuer}");
+
+        // === Metadata bổ sung từ Document (nếu có) ===
+        if (ctx != null)
+        {
+            // Hướng VB — quyết định logic tham mưu: VB đến cần phân tích+trả lời, VB đi cần rà soát
+            if (!string.IsNullOrWhiteSpace(ctx.Direction))
+                parts.Add($"HƯỚNG VĂN BẢN: {ctx.Direction}");
+            if (!string.IsNullOrWhiteSpace(ctx.Category))
+                parts.Add($"LĨNH VỰC: {ctx.Category}");
+            if (!string.IsNullOrWhiteSpace(ctx.DocumentNumber))
+                parts.Add($"SỐ KÝ HIỆU: {ctx.DocumentNumber}");
+            if (ctx.IssuedDate.HasValue)
+                parts.Add($"NGÀY BAN HÀNH: {ctx.IssuedDate.Value:dd/MM/yyyy}");
+            if (!string.IsNullOrWhiteSpace(ctx.UrgencyLevel) && ctx.UrgencyLevel != "Thường")
+                parts.Add($"MỨC ĐỘ KHẨN: {ctx.UrgencyLevel}");
+            if (!string.IsNullOrWhiteSpace(ctx.SecurityLevel) && ctx.SecurityLevel != "Thường")
+                parts.Add($"ĐỘ MẬT: {ctx.SecurityLevel}");
+            if (ctx.DueDate.HasValue)
+                parts.Add($"HẠN XỬ LÝ: {ctx.DueDate.Value:dd/MM/yyyy} ({(ctx.DueDate.Value - DateTime.Now).Days} ngày nữa)");
+            if (!string.IsNullOrWhiteSpace(ctx.SignerName))
+                parts.Add($"NGƯỜI KÝ: {ctx.SignerName}" + (string.IsNullOrWhiteSpace(ctx.SignerTitle) ? "" : $" — {ctx.SignerTitle}"));
+            if (ctx.Recipients?.Length > 0)
+                parts.Add($"NƠI NHẬN: {string.Join("; ", ctx.Recipients)}");
+            if (!string.IsNullOrWhiteSpace(ctx.AssignedTo))
+                parts.Add($"PHÂN CÔNG XỬ LÝ: {ctx.AssignedTo}");
+            if (!string.IsNullOrWhiteSpace(ctx.ProcessingNotes))
+                parts.Add($"Ý KIẾN CHỈ ĐẠO: {ctx.ProcessingNotes}");
+
+            // Căn cứ pháp lý — thông tin quan trọng cho tham mưu
+            if (ctx.BasedOn?.Length > 0)
+            {
+                parts.Add("CĂN CỨ PHÁP LÝ VIỆN DẪN TRONG VĂN BẢN:");
+                foreach (var b in ctx.BasedOn)
+                    parts.Add($"  - {b}");
+            }
+
+            // Văn bản liên quan trước đó
+            if (!string.IsNullOrWhiteSpace(ctx.RelatedDocumentsSummary))
+            {
+                parts.Add($"VĂN BẢN LIÊN QUAN TRƯỚC ĐÓ:\n{ctx.RelatedDocumentsSummary}");
+            }
+        }
 
         parts.Add($"NỘI DUNG VĂN BẢN:\n\n{content}");
 
@@ -247,6 +293,78 @@ QUY TẮC QUAN TRỌNG:
             Summary = fallbackText.Length > 800 ? fallbackText[..800] + "..." : fallbackText,
             Priority = "medium",
             IncomingType = "Khác"
+        };
+    }
+}
+
+/// <summary>
+/// Dữ liệu ngữ cảnh bổ sung cho AI Tham mưu — trích từ Document model.
+/// Giúp AI phân tích chính xác hơn thay vì phải "đoán" từ nội dung.
+/// </summary>
+public class DocumentAdvisoryContext
+{
+    /// <summary>Hướng VB: Đến / Đi / Nội bộ — quyết định cách tham mưu</summary>
+    public string? Direction { get; set; }
+    
+    /// <summary>Lĩnh vực (Category) — giúp phân công đúng người</summary>
+    public string? Category { get; set; }
+    
+    /// <summary>Số ký hiệu VB (VD: 123/CV-UBND)</summary>
+    public string? DocumentNumber { get; set; }
+    
+    /// <summary>Ngày ban hành</summary>
+    public DateTime? IssuedDate { get; set; }
+    
+    /// <summary>Mức độ khẩn (display name: Thường/Khẩn/Thượng khẩn/Hỏa tốc)</summary>
+    public string? UrgencyLevel { get; set; }
+    
+    /// <summary>Độ mật (display name: Thường/Mật/Tối mật/Tuyệt mật)</summary>
+    public string? SecurityLevel { get; set; }
+    
+    /// <summary>Hạn xử lý</summary>
+    public DateTime? DueDate { get; set; }
+    
+    /// <summary>Người ký văn bản</summary>
+    public string? SignerName { get; set; }
+    
+    /// <summary>Chức danh người ký</summary>
+    public string? SignerTitle { get; set; }
+    
+    /// <summary>Nơi nhận</summary>
+    public string[]? Recipients { get; set; }
+    
+    /// <summary>Người/đơn vị được phân công xử lý</summary>
+    public string? AssignedTo { get; set; }
+    
+    /// <summary>Ý kiến chỉ đạo</summary>
+    public string? ProcessingNotes { get; set; }
+    
+    /// <summary>Các căn cứ pháp lý viện dẫn trong VB</summary>
+    public string[]? BasedOn { get; set; }
+    
+    /// <summary>Tóm tắt VB liên quan trước đó (nếu có)</summary>
+    public string? RelatedDocumentsSummary { get; set; }
+
+    /// <summary>
+    /// Tạo context từ Document model
+    /// </summary>
+    public static DocumentAdvisoryContext FromDocument(Document doc)
+    {
+        return new DocumentAdvisoryContext
+        {
+            Direction = doc.Direction.GetDisplayName(),
+            Category = doc.Category,
+            DocumentNumber = doc.Number,
+            IssuedDate = doc.IssueDate,
+            UrgencyLevel = doc.UrgencyLevel.GetDisplayName(),
+            SecurityLevel = doc.SecurityLevel.GetDisplayName(),
+            DueDate = doc.DueDate,
+            SignerName = doc.SignedBy,
+            SignerTitle = doc.SigningTitle,
+            Recipients = doc.Recipients,
+            AssignedTo = doc.AssignedTo,
+            ProcessingNotes = doc.ProcessingNotes,
+            BasedOn = doc.BasedOn,
         };
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using AIVanBan.Core.Models;
 
@@ -125,8 +126,8 @@ namespace AIVanBan.Desktop.Views
             // Tiêu đề
             txtArticleTitle.Text = node.Title;
 
-            // Nội dung
-            txtArticleContent.Text = node.Content;
+            // Nội dung (rich rendering: tables, bullets, headers)
+            RenderRichContent(pnlRichContent, node.Content);
 
             // Breadcrumb
             txtBreadcrumb.Text = BuildBreadcrumb(node);
@@ -154,6 +155,264 @@ namespace AIVanBan.Desktop.Views
             {
                 pnlChildrenSummary.Visibility = Visibility.Collapsed;
             }
+        }
+
+        // Cached brushes cho rich content (resolve 1 lần, dùng lại)
+        private Brush? _primaryBrush, _primaryLightBrush, _dividerBrush, _bodyBrush;
+
+        private Brush GetBrush(string key, Brush fallback)
+        {
+            return TryFindResource(key) as Brush
+                ?? Application.Current.TryFindResource(key) as Brush
+                ?? fallback;
+        }
+
+        private void EnsureBrushes()
+        {
+            _primaryBrush ??= GetBrush("PrimaryHueMidBrush", new SolidColorBrush(Color.FromRgb(25, 118, 210)));
+            _primaryLightBrush ??= GetBrush("PrimaryHueLightBrush", new SolidColorBrush(Color.FromRgb(227, 242, 253)));
+            _dividerBrush ??= GetBrush("MaterialDesignDivider", new SolidColorBrush(Color.FromRgb(224, 224, 224)));
+            _bodyBrush ??= GetBrush("MaterialDesignBody", new SolidColorBrush(Color.FromRgb(33, 33, 33)));
+        }
+
+        /// <summary>
+        /// Render nội dung rich: bảng |...|, bullet •, header IN HOA, numbered items
+        /// </summary>
+        private void RenderRichContent(StackPanel panel, string? content)
+        {
+            panel.Children.Clear();
+            EnsureBrushes();
+            if (string.IsNullOrWhiteSpace(content)) return;
+
+            var lines = content.Split('\n');
+            var tableRows = new List<string[]>();
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                var trimmed = line.Trim();
+
+                // Empty line → spacer (flush table first)
+                if (string.IsNullOrWhiteSpace(trimmed))
+                {
+                    if (tableRows.Count > 0) { FlushTable(panel, tableRows); tableRows.Clear(); }
+                    panel.Children.Add(new Border { Height = 6 });
+                    continue;
+                }
+
+                // Table row: |col|col|
+                if (trimmed.StartsWith('|') && trimmed.EndsWith('|'))
+                {
+                    // Skip separator rows like |---|---|
+                    if (trimmed.Contains("---")) continue;
+
+                    var cells = trimmed.Split('|')
+                        .Skip(1).SkipLast(1)
+                        .Select(c => c.Trim())
+                        .ToArray();
+                    tableRows.Add(cells);
+                    continue;
+                }
+
+                // Flush pending table before other content
+                if (tableRows.Count > 0) { FlushTable(panel, tableRows); tableRows.Clear(); }
+
+                // Header detection: ALL CAPS text (>3 chars, not bullet)
+                bool isAllCaps = trimmed.Length > 3 && !trimmed.StartsWith("•") &&
+                    trimmed == trimmed.ToUpperInvariant() &&
+                    trimmed.Any(char.IsLetter);
+
+                // Section header: e.g. "I. NGUYÊN TẮC..." or "BỐ CỤC:" or "PHẦN I —"
+                bool isSectionHeader = !trimmed.StartsWith("•") && !trimmed.StartsWith("(") &&
+                    (isAllCaps ||
+                     (trimmed.EndsWith(":") && trimmed.Length < 80) ||
+                     (trimmed.StartsWith("Phần ") && trimmed.Contains(".")));
+
+                if (isSectionHeader)
+                {
+                    panel.Children.Add(new TextBlock
+                    {
+                        Text = trimmed,
+                        FontSize = 14,
+                        FontWeight = FontWeights.Bold,
+                        Margin = new Thickness(0, 8, 0, 4),
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = _primaryBrush
+                    });
+                }
+                // Bullet: • or - at start
+                else if (trimmed.StartsWith("•") || (trimmed.StartsWith("- ") && !trimmed.StartsWith("--")))
+                {
+                    var bulletText = trimmed.TrimStart('•', '-', ' ');
+                    var sp = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 2, 0, 2) };
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = "•",
+                        FontSize = 14,
+                        Margin = new Thickness(0, 0, 8, 0),
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Foreground = _primaryBrush
+                    });
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = bulletText,
+                        FontSize = 13.5,
+                        TextWrapping = TextWrapping.Wrap,
+                        LineHeight = 22,
+                        Foreground = _bodyBrush
+                    });
+                    panel.Children.Add(sp);
+                }
+                // Numbered item: starts with digit + . or digit + )
+                else if (trimmed.Length > 2 && char.IsDigit(trimmed[0]) && (trimmed[1] == '.' || trimmed[1] == ')' ||
+                         (char.IsDigit(trimmed[1]) && trimmed.Length > 3 && (trimmed[2] == '.' || trimmed[2] == ')'))))
+                {
+                    // Find where number ends
+                    int dotPos = trimmed.IndexOfAny(new[] { '.', ')' });
+                    var numPart = trimmed[..(dotPos + 1)];
+                    var textPart = trimmed[(dotPos + 1)..].TrimStart();
+
+                    var sp = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(4, 3, 0, 3) };
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = numPart,
+                        FontSize = 13.5,
+                        FontWeight = FontWeights.SemiBold,
+                        MinWidth = 28,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Foreground = _primaryBrush
+                    });
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = textPart,
+                        FontSize = 13.5,
+                        TextWrapping = TextWrapping.Wrap,
+                        LineHeight = 22,
+                        Foreground = _bodyBrush
+                    });
+                    panel.Children.Add(sp);
+                }
+                // Lettered item: a) b) c) etc.
+                else if (trimmed.Length > 2 && char.IsLetter(trimmed[0]) && trimmed[1] == ')')
+                {
+                    var sp = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(20, 2, 0, 2) };
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = trimmed[..2],
+                        FontSize = 13.5,
+                        FontWeight = FontWeights.SemiBold,
+                        MinWidth = 24,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        Foreground = _primaryBrush
+                    });
+                    sp.Children.Add(new TextBlock
+                    {
+                        Text = trimmed[2..].TrimStart(),
+                        FontSize = 13.5,
+                        TextWrapping = TextWrapping.Wrap,
+                        LineHeight = 22,
+                        Foreground = _bodyBrush
+                    });
+                    panel.Children.Add(sp);
+                }
+                // Regular paragraph
+                else
+                {
+                    panel.Children.Add(new TextBlock
+                    {
+                        Text = trimmed,
+                        FontSize = 13.5,
+                        TextWrapping = TextWrapping.Wrap,
+                        LineHeight = 24,
+                        Margin = new Thickness(0, 2, 0, 2),
+                        Foreground = _bodyBrush
+                    });
+                }
+            }
+
+            // Flush remaining table
+            if (tableRows.Count > 0) FlushTable(panel, tableRows);
+        }
+
+        /// <summary>
+        /// Render bảng WPF từ danh sách dòng (row 0 = header)
+        /// </summary>
+        private void FlushTable(StackPanel panel, List<string[]> rows)
+        {
+            if (rows.Count == 0) return;
+
+            int maxCols = rows.Max(r => r.Length);
+            var grid = new Grid { Margin = new Thickness(0, 8, 0, 8) };
+
+            // Column definitions
+            for (int c = 0; c < maxCols; c++)
+            {
+                // Cột cuối stretch, cột khác auto
+                grid.ColumnDefinitions.Add(new ColumnDefinition
+                {
+                    Width = c < maxCols - 1 ? GridLength.Auto : new GridLength(1, GridUnitType.Star)
+                });
+            }
+
+            // Row definitions
+            for (int r = 0; r < rows.Count; r++)
+            {
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            }
+
+            EnsureBrushes();
+            var headerBg = _primaryLightBrush!;
+            var borderBrush = _dividerBrush!;
+            var bodyFg = _bodyBrush!;
+
+            for (int r = 0; r < rows.Count; r++)
+            {
+                for (int c = 0; c < maxCols; c++)
+                {
+                    var cellText = c < rows[r].Length ? rows[r][c] : "";
+                    bool isHeader = (r == 0);
+
+                    var border = new Border
+                    {
+                        BorderBrush = borderBrush,
+                        BorderThickness = new Thickness(
+                            c == 0 ? 1 : 0, // left
+                            r == 0 ? 1 : 0, // top
+                            1,              // right
+                            1               // bottom
+                        ),
+                        Padding = new Thickness(10, 6, 10, 6),
+                        Background = isHeader ? headerBg : Brushes.Transparent
+                    };
+
+                    var tb = new TextBlock
+                    {
+                        Text = cellText,
+                        FontSize = 12.5,
+                        FontWeight = isHeader ? FontWeights.Bold : FontWeights.Normal,
+                        TextWrapping = TextWrapping.Wrap,
+                        Foreground = bodyFg
+                    };
+
+                    border.Child = tb;
+                    Grid.SetRow(border, r);
+                    Grid.SetColumn(border, c);
+                    grid.Children.Add(border);
+                }
+            }
+
+            // Wrap trong border bo tròn
+            var wrapper = new Border
+            {
+                CornerRadius = new CornerRadius(6),
+                BorderBrush = borderBrush,
+                BorderThickness = new Thickness(0),
+                ClipToBounds = true,
+                Child = grid,
+                Margin = new Thickness(0, 4, 0, 4)
+            };
+
+            panel.Children.Add(wrapper);
         }
 
         private string GetNodeTypeName(LegalNodeType type) => type switch

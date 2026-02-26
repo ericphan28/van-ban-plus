@@ -296,6 +296,162 @@ public class GeminiAIService
     }
 
     /// <summary>
+    /// Trích xuất thông tin từ NHIỀU file ảnh/PDF cùng lúc (ghép trang)
+    /// Gemini Vision hỗ trợ nhiều inline_data parts trong 1 request
+    /// </summary>
+    public async Task<ExtractedDocumentData> ExtractDocumentFromMultipleFilesAsync(
+        List<(string Base64, string MimeType)> files)
+    {
+        if (files.Count == 0)
+            throw new ArgumentException("Cần ít nhất 1 file để trích xuất");
+        
+        // Nếu chỉ có 1 file → dùng method đơn lẻ
+        if (files.Count == 1)
+            return await ExtractDocumentFromBytesAsync(files[0].Base64, files[0].MimeType);
+        
+        try
+        {
+            // ===== VanBanPlus API mode — gửi từng file qua API rồi merge =====
+            // (API hiện tại chỉ hỗ trợ 1 file/request, nên ta ưu tiên Gemini direct cho multi-file)
+            
+            // ===== Gemini trực tiếp — gửi nhiều inline_data trong 1 request =====
+            return await CallGeminiDirectMultiExtractAsync(files);
+        }
+        catch (Exception ex) when (!ex.Message.StartsWith("Không thể trích xuất"))
+        {
+            throw new Exception($"Lỗi khi trích xuất nhiều file bằng AI: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Gọi Gemini API trực tiếp với nhiều file (multi inline_data parts)
+    /// </summary>
+    private async Task<ExtractedDocumentData> CallGeminiDirectMultiExtractAsync(
+        List<(string Base64, string MimeType)> files)
+    {
+        var prompt = $@"Bạn là chuyên gia OCR và trích xuất văn bản hành chính Việt Nam.
+Tôi gửi cho bạn {files.Count} ảnh/file là các TRANG của CÙNG MỘT văn bản hành chính (scan nhiều trang).
+Hãy đọc TẤT CẢ các trang theo thứ tự và trích xuất thông tin theo schema JSON.
+
+QUY TẮC BẮT BUỘC:
+1. Đọc lần lượt từ trang 1 đến trang {files.Count}, ghép nội dung lại
+2. Số văn bản: đúng format gốc (VD: 15/GM-UBND, 108/2025/QH15)
+3. Ngày tháng: format dd/MM/yyyy
+4. loai_van_ban: chọn 1 trong 32 loại sau (Điều 7, NĐ 30/2020):
+   - VBQPPL: Luat|NghiDinh|ThongTu
+   - 29 loại VB hành chính: NghiQuyet|QuyetDinh|ChiThi|QuyChE|QuyDinh|ThongCao|ThongBao|HuongDan|ChuongTrinh|KeHoach|PhuongAn|DeAn|DuAn|BaoCao|BienBan|ToTrinh|HopDong|CongVan|CongDien|BanGhiNho|BanThoaThuan|GiayUyQuyen|GiayMoi|GiayGioiThieu|GiayNghiPhep|PhieuGui|PhieuChuyen|PhieuBao|ThuCong
+   - Nếu không rõ: Khac
+5. huong_van_ban: chọn 1 trong Den|Di|NoiBo
+6. do_khan: Thuong|Khan|ThuongKhan|HoaToc. Mặc định: Thuong
+7. do_mat: Thuong|Mat|ToiMat|TuyetMat. Mặc định: Thuong
+8. TRƯỜNG noi_dung — ĐÂY LÀ TRƯỜNG QUAN TRỌNG NHẤT:
+   - CHỈ lấy PHẦN NỘI DUNG CHÍNH từ TẤT CẢ các trang (ghép lại)
+   - KHÔNG đưa vào: tiêu đề cơ quan, quốc hiệu, tiêu ngữ, số VB, ngày BH, tên loại VB, trích yếu
+   - KHÔNG đưa vào: căn cứ pháp lý (đã có trường riêng)
+   - KHÔNG đưa vào: nơi nhận, chữ ký, người ký (đã có trường riêng)
+   - Trích xuất NGUYÊN VĂN, KHÔNG tóm tắt, KHÔNG rút gọn
+   - BẮT BUỘC dùng \n xuống dòng giữa các đoạn/điều/khoản/chương
+9. Giữ nguyên dấu tiếng Việt chính xác";
+
+        // JSON Schema — cùng schema như extract đơn
+        var extractSchema = new
+        {
+            type = "object",
+            properties = new Dictionary<string, object>
+            {
+                ["so_van_ban"] = new { type = "string", description = "Số hiệu văn bản (VD: 15/GM-UBND)" },
+                ["trich_yeu"] = new { type = "string", description = "Trích yếu nội dung văn bản" },
+                ["loai_van_ban"] = new { type = "string", description = "Loại văn bản theo Điều 7 NĐ 30/2020", @enum = new[] { "Luat", "NghiDinh", "ThongTu", "NghiQuyet", "QuyetDinh", "ChiThi", "QuyChE", "QuyDinh", "ThongCao", "ThongBao", "HuongDan", "ChuongTrinh", "KeHoach", "PhuongAn", "DeAn", "DuAn", "BaoCao", "BienBan", "ToTrinh", "HopDong", "CongVan", "CongDien", "BanGhiNho", "BanThoaThuan", "GiayUyQuyen", "GiayMoi", "GiayGioiThieu", "GiayNghiPhep", "PhieuGui", "PhieuChuyen", "PhieuBao", "ThuCong", "Khac" } },
+                ["ngay_ban_hanh"] = new { type = "string", description = "Ngày ban hành dd/MM/yyyy" },
+                ["do_khan"] = new { type = "string", description = "Mức độ khẩn cấp", @enum = new[] { "Thuong", "Khan", "ThuongKhan", "HoaToc" } },
+                ["do_mat"] = new { type = "string", description = "Mức độ bảo mật", @enum = new[] { "Thuong", "Mat", "ToiMat", "TuyetMat" } },
+                ["co_quan_ban_hanh"] = new { type = "string", description = "Tên cơ quan ban hành" },
+                ["nguoi_ky"] = new { type = "string", description = "Họ tên người ký" },
+                ["noi_dung"] = new { type = "string", description = "NỘI DUNG CHÍNH ghép từ tất cả các trang. Dùng \\n xuống dòng." },
+                ["noi_nhan"] = new { type = "array", items = new { type = "string" }, description = "Danh sách nơi nhận" },
+                ["can_cu"] = new { type = "array", items = new { type = "string" }, description = "Danh sách căn cứ pháp lý" },
+                ["huong_van_ban"] = new { type = "string", description = "Hướng văn bản", @enum = new[] { "Den", "Di", "NoiBo" } },
+                ["linh_vuc"] = new { type = "string", description = "Lĩnh vực liên quan" },
+                ["dia_danh"] = new { type = "string", description = "Địa danh nơi ban hành" },
+                ["chuc_danh_ky"] = new { type = "string", description = "Chức danh người ký" },
+                ["tham_quyen_ky"] = new { type = "string", description = "Thẩm quyền ký (TM., KT., Q. hoặc rỗng)" }
+            },
+            required = new[] { "so_van_ban", "trich_yeu", "loai_van_ban", "ngay_ban_hanh", "co_quan_ban_hanh", "nguoi_ky", "noi_dung", "noi_nhan", "can_cu", "huong_van_ban", "linh_vuc", "dia_danh", "chuc_danh_ky", "tham_quyen_ky" }
+        };
+
+        // Build parts: 1 text prompt + N inline_data parts
+        var parts = new List<Part>
+        {
+            new Part { Text = prompt }
+        };
+        
+        for (int i = 0; i < files.Count; i++)
+        {
+            parts.Add(new Part
+            {
+                InlineData = new InlineData
+                {
+                    MimeType = files[i].MimeType,
+                    Data = files[i].Base64
+                }
+            });
+        }
+
+        var requestBody = new GeminiRequest
+        {
+            Contents = new[]
+            {
+                new Content { Parts = parts.ToArray() }
+            },
+            GenerationConfig = new GenerationConfig
+            {
+                Temperature = 0.1,
+                MaxOutputTokens = 65536,
+                ResponseMimeType = "application/json",
+                ResponseSchema = extractSchema,
+                ThinkingConfig = new ThinkingConfig { ThinkingBudget = 0 }
+            }
+        };
+
+        var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
+
+        var jsonOptions = new JsonSerializerOptions 
+        { 
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull 
+        };
+        var json = JsonSerializer.Serialize(requestBody, jsonOptions);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+        Console.WriteLine($"📊 Multi-file extract: {files.Count} files, request size: {json.Length / 1024}KB");
+
+        var response = await SendWithRetryAsync(() =>
+            _httpClient.PostAsync(url, content));
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
+
+        if (result?.Candidates != null && result.Candidates.Length > 0)
+        {
+            var candidate = result.Candidates[0];
+            var resultParts = candidate.Content?.Parts;
+            
+            Console.WriteLine($"📊 Multi-file extract — finishReason: {candidate.FinishReason}, parts: {resultParts?.Length ?? 0}");
+            if (result.UsageMetadata != null)
+            {
+                Console.WriteLine($"📊 Tokens — prompt: {result.UsageMetadata.PromptTokenCount}, completion: {result.UsageMetadata.CandidatesTokenCount}, total: {result.UsageMetadata.TotalTokenCount}");
+            }
+
+            var text = (resultParts != null && resultParts.Length > 0)
+                ? resultParts[resultParts.Length - 1]?.Text ?? ""
+                : "";
+            
+            return ParseExtractedDocument(text);
+        }
+
+        return new ExtractedDocumentData();
+    }
+
+    /// <summary>
     /// Trích xuất thông tin văn bản hành chính từ file ảnh hoặc PDF scan bằng Gemini Vision
     /// </summary>
     public async Task<ExtractedDocumentData> ExtractDocumentFromFileAsync(string filePath)

@@ -38,7 +38,10 @@ namespace AIVanBan.Core.Services
             var handler = new SocketsHttpHandler
             {
                 ConnectTimeout = TimeSpan.FromSeconds(15),
-                EnableMultipleHttp2Connections = true
+                EnableMultipleHttp2Connections = true,
+                // KHÔNG auto-redirect để tránh .NET strip Authorization header
+                // khi server redirect cross-origin (VD: xagiakiem.gov.vn → www.xagiakiem.gov.vn)
+                AllowAutoRedirect = false
             };
             _httpClient = new HttpClient(handler)
             {
@@ -119,6 +122,12 @@ namespace AIVanBan.Core.Services
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", _accessToken);
 
+                // Detect redirect và normalize BaseUrl
+                // Server có thể redirect 307 từ domain → www.domain, khi đó
+                // .NET HttpClient sẽ strip Authorization header (security).
+                // Normalize URL ngay sau login để tránh lỗi này.
+                await NormalizeBaseUrlAsync();
+
                 return new UploadLoginResult
                 {
                     Success = true,
@@ -171,7 +180,8 @@ namespace AIVanBan.Core.Services
         /// </summary>
         public async Task<List<UploadOrganization>> GetOrganizationsAsync()
         {
-            var response = await _httpClient.GetAsync($"{BaseUrl}/api/upload/organizations");
+            var orgRequest = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/api/upload/organizations");
+            var response = await SendWithRedirectAsync(orgRequest);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -232,10 +242,11 @@ namespace AIVanBan.Core.Services
                     createBody["event_date"] = album.EventDate.Value.ToString("yyyy-MM-dd");
                 }
 
-                var createResponse = await _httpClient.PostAsJsonAsync(
-                    $"{BaseUrl}/api/upload/albums",
-                    createBody, ct
-                );
+                var createRequest = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/api/upload/albums")
+                {
+                    Content = JsonContent.Create(createBody)
+                };
+                var createResponse = await SendWithRedirectAsync(createRequest, ct);
 
                 if (!createResponse.IsSuccessStatusCode)
                 {
@@ -379,6 +390,100 @@ namespace AIVanBan.Core.Services
 
         #region Private Helpers
 
+        /// <summary>
+        /// Probe server để detect redirect (307) và update BaseUrl.
+        /// VD: https://xagiakiem.gov.vn → https://www.xagiakiem.gov.vn
+        /// Điều này tránh lỗi .NET HttpClient tự strip Authorization header
+        /// khi follow redirect cross-origin.
+        /// </summary>
+        private async Task NormalizeBaseUrlAsync()
+        {
+            try
+            {
+                // Gửi HEAD request đến 1 endpoint bất kỳ (organizations) để kiểm tra redirect
+                var testUrl = $"{BaseUrl}/api/upload/organizations";
+                var request = new HttpRequestMessage(HttpMethod.Get, testUrl);
+                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                if ((int)response.StatusCode is 307 or 308 or 301 or 302)
+                {
+                    var location = response.Headers.Location;
+                    if (location != null)
+                    {
+                        // Extract new base URL from redirect location
+                        var redirectUrl = location.IsAbsoluteUri
+                            ? location.ToString()
+                            : new Uri(new Uri(BaseUrl), location).ToString();
+
+                        // Lấy base URL mới (bỏ phần path /api/upload/...)
+                        var uri = new Uri(redirectUrl);
+                        var newBase = $"{uri.Scheme}://{uri.Host}";
+                        if (!uri.IsDefaultPort) newBase += $":{uri.Port}";
+
+                        if (!string.Equals(BaseUrl, newBase, StringComparison.OrdinalIgnoreCase))
+                        {
+                            System.Diagnostics.Debug.WriteLine(
+                                $"🔄 URL redirect detected: {BaseUrl} → {newBase}");
+                            BaseUrl = newBase;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Không critical — nếu fail thì giữ URL gốc,
+                // SendWithRedirectAsync sẽ xử lý redirect từng request.
+                System.Diagnostics.Debug.WriteLine($"⚠️ URL normalize probe failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Gửi HTTP request và tự xử lý redirect (307/308) — giữ Authorization header.
+        /// .NET HttpClient mặc định strip Authorization khi redirect cross-origin.
+        /// </summary>
+        private async Task<HttpResponseMessage> SendWithRedirectAsync(
+            HttpRequestMessage request, CancellationToken ct = default, int maxRedirects = 3)
+        {
+            for (int i = 0; i <= maxRedirects; i++)
+            {
+                var response = await _httpClient.SendAsync(request, ct);
+
+                if ((int)response.StatusCode is 307 or 308 or 301 or 302)
+                {
+                    var location = response.Headers.Location;
+                    if (location == null) return response;
+
+                    var redirectUrl = location.IsAbsoluteUri
+                        ? location
+                        : new Uri(new Uri(request.RequestUri!.GetLeftPart(UriPartial.Authority)), location);
+
+                    System.Diagnostics.Debug.WriteLine(
+                        $"🔄 Redirect {(int)response.StatusCode}: {request.RequestUri} → {redirectUrl}");
+
+                    // Tạo request mới với cùng method, content, và headers (kể cả Authorization)
+                    var newRequest = new HttpRequestMessage(request.Method, redirectUrl);
+                    newRequest.Content = request.Content;
+                    foreach (var header in request.Headers)
+                    {
+                        newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    }
+                    // Thêm Authorization từ default headers nếu có
+                    if (newRequest.Headers.Authorization == null &&
+                        _httpClient.DefaultRequestHeaders.Authorization != null)
+                    {
+                        newRequest.Headers.Authorization = _httpClient.DefaultRequestHeaders.Authorization;
+                    }
+
+                    request = newRequest;
+                    continue;
+                }
+
+                return response;
+            }
+
+            throw new HttpRequestException($"Too many redirects (max {maxRedirects})");
+        }
+
         private async Task UploadSingleImageAsync(
             string albumId, string imagePath, string? caption, bool isCover, CancellationToken ct)
         {
@@ -436,10 +541,12 @@ namespace AIVanBan.Core.Services
             System.Diagnostics.Debug.WriteLine(
                 $"   Body size: {bodyStream.Length} bytes");
 
-            var response = await _httpClient.PostAsync(
-                $"{BaseUrl}/api/upload/albums/{albumId}/images",
-                bodyContent, ct
-            );
+            var uploadRequest = new HttpRequestMessage(HttpMethod.Post,
+                $"{BaseUrl}/api/upload/albums/{albumId}/images")
+            {
+                Content = bodyContent
+            };
+            var response = await SendWithRedirectAsync(uploadRequest, ct);
 
             var responseBody = await response.Content.ReadAsStringAsync(ct);
             System.Diagnostics.Debug.WriteLine(
@@ -597,7 +704,7 @@ namespace AIVanBan.Core.Services
                 $"{BaseUrl}/api/upload/albums/{albumId}/finalize"
             );
 
-            var response = await _httpClient.SendAsync(request, ct);
+            var response = await SendWithRedirectAsync(request, ct);
             if (!response.IsSuccessStatusCode)
             {
                 var err = await response.Content.ReadAsStringAsync(ct);

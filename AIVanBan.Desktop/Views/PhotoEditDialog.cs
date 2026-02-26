@@ -24,8 +24,9 @@ public partial class PhotoEditDialog : Window
 
         Title = "Sửa thông tin ảnh";
         Width = 500;
-        Height = 450;
+        Height = 500;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        ResizeMode = ResizeMode.CanResizeWithGrip;
 
         BuildUI();
         LoadPhoto();
@@ -82,10 +83,10 @@ public partial class PhotoEditDialog : Window
             Margin = new Thickness(0, 15, 0, 0)
         };
 
-        var btnSave = new Button { Content = "💾 Lưu", Width = 100, Margin = new Thickness(0, 0, 10, 0) };
+        var btnSave = new Button { Content = "💾 Lưu", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
         btnSave.Click += Save_Click;
 
-        var btnCancel = new Button { Content = "Hủy", Width = 100 };
+        var btnCancel = new Button { Content = "Hủy", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center };
         btnCancel.Click += (s, e) => Close();
 
         btnPanel.Children.Add(btnSave);

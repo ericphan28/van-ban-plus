@@ -123,8 +123,8 @@ public partial class DocumentListPage
             };
             Grid.SetRow(btnPanel, 1);
             
-            var btnOk = new Button { Content = "Di chuyển", Width = 100, Margin = new Thickness(0, 0, 10, 0) };
-            var btnCancel = new Button { Content = "Hủy", Width = 100 };
+            var btnOk = new Button { Content = "Di chuyển", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
+            var btnCancel = new Button { Content = "Hủy", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center };
             
             btnOk.Click += (s, args) =>
             {
@@ -329,8 +329,9 @@ public partial class DocumentListPage
             {
                 Title = "Gán tag hàng loạt",
                 Width = 400,
-                Height = 200,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen
+                Height = 260,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize
             };
             
             var grid = new Grid { Margin = new Thickness(20) };
@@ -374,8 +375,8 @@ public partial class DocumentListPage
             };
             Grid.SetRow(btnPanel, 2);
             
-            var btnOk = new Button { Content = "Gán tag", Width = 100, Margin = new Thickness(0, 0, 10, 0) };
-            var btnCancel = new Button { Content = "Hủy", Width = 100 };
+            var btnOk = new Button { Content = "Gán tag", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
+            var btnCancel = new Button { Content = "Hủy", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center };
             
             btnOk.Click += (s, args) =>
             {
@@ -457,8 +458,9 @@ public partial class DocumentListPage
             {
                 Title = "Thay đổi loại văn bản",
                 Width = 400,
-                Height = 200,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen
+                Height = 240,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize
             };
             
             var grid = new Grid { Margin = new Thickness(20) };
@@ -504,8 +506,8 @@ public partial class DocumentListPage
             };
             Grid.SetRow(btnPanel, 2);
             
-            var btnOk = new Button { Content = "Thay đổi", Width = 100, Margin = new Thickness(0, 0, 10, 0) };
-            var btnCancel = new Button { Content = "Hủy", Width = 100 };
+            var btnOk = new Button { Content = "Thay đổi", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
+            var btnCancel = new Button { Content = "Hủy", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center };
             
             btnOk.Click += (s, args) =>
             {

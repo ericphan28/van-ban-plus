@@ -933,22 +933,43 @@ public partial class DocumentListPage : Page
             var dialog = new ScanImportDialog(_documentService);
             dialog.Owner = Window.GetWindow(this);
             
-            if (dialog.ShowDialog() == true && dialog.CreatedDocument != null)
+            if (dialog.ShowDialog() == true && dialog.CreatedDocuments.Count > 0)
             {
                 // Gán folder hiện tại nếu có
-                if (!string.IsNullOrEmpty(_selectedFolderId))
-                    dialog.CreatedDocument.FolderId = _selectedFolderId;
+                foreach (var doc in dialog.CreatedDocuments)
+                {
+                    if (!string.IsNullOrEmpty(_selectedFolderId))
+                        doc.FolderId = _selectedFolderId;
+                    
+                    _documentService.AddDocument(doc);
+                }
                 
-                _documentService.AddDocument(dialog.CreatedDocument);
                 LoadFolders();
                 LoadDocuments();
                 
-                MessageBox.Show(
-                    $"✅ Đã nhập và lưu văn bản từ scan:\n\n" +
-                    $"Số VB: {dialog.CreatedDocument.Number}\n" +
-                    $"Tiêu đề: {dialog.CreatedDocument.Title}",
-                    "Thành công",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                if (dialog.CreatedDocuments.Count == 1)
+                {
+                    var doc = dialog.CreatedDocuments[0];
+                    MessageBox.Show(
+                        $"✅ Đã nhập và lưu văn bản từ scan:\n\n" +
+                        $"Số VB: {doc.Number}\n" +
+                        $"Tiêu đề: {doc.Title}",
+                        "Thành công",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    var summary = string.Join("\n", dialog.CreatedDocuments
+                        .Take(5)
+                        .Select((d, i) => $"  {i + 1}. {d.Number} — {d.Title}"));
+                    if (dialog.CreatedDocuments.Count > 5)
+                        summary += $"\n  ... và {dialog.CreatedDocuments.Count - 5} văn bản khác";
+                    
+                    MessageBox.Show(
+                        $"✅ Đã nhập và lưu {dialog.CreatedDocuments.Count} văn bản từ scan:\n\n{summary}",
+                        "Thành công",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
         }
         catch (Exception ex)
@@ -1143,7 +1164,28 @@ public partial class DocumentListPage : Page
 
             // Mở popup dialog — giống AI Kiểm tra
             var typeName = doc.Type.GetDisplayName();
-            var dialog = new DocumentAdvisoryDialog(contentToAnalyze, typeName, doc.Title, doc.Issuer);
+
+            // Tạo context đầy đủ từ Document metadata
+            var advisoryContext = DocumentAdvisoryContext.FromDocument(doc);
+
+            // Load tóm tắt VB liên quan (nếu có RelatedDocumentIds)
+            if (doc.RelatedDocumentIds?.Length > 0)
+            {
+                var docService = new DocumentService();
+                var relatedSummaries = new List<string>();
+                foreach (var relId in doc.RelatedDocumentIds.Take(5)) // Tối đa 5 VB liên quan
+                {
+                    var relDoc = docService.GetDocument(relId);
+                    if (relDoc != null)
+                    {
+                        relatedSummaries.Add($"- [{relDoc.Type.GetDisplayName()}] {relDoc.Number} — {relDoc.Title} ({relDoc.Issuer}, {relDoc.IssueDate:dd/MM/yyyy})");
+                    }
+                }
+                if (relatedSummaries.Count > 0)
+                    advisoryContext.RelatedDocumentsSummary = string.Join("\n", relatedSummaries);
+            }
+
+            var dialog = new DocumentAdvisoryDialog(contentToAnalyze, typeName, doc.Title, doc.Issuer, advisoryContext);
             dialog.Owner = Window.GetWindow(this);
             dialog.ShowDialog();
         }
@@ -1696,20 +1738,21 @@ public partial class DocumentListPage : Page
         };
 
         var grid = new Grid { Margin = new Thickness(20) };
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-        var txtName = new TextBox { Margin = new Thickness(0, 10, 0, 0) };
-        var txtIcon = new TextBox { Margin = new Thickness(0, 10, 0, 0), Text = "📁" };
+        var txtName = new TextBox { Margin = new Thickness(0, 5, 0, 15) };
+        var txtIcon = new TextBox { Margin = new Thickness(0, 5, 0, 0), Text = "📁" };
 
-        var lblName = new TextBlock { Text = "Tên thư mục:" };
-        var lblIcon = new TextBlock { Text = "Icon (emoji):" };
-        Grid.SetRow(lblName, 0);
-        Grid.SetRow(txtName, 0);
-        Grid.SetRow(lblIcon, 1);
-        Grid.SetRow(txtIcon, 1);
+        var lblName = new TextBlock { Text = "Tên thư mục:", FontWeight = FontWeights.SemiBold };
+        var lblIcon = new TextBlock { Text = "Icon (emoji):", Margin = new Thickness(0, 10, 0, 0) };
+
+        var inputStack = new StackPanel();
+        inputStack.Children.Add(lblName);
+        inputStack.Children.Add(txtName);
+        inputStack.Children.Add(lblIcon);
+        inputStack.Children.Add(txtIcon);
+        Grid.SetRow(inputStack, 0);
 
         var btnPanel = new StackPanel
         {
@@ -1717,10 +1760,10 @@ public partial class DocumentListPage : Page
             HorizontalAlignment = HorizontalAlignment.Right,
             Margin = new Thickness(0, 20, 0, 0)
         };
-        Grid.SetRow(btnPanel, 3);
+        Grid.SetRow(btnPanel, 1);
 
-        var btnSave = new Button { Content = "Lưu", Width = 80, Margin = new Thickness(0, 0, 10, 0) };
-        var btnCancel = new Button { Content = "Hủy", Width = 80 };
+        var btnSave = new Button { Content = "Lưu", MinWidth = 80, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
+        var btnCancel = new Button { Content = "Hủy", MinWidth = 80, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center };
 
         btnSave.Click += (s, args) =>
         {
@@ -1748,13 +1791,7 @@ public partial class DocumentListPage : Page
         btnPanel.Children.Add(btnSave);
         btnPanel.Children.Add(btnCancel);
 
-        var stack = new StackPanel();
-        stack.Children.Add(lblName);
-        stack.Children.Add(txtName);
-        stack.Children.Add(lblIcon);
-        stack.Children.Add(txtIcon);
-
-        grid.Children.Add(stack);
+        grid.Children.Add(inputStack);
         grid.Children.Add(btnPanel);
         dialog.Content = grid;
 
@@ -1918,7 +1955,7 @@ public partial class DocumentListPage : Page
         {
             Title = title,
             Width = 400,
-            Height = 180,
+            Height = 220,
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             ResizeMode = ResizeMode.NoResize
         };
@@ -1943,8 +1980,8 @@ public partial class DocumentListPage : Page
         };
         Grid.SetRow(btnPanel, 3);
         
-        var btnSave = new Button { Content = "Lưu", Width = 80, Margin = new Thickness(0, 0, 10, 0) };
-        var btnCancel = new Button { Content = "Hủy", Width = 80 };
+        var btnSave = new Button { Content = "Lưu", MinWidth = 80, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
+        var btnCancel = new Button { Content = "Hủy", MinWidth = 80, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center };
         
         btnSave.Click += (s, args) =>
         {

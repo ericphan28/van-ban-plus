@@ -258,7 +258,27 @@ public partial class MainWindow : Window
         if (contentToAnalyze == null) return;
 
         var typeName = doc.Type.GetDisplayName();
-        var dialog = new Views.DocumentAdvisoryDialog(contentToAnalyze, typeName, doc.Title, doc.Issuer);
+
+        // Tạo context đầy đủ từ Document metadata
+        var advisoryContext = DocumentAdvisoryContext.FromDocument(doc);
+
+        // Load tóm tắt VB liên quan (nếu có RelatedDocumentIds)
+        if (doc.RelatedDocumentIds?.Length > 0)
+        {
+            var relatedSummaries = new System.Collections.Generic.List<string>();
+            foreach (var relId in doc.RelatedDocumentIds.Take(5))
+            {
+                var relDoc = _documentService.GetDocument(relId);
+                if (relDoc != null)
+                {
+                    relatedSummaries.Add($"- [{relDoc.Type.GetDisplayName()}] {relDoc.Number} — {relDoc.Title} ({relDoc.Issuer}, {relDoc.IssueDate:dd/MM/yyyy})");
+                }
+            }
+            if (relatedSummaries.Count > 0)
+                advisoryContext.RelatedDocumentsSummary = string.Join("\n", relatedSummaries);
+        }
+
+        var dialog = new Views.DocumentAdvisoryDialog(contentToAnalyze, typeName, doc.Title, doc.Issuer, advisoryContext);
         dialog.Owner = this;
         dialog.ShowDialog();
     }

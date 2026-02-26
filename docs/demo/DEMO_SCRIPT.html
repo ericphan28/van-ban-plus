@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kịch bản giới thiệu phần mềm VanBanPlus</title>
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Times New Roman', 'Tinos', Georgia, serif;
+    font-size: 13pt;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #f5f5f5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-container {
+    max-width: 210mm;
+    margin: 20px auto;
+    background: white;
+    padding: 25mm 20mm 20mm 25mm;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+  }
+
+  /* ── BETA WATERMARK ── */
+  .beta-banner {
+    background: #FFF3CD;
+    border: 2px solid #FFC107;
+    border-radius: 6px;
+    padding: 10px 16px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .beta-banner strong { color: #C0392B; font-size: 11pt; }
+  .beta-banner p { color: #856404; font-size: 10pt; margin-top: 4px; }
+
+  /* ── COVER ── */
+  .cover { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #1B4F72; }
+  .cover h1 { font-family: Arial, sans-serif; font-size: 20pt; color: #1B4F72; margin-bottom: 6px; }
+  .cover .product-name { font-family: Arial, sans-serif; font-size: 28pt; color: #216FDB; font-weight: bold; margin: 10px 0; }
+  .cover .meta { font-size: 11pt; color: #555; line-height: 1.8; }
+  .cover .meta a { color: #216FDB; text-decoration: none; }
+
+  /* ── TABLE OF CONTENTS ── */
+  .toc {
+    background: #F8F9FA;
+    border: 1px solid #DEE2E6;
+    border-radius: 8px;
+    padding: 20px 28px;
+    margin-bottom: 30px;
+    page-break-after: always;
+  }
+  .toc h2 { font-family: Arial, sans-serif; font-size: 16pt; color: #1B4F72; margin-bottom: 14px; border-bottom: 2px solid #216FDB; padding-bottom: 6px; }
+  .toc ul { list-style: none; padding: 0; }
+  .toc > ul > li { margin-bottom: 2px; }
+  .toc a { text-decoration: none; color: #1a1a1a; display: flex; align-items: baseline; }
+  .toc a:hover { color: #216FDB; }
+  .toc .toc-text { flex-shrink: 0; }
+  .toc .toc-dots { flex: 1; border-bottom: 1px dotted #aaa; margin: 0 6px; min-width: 20px; height: 1em; }
+  .toc .toc-page { flex-shrink: 0; color: #888; font-size: 10pt; }
+
+  /* TOC levels */
+  .toc-l1 { font-weight: bold; font-size: 12pt; padding: 4px 0; }
+  .toc-l1 .toc-text { color: #1B4F72; }
+  .toc-l2 { padding: 2px 0 2px 20px; font-size: 11.5pt; }
+  .toc-l3 { padding: 1px 0 1px 40px; font-size: 11pt; color: #444; }
+  .toc-part { font-weight: bold; font-size: 13pt; padding: 8px 0 4px; color: #C0392B; border-top: 1px solid #eee; margin-top: 6px; }
+
+  /* ── HEADINGS ── */
+  h1, h2, h3, h4, h5 { font-family: Arial, 'Helvetica Neue', sans-serif; }
+  h1 { font-size: 18pt; color: #1B4F72; margin: 30px 0 8px; padding-bottom: 6px; border-bottom: 2px solid #216FDB; }
+  h2 { font-size: 15pt; color: #1B4F72; margin: 24px 0 8px; }
+  h3 { font-size: 13pt; color: #216FDB; margin: 16px 0 6px; }
+  h4 { font-size: 12pt; color: #333; margin: 12px 0 4px; }
+
+  .part-header {
+    background: linear-gradient(135deg, #1B4F72, #216FDB);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 6px;
+    margin: 36px 0 20px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 14pt;
+    font-weight: bold;
+    page-break-before: always;
+  }
+  .part-header small { display: block; font-size: 11pt; font-weight: normal; opacity: 0.9; margin-top: 4px; }
+
+  /* ── PARAGRAPH ── */
+  p { margin: 6px 0; text-align: justify; }
+
+  /* ── LISTS ── */
+  ul, ol { margin: 6px 0 6px 24px; }
+  li { margin-bottom: 4px; }
+
+  /* ── BLOCKQUOTE (thao tác / giải thích) ── */
+  blockquote {
+    background: #EBF5FB;
+    border-left: 4px solid #216FDB;
+    padding: 10px 16px;
+    margin: 10px 0;
+    font-size: 12pt;
+    border-radius: 0 6px 6px 0;
+  }
+  blockquote p { text-align: left; }
+
+  /* ── SPEAKER NOTE ── */
+  .speaker {
+    background: #FEF9E7;
+    border-left: 4px solid #F4D03F;
+    padding: 10px 16px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .speaker::before { content: "🎤 "; font-size: 14pt; }
+  .speaker strong { color: #7D6608; }
+
+  /* ── PROBLEM BOX ── */
+  .problem {
+    background: #FDEDEC;
+    border-left: 4px solid #E74C3C;
+    padding: 10px 16px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .problem::before { content: "⚠ Vấn đề thực tế: "; font-weight: bold; color: #C0392B; }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 11.5pt;
+  }
+  th {
+    background: #1B4F72;
+    color: white;
+    font-weight: bold;
+    padding: 8px 10px;
+    text-align: left;
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+  }
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #F8F9FA; }
+  td:first-child { font-weight: bold; white-space: nowrap; }
+
+  .highlight-table td:last-child { color: #1B4F72; font-weight: bold; }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; padding-left: 8px; }
+  .checklist li { padding: 3px 0; }
+  .checklist li::before { content: "☐ "; font-size: 14pt; color: #216FDB; }
+
+  /* ── STEPS ── */
+  .steps { counter-reset: step-counter; list-style: none; padding-left: 0; }
+  .steps li { counter-increment: step-counter; padding: 4px 0 4px 36px; position: relative; }
+  .steps li::before {
+    content: counter(step-counter);
+    position: absolute; left: 0; top: 4px;
+    width: 24px; height: 24px;
+    background: #216FDB; color: white;
+    border-radius: 50%; text-align: center;
+    font-size: 11pt; line-height: 24px;
+    font-family: Arial, sans-serif; font-weight: bold;
+  }
+
+  /* ── BADGE ── */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10pt; font-weight: bold; }
+  .badge-red { background: #FDEDEC; color: #C0392B; border: 1px solid #E74C3C; }
+  .badge-yellow { background: #FEF9E7; color: #7D6608; border: 1px solid #F4D03F; }
+  .badge-green { background: #EAFAF1; color: #1E8449; border: 1px solid #2ECC71; }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 2px solid #1B4F72;
+    text-align: center;
+    font-size: 10pt;
+    color: #888;
+  }
+  .doc-footer .beta-note { color: #C0392B; font-weight: bold; margin-top: 8px; }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: white; font-size: 12pt; }
+    .page-container { box-shadow: none; margin: 0; padding: 15mm 18mm 15mm 22mm; max-width: 100%; }
+    .beta-banner { border-width: 1px; }
+    .part-header { break-before: page; }
+    h1 { break-after: avoid; }
+    h2, h3 { break-after: avoid; }
+    table { break-inside: avoid; }
+    .speaker, .problem, blockquote { break-inside: avoid; }
+    .toc { break-after: page; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 800px) {
+    .page-container { padding: 16px; margin: 0; }
+    body { font-size: 12pt; }
+  }
+</style>
+</head>
+<body>
+<div class="page-container">
+
+<!-- ═══════════ BETA BANNER ═══════════ -->
+<div class="beta-banner">
+  <strong>⚠ TÀI LIỆU NỘI BỘ — KHÔNG LƯU HÀNH CÔNG KHAI ⚠</strong>
+  <p>Phần mềm đang trong giai đoạn thử nghiệm (Beta). Nội dung có thể thay đổi khi phát hành chính thức.</p>
+</div>
+
+<!-- ═══════════ COVER ═══════════ -->
+<div class="cover">
+  <h1>KỊCH BẢN GIỚI THIỆU</h1>
+  <div class="product-name">VANBANPLUS</div>
+  <p style="font-family: Arial, sans-serif; font-size: 12pt; color: #555;">Phần mềm Quản lý Văn bản Thông minh</p>
+  <div class="meta" style="margin-top: 16px;">
+    <strong>Đơn vị phát triển:</strong> Công ty TNHH Gia Kiệm Số<br>
+    <strong>Website công ty:</strong> <a href="https://giakiemso.com">giakiemso.com</a> &nbsp;|&nbsp;
+    <strong>Phần mềm:</strong> <a href="https://vanbanplus.giakiemso.com">vanbanplus.giakiemso.com</a><br>
+    <strong>Phiên bản:</strong> Beta — Tháng 02/2026<br>
+    <strong>Thời lượng trình bày:</strong> 25–30 phút<br>
+    <strong>Đối tượng:</strong> Cán bộ, công chức, viên chức các cơ quan hành chính nhà nước<br>
+    <strong>Hình thức:</strong> Trình bày kết hợp thao tác trực tiếp trên phần mềm
+  </div>
+</div>
+
+<!-- ═══════════ MỤC LỤC ═══════════ -->
+<div class="toc" id="toc">
+  <h2>📑 MỤC LỤC</h2>
+  <ul>
+    <li class="toc-l1"><a href="#muctieu"><span class="toc-text">Mục tiêu buổi giới thiệu</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l1"><a href="#modau"><span class="toc-text">Phần mở đầu — Đặt vấn đề</span><span class="toc-dots"></span><span class="toc-page">2 phút</span></a></li>
+
+    <li class="toc-part"><a href="#phana"><span class="toc-text">PHẦN A — QUẢN LÝ VĂN BẢN VÀ CUỘC HỌP</span><span class="toc-dots"></span><span class="toc-page">12 phút</span></a></li>
+    <li class="toc-l2"><a href="#a1"><span class="toc-text">A1. Tổng quan hệ thống</span><span class="toc-dots"></span><span class="toc-page">2 phút</span></a></li>
+    <li class="toc-l2"><a href="#a2"><span class="toc-text">A2. Quản lý văn bản đi/đến/nội bộ</span><span class="toc-dots"></span><span class="toc-page">4 phút</span></a></li>
+    <li class="toc-l2"><a href="#a3"><span class="toc-text">A3. Sao văn bản và Xuất Word</span><span class="toc-dots"></span><span class="toc-page">2 phút</span></a></li>
+    <li class="toc-l2"><a href="#a4"><span class="toc-text">A4. Quản lý cuộc họp</span><span class="toc-dots"></span><span class="toc-page">2 phút</span></a></li>
+    <li class="toc-l2"><a href="#a5"><span class="toc-text">A5. Các chức năng hỗ trợ</span><span class="toc-dots"></span><span class="toc-page">2 phút</span></a></li>
+    <li class="toc-l3"><a href="#a5a"><span class="toc-text">a) Tra cứu văn bản pháp quy</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l3"><a href="#a5b"><span class="toc-text">b) Thống kê</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l3"><a href="#a5c"><span class="toc-text">c) Album ảnh</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l3"><a href="#a5d"><span class="toc-text">d) Sao lưu và Khôi phục</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l3"><a href="#a5e"><span class="toc-text">e) Lịch tổng hợp</span><span class="toc-dots"></span></a></li>
+
+    <li class="toc-part"><a href="#phanb"><span class="toc-text">PHẦN B — ỨNG DỤNG TRÍ TUỆ NHÂN TẠO (AI)</span><span class="toc-dots"></span><span class="toc-page">12 phút</span></a></li>
+    <li class="toc-l2"><a href="#b1"><span class="toc-text">B1. AI Scan — Trích xuất thông tin từ PDF, ảnh scan</span><span class="toc-dots"></span><span class="toc-page">3 phút</span></a></li>
+    <li class="toc-l2"><a href="#b2"><span class="toc-text">B2. AI Soạn thảo văn bản</span><span class="toc-dots"></span><span class="toc-page">3 phút</span></a></li>
+    <li class="toc-l2"><a href="#b3"><span class="toc-text">B3. AI Kiểm tra văn bản</span><span class="toc-dots"></span><span class="toc-page">2 phút</span></a></li>
+    <li class="toc-l2"><a href="#b4"><span class="toc-text">B4. AI Tham mưu xử lý văn bản đến</span><span class="toc-dots"></span><span class="toc-page">2 phút</span></a></li>
+    <li class="toc-l2"><a href="#b5"><span class="toc-text">B5. AI Tóm tắt văn bản</span><span class="toc-dots"></span><span class="toc-page">1 phút</span></a></li>
+    <li class="toc-l2"><a href="#b6"><span class="toc-text">B6. AI Báo cáo định kỳ</span><span class="toc-dots"></span><span class="toc-page">2 phút</span></a></li>
+
+    <li class="toc-part"><a href="#ketluan"><span class="toc-text">PHẦN KẾT — TỔNG HỢP VÀ TRAO ĐỔI</span><span class="toc-dots"></span><span class="toc-page">4 phút</span></a></li>
+    <li class="toc-l2"><a href="#hieuqua"><span class="toc-text">Tổng hợp hiệu quả ước tính</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l2"><a href="#dinhvi"><span class="toc-text">Định vị sản phẩm</span><span class="toc-dots"></span></a></li>
+
+    <li class="toc-part"><a href="#phuluc"><span class="toc-text">PHỤ LỤC — CHUẨN BỊ VÀ LƯU Ý</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l2"><a href="#pl1"><span class="toc-text">1. Chuẩn bị dữ liệu demo</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l2"><a href="#pl2"><span class="toc-text">2. Thiết lập phần mềm trước buổi demo</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l2"><a href="#pl3"><span class="toc-text">3. Thiết bị cần có</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l2"><a href="#pl4"><span class="toc-text">4. Câu hỏi thường gặp</span><span class="toc-dots"></span></a></li>
+    <li class="toc-l2"><a href="#pl5"><span class="toc-text">5. Lưu ý khi trình bày</span><span class="toc-dots"></span></a></li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MỤC TIÊU -->
+<!-- ═══════════════════════════════════════ -->
+<h1 id="muctieu">MỤC TIÊU BUỔI GIỚI THIỆU</h1>
+<p>Giúp cán bộ, công chức nắm được hai nhóm chức năng chính của VanBanPlus:</p>
+<ul>
+  <li><strong>Phần A</strong> — Quản lý văn bản và cuộc họp: Tiếp nhận, phân loại, theo dõi, tra cứu văn bản; quản lý lịch họp, biên bản, nhiệm vụ sau họp.</li>
+  <li><strong>Phần B</strong> — Ứng dụng trí tuệ nhân tạo (AI): Scan trích xuất, soạn thảo, kiểm tra, tham mưu, tóm tắt, và viết báo cáo định kỳ tự động.</li>
+</ul>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- MỞ ĐẦU -->
+<!-- ═══════════════════════════════════════ -->
+<h1 id="modau">PHẦN MỞ ĐẦU — ĐẶT VẤN ĐỀ <small style="font-size:11pt; color:#888;">(2 phút)</small></h1>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong><br>
+  Kính thưa các anh, chị.<br><br>
+  Trong công tác hàng ngày tại cơ quan, chúng ta thường gặp một số khó khăn chung:
+</div>
+
+<ul>
+  <li>Mỗi tuần tiếp nhận 20–30 văn bản qua hệ thống, email, Zalo — chủ yếu là file PDF hoặc ảnh scan. Cán bộ phải mở từng file, đọc nội dung, rồi gõ lại số hiệu, ngày tháng, trích yếu vào sổ theo dõi — mất khoảng <strong>10–15 phút mỗi văn bản</strong>.</li>
+  <li>Khi soạn thảo văn bản, thường mất <strong>45–90 phút</strong> để tìm file Word cũ, chỉnh sửa nội dung, rà soát thể thức theo Nghị định 30/2020/NĐ-CP.</li>
+  <li>Văn bản trình ký bị trả lại sửa <strong>2–3 lần</strong> do sai chính tả, thiếu căn cứ pháp lý, hoặc sai nơi nhận.</li>
+  <li>Cuối tháng, mỗi cán bộ phải hoàn thành 4–5 báo cáo định kỳ, mỗi báo cáo mất <strong>3–4 giờ</strong>.</li>
+  <li>Khi lãnh đạo hỏi "Công văn số 789 của huyện gửi tuần trước, đã xử lý chưa?" — phải tìm lại trong email, Zalo, hoặc lật sổ giấy, rất mất thời gian.</li>
+</ul>
+
+<div class="speaker">
+  Phần mềm VanBanPlus được xây dựng nhằm giải quyết trực tiếp những khó khăn trên. Sau đây, tôi xin trình bày cụ thể qua hai phần.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PHẦN A -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="part-header" id="phana">
+  PHẦN A — QUẢN LÝ VĂN BẢN VÀ CUỘC HỌP
+  <small>Thời lượng: 12 phút — Không cần Internet</small>
+</div>
+
+<!-- A1 -->
+<h2 id="a1">A1. Tổng quan hệ thống <small style="color:#888;">(2 phút)</small></h2>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> Trước tiên, xin giới thiệu tổng quan giao diện phần mềm.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Mở phần mềm VanBanPlus → Màn hình <strong>Trang chủ (Dashboard)</strong> hiện ra</li>
+  <li>Chỉ vào <strong>thanh bên trái (Sidebar)</strong>: Giới thiệu các mục menu chính</li>
+  <li>Chỉ vào <strong>5 ô thống kê</strong>: Tổng văn bản, Văn bản đi, Văn bản đến, Nội bộ, Cuộc họp</li>
+  <li>Chỉ vào <strong>Biểu đồ xu hướng 12 tháng</strong> và <strong>Cảnh báo quá hạn</strong></li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày giải thích:</strong>
+  <ul>
+    <li>Phần mềm hỗ trợ <strong>hơn 70 loại hình cơ quan</strong>: UBND xã/huyện/tỉnh, HĐND, Đảng ủy, Mặt trận Tổ quốc, Hội Nông dân, Hội Phụ nữ, Đoàn Thanh niên, Hội Cựu chiến binh, các Sở ban ngành, Trường học, Trạm Y tế, Bệnh viện... Khi thiết lập lần đầu, phần mềm tự tạo cấu trúc thư mục phù hợp với cơ quan.</li>
+    <li>Dữ liệu được lưu trữ tại máy tính cá nhân — đảm bảo an toàn thông tin.</li>
+    <li>Đây là công cụ hỗ trợ cá nhân, <strong>không thay thế</strong> hệ thống quản lý văn bản tập trung của cơ quan (eGov, iDesk...). Số văn bản chính thức vẫn do bộ phận Văn thư cấp theo quy định.</li>
+  </ul>
+</div>
+
+<!-- A2 -->
+<h2 id="a2">A2. Quản lý văn bản đi/đến/nội bộ <small style="color:#888;">(4 phút)</small></h2>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> Đây là chức năng cốt lõi — nơi cán bộ tiếp nhận, phân loại, theo dõi và tra cứu văn bản hàng ngày.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Vào mục <strong>Quản lý tài liệu</strong> trên thanh menu</li>
+  <li><strong>Giới thiệu cây thư mục bên trái:</strong>
+    <ul>
+      <li>📥 Văn bản đến — nhận qua hệ thống, email, Zalo...</li>
+      <li>📤 Văn bản đi — cơ quan ban hành</li>
+      <li>📋 Văn bản nội bộ — lưu hành nội bộ</li>
+      <li>📦 Lưu trữ — đã hoàn thành</li>
+      <li>Có thể tạo thư mục con không giới hạn cấp</li>
+    </ul>
+  </li>
+  <li><strong>Thêm văn bản thủ công:</strong> Nhấn nút <strong>"Thêm"</strong> → Form nhập liệu với đầy đủ các trường: Số ký hiệu, Ngày ban hành, Loại văn bản (29 loại theo Điều 7, NĐ 30/2020), Cơ quan, Trích yếu, Người ký, Mức độ khẩn, Nơi nhận, Căn cứ pháp lý, File đính kèm...</li>
+  <li><strong>Tìm kiếm và lọc:</strong> Gõ <em>"phòng chống thiên tai"</em> → Kết quả hiện ngay (hỗ trợ tìm không dấu). Lọc nhanh: Hôm nay / Tuần này / Tháng này. Lọc nâng cao: theo loại, hướng, khoảng ngày, người ký.</li>
+  <li><strong>Thao tác hàng loạt:</strong> Chọn nhiều → Di chuyển, Xóa, Xuất danh sách. Mở <strong>Thùng rác</strong> → Khôi phục văn bản đã xóa nhầm.</li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày tóm lược:</strong><br>
+  Toàn bộ việc tiếp nhận, phân loại, tìm kiếm, tra cứu văn bản đều trên một giao diện duy nhất. Thay vì file PDF nằm rải rác trong email, Zalo, Google Drive — tất cả được tập trung tại đây.
+</div>
+
+<!-- A3 -->
+<h2 id="a3">A3. Sao văn bản và Xuất Word <small style="color:#888;">(2 phút)</small></h2>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Click chuột phải vào văn bản → Chọn <strong>"Sao văn bản"</strong></li>
+  <li>3 hình thức sao theo Điều 25–27, NĐ 30/2020:
+    <ul>
+      <li><strong>Sao y bản chính</strong> — sao đúng nguyên văn</li>
+      <li><strong>Sao lục</strong> — sao toàn bộ nội dung</li>
+      <li><strong>Trích sao</strong> — sao một phần nội dung</li>
+    </ul>
+  </li>
+  <li><strong>Xuất file Word:</strong> Chọn văn bản → Nhấn <strong>"Xuất Word"</strong> → File Word đúng thể thức NĐ 30/2020 và TT 01/2011/TT-BNV: Quốc hiệu, Tiêu ngữ, Tên cơ quan, Số ký hiệu, Nơi nhận — đúng font, đúng cỡ chữ, đúng vị trí.</li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> File Word xuất ra có thể in trực tiếp để trình ký, không cần chỉnh sửa thêm về mặt thể thức.
+</div>
+
+<!-- A4 -->
+<h2 id="a4">A4. Quản lý cuộc họp <small style="color:#888;">(2 phút)</small></h2>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> Ngoài quản lý văn bản, phần mềm còn hỗ trợ quản lý cuộc họp — hoạt động chiếm nhiều thời gian của cán bộ cơ quan.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Vào mục <strong>Cuộc họp</strong> → 5 ô thống kê, danh sách dạng timeline, badge trạng thái, thanh tiến độ nhiệm vụ</li>
+  <li><strong>Tạo cuộc họp mới:</strong> 6 tab: Thông tin chung, Người tham dự, Nội dung, Nhiệm vụ, Tài liệu, Album ảnh. Hỗ trợ <strong>22 loại cuộc họp</strong>. Phát hiện <strong>trùng lịch</strong>.</li>
+  <li><strong>Xuất biên bản:</strong> Chọn cuộc họp → <strong>"Xuất Word"</strong> → Biên bản / Kết luận / Báo cáo</li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> Cuộc họp nào có nhiệm vụ, phần mềm sẽ theo dõi tiến độ và hiển thị cảnh báo nếu quá hạn.
+</div>
+
+<!-- A5 -->
+<h2 id="a5">A5. Các chức năng hỗ trợ <small style="color:#888;">(2 phút — giới thiệu nhanh)</small></h2>
+
+<h4 id="a5a">a) Tra cứu văn bản pháp quy</h4>
+<ul>
+  <li>NĐ 30/2020/NĐ-CP toàn văn dạng cây mục lục (38 Điều, 7 Chương, 6 Phụ lục)</li>
+  <li>Gõ tìm từ khóa → Nhảy đến đúng điều khoản liên quan</li>
+</ul>
+
+<h4 id="a5b">b) Thống kê</h4>
+<ul>
+  <li>So sánh số lượng văn bản theo tháng/quý/năm. Phân tích theo loại, mức độ khẩn, độ mật</li>
+  <li>Xuất báo cáo thống kê ra file Excel</li>
+</ul>
+
+<h4 id="a5c">c) Album ảnh</h4>
+<ul>
+  <li>Lưu trữ ảnh theo cấu trúc danh mục phù hợp với từng loại cơ quan</li>
+  <li>Hỗ trợ upload lên website cơ quan và tải về từ website</li>
+</ul>
+
+<h4 id="a5d">d) Sao lưu và Khôi phục</h4>
+<ul>
+  <li>Tự động sao lưu mỗi lần khởi động. Khôi phục 1 bước. Copy ra USB để bảo quản.</li>
+</ul>
+
+<h4 id="a5e">e) Lịch tổng hợp</h4>
+<ul>
+  <li>Lịch tháng với các sự kiện: deadline văn bản, cuộc họp, nhiệm vụ</li>
+  <li>Phân biệt bằng màu: <span class="badge badge-red">quá hạn</span> <span class="badge badge-yellow">sắp hạn</span> <span class="badge badge-green">đã xong</span></li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PHẦN B -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="part-header" id="phanb">
+  PHẦN B — ỨNG DỤNG TRÍ TUỆ NHÂN TẠO (AI)
+  <small>Thời lượng: 12 phút — Cần kết nối Internet</small>
+</div>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong><br>
+  Tiếp theo, tôi xin giới thiệu phần mà chúng tôi đánh giá sẽ tạo ra sự khác biệt lớn nhất trong công việc hàng ngày — ứng dụng trí tuệ nhân tạo. Phần mềm tích hợp <strong>6 chức năng AI</strong>, mỗi chức năng giải quyết một công đoạn cụ thể trong quy trình xử lý văn bản.
+</div>
+
+<!-- B1 -->
+<h2 id="b1">B1. AI Scan — Trích xuất thông tin từ PDF, ảnh scan <small style="color:#888;">(3 phút)</small></h2>
+
+<div class="problem">
+  Văn bản đến chủ yếu ở dạng file PDF hoặc ảnh scan — nhận qua hệ thống, email, Zalo. Cán bộ phải mở từng file, đọc, rồi gõ lại các trường thông tin vào sổ theo dõi. Mỗi văn bản mất 10–15 phút, 20–30 văn bản/tuần tốn 4–5 giờ.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Tại trang <strong>Quản lý tài liệu</strong> → Nhấn nút <strong>"AI Scan"</strong></li>
+  <li>Chọn file cần trích xuất — hỗ trợ <strong>PDF, JPG, PNG, ảnh scan</strong></li>
+  <li>Nhấn <strong>"Phân tích"</strong> → AI đọc nội dung trong 10–15 giây</li>
+  <li>Kết quả: <strong>14 trường thông tin</strong> được tự động điền — Số ký hiệu, Ngày ban hành, Loại VB, Cơ quan, Trích yếu, Người ký, Nơi nhận, Căn cứ pháp lý...</li>
+  <li>Kiểm tra nhanh → Nhấn <strong>"Lưu"</strong> → Văn bản được đưa vào hệ thống kèm file gốc</li>
+</ol>
+
+<h3>Xử lý nhiều file cùng lúc:</h3>
+<ol class="steps" style="counter-reset: step-counter 5;">
+  <li>Nhấn <strong>"AI Scan"</strong> → Chọn chế độ <strong>"Tách riêng"</strong> → Chọn 3 file PDF → AI tạo 3 văn bản riêng biệt</li>
+  <li>Hoặc chọn <strong>"Ghép trang"</strong> — khi 1 VB bị scan thành nhiều ảnh rời → AI ghép lại thành 1 văn bản duy nhất</li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> Thay vì mở từng file PDF, đọc rồi gõ lại — giờ chỉ cần chọn file, AI tự đọc và điền. 20 văn bản/tuần chỉ mất ~30 phút thay vì 4–5 giờ. Không còn gõ nhầm số hiệu "456" thành "465".
+</div>
+
+<!-- B2 -->
+<h2 id="b2">B2. AI Soạn thảo văn bản <small style="color:#888;">(3 phút)</small></h2>
+
+<div class="problem">
+  Mỗi ngày soạn 3–5 văn bản. Quy trình: tìm file Word cũ → copy → chỉnh sửa → rà soát. Mỗi VB mất 45–90 phút, hay quên đổi ngày, đổi số, sai tên cơ quan từ file cũ.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Nhấn nút <strong>"Tạo văn bản AI"</strong></li>
+  <li>Chọn mẫu: <strong>"Công văn mời họp"</strong> (41 mẫu có sẵn)</li>
+  <li>Nhập thông tin cốt lõi: nội dung, thời gian, địa điểm, thành phần tham dự</li>
+  <li>Nhấn <strong>"Tạo văn bản"</strong> → AI soạn bản nháp hoàn chỉnh trong 15–20 giây</li>
+  <li>Kết quả: Quốc hiệu, Tiêu ngữ đúng quy cách; Căn cứ pháp lý phù hợp; Văn phong hành chính chuẩn; Nơi nhận đầy đủ</li>
+  <li>Nhấn <strong>"Lưu"</strong> → <strong>"Xuất Word"</strong> → In trình ký</li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> Từ lúc nhận chỉ đạo đến lúc có file Word hoàn chỉnh — khoảng <strong>5 phút</strong>. Hỗ trợ tất cả 29 loại VB hành chính theo NĐ 30/2020.
+</div>
+
+<!-- B3 -->
+<h2 id="b3">B3. AI Kiểm tra văn bản <small style="color:#888;">(2 phút)</small></h2>
+
+<div class="problem">
+  Văn bản trình ký thường bị trả lại 2–3 lần do: sai chính tả, thiếu căn cứ pháp lý, nơi nhận không đầy đủ, văn phong chưa phù hợp.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Mở văn bản đã soạn (chuẩn bị sẵn văn bản có lỗi điển hình)</li>
+  <li>Nhấn nút <strong>"AI Kiểm tra"</strong></li>
+  <li>AI phân tích và trả về kết quả theo mức độ:
+    <ul>
+      <li><span class="badge badge-red">Lỗi nghiêm trọng</span> Thiếu căn cứ Luật Ngân sách nhà nước 2015</li>
+      <li><span class="badge badge-red">Lỗi nghiêm trọng</span> Nơi nhận thiếu Phòng Tài chính – Kế hoạch huyện</li>
+      <li><span class="badge badge-yellow">Cảnh báo</span> Sai chính tả "khẩn chương" → đúng là "khẩn trương"</li>
+      <li><span class="badge badge-yellow">Cảnh báo</span> Câu quá dài (85 từ), nên tách thành 2 câu</li>
+      <li><span class="badge badge-green">Gợi ý</span> Nên bổ sung mốc thời gian cụ thể</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> AI kiểm tra <strong>8 nhóm lỗi</strong>: chính tả, ngữ pháp, thể thức, căn cứ pháp lý, văn phong, nơi nhận, xung đột nội dung, và đề xuất cải thiện. Giảm thiểu tình trạng văn bản bị trả lại nhiều lần.
+</div>
+
+<!-- B4 -->
+<h2 id="b4">B4. AI Tham mưu xử lý văn bản đến <small style="color:#888;">(2 phút)</small></h2>
+
+<div class="problem">
+  Khi tiếp nhận VB từ cấp trên, cán bộ cần xác định: giao ai, thời hạn, cần phúc đáp bằng gì, rủi ro gì nếu chậm. VB phức tạp mất 30–60 phút.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Mở văn bản đến (Công văn UBND huyện yêu cầu báo cáo)</li>
+  <li>Nhấn nút <strong>"AI Tham mưu"</strong></li>
+  <li>AI trả về phân tích:</li>
+</ol>
+
+<table>
+  <thead><tr><th>Nội dung phân tích</th><th>Kết quả</th></tr></thead>
+  <tbody>
+    <tr><td>Tóm tắt</td><td>Huyện yêu cầu báo cáo kết quả CCHC năm 2025</td></tr>
+    <tr><td>Thời hạn</td><td>20/02/2026 (trích xuất từ nội dung VB)</td></tr>
+    <tr><td>Mức độ</td><td><span class="badge badge-red">Khẩn</span> — còn ít thời gian xử lý</td></tr>
+    <tr><td>Đề xuất người xử lý</td><td>Phó CT phụ trách Nội vụ, phối hợp Văn phòng</td></tr>
+    <tr><td>Hình thức phúc đáp</td><td>Báo cáo</td></tr>
+    <tr><td>Căn cứ liên quan</td><td>Nghị quyết 76/NQ-CP, QĐ 468/QĐ-TTg về CCHC</td></tr>
+    <tr><td>Rủi ro</td><td>Chậm hạn → ảnh hưởng xếp loại thi đua</td></tr>
+    <tr><td>Dàn ý dự thảo</td><td>I. Kết quả... II. Hạn chế... III. Phương hướng...</td></tr>
+  </tbody>
+</table>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> Chức năng đặc biệt hữu ích cho lãnh đạo khi mỗi ngày tiếp nhận 10–15 VB. AI phân loại nhanh: VB nào cần xử lý gấp, giao cho ai, deadline cụ thể.
+</div>
+
+<!-- B5 -->
+<h2 id="b5">B5. AI Tóm tắt văn bản <small style="color:#888;">(1 phút)</small></h2>
+
+<div class="problem">
+  Nhận file PDF Nghị định 35 trang qua email, cần đọc toàn bộ → thường mất 2–3 giờ. Đặc biệt khi lãnh đạo yêu cầu báo cáo tóm tắt sáng hôm sau.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Mở văn bản cần tóm tắt → Nhấn <strong>"AI Tóm tắt"</strong></li>
+  <li>AI phân tích và trả về <strong>10 mục tóm tắt</strong>: nội dung chính, đối tượng áp dụng, thời hạn hiệu lực, số liệu quan trọng, tác động đến đơn vị...</li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> Một Nghị định 35 trang được tóm tắt trong <strong>15–20 giây</strong>. In tóm tắt để báo cáo lãnh đạo, hoặc làm tài liệu tham khảo.
+</div>
+
+<!-- B6 -->
+<h2 id="b6">B6. AI Báo cáo định kỳ <small style="color:#888;">(2 phút)</small></h2>
+
+<div class="problem">
+  Mỗi tháng phải hoàn thành 4–5 báo cáo định kỳ. Mỗi báo cáo mất 3–4 giờ: thu thập số liệu, tính phần trăm, viết nhận xét, đánh giá, phương hướng. Riêng viết báo cáo chiếm 2–3 ngày/tháng.
+</div>
+
+<h3>Thao tác:</h3>
+<ol class="steps">
+  <li>Vào mục <strong>"AI Báo cáo định kỳ"</strong></li>
+  <li>Chọn kỳ: <strong>Tháng 01/2026</strong>, Lĩnh vực: <strong>Kinh tế – Xã hội</strong></li>
+  <li>Nhập hoặc dán số liệu thô (thu ngân sách, hộ nghèo, GPMB...)</li>
+  <li>Nhấn <strong>"Tạo báo cáo"</strong> → AI soạn báo cáo hoàn chỉnh:
+    <ul>
+      <li>Phần I: Kết quả thực hiện — số liệu, tỷ lệ % tăng/giảm so kỳ trước</li>
+      <li>Phần II: Đánh giá chung — ưu điểm, hạn chế</li>
+      <li>Phần III: Phương hướng, nhiệm vụ kỳ tới</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="speaker">
+  <strong>Người trình bày:</strong> AI tự tính tỷ lệ tăng giảm, so sánh kỳ trước, viết nhận xét. Mỗi báo cáo giảm từ <strong>3–4 giờ → 15 phút</strong>.
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PHẦN KẾT -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="part-header" id="ketluan">
+  PHẦN KẾT — TỔNG HỢP VÀ TRAO ĐỔI
+  <small>Thời lượng: 4 phút</small>
+</div>
+
+<h2 id="hieuqua">Tổng hợp hiệu quả ước tính</h2>
+
+<table class="highlight-table">
+  <thead>
+    <tr><th>Công việc</th><th>Thời gian hiện tại</th><th>Với VanBanPlus</th><th>Chênh lệch</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Nhập 1 VB (từ PDF/scan)</td><td>10–15 phút</td><td>2 phút</td><td>Giảm ~85%</td></tr>
+    <tr><td>Soạn 1 VB hành chính</td><td>45–90 phút</td><td>5–10 phút</td><td>Giảm ~90%</td></tr>
+    <tr><td>Kiểm tra VB trước trình ký</td><td>2–3 lần trình ký</td><td>1 lần trình ký</td><td>Giảm ~70% lỗi</td></tr>
+    <tr><td>Phân tích VB đến</td><td>30–60 phút</td><td>3 phút</td><td>Giảm ~90%</td></tr>
+    <tr><td>Tóm tắt VB dài (20+ trang)</td><td>2–3 giờ</td><td>1 phút</td><td>Giảm ~98%</td></tr>
+    <tr><td>Viết 1 báo cáo định kỳ</td><td>3–4 giờ</td><td>15 phút</td><td>Giảm ~90%</td></tr>
+    <tr><td>Tra cứu VB cũ</td><td>10–15 phút</td><td>Vài giây</td><td>Giảm ~99%</td></tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p><strong>Ước tính tổng thể cho 1 cán bộ Văn phòng – Thống kê:</strong></p>
+  <ul>
+    <li>Tiết kiệm khoảng <strong>3–5 giờ mỗi ngày</strong></li>
+    <li>Tương đương <strong>15–19 ngày công mỗi tháng</strong></li>
+    <li>Thời gian tiết kiệm được dành cho: tiếp công dân, đi cơ sở, giải quyết hồ sơ hành chính.</li>
+  </ul>
+</blockquote>
+
+<h2 id="dinhvi">Định vị sản phẩm</h2>
+
+<p>Phần mềm VanBanPlus được thiết kế như một <strong>"sổ tay công việc thông minh"</strong> dành cho từng cán bộ, công chức. Cụ thể:</p>
+
+<ul>
+  <li><strong>Không thay thế</strong> hệ thống quản lý văn bản tập trung của cơ quan (eGov, iDesk, VNPT-iOffice...).</li>
+  <li><strong>Không thay thế</strong> vai trò Văn thư trong việc cấp số, vào sổ chính thức.</li>
+  <li><strong>Là công cụ hỗ trợ cá nhân</strong> — giúp mỗi cán bộ quản lý, theo dõi công việc hiệu quả hơn.</li>
+  <li>AI <strong>không thay thế</strong> cán bộ — mà <strong>hỗ trợ</strong> cán bộ hoàn thành công việc nhanh hơn, chính xác hơn. Mọi kết quả AI đều cần kiểm tra, phê duyệt.</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PHỤ LỤC -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="part-header" id="phuluc">
+  PHỤ LỤC — CHUẨN BỊ VÀ LƯU Ý
+</div>
+
+<h2 id="pl1">1. Chuẩn bị dữ liệu demo</h2>
+<ul class="checklist">
+  <li>2–3 file PDF văn bản thật (QĐ, CV từ huyện/tỉnh — có thể che thông tin mật). Nếu không có PDF, dùng ảnh scan/ảnh chụp.</li>
+  <li>1 văn bản có lỗi điển hình để demo AI Kiểm tra (cố tình sai chính tả, thiếu căn cứ, thiếu nơi nhận)</li>
+  <li>1 văn bản đến dạng PDF cần phân tích cho demo AI Tham mưu (Công văn yêu cầu báo cáo, có nêu thời hạn)</li>
+  <li>Số liệu báo cáo mẫu cho demo AI Báo cáo định kỳ</li>
+  <li>Dữ liệu mẫu 50 văn bản đã có sẵn trong phần mềm</li>
+</ul>
+
+<h2 id="pl2">2. Thiết lập phần mềm trước buổi demo</h2>
+<ul class="checklist">
+  <li>Chọn đúng loại cơ quan phù hợp đối tượng tham dự (UBND xã, Sở, Trường học...)</li>
+  <li>Đăng nhập tài khoản VanBanPlus</li>
+  <li>Kiểm tra kết nối Internet ổn định (cho phần AI)</li>
+  <li>Mở sẵn phần mềm tại Trang chủ</li>
+  <li>Chuẩn bị file PDF/ảnh scan trong thư mục dễ tìm trên Desktop</li>
+</ul>
+
+<h2 id="pl3">3. Thiết bị cần có</h2>
+<ul class="checklist">
+  <li>Máy tính đã cài VanBanPlus (Windows 10 trở lên)</li>
+  <li>Màn hình chiếu hoặc TV lớn để nhiều người cùng theo dõi</li>
+  <li>Kết nối Internet</li>
+</ul>
+
+<h2 id="pl4">4. Câu hỏi thường gặp — Chuẩn bị phương án trả lời</h2>
+
+<table>
+  <thead><tr><th style="width:40%">Câu hỏi</th><th>Phương án trả lời</th></tr></thead>
+  <tbody>
+    <tr><td>Phần mềm có cần Internet không?</td><td>Quản lý hoạt động bình thường không cần Internet. Riêng 6 chức năng AI cần kết nối.</td></tr>
+    <tr><td>Dữ liệu có bảo mật không?</td><td>Toàn bộ dữ liệu lưu trên máy cá nhân, không lưu trên máy chủ ngoài. Khi gọi AI, dữ liệu không được lưu phía nhà cung cấp.</td></tr>
+    <tr><td>Có thay thế eGov không?</td><td>Không. VanBanPlus là công cụ hỗ trợ cá nhân, bổ sung cho hệ thống tập trung.</td></tr>
+    <tr><td>Yêu cầu cấu hình?</td><td>Windows 10+ (64-bit), RAM tối thiểu 4GB. Không yêu cầu cấu hình cao.</td></tr>
+    <tr><td>AI có chính xác 100% không?</td><td>Đạt ~95%. Mọi kết quả đều cần cán bộ rà soát lại. Hiểu như có chuyên viên soạn nháp, cán bộ duyệt.</td></tr>
+    <tr><td>Máy hỏng thì mất dữ liệu?</td><td>Tự động sao lưu mỗi lần mở. Copy ra USB. Cài máy mới → nhấn "Khôi phục".</td></tr>
+    <tr><td>Hỗ trợ cơ quan nào?</td><td>Hơn 70 loại: UBND, HĐND, Đảng ủy, MTTQ, các Hội, Sở, Trường học, Y tế, Bệnh viện...</td></tr>
+    <tr><td>Cài đặt có khó không?</td><td>1 lần, ~5 phút. Có hướng dẫn từng bước. Hỗ trợ từ xa nếu cần.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="pl5">5. Lưu ý khi trình bày</h2>
+<ul>
+  <li>Sử dụng văn phong trang trọng, phù hợp với cán bộ, công chức nhà nước.</li>
+  <li>Ưu tiên <strong>thao tác trực tiếp trên phần mềm</strong> — hạn chế trình chiếu slide lý thuyết.</li>
+  <li>Mỗi chức năng: đặt vấn đề thực tế trước → sau đó thao tác demo.</li>
+  <li>Không dùng thuật ngữ kỹ thuật chuyên sâu (API, database, model...). Nếu cần, giải thích bằng ngôn ngữ dễ hiểu.</li>
+  <li>Khi AI đang xử lý (10–20 giây), nói: <em>"Hệ thống đang phân tích nội dung. Công việc này nếu làm thủ công sẽ mất khoảng 10–15 phút."</em></li>
+  <li>Nếu gặp lỗi kỹ thuật, bình tĩnh chuyển sang chức năng khác, quay lại sau.</li>
+</ul>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<div class="doc-footer">
+  <p><strong>Công ty TNHH Gia Kiệm Số</strong><br>
+  Website công ty: <a href="https://giakiemso.com" style="color:#216FDB;">giakiemso.com</a> &nbsp;|&nbsp;
+  Phần mềm: <a href="https://vanbanplus.giakiemso.com" style="color:#216FDB;">vanbanplus.giakiemso.com</a></p>
+  <p class="beta-note">⚠ Tài liệu nội bộ — Phiên bản Beta, chưa phát hành chính thức.<br>
+  Không sao chép, phân phối khi chưa được sự đồng ý của đơn vị phát triển.</p>
+</div>
+
+</div><!-- /.page-container -->
+</body>
+</html>

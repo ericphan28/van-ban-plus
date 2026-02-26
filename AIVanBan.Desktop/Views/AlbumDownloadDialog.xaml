@@ -58,7 +58,7 @@
                            Margin="0,0,8,0" FontWeight="SemiBold"/>
                 <Button DockPanel.Dock="Right" Style="{StaticResource MaterialDesignRaisedButton}"
                         Click="ReconnectServer_Click" Padding="10,4" Margin="8,0,0,0"
-                        Background="#FF9800" BorderBrush="#FF9800" FontSize="11">
+                        Background="#FF9800" BorderBrush="#FF9800" Foreground="White" FontSize="11">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0"/>
                         <TextBlock Text="Kết nối lại" VerticalAlignment="Center"/>
@@ -219,7 +219,7 @@
                     </Button>
                     <Button x:Name="btnDownload" Style="{StaticResource MaterialDesignRaisedButton}"
                             Click="Download_Click" Padding="16,6" Margin="10,0,0,0"
-                            Background="#1565C0" BorderBrush="#1565C0" IsEnabled="False">
+                            Background="#1565C0" BorderBrush="#1565C0" Foreground="White" IsEnabled="False">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="CloudDownload" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock x:Name="txtDownloadButton" Text="Tải album đã chọn" VerticalAlignment="Center"/>

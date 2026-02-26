@@ -738,6 +738,63 @@ TUYÊN TRUYỀN PCTN:
         txtPreviousReport.Text = @"Năm 2024: Công khai NS 4 lần. Kê khai TS 8/8. KT nội bộ 2 cuộc. Tiếp CD 52 lượt. KNTC 7 đơn, giải quyết 7/7. Tham nhũng 0 vụ. Xếp loại TỐT.";
     }
 
+    /// <summary>
+    /// Tự động lấy số liệu từ sổ văn bản (LiteDB) để điền vào ô Số liệu
+    /// </summary>
+    private void AutoFillStats_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var periodType = cboPeriodType.SelectedItem as string ?? "Tháng";
+            var reportPeriod = cboPeriod.Text;
+
+            if (string.IsNullOrWhiteSpace(reportPeriod))
+            {
+                MessageBox.Show("Vui lòng chọn kỳ báo cáo trước!", "Thiếu thông tin",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var stats = PeriodicReportService.ExtractStatsFromDB(periodType, reportPeriod);
+
+            if (string.IsNullOrWhiteSpace(stats))
+            {
+                MessageBox.Show("Không tìm thấy dữ liệu văn bản nào trong kỳ này.\n" +
+                    "Hãy nhập số liệu thủ công hoặc chọn kỳ khác.", "Không có dữ liệu",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Nếu đã có nội dung, hỏi ghi đè hay nối thêm
+            if (!string.IsNullOrWhiteSpace(txtRawData.Text))
+            {
+                var result = MessageBox.Show(
+                    "Ô số liệu đã có nội dung.\n\n" +
+                    "• Bấm YES để thay thế toàn bộ\n" +
+                    "• Bấm NO để nối thêm vào cuối\n" +
+                    "• Bấm Cancel để hủy",
+                    "Đã có số liệu", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Cancel) return;
+                if (result == MessageBoxResult.No)
+                {
+                    txtRawData.Text = txtRawData.Text.TrimEnd() + "\n\n--- Số liệu từ sổ VB ---\n" + stats;
+                    return;
+                }
+            }
+
+            txtRawData.Text = stats;
+
+            MessageBox.Show($"Đã lấy số liệu từ sổ văn bản cho kỳ: {reportPeriod}",
+                "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi lấy số liệu: {ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private async void Generate_Click(object sender, RoutedEventArgs e)
     {
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;

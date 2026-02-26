@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -9,17 +11,59 @@ using Microsoft.Win32;
 
 namespace AIVanBan.Desktop.Views;
 
+/// <summary>
+/// ViewModel cho mỗi file trong danh sách scan
+/// </summary>
+public class ScanFileItem : INotifyPropertyChanged
+{
+    private int _order;
+    
+    public string FilePath { get; set; } = "";
+    public string FileName { get; set; } = "";
+    public string FileSize { get; set; } = "";
+    public long FileSizeBytes { get; set; }
+    public string MimeType { get; set; } = "";
+    public BitmapImage? Thumbnail { get; set; }
+    public Visibility PdfIconVisibility { get; set; } = Visibility.Collapsed;
+    
+    public int Order
+    {
+        get => _order;
+        set { _order = value; OnPropertyChanged(nameof(Order)); }
+    }
+    
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged(string name) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+}
+
 public partial class ScanImportDialog : Window
 {
     private readonly DocumentService _documentService;
     private readonly GeminiAIService _aiService;
-    private string? _selectedFilePath;
+    private readonly ObservableCollection<ScanFileItem> _files = new();
     private GeminiAIService.ExtractedDocumentData? _extractedData;
     
+    // Cho chế độ "Tách riêng" — mỗi file → 1 Document
+    private List<(GeminiAIService.ExtractedDocumentData Data, string FilePath)> _separateResults = new();
+    
     /// <summary>
-    /// Văn bản đã được tạo từ scan (null nếu user hủy)
+    /// Văn bản đã được tạo từ scan — dùng cho chế độ "Ghép trang" (1 VB)
     /// </summary>
     public Document? CreatedDocument { get; private set; }
+    
+    /// <summary>
+    /// Danh sách văn bản — dùng cho chế độ "Tách riêng" (nhiều VB)
+    /// </summary>
+    public List<Document> CreatedDocuments { get; private set; } = new();
+    
+    /// <summary>
+    /// true = "Tách riêng", false = "Ghép trang"
+    /// </summary>
+    public bool IsSeparateMode => rbSeparate.IsChecked == true;
+
+    private static readonly string[] SupportedExtensions = 
+        { ".pdf", ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif", ".webp", ".gif" };
 
     public ScanImportDialog(DocumentService documentService, string? geminiApiKey = null)
     {
@@ -27,6 +71,7 @@ public partial class ScanImportDialog : Window
         _documentService = documentService;
         _aiService = string.IsNullOrEmpty(geminiApiKey) ? new GeminiAIService() : new GeminiAIService(geminiApiKey);
         
+        lstFiles.ItemsSource = _files;
         InitializeComboBoxes();
     }
     
@@ -113,214 +158,288 @@ public partial class ScanImportDialog : Window
         cboDoMat.SelectedIndex = 0;
     }
 
+    #region File management — Add, Remove, Reorder
+
     private void ChooseFile_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Chọn file PDF hoặc ảnh scan",
+            Title = "Chọn file PDF hoặc ảnh scan (có thể chọn nhiều file)",
             Filter = "File hỗ trợ|*.pdf;*.jpg;*.jpeg;*.png;*.bmp;*.tiff;*.tif;*.webp;*.gif|" +
                      "PDF|*.pdf|" +
                      "Ảnh|*.jpg;*.jpeg;*.png;*.bmp;*.tiff;*.tif;*.webp;*.gif|" +
-                     "Tất cả|*.*"
+                     "Tất cả|*.*",
+            Multiselect = true
         };
         
         if (dialog.ShowDialog() == true)
         {
-            _selectedFilePath = dialog.FileName;
-            ShowFilePreview();
-            btnAnalyze.IsEnabled = true;
-            txtExtractionStatus.Text = "Sẵn sàng phân tích";
+            AddFiles(dialog.FileNames);
         }
     }
     
-    private void ShowFilePreview()
+    private void AddFiles(string[] filePaths)
     {
-        if (string.IsNullOrEmpty(_selectedFilePath)) return;
-        
-        var ext = Path.GetExtension(_selectedFilePath).ToLower();
-        emptyState.Visibility = Visibility.Collapsed;
-        
-        if (ext == ".pdf")
+        foreach (var path in filePaths)
         {
-            // Show PDF info
-            previewScroll.Visibility = Visibility.Collapsed;
-            pdfPreview.Visibility = Visibility.Visible;
+            var ext = Path.GetExtension(path).ToLower();
+            if (!SupportedExtensions.Contains(ext))
+            {
+                MessageBox.Show($"File không được hỗ trợ: {Path.GetFileName(path)}\n\n" +
+                    "Hỗ trợ: PDF, JPG, PNG, BMP, TIFF, WebP, GIF",
+                    "Bỏ qua file", MessageBoxButton.OK, MessageBoxImage.Warning);
+                continue;
+            }
             
-            txtPdfFileName.Text = Path.GetFileName(_selectedFilePath);
-            var fileInfo = new FileInfo(_selectedFilePath);
+            // Kiểm tra trùng lặp
+            if (_files.Any(f => f.FilePath.Equals(path, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            
+            var fileInfo = new FileInfo(path);
             var sizeText = fileInfo.Length < 1024 * 1024
                 ? $"{fileInfo.Length / 1024} KB"
                 : $"{fileInfo.Length / (1024.0 * 1024):F1} MB";
-            txtPdfFileSize.Text = sizeText;
+            
+            var mimeType = ext switch
+            {
+                ".pdf" => "application/pdf",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".bmp" => "image/bmp",
+                ".webp" => "image/webp",
+                ".tiff" or ".tif" => "image/tiff",
+                _ => "application/octet-stream"
+            };
+            
+            var item = new ScanFileItem
+            {
+                FilePath = path,
+                FileName = Path.GetFileName(path),
+                FileSize = sizeText,
+                FileSizeBytes = fileInfo.Length,
+                MimeType = mimeType,
+                Order = _files.Count + 1,
+                PdfIconVisibility = ext == ".pdf" ? Visibility.Visible : Visibility.Collapsed,
+            };
+            
+            // Tạo thumbnail cho ảnh
+            if (ext != ".pdf")
+            {
+                try
+                {
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(path);
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.DecodePixelWidth = 80;
+                    bitmap.EndInit();
+                    bitmap.Freeze();
+                    item.Thumbnail = bitmap;
+                }
+                catch { /* Không tạo được thumbnail — bỏ qua */ }
+            }
+            
+            _files.Add(item);
+        }
+        
+        UpdateFileListUI();
+    }
+    
+    private void RemoveFile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string filePath)
+        {
+            var item = _files.FirstOrDefault(f => f.FilePath == filePath);
+            if (item != null)
+            {
+                _files.Remove(item);
+                RenumberFiles();
+                UpdateFileListUI();
+            }
+        }
+    }
+    
+    private void ClearAll_Click(object sender, RoutedEventArgs e)
+    {
+        if (_files.Count == 0) return;
+        
+        var result = MessageBox.Show($"Xóa tất cả {_files.Count} file khỏi danh sách?",
+            "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (result == MessageBoxResult.Yes)
+        {
+            _files.Clear();
+            UpdateFileListUI();
+        }
+    }
+    
+    private void MoveUp_Click(object sender, RoutedEventArgs e)
+    {
+        var idx = lstFiles.SelectedIndex;
+        if (idx <= 0) return;
+        
+        _files.Move(idx, idx - 1);
+        RenumberFiles();
+        lstFiles.SelectedIndex = idx - 1;
+    }
+    
+    private void MoveDown_Click(object sender, RoutedEventArgs e)
+    {
+        var idx = lstFiles.SelectedIndex;
+        if (idx < 0 || idx >= _files.Count - 1) return;
+        
+        _files.Move(idx, idx + 1);
+        RenumberFiles();
+        lstFiles.SelectedIndex = idx + 1;
+    }
+    
+    private void FileList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // Bật/tắt nút Move tùy vị trí chọn
+        var idx = lstFiles.SelectedIndex;
+        btnMoveUp.IsEnabled = idx > 0;
+        btnMoveDown.IsEnabled = idx >= 0 && idx < _files.Count - 1;
+    }
+    
+    private void RenumberFiles()
+    {
+        for (int i = 0; i < _files.Count; i++)
+            _files[i].Order = i + 1;
+    }
+    
+    private void UpdateFileListUI()
+    {
+        var hasFiles = _files.Count > 0;
+        emptyState.Visibility = hasFiles ? Visibility.Collapsed : Visibility.Visible;
+        lstFiles.Visibility = hasFiles ? Visibility.Visible : Visibility.Collapsed;
+        pnlMoveButtons.Visibility = hasFiles ? Visibility.Visible : Visibility.Collapsed;
+        btnAnalyze.IsEnabled = hasFiles;
+        
+        txtFileCount.Text = $"{_files.Count} file";
+        
+        var totalSize = _files.Sum(f => f.FileSizeBytes);
+        var totalSizeText = totalSize < 1024 * 1024
+            ? $"{totalSize / 1024} KB"
+            : $"{totalSize / (1024.0 * 1024):F1} MB";
+        txtFooterInfo.Text = hasFiles ? $"Tổng: {_files.Count} file, {totalSizeText}" : "";
+        
+        // Reset extraction state khi thay đổi file
+        _extractedData = null;
+        _separateResults.Clear();
+        btnSave.IsEnabled = false;
+        txtExtractionStatus.Text = hasFiles ? "Sẵn sàng phân tích" : "";
+    }
+
+    #endregion
+
+    #region Drag and drop
+
+    private void Window_DragOver(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            e.Effects = DragDropEffects.Copy;
+            e.Handled = true;
+        }
+    }
+    
+    private void Window_Drop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files != null && files.Length > 0)
+            {
+                AddFiles(files);
+            }
+        }
+    }
+
+    #endregion
+
+    #region Mode selector
+
+    private void ScanMode_Changed(object sender, RoutedEventArgs e)
+    {
+        if (txtModeDescription == null) return; // InitializeComponent chưa xong
+        
+        if (rbMerge.IsChecked == true)
+        {
+            txtModeDescription.Text = "Ghép tất cả ảnh thành 1 văn bản (VD: scan VB nhiều trang)";
+            txtSaveButton.Text = "Lưu văn bản vào hệ thống";
         }
         else
         {
-            // Show image preview
-            pdfPreview.Visibility = Visibility.Collapsed;
-            previewScroll.Visibility = Visibility.Visible;
-            
-            try
-            {
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(_selectedFilePath);
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.DecodePixelWidth = 600; // Limit memory usage
-                bitmap.EndInit();
-                imgPreview.Source = bitmap;
-            }
-            catch
-            {
-                // Fallback to PDF-like display
-                previewScroll.Visibility = Visibility.Collapsed;
-                pdfPreview.Visibility = Visibility.Visible;
-                txtPdfFileName.Text = Path.GetFileName(_selectedFilePath);
-                txtPdfFileSize.Text = "Không thể xem trước";
-            }
+            txtModeDescription.Text = "Mỗi ảnh/PDF = 1 văn bản riêng biệt (batch import)";
+            txtSaveButton.Text = $"Lưu {_files.Count} văn bản vào hệ thống";
         }
         
-        txtFooterInfo.Text = $"File: {_selectedFilePath}";
+        // Reset extraction khi đổi mode
+        _extractedData = null;
+        _separateResults.Clear();
+        btnSave.IsEnabled = false;
     }
+
+    #endregion
+
+    #region AI Analysis
 
     private async void Analyze_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrEmpty(_selectedFilePath)) return;
+        if (_files.Count == 0) return;
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
         
-        // Check file size — Vercel/API giới hạn body ~4.5MB, base64 tăng ~33%
-        // => file gốc tối đa ~3MB để an toàn qua API
-        var fileInfo = new FileInfo(_selectedFilePath);
-        var fileSizeMB = fileInfo.Length / (1024.0 * 1024.0);
-        
-        if (fileSizeMB > 20)
+        // Validate file sizes
+        foreach (var file in _files)
         {
-            MessageBox.Show(
-                $"📁 File quá lớn ({fileSizeMB:F1} MB)\n\n" +
-                "AI hỗ trợ tối đa 20MB mỗi file.\n" +
-                "Hãy giảm kích thước file hoặc chia thành nhiều file nhỏ hơn.",
-                "File quá lớn", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            var sizeMB = file.FileSizeBytes / (1024.0 * 1024.0);
+            if (sizeMB > 20)
+            {
+                MessageBox.Show(
+                    $"📁 File quá lớn: {file.FileName} ({sizeMB:F1} MB)\n\n" +
+                    "AI hỗ trợ tối đa 20MB mỗi file.\n" +
+                    "Hãy xóa file này khỏi danh sách hoặc giảm kích thước.",
+                    "File quá lớn", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
         }
         
-        if (fileSizeMB > 3)
+        // Cảnh báo tổng dung lượng lớn cho chế độ ghép
+        if (!IsSeparateMode)
         {
-            var result = MessageBox.Show(
-                $"📁 File khá lớn ({fileSizeMB:F1} MB)\n\n" +
-                "File trên 3MB có thể bị từ chối bởi máy chủ.\n\n" +
-                "💡 Gợi ý:\n" +
-                "• Chụp ảnh rõ nét thay vì scan cả file PDF\n" +
-                "• Giảm dung lượng bằng cách nén PDF\n" +
-                "• Chia file nhiều trang thành từng trang riêng\n\n" +
-                "Bạn vẫn muốn thử gửi?",
-                "Cảnh báo dung lượng file", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result == MessageBoxResult.No) return;
+            var totalMB = _files.Sum(f => f.FileSizeBytes) / (1024.0 * 1024.0);
+            if (totalMB > 15)
+            {
+                var result = MessageBox.Show(
+                    $"📁 Tổng dung lượng khá lớn ({totalMB:F1} MB cho {_files.Count} file)\n\n" +
+                    "Chế độ \"Ghép trang\" gửi tất cả file cùng lúc.\n" +
+                    "File quá lớn có thể bị từ chối hoặc timeout.\n\n" +
+                    "💡 Gợi ý: Chuyển sang chế độ \"Tách riêng\" để xử lý từng file.\n\n" +
+                    "Bạn vẫn muốn tiếp tục?",
+                    "Cảnh báo dung lượng", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.No) return;
+            }
         }
         
-        // Start analysis
+        // Disable UI
         btnAnalyze.IsEnabled = false;
         btnChooseFile.IsEnabled = false;
         btnSave.IsEnabled = false;
-        loadingPanel.Visibility = Visibility.Visible;
-        txtExtractionStatus.Text = "⏳ Đang phân tích...";
         txtAnalyzeButton.Text = "⏳ Đang xử lý...";
-        
-        // Timer đếm thời gian chờ
-        var elapsed = 0;
-        var progressTimer = new System.Windows.Threading.DispatcherTimer();
-        progressTimer.Interval = TimeSpan.FromSeconds(1);
-        progressTimer.Tick += (s, args) =>
-        {
-            elapsed++;
-            var statusText = elapsed switch
-            {
-                <= 10 => $"🤖 Đang gửi file lên máy chủ AI... ({elapsed}s)",
-                <= 30 => $"🔍 AI đang đọc và phân tích văn bản... ({elapsed}s)",
-                <= 60 => $"📝 AI đang trích xuất nội dung chi tiết... ({elapsed}s)",
-                <= 120 => $"⏳ File lớn — AI cần thêm thời gian... ({elapsed}s)",
-                <= 180 => $"🔄 Đang chờ phản hồi từ máy chủ AI... ({elapsed}s)",
-                _ => $"⏳ Vẫn đang xử lý, xin kiên nhẫn... ({elapsed}s)"
-            };
-            txtLoadingStatus.Text = statusText;
-        };
         
         try
         {
-            txtLoadingStatus.Text = "🤖 Đang gửi file lên máy chủ AI...";
-            progressTimer.Start();
-            
-            _extractedData = await _aiService.ExtractDocumentFromFileAsync(_selectedFilePath);
-            
-            progressTimer.Stop();
-            txtLoadingStatus.Text = $"✅ Phân tích hoàn tất sau {elapsed}s! Đang điền dữ liệu...";
-            await System.Threading.Tasks.Task.Delay(500); // Brief visual feedback
-            
-            // Populate form
-            PopulateForm(_extractedData);
-            
-            loadingPanel.Visibility = Visibility.Collapsed;
-            btnSave.IsEnabled = true;
-            txtExtractionStatus.Text = "✅ Đã trích xuất — Kiểm tra và chỉnh sửa nếu cần";
-            txtFooterInfo.Text = $"✅ Trích xuất thành công ({elapsed}s) | File: {Path.GetFileName(_selectedFilePath)}";
+            if (IsSeparateMode)
+                await AnalyzeSeparateAsync();
+            else
+                await AnalyzeMergeAsync();
         }
         catch (Exception ex)
         {
-            progressTimer.Stop();
             loadingPanel.Visibility = Visibility.Collapsed;
+            batchPanel.Visibility = Visibility.Collapsed;
             txtExtractionStatus.Text = "❌ Lỗi phân tích";
-            
-            // Phân loại lỗi và hiển thị thông báo thân thiện
-            var msg = ex.Message + (ex.InnerException?.Message ?? "");
-            string errorTitle;
-            string errorDetail;
-            
-            if (msg.Contains("413") || msg.Contains("Entity Too Large") || msg.Contains("Payload Too Large"))
-            {
-                errorTitle = "File quá lớn";
-                errorDetail = $"📁 File {Path.GetFileName(_selectedFilePath)} ({fileSizeMB:F1} MB) vượt quá giới hạn của máy chủ.\n\n" +
-                    "💡 Cách khắc phục:\n" +
-                    "  • Chụp ảnh từng trang thay vì gửi cả file PDF\n" +
-                    "  • Nén PDF bằng công cụ online (smallpdf.com, ilovepdf.com)\n" +
-                    "  • Giảm độ phân giải ảnh scan (300 DPI là đủ)\n" +
-                    "  • Chia file nhiều trang thành từng phần nhỏ\n\n" +
-                    "📌 Khuyến nghị: File dưới 3MB sẽ xử lý nhanh và ổn định nhất.";
-            }
-            else if (msg.Contains("Timeout") || msg.Contains("timeout") || msg.Contains("Không thể trích xuất sau"))
-            {
-                errorTitle = "Quá thời gian chờ";
-                errorDetail = $"⏰ AI không phản hồi sau {elapsed} giây.\n\n" +
-                    "💡 Nguyên nhân có thể:\n" +
-                    "  • File quá lớn, AI cần nhiều thời gian hơn\n" +
-                    "  • Kết nối mạng không ổn định\n" +
-                    "  • Máy chủ AI đang quá tải\n\n" +
-                    "Gợi ý: Thử lại sau ít phút hoặc dùng file nhỏ hơn.";
-            }
-            else if (msg.Contains("401") || msg.Contains("Unauthorized") || msg.Contains("API key"))
-            {
-                errorTitle = "Lỗi xác thực";
-                errorDetail = "🔑 Phiên đăng nhập đã hết hạn hoặc API key không hợp lệ.\n\n" +
-                    "Hãy đăng xuất và đăng nhập lại.";
-            }
-            else if (msg.Contains("429") || msg.Contains("quota") || msg.Contains("rate"))
-            {
-                errorTitle = "Hết lượt sử dụng";
-                errorDetail = "📊 Bạn đã hết lượt AI trong tháng này.\n\n" +
-                    "Nâng cấp gói dịch vụ để có thêm lượt sử dụng.";
-            }
-            else if (msg.Contains("No such host") || msg.Contains("network") || msg.Contains("SocketException"))
-            {
-                errorTitle = "Lỗi kết nối";
-                errorDetail = "🌐 Không thể kết nối đến máy chủ.\n\n" +
-                    "Kiểm tra kết nối Internet và thử lại.";
-            }
-            else
-            {
-                errorTitle = "Lỗi phân tích";
-                errorDetail = $"Không thể phân tích file này.\n\n" +
-                    $"Chi tiết: {ex.Message}\n\n" +
-                    "Hãy thử lại hoặc chọn file khác.";
-            }
-            
-            MessageBox.Show(errorDetail, errorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+            ShowAnalysisError(ex);
         }
         finally
         {
@@ -329,6 +448,195 @@ public partial class ScanImportDialog : Window
             txtAnalyzeButton.Text = "🤖 Phân tích bằng AI";
         }
     }
+
+    /// <summary>
+    /// Chế độ "Ghép trang" — gửi nhiều ảnh trong 1 request AI → 1 văn bản
+    /// </summary>
+    private async Task AnalyzeMergeAsync()
+    {
+        loadingPanel.Visibility = Visibility.Visible;
+        batchPanel.Visibility = Visibility.Collapsed;
+        txtExtractionStatus.Text = $"⏳ Đang phân tích {_files.Count} file (ghép trang)...";
+        
+        var elapsed = 0;
+        var progressTimer = CreateProgressTimer(ref elapsed);
+        
+        try
+        {
+            progressTimer.Start();
+            txtLoadingStatus.Text = $"🤖 Đang gửi {_files.Count} file lên AI...";
+            txtLoadingDetail.Text = $"Chế độ ghép trang — {_files.Count} ảnh → 1 văn bản";
+            
+            // Đọc tất cả file → base64
+            var fileDataList = new List<(string Base64, string MimeType)>();
+            for (int i = 0; i < _files.Count; i++)
+            {
+                txtLoadingStatus.Text = $"📂 Đang đọc file {i + 1}/{_files.Count}: {_files[i].FileName}";
+                var bytes = await File.ReadAllBytesAsync(_files[i].FilePath);
+                var base64 = Convert.ToBase64String(bytes);
+                fileDataList.Add((base64, _files[i].MimeType));
+            }
+            
+            txtLoadingStatus.Text = $"🤖 Đang gửi {_files.Count} file lên AI...";
+            
+            // Gọi AI với nhiều ảnh cùng lúc
+            _extractedData = await _aiService.ExtractDocumentFromMultipleFilesAsync(fileDataList);
+            
+            progressTimer.Stop();
+            txtLoadingStatus.Text = $"✅ Phân tích hoàn tất sau {elapsed}s!";
+            await System.Threading.Tasks.Task.Delay(500);
+            
+            PopulateForm(_extractedData);
+            
+            loadingPanel.Visibility = Visibility.Collapsed;
+            btnSave.IsEnabled = true;
+            txtExtractionStatus.Text = $"✅ Ghép {_files.Count} trang → 1 văn bản — Kiểm tra và chỉnh sửa";
+            txtFooterInfo.Text = $"✅ Trích xuất thành công ({elapsed}s) | {_files.Count} file ghép";
+        }
+        finally
+        {
+            progressTimer.Stop();
+        }
+    }
+
+    /// <summary>
+    /// Chế độ "Tách riêng" — xử lý từng file → nhiều văn bản
+    /// </summary>
+    private async Task AnalyzeSeparateAsync()
+    {
+        loadingPanel.Visibility = Visibility.Collapsed;
+        batchPanel.Visibility = Visibility.Visible;
+        txtExtractionStatus.Text = $"⏳ Đang xử lý {_files.Count} file (tách riêng)...";
+        
+        _separateResults.Clear();
+        var errors = new List<string>();
+        
+        for (int i = 0; i < _files.Count; i++)
+        {
+            var file = _files[i];
+            var progress = (int)((i + 1.0) / _files.Count * 100);
+            
+            pbBatch.Value = (int)(i * 100.0 / _files.Count);
+            txtBatchStatus.Text = $"📑 Đang xử lý file {i + 1}/{_files.Count}...";
+            txtBatchDetail.Text = $"File: {file.FileName} ({file.FileSize})";
+            
+            try
+            {
+                var data = await _aiService.ExtractDocumentFromFileAsync(file.FilePath);
+                _separateResults.Add((data, file.FilePath));
+            }
+            catch (Exception ex)
+            {
+                errors.Add($"❌ {file.FileName}: {ex.Message}");
+            }
+        }
+        
+        pbBatch.Value = 100;
+        
+        if (_separateResults.Count > 0)
+        {
+            // Hiển thị kết quả file đầu tiên trong form
+            PopulateForm(_separateResults[0].Data);
+            
+            txtBatchStatus.Text = $"✅ Hoàn tất: {_separateResults.Count}/{_files.Count} file thành công";
+            txtBatchDetail.Text = errors.Count > 0 
+                ? $"⚠️ {errors.Count} file lỗi — Bấm Lưu để lưu {_separateResults.Count} VB thành công"
+                : $"Bấm Lưu để lưu {_separateResults.Count} văn bản vào hệ thống";
+            
+            btnSave.IsEnabled = true;
+            txtSaveButton.Text = $"Lưu {_separateResults.Count} văn bản vào hệ thống";
+            txtExtractionStatus.Text = $"✅ {_separateResults.Count} VB — Form hiển thị VB đầu tiên (tham khảo)";
+            
+            if (errors.Count > 0)
+            {
+                MessageBox.Show(
+                    $"⚠️ {errors.Count} file không xử lý được:\n\n" + string.Join("\n", errors),
+                    "Có lỗi một số file", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        else
+        {
+            txtBatchStatus.Text = "❌ Không có file nào xử lý được";
+            txtBatchDetail.Text = string.Join("\n", errors.Take(3));
+            txtExtractionStatus.Text = "❌ Lỗi tất cả file";
+        }
+    }
+    
+    private System.Windows.Threading.DispatcherTimer CreateProgressTimer(ref int elapsed)
+    {
+        var elapsedRef = elapsed; // capture
+        var timer = new System.Windows.Threading.DispatcherTimer();
+        timer.Interval = TimeSpan.FromSeconds(1);
+        var localElapsed = 0;
+        timer.Tick += (s, args) =>
+        {
+            localElapsed++;
+            var statusText = localElapsed switch
+            {
+                <= 10 => $"🤖 Đang gửi file lên máy chủ AI... ({localElapsed}s)",
+                <= 30 => $"🔍 AI đang đọc và phân tích văn bản... ({localElapsed}s)",
+                <= 60 => $"📝 AI đang trích xuất nội dung chi tiết... ({localElapsed}s)",
+                <= 120 => $"⏳ File lớn — AI cần thêm thời gian... ({localElapsed}s)",
+                <= 180 => $"🔄 Đang chờ phản hồi từ máy chủ AI... ({localElapsed}s)",
+                _ => $"⏳ Vẫn đang xử lý, xin kiên nhẫn... ({localElapsed}s)"
+            };
+            txtLoadingStatus.Text = statusText;
+        };
+        return timer;
+    }
+    
+    private void ShowAnalysisError(Exception ex)
+    {
+        var msg = ex.Message + (ex.InnerException?.Message ?? "");
+        string errorTitle;
+        string errorDetail;
+        
+        if (msg.Contains("413") || msg.Contains("Entity Too Large") || msg.Contains("Payload Too Large"))
+        {
+            errorTitle = "File quá lớn";
+            errorDetail = "📁 File vượt quá giới hạn của máy chủ.\n\n" +
+                "💡 Cách khắc phục:\n" +
+                "  • Chuyển sang chế độ \"Tách riêng\" để gửi từng file\n" +
+                "  • Giảm dung lượng file (nén PDF, giảm độ phân giải)\n" +
+                "  • Bớt số file trong danh sách\n\n" +
+                "📌 Khuyến nghị: Mỗi file dưới 3MB sẽ xử lý nhanh nhất.";
+        }
+        else if (msg.Contains("Timeout") || msg.Contains("timeout") || msg.Contains("Không thể trích xuất sau"))
+        {
+            errorTitle = "Quá thời gian chờ";
+            errorDetail = "⏰ AI không phản hồi kịp thời.\n\n" +
+                "💡 Gợi ý:\n" +
+                "  • Thử lại sau ít phút\n" +
+                "  • Dùng chế độ \"Tách riêng\" cho nhiều file\n" +
+                "  • Giảm dung lượng hoặc số file";
+        }
+        else if (msg.Contains("401") || msg.Contains("Unauthorized") || msg.Contains("API key"))
+        {
+            errorTitle = "Lỗi xác thực";
+            errorDetail = "🔑 Phiên đăng nhập đã hết hạn hoặc API key không hợp lệ.\n\nHãy đăng xuất và đăng nhập lại.";
+        }
+        else if (msg.Contains("429") || msg.Contains("quota") || msg.Contains("rate"))
+        {
+            errorTitle = "Hết lượt sử dụng";
+            errorDetail = "📊 Bạn đã hết lượt AI trong tháng này.\nNâng cấp gói dịch vụ để có thêm lượt sử dụng.";
+        }
+        else if (msg.Contains("No such host") || msg.Contains("network") || msg.Contains("SocketException"))
+        {
+            errorTitle = "Lỗi kết nối";
+            errorDetail = "🌐 Không thể kết nối đến máy chủ.\nKiểm tra kết nối Internet và thử lại.";
+        }
+        else
+        {
+            errorTitle = "Lỗi phân tích";
+            errorDetail = $"Không thể phân tích file.\n\nChi tiết: {ex.Message}\n\nHãy thử lại hoặc chọn file khác.";
+        }
+        
+        MessageBox.Show(errorDetail, errorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
+
+    #endregion
+
+    #region Form Population
     
     private void PopulateForm(GeminiAIService.ExtractedDocumentData data)
     {
@@ -420,9 +728,23 @@ public partial class ScanImportDialog : Window
             txtNoiNhan.Text = string.Join("\n", data.NoiNhan);
     }
 
+    #endregion
+
+    #region Save
+
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        // Validate minimum data
+        if (IsSeparateMode)
+            SaveSeparate();
+        else
+            SaveMerge();
+    }
+    
+    /// <summary>
+    /// Lưu 1 văn bản (chế độ Ghép trang) — lấy dữ liệu từ form
+    /// </summary>
+    private void SaveMerge()
+    {
         if (string.IsNullOrWhiteSpace(txtTrichYeu.Text) && string.IsNullOrWhiteSpace(txtNoiDung.Text))
         {
             MessageBox.Show("Cần ít nhất Trích yếu hoặc Nội dung để lưu văn bản.",
@@ -430,7 +752,47 @@ public partial class ScanImportDialog : Window
             return;
         }
         
-        // Build Document
+        var doc = BuildDocumentFromForm();
+        // Gán tất cả file paths (lưu file đầu tiên vào FilePath chính)
+        doc.FilePath = _files.FirstOrDefault()?.FilePath ?? "";
+        
+        CreatedDocument = doc;
+        CreatedDocuments = new List<Document> { doc };
+        DialogResult = true;
+        Close();
+    }
+    
+    /// <summary>
+    /// Lưu nhiều văn bản (chế độ Tách riêng) — mỗi file → 1 Document từ AI
+    /// </summary>
+    private void SaveSeparate()
+    {
+        if (_separateResults.Count == 0)
+        {
+            MessageBox.Show("Chưa có dữ liệu trích xuất.\nHãy phân tích bằng AI trước.",
+                "Chưa phân tích", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        
+        CreatedDocuments = new List<Document>();
+        
+        foreach (var (data, filePath) in _separateResults)
+        {
+            var doc = BuildDocumentFromData(data);
+            doc.FilePath = filePath;
+            CreatedDocuments.Add(doc);
+        }
+        
+        CreatedDocument = CreatedDocuments.FirstOrDefault();
+        DialogResult = true;
+        Close();
+    }
+    
+    /// <summary>
+    /// Tạo Document từ dữ liệu form (dùng cho chế độ Ghép)
+    /// </summary>
+    private Document BuildDocumentFromForm()
+    {
         var doc = new Document
         {
             Number = txtSoVanBan.Text.Trim(),
@@ -446,57 +808,120 @@ public partial class ScanImportDialog : Window
             SigningTitle = txtChucDanhKy.Text.Trim(),
             SigningAuthority = txtThamQuyenKy.Text.Trim(),
             Location = txtDiaDanh.Text.Trim(),
-            FilePath = _selectedFilePath ?? "",
         };
         
-        // Parse type
+        ApplyComboBoxValues(doc);
+        ParseRecipientsAndBasis(doc, txtNoiNhan.Text, txtCanCu.Text);
+        return doc;
+    }
+    
+    /// <summary>
+    /// Tạo Document từ ExtractedDocumentData (dùng cho chế độ Tách riêng)
+    /// </summary>
+    private Document BuildDocumentFromData(GeminiAIService.ExtractedDocumentData data)
+    {
+        var doc = new Document
+        {
+            Number = data.SoVanBan,
+            Title = !string.IsNullOrWhiteSpace(data.TrichYeu) ? data.TrichYeu : data.SoVanBan,
+            Subject = data.TrichYeu,
+            Issuer = data.CoQuanBanHanh,
+            Content = data.NoiDung,
+            Category = data.LinhVuc,
+            SignedBy = data.NguoiKy,
+            SigningTitle = data.ChucDanhKy,
+            SigningAuthority = data.ThamQuyenKy,
+            Location = data.DiaDanh,
+        };
+        
+        // Parse date
+        if (!string.IsNullOrEmpty(data.NgayBanHanh) &&
+            DateTime.TryParseExact(data.NgayBanHanh, new[] { "dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd" },
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            doc.IssueDate = date;
+        }
+        else
+        {
+            doc.IssueDate = DateTime.Now;
+        }
+        
+        // Type
+        if (!string.IsNullOrEmpty(data.LoaiVanBan) && Enum.TryParse<DocumentType>(data.LoaiVanBan, out var docType))
+            doc.Type = docType;
+        
+        // Direction
+        if (!string.IsNullOrEmpty(data.HuongVanBan) && Enum.TryParse<Direction>(data.HuongVanBan, out var dir))
+            doc.Direction = dir;
+        
+        // Urgency
+        var urgencyMap = new Dictionary<string, UrgencyLevel>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Thuong"] = UrgencyLevel.Thuong, ["Khan"] = UrgencyLevel.Khan,
+            ["ThuongKhan"] = UrgencyLevel.ThuongKhan, ["HoaToc"] = UrgencyLevel.HoaToc
+        };
+        if (!string.IsNullOrEmpty(data.DoKhan) && urgencyMap.TryGetValue(data.DoKhan, out var urgency))
+            doc.UrgencyLevel = urgency;
+        
+        // Security
+        var securityMap = new Dictionary<string, SecurityLevel>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Thuong"] = SecurityLevel.Thuong, ["Mat"] = SecurityLevel.Mat,
+            ["ToiMat"] = SecurityLevel.ToiMat, ["TuyetMat"] = SecurityLevel.TuyetMat
+        };
+        if (!string.IsNullOrEmpty(data.DoMat) && securityMap.TryGetValue(data.DoMat, out var security))
+            doc.SecurityLevel = security;
+        
+        // Recipients & Basis
+        if (data.NoiNhan.Length > 0)
+            doc.Recipients = data.NoiNhan;
+        if (data.CanCu.Length > 0)
+            doc.BasedOn = data.CanCu;
+        
+        return doc;
+    }
+    
+    private void ApplyComboBoxValues(Document doc)
+    {
         var typeValue = cboLoaiVanBan.SelectedValue?.ToString() ?? "Khac";
         if (Enum.TryParse<DocumentType>(typeValue, out var docType))
             doc.Type = docType;
         
-        // Parse direction
         var dirValue = cboHuongVanBan.SelectedValue?.ToString() ?? "Den";
         if (Enum.TryParse<Direction>(dirValue, out var dir))
             doc.Direction = dir;
         
-        // Parse urgency
-        var urgencyValue = cboDoKhan.SelectedValue?.ToString() ?? "Thuong";
         var urgencyMap = new Dictionary<string, UrgencyLevel>(StringComparer.OrdinalIgnoreCase)
         {
-            ["Thuong"] = UrgencyLevel.Thuong,
-            ["Khan"] = UrgencyLevel.Khan,
-            ["ThuongKhan"] = UrgencyLevel.ThuongKhan,
-            ["HoaToc"] = UrgencyLevel.HoaToc
+            ["Thuong"] = UrgencyLevel.Thuong, ["Khan"] = UrgencyLevel.Khan,
+            ["ThuongKhan"] = UrgencyLevel.ThuongKhan, ["HoaToc"] = UrgencyLevel.HoaToc
         };
+        var urgencyValue = cboDoKhan.SelectedValue?.ToString() ?? "Thuong";
         if (urgencyMap.TryGetValue(urgencyValue, out var urgency))
             doc.UrgencyLevel = urgency;
         
-        // Parse security
-        var securityValue = cboDoMat.SelectedValue?.ToString() ?? "Thuong";
         var securityMap = new Dictionary<string, SecurityLevel>(StringComparer.OrdinalIgnoreCase)
         {
-            ["Thuong"] = SecurityLevel.Thuong,
-            ["Mat"] = SecurityLevel.Mat,
-            ["ToiMat"] = SecurityLevel.ToiMat,
-            ["TuyetMat"] = SecurityLevel.TuyetMat
+            ["Thuong"] = SecurityLevel.Thuong, ["Mat"] = SecurityLevel.Mat,
+            ["ToiMat"] = SecurityLevel.ToiMat, ["TuyetMat"] = SecurityLevel.TuyetMat
         };
+        var securityValue = cboDoMat.SelectedValue?.ToString() ?? "Thuong";
         if (securityMap.TryGetValue(securityValue, out var security))
             doc.SecurityLevel = security;
-        
-        // Parse recipients
-        if (!string.IsNullOrWhiteSpace(txtNoiNhan.Text))
-            doc.Recipients = txtNoiNhan.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToArray();
-        
-        // Parse căn cứ
-        if (!string.IsNullOrWhiteSpace(txtCanCu.Text))
-            doc.BasedOn = txtCanCu.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToArray();
-        
-        CreatedDocument = doc;
-        DialogResult = true;
-        Close();
     }
+    
+    private void ParseRecipientsAndBasis(Document doc, string noiNhanText, string canCuText)
+    {
+        if (!string.IsNullOrWhiteSpace(noiNhanText))
+            doc.Recipients = noiNhanText.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToArray();
+        
+        if (!string.IsNullOrWhiteSpace(canCuText))
+            doc.BasedOn = canCuText.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToArray();
+    }
+
+    #endregion
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {

@@ -59,7 +59,7 @@
                                 materialDesign:ElevationAssist.Elevation="Dp2">
                 <StackPanel HorizontalAlignment="Center">
                     <Button x:Name="btnBackup" Style="{StaticResource MaterialDesignRaisedButton}"
-                           Background="#4CAF50" BorderBrush="#4CAF50"
+                           Background="#4CAF50" BorderBrush="#4CAF50" Foreground="White"
                            Padding="24,10" Click="BtnBackup_Click" HorizontalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ContentSave" Width="20" Height="20"
@@ -77,7 +77,7 @@
                                 materialDesign:ElevationAssist.Elevation="Dp2">
                 <StackPanel HorizontalAlignment="Center">
                     <Button x:Name="btnRestore" Style="{StaticResource MaterialDesignRaisedButton}"
-                           Background="#FF9800" BorderBrush="#FF9800"
+                           Background="#FF9800" BorderBrush="#FF9800" Foreground="White"
                            Padding="24,10" Click="BtnRestore_Click" HorizontalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="DatabaseImport" Width="20" Height="20"

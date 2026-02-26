@@ -114,7 +114,7 @@
                         Content="Lưu"
                         Click="Save_Click"
                         Style="{StaticResource MaterialDesignRaisedButton}"
-                        Background="#4CAF50"
+                        Background="#4CAF50" Foreground="White"
                         BorderBrush="#4CAF50"
                         Width="120"/>
             </StackPanel>

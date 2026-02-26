@@ -886,6 +886,44 @@ public partial class AIComposeDialog : Window
             "documents" => "📎 Danh sách văn bản",
             "parent_document" => "📄 Văn bản chính",
             "appendix_title" => "📋 Tiêu đề phụ lục",
+            "appendix_number" => "🔢 Số thứ tự phụ lục",
+            
+            // === Hợp đồng / Biên bản ===
+            "party_a" => "🤝 Bên A",
+            "party_b" => "🤝 Bên B",
+            "attendees" => "👥 Thành phần tham dự",
+            "timeline" => "⏰ Thời gian thực hiện",
+            "instructions" => "📝 Ý kiến chỉ đạo",
+            "letter_type" => "📋 Loại thư",
+            "duration" => "⏱️ Thời hạn",
+            
+            // === Y tế bổ sung ===
+            "patient_age" => "📅 Tuổi bệnh nhân",
+            "patient_gender" => "⚧ Giới tính bệnh nhân",
+            "medical_summary" => "📋 Tóm tắt bệnh án",
+            "birth_year" => "📅 Năm sinh",
+            "scope" => "📋 Phạm vi áp dụng",
+            "discussion" => "💬 Ý kiến thảo luận",
+            "recommendation" => "💡 Khuyến nghị",
+            "recommendations" => "💡 Kiến nghị, đề xuất",
+            
+            // === Giáo dục bổ sung ===
+            "assessment" => "📝 Kiểm tra đánh giá",
+            "improvement_plan" => "📋 Kế hoạch cải thiện",
+            "class_info" => "📚 Khối/Lớp liên quan",
+            "notes" => "📝 Ghi chú, lưu ý",
+            "teacher_achievements" => "👩‍🏫 Thành tích giáo viên",
+            "student_achievements" => "🎓 Thành tích học sinh",
+            
+            // === UBND xã bổ sung ===
+            "id_number" => "🆔 Số CCCD/CMND",
+            "resources" => "📦 Phương tiện, vật tư",
+            "funding_source" => "💰 Nguồn kinh phí",
+            "funding" => "💰 Nguồn vốn",
+            "assignment" => "👥 Phân công thực hiện",
+            "receiving_point" => "📍 Nơi tiếp nhận",
+            "contact" => "📞 Liên hệ",
+            "family_planning_results" => "📊 Kết quả KHHGĐ",
             
             _ => $"📝 {FormatFieldName(field)}"
         };
@@ -1056,6 +1094,42 @@ public partial class AIComposeDialog : Window
             "documents" => "Danh sách văn bản kèm theo...",
             "parent_document" => "Ví dụ: QĐ số 789/QĐ-UBND",
             "appendix_title" => "Ví dụ: Danh sách cán bộ",
+            "appendix_number" => "Ví dụ: I, II, III...",
+            
+            // Hợp đồng / Biên bản bổ sung
+            "party_a" => "Thông tin bên A (tên, địa chỉ, đại diện)...",
+            "party_b" => "Thông tin bên B (tên, địa chỉ, đại diện)...",
+            "attendees" => "Thành phần tham dự cuộc họp...",
+            "timeline" => "Ví dụ: Từ tháng 1 đến tháng 12/2026",
+            "instructions" => "Ý kiến chỉ đạo xử lý...",
+            "letter_type" => "Ví dụ: Chúc mừng, Cảm ơn, Chia buồn",
+            "duration" => "Ví dụ: 01 năm học hoặc đến 30/6/2026",
+            
+            // Y tế bổ sung
+            "patient_age" => "Ví dụ: 45",
+            "patient_gender" => "Ví dụ: Nam hoặc Nữ",
+            "medical_summary" => "Tóm tắt quá trình bệnh...",
+            "birth_year" => "Ví dụ: 1985",
+            "scope" => "Phạm vi áp dụng quy trình...",
+            "discussion" => "Ý kiến thảo luận của hội đồng...",
+            "recommendation" or "recommendations" => "Kiến nghị, đề xuất...",
+            
+            // Giáo dục bổ sung
+            "assessment" => "Phương pháp kiểm tra đánh giá...",
+            "improvement_plan" => "Kế hoạch khắc phục, cải thiện...",
+            "class_info" => "Ví dụ: Khối 9 hoặc Lớp 9A1, 9A2",
+            "notes" => "Lưu ý cho phụ huynh/học sinh...",
+            "teacher_achievements" => "Thành tích giáo viên tiêu biểu...",
+            "student_achievements" => "Thành tích học sinh tiêu biểu...",
+            
+            // UBND xã bổ sung
+            "id_number" => "Ví dụ: 079123456789",
+            "resources" => "Phương tiện, vật tư dự phòng...",
+            "funding_source" or "funding" => "Ví dụ: Ngân sách địa phương",
+            "assignment" => "Phân công nhiệm vụ cụ thể...",
+            "receiving_point" => "Ví dụ: Bộ phận Một cửa UBND xã",
+            "contact" => "Ví dụ: 0123.456.789 - Văn phòng UBND",
+            "family_planning_results" => "Kết quả công tác KHHGĐ...",
             
             _ => $"Nhập thông tin {FormatFieldName(field).ToLower()}..."
         };
@@ -1076,7 +1150,13 @@ public partial class AIComposeDialog : Window
                 or "evacuation_plan" or "reform_content" or "economy" or "social"
                 or "collective_achievements" or "implementation" or "criteria_status"
                 or "next_plan" or "solutions" or "beneficiaries" or "recipients"
-                or "documents" or "extract_section" or "risk_areas" => 120,
+                or "documents" or "extract_section" or "risk_areas"
+                or "party_a" or "party_b" or "attendees" or "instructions"
+                or "medical_summary" or "discussion" or "recommendations"
+                or "recommendation" or "improvement_plan" or "assessment"
+                or "teacher_achievements" or "student_achievements"
+                or "resources" or "family_planning_results" or "assignment"
+                or "notes" => 120,
             _ => 40
         };
     }

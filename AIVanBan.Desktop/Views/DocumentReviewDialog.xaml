@@ -312,7 +312,7 @@
                     </Button>
                     <Button x:Name="btnApply" Content="✅ Áp dụng nội dung đã sửa"
                            Style="{StaticResource MaterialDesignRaisedButton}"
-                           Background="#1565C0"
+                           Background="#1565C0" Foreground="White"
                            Click="Apply_Click"
                            Margin="0,0,8,0"
                            Visibility="Collapsed"/>

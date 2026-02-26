@@ -62,8 +62,6 @@
         <SolidColorBrush x:Key="TipCardBorder" Color="#FFE082"/>
         <SolidColorBrush x:Key="WarningCardBackground" Color="#FFF3E0"/>
         <SolidColorBrush x:Key="WarningCardBorder" Color="#FFCC80"/>
-        <SolidColorBrush x:Key="VideoCardBackground" Color="#E3F2FD"/>
-        <SolidColorBrush x:Key="VideoCardBorder" Color="#90CAF9"/>
         <SolidColorBrush x:Key="ChangelogNewBackground" Color="#E8F5E9"/>
         <SolidColorBrush x:Key="ChangelogNewBorder" Color="#A5D6A7"/>
 
@@ -84,17 +82,6 @@
             <Setter Property="Margin" Value="0,8,0,8"/>
             <Setter Property="BorderBrush" Value="{DynamicResource WarningCardBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
-        <!-- Video link card -->
-        <Style x:Key="VideoCard" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource VideoCardBackground}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="0,6,0,6"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource VideoCardBorder}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
         </Style>
 
         <!-- Changelog new item -->
@@ -361,14 +348,6 @@
                                                         VerticalAlignment="Center" Margin="0,0,8,0"
                                                         Foreground="#4CAF50"/>
                                 <TextBlock Text="Có gì mới?" Foreground="#4CAF50" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                        <Button Style="{StaticResource TocButton}" Tag="secVideo" Click="TocItem_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="PlayCircleOutline" Width="18" Height="18" 
-                                                        VerticalAlignment="Center" Margin="0,0,8,0"
-                                                        Foreground="#F44336"/>
-                                <TextBlock Text="Video hướng dẫn"/>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource TocButton}" Tag="secBackup" Click="TocItem_Click">
@@ -1634,17 +1613,32 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- Version 1.7 (v1.0.10) -->
+                    <!-- Version 1.8 (v1.0.11) -->
                     <Border Style="{StaticResource ChangelogCard}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#4CAF50" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
-                                    <TextBlock Text="v1.7 — Tháng 2/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                    <TextBlock Text="v1.8 — Tháng 2/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
                                 </Border>
                                 <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
                                     <TextBlock Text="MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Cập nhật trang Trợ giúp</Bold> — nội dung chính xác, bỏ link video chưa có</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Sửa lỗi UI dialog</Bold> — 15 nút bấm bị cắt chữ trên 5 dialog</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Website vanbanplus.giakiemso.com</Bold> — trang giới thiệu sản phẩm hoàn chỉnh</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ Sửa lỗi navigation TOC: Tra cứu pháp quy, Thống kê, Lịch tổng hợp</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ Cập nhật thông tin nhà phát triển: Công ty TNHH Gia Kiệm Số</TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Version 1.7 (v1.0.10) -->
+                    <Border Style="{StaticResource StepCard}">
+                        <StackPanel>
+                            <Border Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="4" 
+                                    Padding="8,2" Margin="0,0,0,6" HorizontalAlignment="Left">
+                                <TextBlock Text="v1.7 — Tháng 2/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                            </Border>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Lịch tổng hợp</Bold> — Xem deadline VB + cuộc họp + tasks trên 1 lịch tháng</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Xuất Excel báo cáo</Bold> — 5 sheet chi tiết: Tổng quan, Phân loại, Khẩn &amp; Mật, Xu hướng, DS VB</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>24 mẫu VB chuyên ngành</Bold> — Y tế (8), Giáo dục (8), UBND xã (8)</TextBlock>
@@ -1739,128 +1733,6 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>AI Soạn văn bản</Bold> — tạo văn bản tự động từ mẫu</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ Sổ văn bản đi/đến, Sao lưu &amp; Khôi phục</TextBlock>
                         </StackPanel>
-                    </Border>
-                </StackPanel>
-
-
-                <!-- ════════════════════════════════════════════════ -->
-                <!-- SECTION: VIDEO HƯỚNG DẪN -->
-                <!-- ════════════════════════════════════════════════ -->
-                <StackPanel x:Name="secVideo">
-                    <TextBlock Style="{StaticResource SectionHeader}">
-                        <Run Text="🎬"/>
-                        <Run Text=" Video hướng dẫn"/>
-                    </TextBlock>
-
-                    <TextBlock Style="{StaticResource BodyText}" Margin="0,0,0,12">
-                        Xem video hướng dẫn trực quan cho từng tính năng. Nhấn vào video để mở trên trình duyệt.
-                    </TextBlock>
-
-                    <!-- Video 1: Tổng quan -->
-                    <Border Style="{StaticResource VideoCard}" MouseLeftButtonUp="OpenVideo_Click" Tag="https://giakiemso.com/huong-dan/tong-quan">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#F44336" CornerRadius="6" Width="48" Height="36" Margin="0,0,12,0">
-                                <materialDesign:PackIcon Kind="PlayCircle" Width="24" Height="24" Foreground="White"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Giới thiệu tổng quan VanBanPlus" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Tổng quan giao diện, menu, tính năng chính" FontSize="11" Opacity="0.6"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Video 2: Quản lý văn bản -->
-                    <Border Style="{StaticResource VideoCard}" MouseLeftButtonUp="OpenVideo_Click" Tag="https://giakiemso.com/huong-dan/quan-ly-van-ban">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#F44336" CornerRadius="6" Width="48" Height="36" Margin="0,0,12,0">
-                                <materialDesign:PackIcon Kind="PlayCircle" Width="24" Height="24" Foreground="White"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Quản lý văn bản — Thêm, sửa, tìm kiếm" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Hướng dẫn nhập văn bản, phân loại, đính kèm file" FontSize="11" Opacity="0.6"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Video 3: AI Soạn văn bản -->
-                    <Border Style="{StaticResource VideoCard}" MouseLeftButtonUp="OpenVideo_Click" Tag="https://giakiemso.com/huong-dan/ai-soan-van-ban">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#F44336" CornerRadius="6" Width="48" Height="36" Margin="0,0,12,0">
-                                <materialDesign:PackIcon Kind="PlayCircle" Width="24" Height="24" Foreground="White"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="AI Soạn văn bản tự động" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Chọn mẫu, điền thông tin, AI tạo văn bản đúng thể thức" FontSize="11" Opacity="0.6"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Video 4: AI Scan OCR -->
-                    <Border Style="{StaticResource VideoCard}" MouseLeftButtonUp="OpenVideo_Click" Tag="https://giakiemso.com/huong-dan/ai-scan-ocr">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#F44336" CornerRadius="6" Width="48" Height="36" Margin="0,0,12,0">
-                                <materialDesign:PackIcon Kind="PlayCircle" Width="24" Height="24" Foreground="White"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="AI Scan OCR — Nhập văn bản từ ảnh" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Chụp ảnh văn bản giấy, AI tự trích xuất 16 trường" FontSize="11" Opacity="0.6"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Video 5: AI Kiểm tra + Tham mưu -->
-                    <Border Style="{StaticResource VideoCard}" MouseLeftButtonUp="OpenVideo_Click" Tag="https://giakiemso.com/huong-dan/ai-kiem-tra-tham-muu">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#F44336" CornerRadius="6" Width="48" Height="36" Margin="0,0,12,0">
-                                <materialDesign:PackIcon Kind="PlayCircle" Width="24" Height="24" Foreground="White"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="AI Kiểm tra &amp; Tham mưu xử lý văn bản" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Soát lỗi, đánh giá chất lượng, đề xuất hướng xử lý" FontSize="11" Opacity="0.6"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Video 6: Cuộc họp -->
-                    <Border Style="{StaticResource VideoCard}" MouseLeftButtonUp="OpenVideo_Click" Tag="https://giakiemso.com/huong-dan/cuoc-hop">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#F44336" CornerRadius="6" Width="48" Height="36" Margin="0,0,12,0">
-                                <materialDesign:PackIcon Kind="PlayCircle" Width="24" Height="24" Foreground="White"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Quản lý cuộc họp &amp; xuất biên bản" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Tạo họp, thêm người dự, phân công, xuất Word" FontSize="11" Opacity="0.6"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Video 7: Sao lưu -->
-                    <Border Style="{StaticResource VideoCard}" MouseLeftButtonUp="OpenVideo_Click" Tag="https://giakiemso.com/huong-dan/sao-luu">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#F44336" CornerRadius="6" Width="48" Height="36" Margin="0,0,12,0">
-                                <materialDesign:PackIcon Kind="PlayCircle" Width="24" Height="24" Foreground="White"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Sao lưu &amp; Khôi phục dữ liệu" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="Backup, restore, chuyển dữ liệu sang máy mới" FontSize="11" Opacity="0.6"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Style="{StaticResource TipCard}">
-                        <TextBlock Style="{StaticResource BodyText}" Margin="0">
-                            <Run Text="💡" FontWeight="SemiBold"/>
-                            <Run Text=" Video đang được cập nhật thêm. Truy cập "/>
-                            <Bold>giakiemso.com/huong-dan</Bold>
-                            <Run Text=" để xem danh sách đầy đủ nhất."/>
-                        </TextBlock>
                     </Border>
                 </StackPanel>
 

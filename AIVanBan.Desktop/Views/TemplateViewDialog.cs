@@ -48,16 +48,21 @@ public partial class TemplateViewDialog : Window
         var closeButton = new System.Windows.Controls.Button
         {
             Content = "Đóng",
-            Width = 100,
-            Margin = new Thickness(0, 10, 0, 0),
+            MinWidth = 100,
+            Height = 36,
+            Padding = new Thickness(16, 0, 16, 0),
+            VerticalContentAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 10, 15, 10),
             HorizontalAlignment = HorizontalAlignment.Right
         };
         closeButton.Click += (s, e) => Close();
 
-        var panel = new System.Windows.Controls.StackPanel();
-        panel.Children.Add(textBox);
-        panel.Children.Add(closeButton);
+        // Dùng DockPanel để button luôn ở dưới cùng, TextBox fill phần còn lại
+        var dock = new System.Windows.Controls.DockPanel { Margin = new Thickness(10) };
+        System.Windows.Controls.DockPanel.SetDock(closeButton, System.Windows.Controls.Dock.Bottom);
+        dock.Children.Add(closeButton);
+        dock.Children.Add(textBox); // LastChildFill = true (default)
 
-        Content = panel;
+        Content = dock;
     }
 }

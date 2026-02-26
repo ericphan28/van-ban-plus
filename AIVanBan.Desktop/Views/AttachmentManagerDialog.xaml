@@ -47,7 +47,7 @@
                             Click="UploadFiles_Click"
                             Height="50"
                             Padding="20,0"
-                            Background="#4CAF50"
+                            Background="#4CAF50" Foreground="White"
                             BorderBrush="#4CAF50">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FileUpload" VerticalAlignment="Center" Margin="0,0,8,0" Width="24" Height="24"/>
@@ -62,7 +62,7 @@
                             Click="SelectFromAlbum_Click"
                             Height="50"
                             Padding="20,0"
-                            Background="#2196F3"
+                            Background="#2196F3" Foreground="White"
                             BorderBrush="#2196F3">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ImageMultiple" VerticalAlignment="Center" Margin="0,0,8,0" Width="24" Height="24"/>

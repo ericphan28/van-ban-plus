@@ -12,17 +12,20 @@ public partial class DocumentAdvisoryDialog : Window
     private string _documentType;
     private readonly string _title;
     private readonly string _issuer;
+    private readonly DocumentAdvisoryContext? _context;
     private DocumentAdvisory? _result;
     private DispatcherTimer? _timer;
     private int _elapsedSeconds;
 
-    public DocumentAdvisoryDialog(string content, string documentType = "", string title = "", string issuer = "")
+    public DocumentAdvisoryDialog(string content, string documentType = "", string title = "", string issuer = "",
+        DocumentAdvisoryContext? context = null)
     {
         InitializeComponent();
         _content = content;
         _documentType = documentType;
         _title = title;
         _issuer = issuer;
+        _context = context;
 
         // Hiện input panel, ẩn loading
         pnlQuickInput.Visibility = Visibility.Visible;
@@ -104,7 +107,7 @@ public partial class DocumentAdvisoryDialog : Window
         try
         {
             var service = new DocumentAdvisoryService();
-            _result = await service.AdviseAsync(_content, _documentType, _title, _issuer);
+            _result = await service.AdviseAsync(_content, _documentType, _title, _issuer, _context);
             DisplayResults(_result);
         }
         catch (Exception ex)

@@ -288,7 +288,7 @@
                             Click="Complete_Click"
                             Visibility="Collapsed"
                             Width="180" Height="38"
-                            Background="#2E7D32"/>
+                            Background="#2E7D32" Foreground="White"/>
                 </StackPanel>
             </Grid>
         </Border>

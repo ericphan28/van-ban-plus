@@ -359,7 +359,10 @@ public class SyncUrlInputDialog : Window
         var btnOk = new Button
         {
             Content = "ĐỒNG BỘ",
-            Width = 100,
+            MinWidth = 100,
+            Height = 36,
+            Padding = new Thickness(16, 0, 16, 0),
+            VerticalContentAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 0, 10, 0)
         };
         btnOk.Click += (s, e) =>
@@ -374,7 +377,7 @@ public class SyncUrlInputDialog : Window
         };
         buttonPanel.Children.Add(btnOk);
 
-        var btnCancel = new Button { Content = "HỦY", Width = 100 };
+        var btnCancel = new Button { Content = "HỦY", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center };
         btnCancel.Click += (s, e) => { DialogResult = false; Close(); };
         buttonPanel.Children.Add(btnCancel);
 

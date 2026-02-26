@@ -1384,7 +1384,7 @@ III. THỜI GIAN, ĐỊA ĐIỂM
 IV. TỔ CHỨC THỰC HIỆN
 ",
             AIPrompt = "Viết chương trình: {subject}, nội dung: {content}, thời gian: {timeline}",
-            RequiredFields = new[] { "subject", "content" },
+            RequiredFields = new[] { "subject", "content", "timeline" },
             Tags = new[] { "chương trình" }
         };
     }
@@ -1438,7 +1438,7 @@ V. KINH PHÍ
 VI. TỔ CHỨC THỰC HIỆN
 ",
             AIPrompt = "Viết đề án: {subject}, mục tiêu: {objectives}, nội dung: {content}",
-            RequiredFields = new[] { "subject", "content" },
+            RequiredFields = new[] { "subject", "objectives", "content" },
             Tags = new[] { "đề án" }
         };
     }
@@ -1466,7 +1466,7 @@ V. TIẾN ĐỘ THỰC HIỆN
 VI. TỔ CHỨC THỰC HIỆN
 ",
             AIPrompt = "Viết dự án: {subject}, mục tiêu: {objectives}, nội dung: {content}",
-            RequiredFields = new[] { "subject", "content" },
+            RequiredFields = new[] { "subject", "objectives", "content" },
             Tags = new[] { "dự án" }
         };
     }
@@ -1502,7 +1502,7 @@ THƯ KÝ                                CHỦ TRÌ
 [Họ và tên]                            [Họ và tên]
 ",
             AIPrompt = "Viết biên bản họp: {subject}, thời gian: {time}, địa điểm: {location}, thành phần: {attendees}, nội dung: {content}",
-            RequiredFields = new[] { "subject", "content" },
+            RequiredFields = new[] { "subject", "time", "location", "attendees", "content" },
             Tags = new[] { "biên bản", "cuộc họp" }
         };
     }
@@ -1541,7 +1541,7 @@ Hai bên thống nhất ký kết hợp đồng với các điều khoản sau:
 ĐẠI DIỆN BÊN A                     ĐẠI DIỆN BÊN B
 ",
             AIPrompt = "Viết hợp đồng: {subject}, bên A: {party_a}, bên B: {party_b}, nội dung: {content}",
-            RequiredFields = new[] { "subject", "content" },
+            RequiredFields = new[] { "subject", "party_a", "party_b", "content" },
             Tags = new[] { "hợp đồng" }
         };
     }
@@ -1688,7 +1688,7 @@ Thời gian: [   ]
 Rất mong [quý cơ quan / ông bà] thu xếp thời gian tham dự./.
 ",
             AIPrompt = "Viết giấy mời: nội dung: {subject}, thời gian: {time}, địa điểm: {location}, người nhận: {to_org}",
-            RequiredFields = new[] { "subject", "time", "location" },
+            RequiredFields = new[] { "subject", "time", "location", "to_org" },
             Tags = new[] { "giấy mời" }
         };
     }
@@ -1806,7 +1806,7 @@ Trích yếu: [   ]
 Hạn giải quyết: [   ]
 ",
             AIPrompt = "Viết phiếu chuyển: đơn vị nhận: {to_unit}, văn bản: {document_ref}, ý kiến: {instructions}",
-            RequiredFields = new[] { "to_unit", "document_ref" },
+            RequiredFields = new[] { "to_unit", "document_ref", "instructions" },
             Tags = new[] { "phiếu chuyển", "văn thư" }
         };
     }
@@ -1832,7 +1832,7 @@ Kính gửi: [   ]
 Đề nghị [đơn vị/cá nhân] lưu ý và thực hiện./.
 ",
             AIPrompt = "Viết phiếu báo: nội dung: {content}, nơi nhận: {to_org}",
-            RequiredFields = new[] { "content" },
+            RequiredFields = new[] { "content", "to_org" },
             Tags = new[] { "phiếu báo" }
         };
     }
@@ -1861,7 +1861,7 @@ Trân trọng./.
                                                [Họ và tên]
 ",
             AIPrompt = "Viết thư công: loại: {letter_type}, nơi nhận: {to_org}, nội dung: {content}",
-            RequiredFields = new[] { "to_org", "content" },
+            RequiredFields = new[] { "letter_type", "to_org", "content" },
             Tags = new[] { "thư công" }
         };
     }
@@ -1903,7 +1903,7 @@ Người ký sao: {signer}
 Chức vụ: {signer_title}
 Nơi nhận: {recipients}
 Địa danh: {location}",
-            RequiredFields = new[] { "original_document", "copy_org", "signer", "recipients" },
+            RequiredFields = new[] { "original_document", "copy_org", "signer", "signer_title", "recipients", "location" },
             Tags = new[] { "sao y", "bản sao", "Điều 25", "NĐ 30/2020" }
         };
     }
@@ -1944,7 +1944,7 @@ Người ký sao: {signer}
 Chức vụ: {signer_title}
 Nơi nhận: {recipients}
 Địa danh: {location}",
-            RequiredFields = new[] { "original_saoy", "copy_org", "signer", "recipients" },
+            RequiredFields = new[] { "original_saoy", "copy_org", "signer", "signer_title", "recipients", "location" },
             Tags = new[] { "sao lục", "bản sao", "Điều 25", "NĐ 30/2020" }
         };
     }
@@ -1986,7 +1986,7 @@ Người ký sao: {signer}
 Chức vụ: {signer_title}
 Nơi nhận: {recipients}
 Địa danh: {location}",
-            RequiredFields = new[] { "original_document", "extract_section", "copy_org", "signer", "recipients" },
+            RequiredFields = new[] { "original_document", "extract_section", "copy_org", "signer", "signer_title", "recipients", "location" },
             Tags = new[] { "trích sao", "bản sao", "Điều 25", "NĐ 30/2020" }
         };
     }
@@ -2015,7 +2015,7 @@ Số thứ tự phụ lục: {appendix_number}
 Tên phụ lục: {appendix_title}
 Văn bản kèm theo (loại, số, ký hiệu, ngày, cơ quan): {parent_document}
 Nội dung phụ lục: {content}",
-            RequiredFields = new[] { "appendix_title", "parent_document", "content" },
+            RequiredFields = new[] { "appendix_number", "appendix_title", "parent_document", "content" },
             Tags = new[] { "phụ lục", "kèm theo", "Mẫu 2.1", "NĐ 30/2020" }
         };
     }
@@ -2065,7 +2065,7 @@ Nơi nhận:                           GIÁM ĐỐC
 - Biện pháp phòng chống: {prevention_measures}
 - Kiến nghị: {recommendations}
 - Người ký: {signer_name}, {signer_title}",
-        RequiredFields = new[] { "medical_unit", "disease_name", "area", "statistics", "prevention_measures", "signer_name", "signer_title" },
+        RequiredFields = new[] { "medical_unit", "disease_name", "area", "statistics", "prevention_measures", "recommendations", "signer_name", "signer_title" },
         Tags = new[] { "y tế", "dịch bệnh", "bệnh viện", "báo cáo" }
     };
 
@@ -2104,7 +2104,7 @@ GIÁM ĐỐC
 - Lý do chuyển: {transfer_reason}
 - Tóm tắt bệnh án: {medical_summary}
 - Người ký: {signer_name}",
-        RequiredFields = new[] { "from_hospital", "to_hospital", "patient_name", "diagnosis", "transfer_reason", "signer_name" },
+        RequiredFields = new[] { "from_hospital", "to_hospital", "patient_name", "patient_age", "patient_gender", "diagnosis", "transfer_reason", "medical_summary", "signer_name" },
         Tags = new[] { "y tế", "chuyển viện", "bệnh viện" }
     };
 
@@ -2140,7 +2140,7 @@ GIÁM ĐỐC
 - Kết quả: {result}
 - Kết luận: {conclusion}
 - Người ký: {signer_name}",
-        RequiredFields = new[] { "medical_unit", "patient_name", "exam_date", "result", "conclusion", "signer_name" },
+        RequiredFields = new[] { "medical_unit", "patient_name", "birth_year", "exam_date", "result", "conclusion", "signer_name" },
         Tags = new[] { "y tế", "xác nhận", "khám bệnh" }
     };
 
@@ -2158,7 +2158,7 @@ GIÁM ĐỐC
 - Biện pháp cụ thể: {measures}
 - Kinh phí dự kiến: {budget}
 - Người ký: {signer_name}, {signer_title}",
-        RequiredFields = new[] { "medical_unit", "disease_name", "area", "objectives", "measures", "signer_name", "signer_title" },
+        RequiredFields = new[] { "medical_unit", "disease_name", "area", "objectives", "measures", "budget", "signer_name", "signer_title" },
         Tags = new[] { "y tế", "phòng chống dịch", "kế hoạch" }
     };
 
@@ -2175,7 +2175,7 @@ GIÁM ĐỐC
 - Phạm vi áp dụng: {scope}
 - Nội dung chính: {content}
 - Người ký: {signer_name}, {signer_title}",
-        RequiredFields = new[] { "hospital", "procedure_name", "legal_basis", "content", "signer_name", "signer_title" },
+        RequiredFields = new[] { "hospital", "procedure_name", "legal_basis", "scope", "content", "signer_name", "signer_title" },
         Tags = new[] { "y tế", "quyết định", "quy trình", "bệnh viện" }
     };
 
@@ -2193,7 +2193,7 @@ GIÁM ĐỐC
 - Thuận lợi/khó khăn: {challenges}
 - Kế hoạch kỳ tới: {next_plan}
 - Người ký: {signer_name}, {signer_title}",
-        RequiredFields = new[] { "hospital", "period", "patient_count", "clinical_results", "signer_name", "signer_title" },
+        RequiredFields = new[] { "hospital", "period", "patient_count", "clinical_results", "challenges", "next_plan", "signer_name", "signer_title" },
         Tags = new[] { "y tế", "báo cáo", "bệnh viện", "hoạt động" }
     };
 
@@ -2211,7 +2211,7 @@ GIÁM ĐỐC
 - Ý kiến thảo luận: {discussion}
 - Kết luận hội chẩn: {conclusion}
 - Phương án điều trị: {treatment_plan}",
-        RequiredFields = new[] { "hospital", "patient_name", "diagnosis", "participants", "conclusion", "treatment_plan" },
+        RequiredFields = new[] { "hospital", "patient_name", "patient_age", "diagnosis", "participants", "discussion", "conclusion", "treatment_plan" },
         Tags = new[] { "y tế", "hội chẩn", "biên bản", "bệnh viện" }
     };
 
@@ -2229,7 +2229,7 @@ GIÁM ĐỐC
 - Kết luận: {conclusion}
 - Khuyến nghị: {recommendation}
 - Người ký: {signer_name}",
-        RequiredFields = new[] { "medical_unit", "recipient", "test_type", "test_result", "conclusion", "signer_name" },
+        RequiredFields = new[] { "medical_unit", "recipient", "test_type", "test_result", "conclusion", "recommendation", "signer_name" },
         Tags = new[] { "y tế", "xét nghiệm", "thông báo" }
     };
 
@@ -2251,7 +2251,7 @@ GIÁM ĐỐC
 - Các giải pháp: {solutions}
 - Tổ chức thực hiện: {implementation}
 - Người ký: {signer_name}, {signer_title}",
-        RequiredFields = new[] { "school_name", "school_year", "objectives", "targets", "solutions", "signer_name", "signer_title" },
+        RequiredFields = new[] { "school_name", "school_year", "objectives", "targets", "solutions", "implementation", "signer_name", "signer_title" },
         Tags = new[] { "giáo dục", "kế hoạch", "năm học", "trường" }
     };
 
@@ -2269,7 +2269,7 @@ GIÁM ĐỐC
 - Phân phối chương trình: {curriculum_plan}
 - Phương pháp kiểm tra đánh giá: {assessment}
 - Người ký: {signer_name}",
-        RequiredFields = new[] { "school_name", "subject", "grade", "period", "curriculum_plan", "signer_name" },
+        RequiredFields = new[] { "school_name", "subject", "grade", "period", "curriculum_plan", "assessment", "signer_name" },
         Tags = new[] { "giáo dục", "dạy học", "chương trình", "kế hoạch" }
     };
 
@@ -2288,7 +2288,7 @@ GIÁM ĐỐC
 - Hạn chế, khó khăn: {challenges}
 - Kế hoạch cải thiện: {improvement_plan}
 - Người ký: {signer_name}, {signer_title}",
-        RequiredFields = new[] { "school_name", "period", "student_count", "quality_stats", "signer_name", "signer_title" },
+        RequiredFields = new[] { "school_name", "period", "student_count", "quality_stats", "achievements", "challenges", "improvement_plan", "signer_name", "signer_title" },
         Tags = new[] { "giáo dục", "báo cáo", "chất lượng", "trường" }
     };
 
@@ -2323,7 +2323,7 @@ GIÁM ĐỐC
 - Khối/Lớp: {class_info}
 - Lưu ý cho phụ huynh: {notes}
 - Hiệu trưởng: {principal_name}",
-        RequiredFields = new[] { "school_name", "meeting_time", "location", "agenda", "principal_name" },
+        RequiredFields = new[] { "school_name", "meeting_time", "location", "agenda", "class_info", "notes", "principal_name" },
         Tags = new[] { "giáo dục", "họp phụ huynh", "thông báo", "trường" }
     };
 
@@ -2341,7 +2341,7 @@ GIÁM ĐỐC
 - Căn cứ: {legal_basis}
 - Thời hạn: {duration}
 - Hiệu trưởng: {principal_name}",
-        RequiredFields = new[] { "school_name", "student_name", "class_name", "violation", "discipline_type", "principal_name" },
+        RequiredFields = new[] { "school_name", "student_name", "class_name", "violation", "discipline_type", "legal_basis", "duration", "principal_name" },
         Tags = new[] { "giáo dục", "kỷ luật", "học sinh", "quyết định" }
     };
 
@@ -2358,7 +2358,7 @@ GIÁM ĐỐC
 - Năm tốt nghiệp: {graduation_year}
 - Xếp loại: {ranking}
 - Hiệu trưởng: {principal_name}",
-        RequiredFields = new[] { "school_name", "student_name", "birth_date", "graduation_year", "ranking", "principal_name" },
+        RequiredFields = new[] { "school_name", "student_name", "birth_date", "class_name", "graduation_year", "ranking", "principal_name" },
         Tags = new[] { "giáo dục", "tốt nghiệp", "chứng nhận" }
     };
 
@@ -2376,7 +2376,7 @@ GIÁM ĐỐC
 - Thành tích HS: {student_achievements}
 - Đề nghị khen thưởng: {reward_proposal}
 - Hiệu trưởng: {principal_name}",
-        RequiredFields = new[] { "school_name", "school_year", "collective_achievements", "reward_proposal", "principal_name" },
+        RequiredFields = new[] { "school_name", "school_year", "collective_achievements", "teacher_achievements", "student_achievements", "reward_proposal", "principal_name" },
         Tags = new[] { "giáo dục", "thi đua", "báo cáo", "khen thưởng" }
     };
 
@@ -2415,7 +2415,7 @@ CHỦ TỊCH UBND
 - Địa chỉ cư trú: {address}
 - Mục đích xác nhận: {purpose}
 - Chủ tịch UBND: {chairman_name}",
-        RequiredFields = new[] { "ward_name", "citizen_name", "birth_date", "address", "purpose", "chairman_name" },
+        RequiredFields = new[] { "ward_name", "citizen_name", "birth_date", "id_number", "address", "purpose", "chairman_name" },
         Tags = new[] { "UBND xã", "xác nhận", "cư trú", "hành chính công" }
     };
 
@@ -2432,7 +2432,7 @@ CHỦ TỊCH UBND
 - Tình trạng hôn nhân: {marital_status}
 - Mục đích: {purpose}
 - Chủ tịch UBND: {chairman_name}",
-        RequiredFields = new[] { "ward_name", "citizen_name", "birth_date", "marital_status", "purpose", "chairman_name" },
+        RequiredFields = new[] { "ward_name", "citizen_name", "birth_date", "id_number", "marital_status", "purpose", "chairman_name" },
         Tags = new[] { "UBND xã", "hôn nhân", "xác nhận", "hành chính công" }
     };
 
@@ -2450,7 +2450,7 @@ CHỦ TỊCH UBND
 - Tồn tại, hạn chế: {challenges}
 - Phương hướng kỳ tới: {next_plan}
 - Chủ tịch UBND: {chairman_name}",
-        RequiredFields = new[] { "ward_name", "period", "economy", "social", "next_plan", "chairman_name" },
+        RequiredFields = new[] { "ward_name", "period", "economy", "social", "challenges", "next_plan", "chairman_name" },
         Tags = new[] { "UBND xã", "kinh tế xã hội", "báo cáo" }
     };
 
@@ -2468,7 +2468,7 @@ CHỦ TỊCH UBND
 - Phương tiện/vật tư: {resources}
 - Phương án sơ tán: {evacuation_plan}
 - Chủ tịch UBND: {chairman_name}",
-        RequiredFields = new[] { "ward_name", "disaster_type", "risk_areas", "rescue_forces", "evacuation_plan", "chairman_name" },
+        RequiredFields = new[] { "ward_name", "disaster_type", "risk_areas", "rescue_forces", "resources", "evacuation_plan", "chairman_name" },
         Tags = new[] { "UBND xã", "thiên tai", "phòng chống", "kế hoạch" }
     };
 
@@ -2486,7 +2486,7 @@ CHỦ TỊCH UBND
 - Nguồn kinh phí: {funding_source}
 - Căn cứ pháp lý: {legal_basis}
 - Chủ tịch UBND: {chairman_name}",
-        RequiredFields = new[] { "ward_name", "beneficiaries", "support_type", "support_amount", "legal_basis", "chairman_name" },
+        RequiredFields = new[] { "ward_name", "beneficiaries", "support_type", "support_amount", "funding_source", "legal_basis", "chairman_name" },
         Tags = new[] { "UBND xã", "hỗ trợ", "hộ nghèo", "quyết định" }
     };
 
@@ -2504,7 +2504,7 @@ CHỦ TỊCH UBND
 - Nơi tiếp nhận: {receiving_point}
 - Liên hệ: {contact}
 - Chủ tịch UBND: {chairman_name}",
-        RequiredFields = new[] { "ward_name", "reform_content", "procedures", "effective_date", "chairman_name" },
+        RequiredFields = new[] { "ward_name", "reform_content", "procedures", "effective_date", "receiving_point", "contact", "chairman_name" },
         Tags = new[] { "UBND xã", "CCHC", "thông báo", "thủ tục hành chính" }
     };
 
@@ -2523,7 +2523,7 @@ CHỦ TỊCH UBND
 - Tồn tại: {challenges}
 - Kiến nghị: {recommendations}
 - Chủ tịch UBND: {chairman_name}",
-        RequiredFields = new[] { "ward_name", "period", "population", "birth_death_rate", "chairman_name" },
+        RequiredFields = new[] { "ward_name", "period", "population", "birth_death_rate", "family_planning_results", "challenges", "recommendations", "chairman_name" },
         Tags = new[] { "UBND xã", "dân số", "KHHGĐ", "báo cáo" }
     };
 
@@ -2542,7 +2542,7 @@ CHỦ TỊCH UBND
 - Nguồn vốn: {funding}
 - Phân công thực hiện: {assignment}
 - Chủ tịch UBND: {chairman_name}",
-        RequiredFields = new[] { "ward_name", "year", "criteria_status", "year_targets", "implementation", "chairman_name" },
+        RequiredFields = new[] { "ward_name", "year", "criteria_status", "year_targets", "implementation", "funding", "assignment", "chairman_name" },
         Tags = new[] { "UBND xã", "nông thôn mới", "kế hoạch", "NTM" }
     };
 

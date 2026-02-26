@@ -91,7 +91,7 @@
                 <Button x:Name="btnLogin" Content="Đăng nhập" Margin="0,15,0,0"
                         Click="Login_Click" HorizontalAlignment="Left"
                         Style="{StaticResource MaterialDesignRaisedButton}"
-                        Background="#1565C0" BorderBrush="#1565C0"
+                        Background="#1565C0" BorderBrush="#1565C0" Foreground="White"
                         Height="40" Padding="30,0" FontSize="14">
                 </Button>
             </StackPanel>
@@ -190,7 +190,7 @@
                 <Button x:Name="btnUpload" Content="Upload lên Website"
                         Click="Upload_Click" IsEnabled="False"
                         Style="{StaticResource MaterialDesignRaisedButton}"
-                        Background="#1565C0" BorderBrush="#1565C0"
+                        Background="#1565C0" BorderBrush="#1565C0" Foreground="White"
                         Height="40" Padding="25,0" FontSize="13">
                     <Button.ContentTemplate>
                         <DataTemplate>

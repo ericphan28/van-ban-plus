@@ -598,14 +598,147 @@ namespace AIVanBan.Core.Models
                 "SƠ ĐỒ BỐ TRÍ: 14 ô vị trí trình bày trên khổ A4");
             phuLuc1.Children.AddRange(new[]
             {
-                new LegalNode { Id = "pl1-quoc-hieu", Title = "Quốc hiệu và Tiêu ngữ", NodeType = LegalNodeType.SubSection,
-                    Content = "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM — In hoa, cỡ 12-13, đứng, đậm, phía trên cùng bên phải.\nĐộc lập - Tự do - Hạnh phúc — In thường, cỡ 13-14, đứng, đậm, canh giữa dưới Quốc hiệu, có đường kẻ ngang phía dưới." },
-                new LegalNode { Id = "pl1-so-ky-hieu", Title = "Số, ký hiệu văn bản", NodeType = LegalNodeType.SubSection,
-                    Content = "Số ghi bằng chữ số Ả Rập. Số < 10: thêm 0 phía trước (01, 02...).\nFormat: Số: XX/Loại-CQ (VD: Số: 30/NĐ-CP)\nGiữa số và ký hiệu có dấu gạch chéo (/), giữa các nhóm chữ viết tắt có gạch nối (-), không cách chữ.\nCỡ chữ 13, kiểu đứng, canh giữa dưới tên cơ quan." },
-                new LegalNode { Id = "pl1-noi-dung", Title = "Nội dung văn bản", NodeType = LegalNodeType.SubSection,
-                    Content = "Canh đều 2 lề, cỡ chữ 13-14, kiểu đứng.\nLùi đầu dòng 1 cm hoặc 1,27 cm.\nKhoảng cách đoạn: tối thiểu 6pt.\nKhoảng cách dòng: đơn đến 1,5 lines.\n\nBố cục: Phần → Chương → Mục → Tiểu mục → Điều → Khoản → Điểm\nĐiểm dùng chữ cái tiếng Việt (a, b, c...) + dấu đóng ngoặc đơn." },
-                new LegalNode { Id = "pl1-chu-ky", Title = "Chữ ký và quyền hạn", NodeType = LegalNodeType.SubSection,
-                    Content = "Quyền hạn ký: TM. (thay mặt), KT. (ký thay), TL. (thừa lệnh), TUQ. (thừa ủy quyền), Q. (quyền).\nIn hoa, cỡ 13-14, đứng, đậm.\n\nHọ tên: In thường, đứng, đậm, canh giữa dưới quyền hạn.\nKhông ghi học hàm, học vị trước họ tên (trừ lực lượng vũ trang, giáo dục, y tế, khoa học).\n\nChữ ký số: PNG nền trong suốt, màu xanh, đặt giữa chức vụ và họ tên." },
+                // Phần I — Thể thức và kỹ thuật trình bày VB hành chính
+                new LegalNode { Id = "pl1-quy-dinh-chung", Title = "I. Quy định chung", NodeType = LegalNodeType.SubSection,
+                    Content = "1. Khổ giấy: A4 (210 mm × 297 mm).\n" +
+                        "2. Kiểu trình bày: Theo chiều dài khổ A4. Nội dung có bảng biểu → có thể theo chiều rộng.\n" +
+                        "3. Định lề trang:\n   • Trên, dưới: 20 – 25 mm\n   • Trái: 30 – 35 mm\n   • Phải: 15 – 20 mm\n" +
+                        "4. Phông chữ: Times New Roman, bộ mã Unicode TCVN 6909:2001, màu đen.\n" +
+                        "5. Cỡ chữ và kiểu chữ: Theo quy định cho từng thành phần thể thức.\n" +
+                        "6. Vị trí trình bày: Theo Mục IV Phần I Phụ lục này.\n" +
+                        "7. Số trang: Chữ số Ả Rập, cỡ 13-14, đứng, canh giữa lề trên, không hiển thị trang 1." },
+                new LegalNode { Id = "pl1-quoc-hieu", Title = "II.1. Quốc hiệu và Tiêu ngữ", NodeType = LegalNodeType.SubSection,
+                    Content = "| Thành phần | Loại chữ | Cỡ chữ | Kiểu chữ | Ví dụ |\n" +
+                        "|------------|----------|---------|----------|-------|\n" +
+                        "| Quốc hiệu | In hoa | 12-13 | Đứng, đậm | CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM |\n" +
+                        "| Tiêu ngữ | In thường | 13-14 | Đứng, đậm | Độc lập - Tự do - Hạnh phúc |\n\n" +
+                        "QUY CÁCH TRÌNH BÀY:\n" +
+                        "• Quốc hiệu: Phía trên cùng, bên phải trang đầu tiên.\n" +
+                        "• Tiêu ngữ: Canh giữa dưới Quốc hiệu, chữ cái đầu viết hoa, giữa các cụm từ có gạch nối (-).\n" +
+                        "• Phía dưới Tiêu ngữ: đường kẻ ngang nét liền, dài bằng dòng chữ.\n" +
+                        "• Hai dòng cách nhau dòng đơn.\n\nVị trí: Ô số 1, Mục IV." },
+                new LegalNode { Id = "pl1-ten-co-quan", Title = "II.2. Tên cơ quan ban hành", NodeType = LegalNodeType.SubSection,
+                    Content = "• Tên CQ chủ quản: In hoa, cỡ 12-13, đứng.\n" +
+                        "• Tên CQ ban hành: In hoa, cỡ 12-13, đứng, đậm, canh giữa dưới tên CQ chủ quản.\n" +
+                        "• Phía dưới: đường kẻ ngang nét liền, dài 1/3 – 1/2 dòng chữ.\n" +
+                        "• Đối với địa phương: thêm tên tỉnh/huyện/xã nơi đóng trụ sở.\n\nVị trí: Ô số 2, Mục IV." },
+                new LegalNode { Id = "pl1-so-ky-hieu", Title = "II.3. Số, ký hiệu văn bản", NodeType = LegalNodeType.SubSection,
+                    Content = "• Số: Chữ số Ả Rập, số < 10 thêm 0 phía trước (01, 02...).\n" +
+                        "• Ký hiệu VB có tên loại: Viết tắt tên loại + tên CQ. VD: QĐ-UBND\n" +
+                        "• Ký hiệu Công văn: Viết tắt tên CQ + đơn vị soạn thảo. VD: UBND-VP\n" +
+                        "• Giữa số và ký hiệu: dấu gạch chéo (/). Giữa nhóm viết tắt: gạch nối (-).\n" +
+                        "• Cỡ chữ 13, đứng, canh giữa dưới tên CQ.\n" +
+                        "• VD: Số: 30/NĐ-CP, Số: 05/BNV-VP\n\nVị trí: Ô số 3, Mục IV." },
+                new LegalNode { Id = "pl1-dia-danh", Title = "II.4. Địa danh và thời gian", NodeType = LegalNodeType.SubSection,
+                    Content = "• Địa danh: Tên chính thức đơn vị hành chính nơi CQ đóng trụ sở.\n" +
+                        "• Thời gian: Ngày, tháng, năm bằng chữ số Ả Rập. Ngày < 10, tháng 1-2: thêm số 0.\n" +
+                        "• In thường, cỡ 13-14, kiểu nghiêng, cùng dòng với số/ký hiệu.\n" +
+                        "• Chữ cái đầu địa danh viết hoa, sau có dấu phẩy (,).\n" +
+                        "• VD: Hà Nội, ngày 05 tháng 3 năm 2020\n\nVị trí: Ô số 4, Mục IV." },
+                new LegalNode { Id = "pl1-ten-loai", Title = "II.5. Tên loại và trích yếu", NodeType = LegalNodeType.SubSection,
+                    Content = "• Tên loại VB: In hoa, cỡ 13-14, đứng, đậm, canh giữa.\n" +
+                        "• Trích yếu: In thường, cỡ 13-14, đứng, đậm, ngay dưới tên loại, canh giữa.\n" +
+                        "• Bên dưới: đường kẻ ngang nét liền, dài 1/3 – 1/2 dòng chữ.\n" +
+                        "• Công văn: Trích yếu sau \"V/v\", in thường, cỡ 12-13, canh giữa dưới số/ký hiệu.\n\n" +
+                        "Vị trí: Ô số 5a (VB có tên loại), 5b (Công văn)." },
+                new LegalNode { Id = "pl1-noi-dung", Title = "II.6. Nội dung văn bản", NodeType = LegalNodeType.SubSection,
+                    Content = "• In thường, canh đều 2 lề, cỡ 13-14, đứng.\n" +
+                        "• Lùi đầu dòng 1 cm hoặc 1,27 cm. Khoảng cách đoạn ≥ 6pt. Dòng: đơn → 1,5 lines.\n\n" +
+                        "BỐ CỤC: Phần → Chương → Mục → Tiểu mục → Điều → Khoản → Điểm\n" +
+                        "• Phần/Chương: Số La Mã, đứng đậm, canh giữa. Tiêu đề in hoa, đậm.\n" +
+                        "• Điều: Số Ả Rập + dấu chấm, lùi đầu dòng, đứng đậm.\n" +
+                        "• Khoản: Số Ả Rập + dấu chấm. Điểm: Chữ cái + dấu đóng ngoặc.\n\n" +
+                        "Căn cứ ban hành: Chữ nghiêng, cỡ 13-14, cuối dòng dấu (;), dòng cuối dấu (.)\n\nVị trí: Ô số 6." },
+                new LegalNode { Id = "pl1-chu-ky", Title = "II.7. Chữ ký, quyền hạn", NodeType = LegalNodeType.SubSection,
+                    Content = "Quyền hạn ký:\n• TM. — Thay mặt tập thể\n• Q. — Giao quyền cấp trưởng\n" +
+                        "• KT. — Ký thay người đứng đầu\n• TL. — Thừa lệnh\n• TUQ. — Thừa ủy quyền\n\n" +
+                        "Trình bày: In hoa, cỡ 13-14, đứng, đậm.\n" +
+                        "Họ tên: In thường, đứng, đậm, canh giữa. Không ghi học hàm, học vị.\n" +
+                        "Chữ ký số: PNG nền trong suốt, màu xanh, đặt giữa chức vụ và họ tên.\n\nVị trí: Ô số 7a, 7b, 7c." },
+                new LegalNode { Id = "pl1-dau-noi-nhan", Title = "II.8–9. Dấu, nơi nhận", NodeType = LegalNodeType.SubSection,
+                    Content = "DẤU, CHỮ KÝ SỐ CƠ QUAN (Ô số 8):\n" +
+                        "• Dấu đỏ, kích thước thực, PNG nền trong suốt, trùm 1/3 chữ ký bên trái.\n" +
+                        "• VB kèm theo cùng tệp: không ký số phụ lục. Khác tệp: ký số góc trên phải.\n\n" +
+                        "NƠI NHẬN (Ô số 9a, 9b):\n" +
+                        "• \"Kính gửi:\" (9a): Cỡ 13-14, đứng. 1 nơi: cùng dòng. Nhiều nơi: gạch đầu dòng.\n" +
+                        "• \"Nơi nhận:\" (9b): Cỡ 12, nghiêng đậm. Liệt kê: cỡ 11, đứng.\n" +
+                        "• Cuối: \"- Lưu: VT, [đơn vị soạn thảo].\"" },
+                new LegalNode { Id = "pl1-thanh-phan-khac", Title = "III. Thành phần thể thức khác", NodeType = LegalNodeType.SubSection,
+                    Content = "1. Phụ lục kèm theo: Số La Mã, \"Phụ lục\" cỡ 14, đứng, đậm. Tên in hoa.\n\n" +
+                        "2. Dấu chỉ độ mật: TUYỆT MẬT, TỐI MẬT, MẬT — theo luật BVBMNN. Ô 10a.\n\n" +
+                        "3. Dấu chỉ mức độ khẩn:\n" +
+                        "   HOẢ TỐC (30×8mm), THƯỢNG KHẨN (40×8mm), KHẨN (20×8mm)\n" +
+                        "   In hoa, đậm, khung chữ nhật viền đơn, mực đỏ. Ô 10b.\n\n" +
+                        "4. Chỉ dẫn lưu hành: \"XEM XONG TRẢ LẠI\", \"LƯU HÀNH NỘI BỘ\". Ô 11.\n\n" +
+                        "5. Ký hiệu người soạn thảo & số bản: Cỡ 11, in hoa. VD: PL.(300). Ô 12.\n\n" +
+                        "6. Địa chỉ CQ, ĐT, Fax, Email, Website: Cỡ 11-12, đứng. Ô 13." },
+                new LegalNode { Id = "pl1-so-do", Title = "IV. Sơ đồ bố trí 14 ô trên A4", NodeType = LegalNodeType.SubSection,
+                    Content = "Vị trí các thành phần thể thức trên khổ A4:\n\n" +
+                        "| Ô số | Thành phần thể thức |\n" +
+                        "|------|---------------------|\n" +
+                        "| 1 | Quốc hiệu và Tiêu ngữ |\n" +
+                        "| 2 | Tên cơ quan, tổ chức ban hành văn bản |\n" +
+                        "| 3 | Số, ký hiệu của văn bản |\n" +
+                        "| 4 | Địa danh và thời gian ban hành |\n" +
+                        "| 5a | Tên loại và trích yếu nội dung |\n" +
+                        "| 5b | Trích yếu nội dung công văn |\n" +
+                        "| 6 | Nội dung văn bản |\n" +
+                        "| 7a, 7b, 7c | Chức vụ, họ tên và chữ ký người có thẩm quyền |\n" +
+                        "| 8 | Dấu, Chữ ký số của cơ quan, tổ chức |\n" +
+                        "| 9a, 9b | Nơi nhận |\n" +
+                        "| 10a | Dấu chỉ độ mật |\n" +
+                        "| 10b | Dấu chỉ mức độ khẩn |\n" +
+                        "| 11 | Chỉ dẫn về phạm vi lưu hành |\n" +
+                        "| 12 | Ký hiệu người soạn thảo và số lượng bản phát hành |\n" +
+                        "| 13 | Địa chỉ, ĐT, Fax, Email, Website |\n" +
+                        "| 14 | Chữ ký số CQ cho bản sao điện tử |" },
+                new LegalNode { Id = "pl1-mau-chu", Title = "V. Mẫu chữ và chi tiết trình bày", NodeType = LegalNodeType.SubSection,
+                    Content = "BẢNG MẪU CHỮ VÀ CHI TIẾT TRÌNH BÀY THỂ THỨC VĂN BẢN HÀNH CHÍNH:\n" +
+                        "(Theo Phụ lục I, NĐ 30/2020/NĐ-CP)\n\n" +
+                        "| STT | Thành phần thể thức | Loại chữ | Cỡ chữ | Kiểu chữ |\n" +
+                        "|-----|---------------------|----------|---------|----------|\n" +
+                        "| 1 | Quốc hiệu | In hoa | 12-13 | Đứng, đậm |\n" +
+                        "|   | Tiêu ngữ | In thường | 13-14 | Đứng, đậm |\n" +
+                        "| 2 | Tên CQ chủ quản trực tiếp | In hoa | 12-13 | Đứng |\n" +
+                        "|   | Tên CQ ban hành VB | In hoa | 12-13 | Đứng, đậm |\n" +
+                        "| 3 | Số, ký hiệu VB | In thường | 13 | Đứng |\n" +
+                        "| 4 | Địa danh và thời gian ban hành | In thường | 13-14 | Nghiêng |\n" +
+                        "| 5a | Tên loại VB (có tên loại) | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "|   | Trích yếu nội dung | In thường | 13-14 | Đứng, đậm |\n" +
+                        "| 5b | Trích yếu nội dung (công văn) | In thường | 12-13 | Đứng |\n" +
+                        "| 6 | Nội dung văn bản | In thường | 13-14 | Đứng |\n" +
+                        "|   | Phần, Chương (số thứ tự) | In thường | 13-14 | Đứng, đậm |\n" +
+                        "|   | Tiêu đề phần, chương | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "|   | Mục (số thứ tự) | In thường | 13-14 | Đứng, đậm |\n" +
+                        "|   | Tiêu đề mục | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "|   | Tiểu mục (số thứ tự) | In thường | 13-14 | Đứng, đậm |\n" +
+                        "|   | Tiêu đề tiểu mục | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "|   | Điều | In thường | 13-14 | Đứng, đậm |\n" +
+                        "|   | Khoản | In thường | 13-14 | Đứng |\n" +
+                        "|   | Điểm | In thường | 13-14 | Đứng |\n" +
+                        "| 7 | Quyền hạn của người ký | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "|   | Chức vụ của người ký | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "|   | Họ tên của người ký | In thường | 13-14 | Đứng, đậm |\n" +
+                        "| 8a | Từ \"Kính gửi\" và tên nơi nhận | In thường | 13-14 | Đứng |\n" +
+                        "| 8b | Từ \"Nơi nhận\" | In thường | 12 | Nghiêng, đậm |\n" +
+                        "|   | Tên CQ, tổ chức, cá nhân nhận VB | In thường | 11 | Đứng |\n" +
+                        "| 9 | Từ \"Phụ lục\" và số thứ tự | In thường | 14 | Đứng, đậm |\n" +
+                        "|   | Tiêu đề phụ lục | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "| 10 | Dấu chỉ mức độ khẩn | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "| 11 | Ký hiệu người soạn thảo và số bản | In thường | 11 | Đứng |\n" +
+                        "| 12 | Địa chỉ CQ, ĐT, Fax, Email, Website | In thường | 11-12 | Đứng |\n" +
+                        "| 13 | Chỉ dẫn phạm vi lưu hành | In hoa | 13-14 | Đứng, đậm |\n" +
+                        "| 14 | Số trang | In thường | 13-14 | Đứng |" },
+                // Phần II — Bản sao văn bản
+                new LegalNode { Id = "pl1-ban-sao", Title = "Phần II. Bản sao văn bản", NodeType = LegalNodeType.SubSection,
+                    Content = "BẢN SAO SANG ĐỊNH DẠNG ĐIỆN TỬ:\n" +
+                        "• Hình thức: \"SAO Y\", \"SAO LỤC\", \"TRÍCH SAO\"\n" +
+                        "• Tiêu chuẩn: PDF ≥ 1.4, ảnh màu, ≥ 200dpi, tỷ lệ 100%\n" +
+                        "• Chữ ký số: Góc trên bên phải, không hiển thị hình ảnh, Times New Roman cỡ 10\n\n" +
+                        "BẢN SAO SANG ĐỊNH DẠNG GIẤY:\n" +
+                        "• Gồm: Hình thức sao, tên CQ sao, số/ký hiệu, địa danh, ngày tháng, chữ ký, dấu, nơi nhận\n" +
+                        "• Trình bày: Trên cùng tờ A4, sau phần cuối VB, dưới đường kẻ ngang nét liền\n" +
+                        "• \"SAO Y\"/\"SAO LỤC\"/\"TRÍCH SAO\": In hoa, cỡ 13-14, đứng, đậm" },
             });
 
             var phuLuc2 = CreateAppendix("II", "Viết hoa trong văn bản hành chính",
@@ -625,6 +758,19 @@ namespace AIVanBan.Core.Models
                 "• Chức vụ đi liền tên: Hoa chữ cái đầu. VD: Thủ tướng Chính phủ\n" +
                 "• Đảng, Bác, Người (chỉ Hồ Chí Minh): Viết hoa\n" +
                 "• Viện dẫn Điều, Khoản, Điểm: Viết hoa chữ cái đầu");
+            phuLuc2.Children.AddRange(new[]
+            {
+                new LegalNode { Id = "pl2-phep-dat-cau", Title = "I. Viết hoa vì phép đặt câu", NodeType = LegalNodeType.SubSection,
+                    Content = "Viết hoa chữ cái đầu âm tiết thứ nhất của một câu hoàn chỉnh:\n• Sau dấu chấm câu (.)\n• Sau dấu chấm hỏi (?)\n• Sau dấu chấm than (!)\n• Khi xuống dòng" },
+                new LegalNode { Id = "pl2-ten-nguoi", Title = "II. Viết hoa tên người", NodeType = LegalNodeType.SubSection,
+                    Content = "1. Tên người Việt Nam:\n• Tên thông thường: Viết hoa chữ cái đầu tất cả âm tiết. VD: Nguyễn Ái Quốc, Trần Phú\n• Tên hiệu, nhân vật lịch sử: Viết hoa tất cả. VD: Bà Triệu, Bác Hồ, Ông Gióng\n\n2. Tên người nước ngoài phiên âm:\n• Hán-Việt: Như tên VN. VD: Kim Nhật Thành, Mao Trạch Đông\n• Phiên âm trực tiếp: Hoa chữ cái đầu âm tiết thứ nhất mỗi thành phần. VD: Vla-đi-mia I-lích Lê-nin" },
+                new LegalNode { Id = "pl2-ten-dia-ly", Title = "III. Viết hoa tên địa lý", NodeType = LegalNodeType.SubSection,
+                    Content = "1. Tên địa lý Việt Nam:\n• Đơn vị hành chính: Hoa chữ cái đầu tên riêng, không gạch nối. VD: thành phố Thái Nguyên, tỉnh Nam Định\n• Đặt theo số/tên người: Hoa cả danh từ chung. VD: Quận 1, Phường Điện Biên Phủ\n• Đặc biệt: Thủ đô Hà Nội, Thành phố Hồ Chí Minh\n• Địa hình + tên riêng (1 âm tiết) → tên riêng: Hoa tất cả. VD: Cửa Lò, Vũng Tàu\n• Vùng/miền: Hoa tất cả. VD: Tây Bắc, Bắc Bộ\n\n2. Tên địa lý nước ngoài:\n• Hán-Việt: Như tên VN. VD: Bắc Kinh\n• Phiên âm trực tiếp: Như tên người nước ngoài. VD: Mát-xcơ-va" },
+                new LegalNode { Id = "pl2-ten-co-quan", Title = "IV. Viết hoa tên cơ quan, tổ chức", NodeType = LegalNodeType.SubSection,
+                    Content = "1. CQ, tổ chức Việt Nam:\n• Viết hoa chữ cái đầu từ chỉ loại hình, chức năng, lĩnh vực hoạt động.\n• VD: Ban Chỉ đạo trung ương về Phòng chống tham nhũng\n• VD: Bộ Tài nguyên và Môi trường, Sở Tài chính\n• VD: Hội đồng nhân dân tỉnh Sơn La\n\n2. CQ, tổ chức nước ngoài:\n• Dịch nghĩa: Như CQ VN. VD: Liên hợp quốc (UN), Tổ chức Y tế thế giới (WHO)\n• Viết tắt: In hoa nguyên ngữ. VD: WTO, ASEAN, UNESCO" },
+                new LegalNode { Id = "pl2-truong-hop-khac", Title = "V. Các trường hợp khác", NodeType = LegalNodeType.SubSection,
+                    Content = "1. Danh từ đặc biệt: Nhân dân, Nhà nước — luôn viết hoa.\n2. Huân chương, danh hiệu: Hoa chữ cái đầu tên riêng + thứ hạng. VD: Huân chương Sao vàng, Nghệ sĩ Nhân dân\n3. Chức vụ đi liền tên: Hoa chữ cái đầu. VD: Chủ tịch Quốc hội, Thủ tướng Chính phủ\n4. Danh từ riêng hóa: Bác, Người (Hồ Chí Minh), Đảng (Đảng CSVN)\n5. Ngày lễ: Hoa chữ cái đầu. VD: ngày Quốc khánh 2-9\n6. Tên loại VB cụ thể: Hoa chữ cái đầu. VD: Bộ luật Hình sự, Luật Tổ chức Quốc hội\n7. Viện dẫn Phần, Chương, Mục, Điều, Khoản, Điểm: Viết hoa chữ cái đầu\n8. Năm âm lịch: Hoa tất cả. VD: Kỷ Tỵ, Mậu Tuất\n9. Ngày tết: tết Nguyên đán, tết Trung thu. Viết hoa 'Tết' khi thay cho tết Nguyên đán\n10. Sự kiện lịch sử: Hoa tên sự kiện. VD: Cách mạng tháng Tám" },
+            });
 
             var phuLuc3 = CreateAppendix("III", "Bảng chữ viết tắt tên loại VB & Mẫu trình bày",
                 "BẢNG CHỮ VIẾT TẮT 29 LOẠI VĂN BẢN:\n\n" +
@@ -666,6 +812,68 @@ namespace AIVanBan.Core.Models
                 "• Mẫu 1.4: Văn bản có tên loại\n" +
                 "• Mẫu 1.5: Công văn\n" +
                 "• Mẫu 1.6: Bản sao y, sao lục, trích sao");
+            phuLuc3.Children.AddRange(new[]
+            {
+                new LegalNode { Id = "pl3-bang-viet-tat", Title = "I. Bảng chữ viết tắt 29 loại VB", NodeType = LegalNodeType.SubSection,
+                    Content = "BẢNG CHỮ VIẾT TẮT TÊN LOẠI VĂN BẢN HÀNH CHÍNH:\n\n" +
+                        "| STT | Tên loại văn bản | Viết tắt |\n" +
+                        "|-----|------------------|----------|\n" +
+                        "| 1 | Nghị quyết (cá biệt) | NQ |\n" +
+                        "| 2 | Quyết định (cá biệt) | QĐ |\n" +
+                        "| 3 | Chỉ thị | CT |\n" +
+                        "| 4 | Quy chế | QC |\n" +
+                        "| 5 | Quy định | QyĐ |\n" +
+                        "| 6 | Thông cáo | TC |\n" +
+                        "| 7 | Thông báo | TB |\n" +
+                        "| 8 | Hướng dẫn | HD |\n" +
+                        "| 9 | Chương trình | CTr |\n" +
+                        "| 10 | Kế hoạch | KH |\n" +
+                        "| 11 | Phương án | PA |\n" +
+                        "| 12 | Đề án | ĐA |\n" +
+                        "| 13 | Dự án | DA |\n" +
+                        "| 14 | Báo cáo | BC |\n" +
+                        "| 15 | Biên bản | BB |\n" +
+                        "| 16 | Tờ trình | TTr |\n" +
+                        "| 17 | Hợp đồng | HĐ |\n" +
+                        "| 18 | Công điện | CĐ |\n" +
+                        "| 19 | Bản ghi nhớ | BGN |\n" +
+                        "| 20 | Bản thỏa thuận | BTT |\n" +
+                        "| 21 | Giấy ủy quyền | GUQ |\n" +
+                        "| 22 | Giấy mời | GM |\n" +
+                        "| 23 | Giấy giới thiệu | GGT |\n" +
+                        "| 24 | Giấy nghỉ phép | GNP |\n" +
+                        "| 25 | Phiếu gửi | PG |\n" +
+                        "| 26 | Phiếu chuyển | PC |\n" +
+                        "| 27 | Phiếu báo | PB |\n\n" +
+                        "BẢN SAO VĂN BẢN:\n\n" +
+                        "| Hình thức sao | Viết tắt |\n" +
+                        "|--------------|----------|\n" +
+                        "| Bản sao y | SY |\n" +
+                        "| Trích sao | TrS |\n" +
+                        "| Sao lục | SL |" },
+                new LegalNode { Id = "pl3-mau-van-ban", Title = "II. Mẫu trình bày VB hành chính", NodeType = LegalNodeType.SubSection,
+                    Content = "DANH MỤC 10 MẪU TRÌNH BÀY VĂN BẢN:\n\n" +
+                        "| Mẫu số | Tên văn bản |\n" +
+                        "|---------|------------|\n" +
+                        "| Mẫu 1.1 | Nghị quyết (cá biệt) |\n" +
+                        "| Mẫu 1.2 | Quyết định quy định trực tiếp |\n" +
+                        "| Mẫu 1.3 | Quyết định quy định gián tiếp (ban hành/phê duyệt VB khác) |\n" +
+                        "| Mẫu 1.4 | Văn bản có tên loại (chỉ thị, quy chế, thông báo, kế hoạch, báo cáo, tờ trình...) |\n" +
+                        "| Mẫu 1.5 | Công văn |\n" +
+                        "| Mẫu 1.6 | Công điện |\n" +
+                        "| Mẫu 1.7 | Giấy mời |\n" +
+                        "| Mẫu 1.8 | Giấy giới thiệu |\n" +
+                        "| Mẫu 1.9 | Biên bản |\n" +
+                        "| Mẫu 1.10 | Giấy nghỉ phép |\n\n" +
+                        "Mỗi mẫu quy định vị trí các thành phần thể thức: Quốc hiệu, tên CQ, số/ký hiệu, địa danh, trích yếu, nội dung, chữ ký, nơi nhận." },
+                new LegalNode { Id = "pl3-mau-phu-luc-ban-sao", Title = "III. Mẫu phụ lục & bản sao", NodeType = LegalNodeType.SubSection,
+                    Content = "MẪU TRÌNH BÀY PHỤ LỤC VĂN BẢN:\n" +
+                        "• Mẫu 2.1: Phụ lục VB hành chính giấy — gồm số thứ tự, tiêu đề, thông tin kèm theo VB\n" +
+                        "• Mẫu 2.2: Phụ lục VB hành chính điện tử — áp dụng khi phụ lục không cùng tệp tin\n\n" +
+                        "MẪU TRÌNH BÀY BẢN SAO VĂN BẢN:\n" +
+                        "• Mẫu 3.1: Bản sao sang định dạng giấy — trình bày sau phần cuối VB cần sao\n" +
+                        "• Mẫu 3.2: Bản sao sang định dạng điện tử — chữ ký số CQ, không hiển thị hình ảnh" },
+            });
 
             var phuLuc4 = CreateAppendix("IV", "Mẫu về quản lý văn bản",
                 "I. MẪU SỔ ĐĂNG KÝ VĂN BẢN ĐI\n" +
@@ -677,6 +885,49 @@ namespace AIVanBan.Core.Models
                 "VI. MẪU SỔ ĐĂNG KÝ VĂN BẢN ĐẾN\nTối thiểu 10 nội dung: Ngày đến, số đến, tác giả, số/ký hiệu, ngày VB, trích yếu, đơn vị nhận...\n\n" +
                 "VII. MẪU PHIẾU GIẢI QUYẾT VĂN BẢN ĐẾN\n3 phần: Ý kiến lãnh đạo, Ý kiến lãnh đạo đơn vị, Ý kiến đề xuất người giải quyết.\n\n" +
                 "VIII. MẪU SỔ THEO DÕI GIẢI QUYẾT VĂN BẢN ĐẾN\nTối thiểu 7 nội dung.");
+            phuLuc4.Children.AddRange(new[]
+            {
+                new LegalNode { Id = "pl4-so-vb-di", Title = "I. Mẫu sổ đăng ký VB đi", NodeType = LegalNodeType.SubSection,
+                    Content = "SỔ ĐĂNG KÝ VĂN BẢN ĐI — tối thiểu 10 cột nội dung:\n\n" +
+                        "| Số, ký hiệu VB | Ngày tháng VB | Tên loại và trích yếu ND | Người ký | Nơi nhận VB | Đơn vị, người nhận bản lưu | Số lượng bản | Ngày chuyển | Ký nhận | Ghi chú |\n" +
+                        "|---|---|---|---|---|---|---|---|---|---|\n" +
+                        "| (1) | (2) | (3) | (4) | (5) | (6) | (7) | (8) | (9) | (10) |" },
+                new LegalNode { Id = "pl4-bi-vb-buu-dien", Title = "II. Mẫu bì VB & Sổ gửi bưu điện", NodeType = LegalNodeType.SubSection,
+                    Content = "MẪU BÌ VĂN BẢN: Theo quy cách chuẩn.\n\n" +
+                        "SỔ GỬI VB ĐI BƯU ĐIỆN — tối thiểu 6 nội dung:\n\n" +
+                        "| Ngày chuyển | Số, ký hiệu VB | Nơi nhận VB | Số lượng bì | Ký nhận và dấu bưu điện | Ghi chú |\n" +
+                        "|---|---|---|---|---|---|\n" +
+                        "| (1) | (2) | (3) | (4) | (5) | (6) |\n\n" +
+                        "SỔ SỬ DỤNG BẢN LƯU — tối thiểu 9 nội dung:\n\n" +
+                        "| Ngày tháng | Họ tên người SD | Số, ký hiệu ngày tháng VB | Tên loại và trích yếu ND VB | Số và ký hiệu HS | Ký nhận | Ngày trả | Người cho phép SD | Ghi chú |\n" +
+                        "|---|---|---|---|---|---|---|---|---|\n" +
+                        "| (1) | (2) | (3) | (4) | (5) | (6) | (7) | (8) | (9) |" },
+                new LegalNode { Id = "pl4-dau-den-so-den", Title = "III. Dấu \"ĐẾN\" & Sổ đăng ký VB đến", NodeType = LegalNodeType.SubSection,
+                    Content = "MẪU DẤU \"ĐẾN\":\n" +
+                        "• Được khắc sẵn, hình chữ nhật, kích thước 35 mm × 50 mm\n" +
+                        "• Gồm: Tên CQ/tổ chức, Số đến, Ngày đến, Chuyển, Số và ký hiệu HS\n\n" +
+                        "SỔ ĐĂNG KÝ VĂN BẢN ĐẾN — tối thiểu 10 cột nội dung:\n\n" +
+                        "| Ngày đến | Số đến | Tác giả | Số, ký hiệu VB | Ngày tháng VB | Tên loại và trích yếu ND VB | Đơn vị hoặc người nhận | Ngày chuyển | Ký nhận | Ghi chú |\n" +
+                        "|---|---|---|---|---|---|---|---|---|---|\n" +
+                        "| (1) | (2) | (3) | (4) | (5) | (6) | (7) | (8) | (9) | (10) |" },
+                new LegalNode { Id = "pl4-phieu-theo-doi", Title = "IV. Phiếu giải quyết & Sổ theo dõi VB đến", NodeType = LegalNodeType.SubSection,
+                    Content = "MẪU PHIẾU GIẢI QUYẾT VB ĐẾN — 3 phần:\n" +
+                        "1. Ý kiến của lãnh đạo CQ, tổ chức:\n" +
+                        "   • Giao đơn vị, cá nhân chủ trì\n" +
+                        "   • Giao các đơn vị, cá nhân tham gia phối hợp giải quyết VB đến (nếu có)\n" +
+                        "   • Thời hạn giải quyết đối với mỗi đơn vị, cá nhân (nếu có)\n" +
+                        "   • Ngày tháng cho ý kiến phân phối, giải quyết\n" +
+                        "2. Ý kiến của lãnh đạo đơn vị:\n" +
+                        "   • Giao cho cá nhân; thời hạn giải quyết đối với cá nhân (nếu có)\n" +
+                        "   • Ngày, tháng, năm cho ý kiến\n" +
+                        "3. Ý kiến đề xuất của người giải quyết:\n" +
+                        "   • Ý kiến đề xuất giải quyết VB đến của cá nhân\n" +
+                        "   • Ngày, tháng, năm đề xuất ý kiến\n\n" +
+                        "MẪU SỔ THEO DÕI GIẢI QUYẾT VB ĐẾN — tối thiểu 7 cột:\n\n" +
+                        "| Số đến | Tên loại, số, ký hiệu, ngày, tháng và tên CQ ban hành VB | Đơn vị hoặc người nhận | Thời hạn giải quyết | Tiến độ giải quyết | Số, ký hiệu VB trả lời | Ghi chú |\n" +
+                        "|---|---|---|---|---|---|---|\n" +
+                        "| (1) | (2) | (3) | (4) | (5) | (6) | (7) |" },
+            });
 
             var phuLuc5 = CreateAppendix("V", "Lập hồ sơ và nộp lưu hồ sơ",
                 "I. XÂY DỰNG DANH MỤC HỒ SƠ\nGồm: Đề mục, số/ký hiệu, tiêu đề, thời hạn bảo quản, người lập.\n\n" +
@@ -684,6 +935,39 @@ namespace AIVanBan.Core.Models
                 "III. MẪU MỤC LỤC HỒ SƠ NỘP LƯU\n7 cột: STT, Hồ sơ số, Tiêu đề hồ sơ, Ngày bắt đầu, Ngày kết thúc, Thời hạn BQ, Ghi chú.\n\n" +
                 "IV. MẪU MỤC LỤC VĂN BẢN TRONG HỒ SƠ\n7 cột: STT, Số/ký hiệu, Ngày tháng, Tên loại và trích yếu, Tác giả, Tờ số, Ghi chú.\n\n" +
                 "V. MẪU BIÊN BẢN GIAO NHẬN HỒ SƠ\nBên giao (đơn vị/cá nhân) - Bên nhận (Lưu trữ cơ quan).\nDanh mục tài liệu giao nhận.");
+            phuLuc5.Children.AddRange(new[]
+            {
+                new LegalNode { Id = "pl5-danh-muc-hs", Title = "I. Xây dựng danh mục hồ sơ", NodeType = LegalNodeType.SubSection,
+                    Content = "Danh mục hồ sơ gồm các thành phần:\n" +
+                        "1) Đề mục: Theo cơ cấu tổ chức hoặc lĩnh vực hoạt động. Đề mục lớn đánh số La Mã, đề mục nhỏ đánh số Ả Rập.\n" +
+                        "2) Số, ký hiệu hồ sơ: Số thứ tự (Ả Rập) + ký hiệu viết tắt đề mục lớn. VD: 01.TCCB\n" +
+                        "3) Tiêu đề hồ sơ: Ngắn gọn, rõ ràng, khái quát nội dung VB/tài liệu.\n" +
+                        "4) Thời hạn bảo quản: Vĩnh viễn hoặc số năm cụ thể.\n" +
+                        "5) Người lập hồ sơ.\n\n" +
+                        "MẪU DANH MỤC HỒ SƠ (5 cột):\n\n" +
+                        "| Số và ký hiệu hồ sơ | Tên đề mục và tiêu đề hồ sơ | Thời hạn bảo quản | Người lập hồ sơ | Ghi chú |\n" +
+                        "|---|---|---|---|---|\n" +
+                        "| (1) | (2) | (3) | (4) | (5) |" },
+                new LegalNode { Id = "pl5-muc-luc-hs", Title = "II. Mẫu mục lục hồ sơ nộp lưu", NodeType = LegalNodeType.SubSection,
+                    Content = "MẪU MỤC LỤC HỒ SƠ, TÀI LIỆU NỘP LƯU (7 cột):\n\n" +
+                        "| STT | Số, ký hiệu hồ sơ | Tiêu đề hồ sơ | Thời gian tài liệu | Thời hạn bảo quản | Số tờ/trang | Ghi chú |\n" +
+                        "|---|---|---|---|---|---|---|\n" +
+                        "| (1) | (2) | (3) | (4) | (5) | (6) | (7) |\n\n" +
+                        "MẪU MỤC LỤC VĂN BẢN TRONG HỒ SƠ (7 cột):\n\n" +
+                        "| STT | Số, ký hiệu VB | Ngày tháng năm VB | Tên loại và trích yếu ND | Tác giả VB | Tờ số / Trang số | Ghi chú |\n" +
+                        "|---|---|---|---|---|---|---|\n" +
+                        "| (1) | (2) | (3) | (4) | (5) | (6) | (7) |" },
+                new LegalNode { Id = "pl5-bien-ban-giao-nhan", Title = "III. Biên bản giao nhận hồ sơ", NodeType = LegalNodeType.SubSection,
+                    Content = "MẪU BIÊN BẢN GIAO NHẬN HỒ SƠ, TÀI LIỆU:\n" +
+                        "Căn cứ: NĐ 30/2020/NĐ-CP và Danh mục HS năm/Kế hoạch thu thập tài liệu.\n\n" +
+                        "BÊN GIAO: Tên cá nhân/đơn vị giao nộp — họ tên, chức vụ.\n" +
+                        "BÊN NHẬN: Lưu trữ cơ quan — họ tên, chức vụ.\n\n" +
+                        "Nội dung giao nhận:\n" +
+                        "1. Tên khối tài liệu giao nộp\n2. Thời gian của HS, tài liệu\n" +
+                        "3. Số lượng: Hộp/cặp, HS (quy ra mét giá) — Giấy; Tổng HS, tổng tệp tin — Điện tử\n" +
+                        "4. Tình trạng tài liệu\n5. Mục lục HS kèm theo\n\n" +
+                        "Biên bản lập thành 2 bản: bên giao 1, bên nhận 1." },
+            });
 
             var phuLuc6 = CreateAppendix("VI", "Yêu cầu đối với Hệ thống quản lý tài liệu điện tử",
                 "PHẦN I — QUY ĐỊNH ĐỐI VỚI HỆ THỐNG:\n\n" +
@@ -712,6 +996,103 @@ namespace AIVanBan.Core.Models
                 "SecurityLevel, UrgencyLevel, AppendixList, RecipientList, StatusCode\n\n" +
                 "II. VĂN BẢN ĐẾN (18 trường): Thêm ArrivalDate, ArrivalNumber, TraceHeaderList...\n\n" +
                 "III. HỒ SƠ (11 trường): FileCode, Title, Maintenance, Creator, DateStart...");
+            phuLuc6.Children.AddRange(new[]
+            {
+                new LegalNode { Id = "pl6-nguyen-tac", Title = "I–II. Nguyên tắc & Yêu cầu chung", NodeType = LegalNodeType.SubSection,
+                    Content = "I. NGUYÊN TẮC XÂY DỰNG HỆ THỐNG (5 nguyên tắc):\n" +
+                        "1. Quản lý VB và HS điện tử đúng quy định.\n" +
+                        "2. An toàn, an ninh thông tin mạng theo pháp luật.\n" +
+                        "3. Phân quyền truy cập cho cá nhân.\n" +
+                        "4. Tính xác thực, độ tin cậy của tài liệu, dữ liệu.\n" +
+                        "5. Cho phép kiểm chứng, xác minh khi được yêu cầu.\n\n" +
+                        "II. YÊU CẦU CHUNG KHI THIẾT KẾ (8 yêu cầu):\n" +
+                        "1. Đáp ứng đầy đủ quy trình quản lý VB điện tử, lập hồ sơ, dữ liệu đặc tả.\n" +
+                        "2. Tích hợp, liên thông, chia sẻ với các hệ thống khác.\n" +
+                        "3. Hệ thống hóa VB, HS, thống kê lượt truy cập.\n" +
+                        "4. Xác thực, tin cậy, toàn vẹn, khả năng truy cập.\n" +
+                        "5. Lưu trữ HS theo thời hạn bảo quản.\n" +
+                        "6. Phù hợp Khung kiến trúc Chính phủ điện tử VN.\n" +
+                        "7. Dễ tiếp cận và sử dụng.\n" +
+                        "8. Ký số, kiểm tra, xác thực chữ ký số theo pháp luật." },
+                new LegalNode { Id = "pl6-chuc-nang", Title = "III. Yêu cầu chức năng (8 nhóm)", NodeType = LegalNodeType.SubSection,
+                    Content = "1. TẠO LẬP VÀ THEO DÕI VB: Tạo mới, đính kèm, mã định danh, cấp số tự động, thông báo VB mới, theo dõi đôn đốc.\n\n" +
+                        "2. KẾT NỐI, LIÊN THÔNG: Liên thông giữa các HTQLTL, hoạt động trên thiết bị di động, tích hợp hệ thống chuyên dụng.\n\n" +
+                        "3. AN NINH THÔNG TIN: Các cấp độ an ninh, phân quyền truy cập từng HS/VB, cảnh báo thay đổi quyền.\n\n" +
+                        "4. LẬP VÀ QUẢN LÝ HỒ SƠ: Tạo danh mục HS, mã HS, đánh số VB tự động, liên kết VB cùng mã HS, gán VB cho nhiều HS.\n\n" +
+                        "5. BẢO QUẢN VÀ LƯU TRỮ: Lưu VB + quá trình giải quyết, thông báo HS đến hạn nộp lưu, sao lưu định kỳ, phục hồi dữ liệu.\n\n" +
+                        "6. THỐNG KÊ, TÌM KIẾM: Thống kê số lượng HS/VB/lượt truy cập, tìm kiếm tất cả trường + nội dung, kết xuất doc/pdf.\n\n" +
+                        "7. QUẢN LÝ DỮ LIỆU ĐẶC TẢ: Lưu, hiển thị, bổ sung dữ liệu đặc tả VB/HS, cố định liên kết.\n\n" +
+                        "8. THU HỒI VB: Đóng băng VB đi khi thu hồi, hủy VB đến khi có lệnh, lưu dữ liệu đặc tả quá trình thu hồi." },
+                new LegalNode { Id = "pl6-quan-tri", Title = "IV–V. Quản trị & Thông tin đầu ra", NodeType = LegalNodeType.SubSection,
+                    Content = "IV. YÊU CẦU QUẢN TRỊ HỆ THỐNG:\n" +
+                        "1. Người quản trị được phép:\n" +
+                        "   a) Tạo nhóm tài liệu/HS theo cấp độ thông tin\n" +
+                        "   b) Phân quyền người sử dụng\n" +
+                        "   c) Truy cập HS và dữ liệu đặc tả\n" +
+                        "   d) Thay đổi quyền truy cập khi quy định thay đổi\n" +
+                        "   đ) Thay đổi quyền khi thay đổi vị trí công tác\n" +
+                        "   e) Phục hồi thông tin khi lỗi hệ thống\n" +
+                        "   g) Khóa/đóng băng tập hợp VB, HS khi có yêu cầu\n" +
+                        "2. Cảnh báo xung đột trong hệ thống.\n" +
+                        "3. Thiết lập kết nối liên thông.\n\n" +
+                        "V. THÔNG TIN ĐẦU RA (6 loại):\n" +
+                        "1. Sổ đăng ký VB đến\n2. Báo cáo tình hình giải quyết VB đến\n" +
+                        "3. Sổ đăng ký VB đi\n4. Báo cáo tình hình giải quyết VB đi\n" +
+                        "5. Mục lục VB trong HS\n6. Mục lục hồ sơ" },
+                new LegalNode { Id = "pl6-chuan-thong-tin", Title = "Phần II. Chuẩn thông tin đầu vào", NodeType = LegalNodeType.SubSection,
+                    Content = "I. THÔNG TIN ĐẦU VÀO — VĂN BẢN ĐI (16 trường, 24 dòng dữ liệu):\n\n" +
+                        "| STT | Trường thông tin | Tên viết tắt tiếng Anh | Kiểu dữ liệu | Độ dài |\n" +
+                        "|-----|-----------------|----------------------|--------------|--------|\n" +
+                        "| 1 | Mã hồ sơ | FileCode | | |\n" +
+                        "| 1.1 | Mã định danh CQ | OrganId | String | 13 |\n" +
+                        "| 1.2 | Năm hình thành HS | FileCatalog | Number | 4 |\n" +
+                        "| 1.3 | Số và ký hiệu HS | FileNotation | String | 20 |\n" +
+                        "| 2 | STT VB trong HS | DocOrdinal | Number | 3 |\n" +
+                        "| 3 | Tên loại văn bản | TypeName | String | 100 |\n" +
+                        "| 4 | Số của văn bản | CodeNumber | String | 11 |\n" +
+                        "| 5 | Ký hiệu văn bản | CodeNotation | String | 30 |\n" +
+                        "| 6 | Ngày, tháng, năm VB | IssuedDate | Date | 10 |\n" +
+                        "| 7 | Tên CQ ban hành | OrganName | String | 200 |\n" +
+                        "| 8 | Trích yếu nội dung | Subject | String | 500 |\n" +
+                        "| 9 | Ngôn ngữ | Language | String | 30 |\n" +
+                        "| 10 | Số trang văn bản | PageAmount | Number | 3 |\n" +
+                        "| 11 | Ghi chú | Description | String | 500 |\n" +
+                        "| 12 | Chức vụ, họ tên người ký | SignerInfo | | |\n" +
+                        "| 12.1 | Chức vụ | Position | String | 100 |\n" +
+                        "| 12.2 | Họ tên | FullName | String | 50 |\n" +
+                        "| 13 | Nơi nhận | To | | |\n" +
+                        "| 13.1 | Mã định danh CQ nhận | OrganId | String | 13 |\n" +
+                        "| 13.2 | Tên CQ nhận | OrganName | String | 200 |\n" +
+                        "| 14 | Mức độ khẩn | Priority | Number | 1 |\n" +
+                        "| 15 | Số lượng bản phát hành | IssuedAmount | Number | 3 |\n" +
+                        "| 16 | Hạn trả lời văn bản | DueDate | Date | 10 |\n\n" +
+                        "II. THÔNG TIN ĐẦU VÀO — VĂN BẢN ĐẾN (18 trường):\n" +
+                        "Gồm các trường của VB đi (1–16), bổ sung thêm:\n\n" +
+                        "| STT | Trường thông tin | Tên viết tắt tiếng Anh | Kiểu dữ liệu | Độ dài |\n" +
+                        "|-----|-----------------|----------------------|--------------|--------|\n" +
+                        "| 12 | Ngày, tháng, năm đến | ArrivalDate | Date | 10 |\n" +
+                        "| 13 | Số đến | ArrivalNumber | Number | 10 |\n" +
+                        "| 16 | Đơn vị/người nhận | ToPlaces | String | 1000 |\n" +
+                        "| 17 | Ý kiến phân phối, chỉ đạo | TraceHeaderList | LongText | |\n" +
+                        "| 18 | Thời hạn giải quyết | DueDate | Date | 10 |\n\n" +
+                        "III. THÔNG TIN ĐẦU VÀO — HỒ SƠ (11 trường, 15 dòng dữ liệu):\n\n" +
+                        "| STT | Trường thông tin | Tên viết tắt tiếng Anh | Kiểu dữ liệu | Độ dài |\n" +
+                        "|-----|-----------------|----------------------|--------------|--------|\n" +
+                        "| 1 | Mã hồ sơ | FileCode | | |\n" +
+                        "| 1.1 | Mã định danh CQ | OrganId | String | 13 |\n" +
+                        "| 1.2 | Năm hình thành HS | FileCatalog | Number | 4 |\n" +
+                        "| 1.3 | Số và ký hiệu HS | FileNotation | String | 20 |\n" +
+                        "| 2 | Tiêu đề hồ sơ | Title | String | 500 |\n" +
+                        "| 3 | Thời hạn bảo quản | Maintenance | String | 30 |\n" +
+                        "| 4 | Chế độ sử dụng | Rights | String | 30 |\n" +
+                        "| 5 | Người lập hồ sơ | Creator | String | 30 |\n" +
+                        "| 6 | Ngôn ngữ | Language | String | 50 |\n" +
+                        "| 7 | Thời gian bắt đầu | StartDate | Date | 10 |\n" +
+                        "| 8 | Thời gian kết thúc | EndDate | Date | 10 |\n" +
+                        "| 9 | Tổng số VB trong HS | DocTotal | Number | 4 |\n" +
+                        "| 10 | Tổng số trang của HS | PageTotal | Number | 4 |\n" +
+                        "| 11 | Ghi chú | Description | String | 500 |" },
+            });
 
             root.Children.AddRange(new[] { chuong1, chuong2, chuong3, chuong4, chuong5, chuong6 });
             root.Children.AddRange(new[] { phuLuc1, phuLuc2, phuLuc3, phuLuc4, phuLuc5, phuLuc6 });

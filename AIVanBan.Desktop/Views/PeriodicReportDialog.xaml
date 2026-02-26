@@ -125,10 +125,25 @@
                     <!-- Số liệu -->
                     <materialDesign:Card Padding="16" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Text="📈 Số liệu kỳ hiện tại" 
-                                      FontWeight="SemiBold" FontSize="14" 
-                                      Margin="0,0,0,8"/>
-                            <TextBlock Text="Nhập hoặc paste số liệu tự do. AI sẽ tự phân tích."
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="📈 Số liệu kỳ hiện tại" 
+                                          FontWeight="SemiBold" FontSize="14"/>
+                                <Button x:Name="btnAutoFillStats" Grid.Column="1"
+                                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                                        Height="30" FontSize="11" Padding="10,0"
+                                        Click="AutoFillStats_Click"
+                                        ToolTip="Tự động trích xuất số liệu từ sổ văn bản trong kỳ báo cáo">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="DatabaseExport" Width="16" Height="16" Margin="0,0,4,0"/>
+                                        <TextBlock Text="Lấy từ sổ VB"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                            <TextBlock Text="Nhập/paste số liệu tự do, hoặc nhấn 'Lấy từ sổ VB' để auto-fill từ hệ thống."
                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                                       FontSize="12" Margin="0,0,0,8"/>
                             
@@ -217,7 +232,7 @@
 
                     <Button x:Name="btnGenerate" Grid.Column="1"
                            Style="{StaticResource MaterialDesignRaisedButton}"
-                           Background="#00796B"
+                           Background="#00796B" Foreground="White"
                            Click="Generate_Click">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Creation" VerticalAlignment="Center" Margin="0,0,6,0"/>

@@ -58,11 +58,11 @@ public partial class HelpPage : Page
         {
             "secOverview", "secFirstSetup", "secInterface",
             "secDocManage", "secDocAdd", "secDocFolder", "secDocSearch", "secDocAttach", "secDocExport",
-            "secRegister", "secTemplate",
+            "secRegister", "secTemplate", "secLegalRef", "secStatistics",
             "secAISetup", "secAICompose", "secAIScan", "secAIReview", "secAIAdvisory", "secAISummary", "secAIReport",
-            "secAlbum", "secVietGovCMS", "secMeeting",
+            "secAlbum", "secVietGovCMS", "secMeeting", "secCalendar",
             "secBackup", "secPlans", "secFAQ", "secContact", "secShortcuts",
-            "secWhatsNew", "secVideo"
+            "secWhatsNew"
         };
 
         foreach (var name in sectionNames)
@@ -341,18 +341,4 @@ public partial class HelpPage : Page
         catch { }
     }
 
-    private void OpenVideo_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        if (sender is FrameworkElement element && element.Tag is string url)
-        {
-            try
-            {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url)
-                {
-                    UseShellExecute = true
-                });
-            }
-            catch { }
-        }
-    }
 }

@@ -4,11 +4,11 @@
 ; ============================================================
 
 #define MyAppName "VanBanPlus"
-#define MyAppVersion "1.0.10"
-#define MyAppPublisher "VanBanPlus Software"
-#define MyAppURL "https://vanbanplus.vn"
+#define MyAppVersion "1.0.12"
+#define MyAppPublisher "Cong ty TNHH Gia Kiem So"
+#define MyAppURL "https://giakiemso.com"
 #define MyAppExeName "AIVanBan.Desktop.exe"
-#define MyAppDescription "Phan mem quan ly van ban thong minh"
+#define MyAppDescription "Phan mem quan ly van ban hanh chinh thong minh"
 #define PublishDir "D:\AIVanBanCaNhan\AIVanBan.Desktop\bin\Release\net9.0-windows\win-x64\publish"
 
 [Setup]
@@ -54,9 +54,9 @@ WizardImageAlphaFormat=defined
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
-english.WelcomeLabel2=This will install [name/ver] on your computer.%n%nVanBanPlus - Smart Document Management System for Government Agencies.%n%nIt is recommended that you close all other applications before continuing.
+english.WelcomeLabel2=This will install [name/ver] on your computer.%n%nVanBanPlus - AI Document Management for Vietnamese Government Agencies.%nDeveloped by Gia Kiem So Co., Ltd. (giakiemso.com)%n%nIt is recommended that you close all other applications before continuing.
 english.FinishedHeadingLabel=VanBanPlus Installation Complete
-english.FinishedLabel=VanBanPlus has been successfully installed on your computer.%n%nClick Finish to close Setup.
+english.FinishedLabel=VanBanPlus has been successfully installed on your computer.%n%nVisit giakiemso.com for support and documentation.%n%nClick Finish to close Setup.
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
@@ -147,11 +147,11 @@ begin
       MsgResult := MsgBox(
         'Ban co muon xoa toan bo du lieu VanBanPlus khong?' + NL +
         NL +
-        'Bao gom: van ban, cuoc hop, anh, cau hinh, ban sao luu...' + NL +
+        'Bao gom: van ban, cuoc hop, album anh, mau van ban, cau hinh, ban sao luu...' + NL +
         'Thu muc: ' + UserDataDir + NL +
         NL +
-        '  YES = Xoa sach (khong the khoi phuc)' + NL +
-        '  NO  = Giu lai du lieu (de cai lai sau)',
+        '  YES = Xoa sach du lieu (KHONG THE KHOI PHUC)' + NL +
+        '  NO  = Giu lai du lieu (de cai lai phien ban moi sau)',
         mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
       
       if MsgResult = IDYES then
