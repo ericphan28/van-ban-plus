@@ -103,6 +103,33 @@ CHỨC DANH: {signerTitle}
 ===== SỐ LIỆU HIỆN TẠI =====
 {rawData}";
 
+        // Phát hiện nếu dữ liệu được gộp từ nhiều file Word (tổng hợp tháng → quý)
+        bool isMergedFromFiles = rawData.Contains("===== FILE ") && rawData.Contains("=====");
+        bool hasTables = rawData.Contains("[BẢNG]");
+
+        if (isMergedFromFiles)
+        {
+            prompt += @"
+
+⚠️ DỮ LIỆU TRÊN ĐƯỢC GỘP TỪ NHIỀU FILE BÁO CÁO THÁNG.
+Mỗi phần '===== FILE X: ... =====' là nội dung từ 1 file báo cáo tháng riêng.
+NHIỆM VỤ QUAN TRỌNG:
+1. Đọc hiểu NỘI DUNG từng báo cáo tháng
+2. TỔNG HỢP số liệu cả kỳ (cộng gộp hoặc lấy trung bình tùy chỉ tiêu)
+3. SO SÁNH xu hướng giữa các tháng (tăng/giảm)
+4. Viết thành 1 báo cáo tổng hợp hoàn chỉnh cho cả kỳ";
+        }
+
+        if (hasTables)
+        {
+            prompt += @"
+
+⚠️ DỮ LIỆU CÓ CHỨA BẢNG BIỂU (giữa [BẢNG] và [/BẢNG]).
+- Đọc dữ liệu từ bảng theo cấu trúc cột: dòng đầu là tiêu đề, các dòng sau là dữ liệu.
+- Trích xuất số liệu từ bảng để tính toán và tổng hợp.
+- KHÔNG copy nguyên bảng vào báo cáo — hãy VIẾT LẠI thành câu văn có số liệu.";
+        }
+
         if (!string.IsNullOrWhiteSpace(previousReport))
         {
             prompt += $@"

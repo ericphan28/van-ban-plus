@@ -51,21 +51,45 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <TextBlock Grid.Row="0" Text="📝 Dán hoặc nhập nội dung văn bản cần kiểm tra:" 
-                          FontSize="13" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="📝 Dán hoặc nhập nội dung văn bản cần kiểm tra:" 
+                              FontSize="13" FontWeight="SemiBold" Foreground="#333" VerticalAlignment="Center"/>
+                    <Button x:Name="btnUploadFile" 
+                           Style="{StaticResource MaterialDesignOutlinedButton}"
+                           Height="28" Padding="10,0" Margin="12,0,0,0" FontSize="11"
+                           Click="UploadFile_Click"
+                           ToolTip="Tải file .docx, .pdf, .txt — nội dung sẽ được đổ vào ô bên dưới">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileUpload" Width="14" Height="14" 
+                                                   VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="📎 Tải file lên" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- File info bar (hiện sau khi upload) -->
+                <Border x:Name="pnlFileInfo" Grid.Row="1" Background="#E3F2FD" CornerRadius="4" 
+                       Padding="10,6" Margin="0,0,0,8" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileDocument" Foreground="#1565C0" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock x:Name="txtFileInfo" Text="" FontSize="12" Foreground="#1565C0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
                 
-                <TextBox x:Name="txtQuickInput" Grid.Row="1"
+                <TextBox x:Name="txtQuickInput" Grid.Row="2"
                         TextWrapping="Wrap" AcceptsReturn="True"
                         VerticalScrollBarVisibility="Auto"
                         Height="160" FontSize="13"
                         materialDesign:HintAssist.Hint="Paste nội dung văn bản vào đây..."
                         Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
                 
-                <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid Grid.Row="3" Margin="0,10,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -94,6 +118,44 @@
                         </StackPanel>
                     </Button>
                 </Grid>
+
+                <!-- Row 4: Tải file mẫu đối chiếu (tùy chọn) -->
+                <Border Grid.Row="4" Margin="0,8,0,0">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="btnUploadReference" 
+                                   Style="{StaticResource MaterialDesignOutlinedButton}"
+                                   Height="28" Padding="10,0" FontSize="11"
+                                   Click="UploadReference_Click"
+                                   ToolTip="Tải file mẫu (.docx/.pdf/.txt) để AI so sánh, đối chiếu với VB cần kiểm tra">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FileCompare" Width="14" Height="14" 
+                                                           VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="📎 Tải file mẫu đối chiếu (tùy chọn)" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <Border x:Name="pnlReferenceInfo" Background="#FFF3E0" CornerRadius="4" 
+                               Padding="10,6" Margin="0,6,0,0" Visibility="Collapsed">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" Grid.Column="0">
+                                    <materialDesign:PackIcon Kind="FileCompare" Foreground="#E65100" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock x:Name="txtReferenceInfo" Text="" FontSize="12" Foreground="#E65100" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button x:Name="btnClearReference" Grid.Column="1"
+                                       Style="{StaticResource MaterialDesignToolButton}"
+                                       Height="20" Width="20" Padding="0"
+                                       Click="ClearReference_Click" ToolTip="Xóa file mẫu">
+                                    <materialDesign:PackIcon Kind="Close" Width="14" Height="14" Foreground="#999"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
             </Grid>
         </Border>
 
@@ -308,6 +370,30 @@
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <TextBlock Text="📋 Copy kết quả" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="btnExportWord"
+                           Style="{StaticResource MaterialDesignRaisedButton}"
+                           Background="#2E7D32" Foreground="White"
+                           Click="ExportWord_Click"
+                           Margin="0,0,8,0"
+                           Visibility="Collapsed"
+                           ToolTip="Xuất nội dung đã sửa ra file Word chuẩn NĐ 30/2020">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileWord" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="📄 Xuất Word" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="btnComposeContinue"
+                           Style="{StaticResource MaterialDesignRaisedButton}"
+                           Background="#E65100" Foreground="White"
+                           Click="ComposeContinue_Click"
+                           Margin="0,0,8,0"
+                           Visibility="Collapsed"
+                           ToolTip="Mở giao diện Soạn thảo AI với nội dung đã sửa">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileEditOutline" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="✏️ Soạn tiếp" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button x:Name="btnApply" Content="✅ Áp dụng nội dung đã sửa"

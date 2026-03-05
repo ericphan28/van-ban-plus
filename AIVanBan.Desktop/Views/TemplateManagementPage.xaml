@@ -79,13 +79,31 @@
                       SelectionMode="Single"
                       IsReadOnly="True"
                       MouseDoubleClick="Template_DoubleClick">
+                
+                <!-- Nhóm theo Loại văn bản để dễ tìm -->
+                <DataGrid.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Background="#E3F2FD" Margin="0,2,0,0">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"
+                                               Foreground="#1565C0" Margin="10,6,5,6"/>
+                                    <TextBlock Text="{Binding ItemCount, StringFormat='({0} mẫu)'}" 
+                                               FontSize="12" Foreground="#64B5F6" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </DataGrid.GroupStyle>
+                
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Tên mẫu" Binding="{Binding Name}" Width="*"/>
-                    <DataGridTextColumn Header="Loại văn bản" Binding="{Binding Type}" Width="150"/>
-                    <DataGridTextColumn Header="Số lần dùng" Binding="{Binding UsageCount}" Width="100"/>
-                    <DataGridTextColumn Header="Ngày tạo" Binding="{Binding CreatedDate, StringFormat='dd/MM/yyyy'}" Width="120"/>
+                    <DataGridTextColumn Header="Loại VB" Binding="{Binding Type}" Width="120"/>
+                    <DataGridTextColumn Header="Phân loại" Binding="{Binding Category}" Width="110"/>
+                    <DataGridTextColumn Header="Lần dùng" Binding="{Binding UsageCount}" Width="80"/>
+                    <DataGridTextColumn Header="Ngày tạo" Binding="{Binding CreatedDate, StringFormat='dd/MM/yyyy'}" Width="100"/>
                     
-                    <DataGridTemplateColumn Header="Thao tác" Width="180">
+                    <DataGridTemplateColumn Header="Thao tác" Width="220">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -94,10 +112,16 @@
                                             Tag="{Binding Id}">
                                         <materialDesign:PackIcon Kind="Eye"/>
                                     </Button>
-                                    <Button Style="{StaticResource MaterialDesignIconButton}"
-                                            ToolTip="Sử dụng" Click="UseTemplate_Click"
-                                            Tag="{Binding Id}">
-                                        <materialDesign:PackIcon Kind="Play" Foreground="Green"/>
+                                    <Button Style="{StaticResource MaterialDesignFlatButton}"
+                                            ToolTip="Soạn văn bản từ mẫu này" Click="UseTemplate_Click"
+                                            Tag="{Binding Id}" Height="30" Padding="8,0"
+                                            Foreground="#2E7D32">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="FileEditOutline" Width="16" Height="16" 
+                                                                    VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                            <TextBlock Text="Soạn VB" FontSize="12" FontWeight="SemiBold"
+                                                      VerticalAlignment="Center"/>
+                                        </StackPanel>
                                     </Button>
                                     <Button Style="{StaticResource MaterialDesignIconButton}"
                                             ToolTip="Sửa" Click="EditTemplate_Click"

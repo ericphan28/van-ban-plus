@@ -75,6 +75,7 @@ public class MeetingService : IDisposable
     {
         var collection = _db.GetCollection<Meeting>("meetings");
         return collection.FindAll()
+            .Where(m => !m.IsTemplate)
             .OrderByDescending(m => m.StartTime)
             .ToList();
     }
@@ -399,6 +400,109 @@ public class MeetingService : IDisposable
         }
     }
     
+    #endregion
+
+    #region Meeting Templates — Mẫu cuộc họp
+
+    /// <summary>
+    /// Lưu cuộc họp hiện tại thành mẫu — copy dữ liệu, đánh dấu IsTemplate
+    /// </summary>
+    public Meeting SaveAsTemplate(Meeting source, string templateName)
+    {
+        var template = new Meeting
+        {
+            IsTemplate = true,
+            TemplateName = templateName,
+            Title = source.Title,
+            Type = source.Type,
+            Level = source.Level,
+            Priority = source.Priority,
+            Location = source.Location,
+            Format = source.Format,
+            OnlineLink = source.OnlineLink,
+            ChairPerson = source.ChairPerson,
+            ChairPersonTitle = source.ChairPersonTitle,
+            Secretary = source.Secretary,
+            OrganizingUnit = source.OrganizingUnit,
+            Agenda = source.Agenda,
+            Tags = source.Tags?.ToArray() ?? Array.Empty<string>(),
+            Attendees = source.Attendees?.Select(a => new MeetingAttendee
+            {
+                Name = a.Name,
+                Position = a.Position,
+                Unit = a.Unit,
+                Role = a.Role
+            }).ToList() ?? new(),
+            Status = MeetingStatus.Scheduled,
+            StartTime = DateTime.Today.AddHours(8),
+            CreatedDate = DateTime.Now
+        };
+
+        var collection = _db.GetCollection<Meeting>("meetings");
+        collection.Insert(template);
+        return template;
+    }
+
+    /// <summary>
+    /// Lấy danh sách mẫu cuộc họp
+    /// </summary>
+    public List<Meeting> GetMeetingTemplates()
+    {
+        var collection = _db.GetCollection<Meeting>("meetings");
+        return collection.FindAll()
+            .Where(m => m.IsTemplate)
+            .OrderBy(m => m.TemplateName)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Tạo cuộc họp mới từ mẫu — copy mẫu, reset metadata
+    /// </summary>
+    public Meeting CreateFromTemplate(Meeting template, DateTime startDate)
+    {
+        var meeting = new Meeting
+        {
+            IsTemplate = false,
+            Title = template.Title,
+            Type = template.Type,
+            Level = template.Level,
+            Priority = template.Priority,
+            Location = template.Location,
+            Format = template.Format,
+            OnlineLink = template.OnlineLink,
+            ChairPerson = template.ChairPerson,
+            ChairPersonTitle = template.ChairPersonTitle,
+            Secretary = template.Secretary,
+            OrganizingUnit = template.OrganizingUnit,
+            Agenda = template.Agenda,
+            Tags = template.Tags?.ToArray() ?? Array.Empty<string>(),
+            Attendees = template.Attendees?.Select(a => new MeetingAttendee
+            {
+                Name = a.Name,
+                Position = a.Position,
+                Unit = a.Unit,
+                Role = a.Role
+            }).ToList() ?? new(),
+            Status = MeetingStatus.Scheduled,
+            StartTime = startDate.Date.AddHours(template.StartTime.Hour).AddMinutes(template.StartTime.Minute),
+            EndTime = template.EndTime.HasValue
+                ? startDate.Date.AddHours(template.EndTime.Value.Hour).AddMinutes(template.EndTime.Value.Minute)
+                : null,
+            IsAllDay = template.IsAllDay,
+            CreatedDate = DateTime.Now
+        };
+        return meeting;
+    }
+
+    /// <summary>
+    /// Xóa mẫu cuộc họp
+    /// </summary>
+    public bool DeleteMeetingTemplate(string templateId)
+    {
+        var collection = _db.GetCollection<Meeting>("meetings");
+        return collection.Delete(templateId);
+    }
+
     #endregion
     
     public void Dispose()

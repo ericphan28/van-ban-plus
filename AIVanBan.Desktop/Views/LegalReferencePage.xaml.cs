@@ -7,16 +7,19 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using AIVanBan.Core.Models;
+using AIVanBan.Core.Services;
 
 namespace AIVanBan.Desktop.Views
 {
     /// <summary>
     /// Trang tra cứu pháp quy — NĐ 30/2020/NĐ-CP
+    /// Hỗ trợ kiểm tra cập nhật pháp quy từ VanBanPlus API (tương tự Template Store)
     /// Theo Điều 1, NĐ 30/2020/NĐ-CP
     /// </summary>
     public partial class LegalReferencePage : Page
     {
         private readonly DispatcherTimer _searchDebounce;
+        private readonly LegalUpdateService _legalUpdateService = new();
         private List<LegalNode> _legalTree = new();
 
         // Ánh xạ tag → tên tính năng tiếng Việt
@@ -94,6 +97,9 @@ namespace AIVanBan.Desktop.Views
                         }
                     }));
                 }
+                
+                // Hiển thị thời gian kiểm tra cập nhật lần cuối
+                txtLastChecked.Text = LegalUpdateService.GetLastCheckedText();
             }
             catch (Exception ex)
             {
@@ -101,6 +107,111 @@ namespace AIVanBan.Desktop.Views
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        #region Legal Update — Kiểm tra cập nhật pháp quy từ server
+
+        /// <summary>
+        /// Kiểm tra cập nhật pháp quy từ VanBanPlus API (tương tự tải Template Store)
+        /// </summary>
+        private async void BtnCheckUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // UI: Đang kiểm tra
+                btnCheckUpdate.IsEnabled = false;
+                txtUpdateStatus.Text = "Đang kiểm tra...";
+                iconUpdate.Kind = MaterialDesignThemes.Wpf.PackIconKind.CloudSync;
+                
+                var status = await _legalUpdateService.CheckForUpdatesAsync();
+                
+                txtLastChecked.Text = $"Kiểm tra: {DateTime.Now:dd/MM/yyyy HH:mm}";
+                
+                if (status.HasUpdate)
+                {
+                    iconUpdate.Kind = MaterialDesignThemes.Wpf.PackIconKind.CloudDownload;
+                    txtUpdateStatus.Text = "Có bản mới!";
+                    
+                    var result = MessageBox.Show(
+                        $"🆕 Có cập nhật pháp quy mới!\n\n" +
+                        $"Phiên bản server: v{status.ServerManifestVersion}\n" +
+                        $"Phiên bản local: v{status.LocalManifestVersion}\n" +
+                        $"Cập nhật ngày: {status.ServerUpdatedAt}\n\n" +
+                        $"Văn bản có sẵn:\n" +
+                        string.Join("\n", status.AvailableDocuments.Select(d => 
+                            $"  • {d.Title} ({d.Articles} Điều, {d.Appendices} Phụ lục)")) +
+                        $"\n\n{status.Notice}" +
+                        $"\n\nBạn có muốn tải về không?",
+                        "Cập nhật Pháp quy — VanBanPlus",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Information);
+                    
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        txtUpdateStatus.Text = "Đang tải...";
+                        var success = await _legalUpdateService.DownloadLatestManifestAsync();
+                        
+                        if (success)
+                        {
+                            iconUpdate.Kind = MaterialDesignThemes.Wpf.PackIconKind.CloudCheckOutline;
+                            txtUpdateStatus.Text = "✅ Đã cập nhật";
+                            txtLastChecked.Text = LegalUpdateService.GetLastCheckedText();
+                            
+                            MessageBox.Show(
+                                "✅ Đã cập nhật dữ liệu pháp quy thành công!\n\n" +
+                                "Dữ liệu hiện tại đã là phiên bản mới nhất.",
+                                "Cập nhật thành công",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                        }
+                        else
+                        {
+                            txtUpdateStatus.Text = "Lỗi tải về";
+                            MessageBox.Show("Không thể tải dữ liệu. Vui lòng thử lại sau.",
+                                "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    }
+                    else
+                    {
+                        txtUpdateStatus.Text = "Có bản mới";
+                    }
+                }
+                else
+                {
+                    iconUpdate.Kind = MaterialDesignThemes.Wpf.PackIconKind.CloudCheckOutline;
+                    txtUpdateStatus.Text = "✅ Đã mới nhất";
+                    
+                    // Lưu manifest để cập nhật last-checked
+                    await _legalUpdateService.DownloadLatestManifestAsync();
+                    txtLastChecked.Text = LegalUpdateService.GetLastCheckedText();
+                    
+                    MessageBox.Show(
+                        $"✅ Dữ liệu pháp quy đã là phiên bản mới nhất (v{status.ServerManifestVersion}).\n\n" +
+                        $"Cập nhật ngày: {status.ServerUpdatedAt}\n" +
+                        $"{status.Notice}",
+                        "Pháp quy đã cập nhật",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                iconUpdate.Kind = MaterialDesignThemes.Wpf.PackIconKind.CloudOffOutline;
+                txtUpdateStatus.Text = "Lỗi kết nối";
+                
+                MessageBox.Show(
+                    $"⚠️ Không thể kiểm tra cập nhật:\n{ex.Message}\n\n" +
+                    "Vui lòng kiểm tra kết nối internet và thử lại.",
+                    "Lỗi kết nối",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            finally
+            {
+                btnCheckUpdate.IsEnabled = true;
+            }
+        }
+
+        #endregion
 
         #endregion
 

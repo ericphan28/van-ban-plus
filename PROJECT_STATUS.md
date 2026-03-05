@@ -4,8 +4,8 @@
 > Copilot/AI agent: **Luôn đọc file này đầu tiên** trước khi làm bất kỳ tính năng nào.
 > Sau khi hoàn thành tính năng: **Cập nhật file này** ngay lập tức.
 >
-> **Phiên bản hiện tại:** v1.0.9 (chốt 2026-02-18)
-> **Cập nhật lần cuối:** 2026-02-18
+> **Phiên bản hiện tại:** v1.0.13 (chốt 2026-06-09)
+> **Cập nhật lần cuối:** 2026-06-09
 > **Kiến trúc:** WPF .NET 9 + LiteDB + MaterialDesign-in-XAML
 
 ---
@@ -72,6 +72,9 @@
 | ✅ | Cây thư mục (Folder tree) | `DocumentListPage.xaml` | Phân cấp cha-con |
 | ✅ | Thùng rác (soft delete/restore) | `DocumentListPage.xaml.cs` | Toggle view |
 | ✅ | Bulk actions (xóa, di chuyển, xuất) | `DocumentListPage.xaml.cs` | Multi-select |
+| ✅ | Nút "Chọn tất cả" (Select All) | `DocumentListPage.xaml` | **v1.0.12:** 1-click chọn tất cả VB trong DataGrid |
+| ✅ | Cột Trạng thái + Quick-switch | `DocumentListPage.xaml`, `DocumentListPage.xaml.cs` | **v1.0.13:** Badge trạng thái màu trong DataGrid, click → ContextMenu 7 trạng thái, tooltip giải thích |
+| ✅ | Startup notification tổng hợp | `MainWindow.xaml.cs` | **v1.0.13:** Cảnh báo khi khởi động: VB quá hạn + VB sắp hết hạn (3 ngày) + Cuộc họp hôm nay |
 | ✅ | Tự động cấp số VB (Điều 15) | `DocumentService.cs` | `GetNextDocumentNumber()` |
 | ✅ | Ký hiệu VB chuẩn `Số/Loại-CQ` | `DocumentService.cs` | `GenerateDocumentSymbol()` |
 | ✅ | Số đến tự tăng theo năm (Điều 22) | `DocumentService.cs` | `GetNextArrivalNumber()` |
@@ -91,6 +94,9 @@
 | ✅ | 41 mẫu VB mặc định | `TemplateSeeder.cs` | |
 | ✅ | Template Store (online) | `TemplatePage.xaml.cs` | Từ `template-store.json` |
 | ✅ | Tìm kiếm & lọc mẫu | `TemplatePage.xaml` | |
+| ✅ | Template UX nâng cao | `TemplateEditDialog.cs`, `TemplateManagementPage.xaml` | **v1.0.12:** Banner hướng dẫn, placeholder nội dung, field Phân loại + Tags, nút chèn {biến}, DataGrid grouping theo loại |
+| ✅ | Template View: Times New Roman + "Sử dụng mẫu này" | `TemplateViewDialog.cs` | **v1.0.13:** Rewrite toàn bộ dialog — badges info, font Times New Roman, nút "Sử dụng mẫu này" → mở AI Soạn thảo, tags display |
+| ✅ | Template: Icon "Soạn VB" thay Play | `TemplateManagementPage.xaml` | **v1.0.13:** Đổi icon Play xanh → nút text "📝 Soạn VB" rõ ràng hơn |
 
 ### A3. Trang chủ (Dashboard)
 | # | Tính năng | File chính | Ghi chú |
@@ -108,7 +114,10 @@
 |---|-----------|-----------|---------|
 | ✅ | AI Soạn VB (từ template + prompt) | `AIComposeDialog.xaml` | Streaming output |
 | ✅ | AI Kiểm tra VB (8 loại lỗi) | `DocumentReviewDialog.xaml` | Chính tả, văn phong, xung đột... |
+| ✅ | AI Kiểm tra: Xuất Word + Soạn tiếp | `DocumentReviewDialog.xaml.cs` | **v1.0.12:** 2 options sau kiểm tra: 📄 Xuất Word chuẩn NĐ 30/2020, ✏️ Chuyển sang AI Soạn thảo |
 | ✅ | AI Scan OCR (ảnh/PDF → trích xuất) | `ScanImportDialog.xaml` | Gemini Vision |
+| ✅ | Upload file cho AI Kiểm tra/Tóm tắt/Tham mưu | `DocumentReviewDialog`, `DocumentSummaryDialog`, `DocumentAdvisoryDialog` | **v1.0.12:** Tải .docx/.pdf/.txt thay vì chỉ paste text. Dùng WordReaderService + GeminiAI.ReadTextFromFileAsync |
+| ✅ | File mẫu đối chiếu (AI Kiểm tra) | `DocumentReviewDialog.xaml.cs` | **v1.0.12:** Upload VB mẫu để AI so sánh, chỉ ra điểm khác biệt/thiếu sót |
 | ✅ | AI Tham mưu xử lý | `DocumentAdvisoryDialog.xaml` | Phân tích VB đến |
 | ✅ | AI Tóm tắt VB | `DocumentSummaryDialog.xaml` | 10 mục tóm tắt |
 | ✅ | AI Báo cáo định kỳ | `PeriodicReportDialog.xaml` | Tuần/Tháng/Quý/Năm |
@@ -119,8 +128,9 @@
 |---|-----------|-----------|---------|
 | ✅ | Danh sách cuộc họp (timeline) | `MeetingListPage.xaml` | 22 loại họp, grouped by date |
 | ✅ | Tạo/Sửa cuộc họp (6 tab) | `MeetingEditDialog.xaml` | Người tham dự, nhiệm vụ, tài liệu, album |
-| ✅ | Xuất Word: Biên bản, Kết luận, BC | `MeetingMinuteService.cs` | 3 loại xuất |
+| ✅ | Xuất Word: Biên bản, Kết luận, BC | `MeetingMinuteService.cs` | 3 loại xuất. **v1.0.12:** Fix SectionProperties position trong cả 4 methods (ExportBienBan, ExportKetLuan, ExportBaoCaoTongHop, ExportTongHopNhieuCuocHop) |
 | ✅ | Lọc theo loại, trạng thái, ngày | `MeetingListPage.xaml.cs` | |
+| ✅ | Quick filter chips (Hôm nay/Tuần này/Tháng này/Sắp tới) | `MeetingListPage.xaml.cs` | **v1.0.12:** 4 nút lọc nhanh 1-click |
 | ✅ | Tìm kiếm realtime (debounce 300ms) | `MeetingListPage.xaml.cs` | 2026-02-24 |
 | ✅ | Dashboard 5 stat cards | `MeetingListPage.xaml` | Tổng, Tháng, Sắp tới, NV, Quá hạn |
 | ✅ | Card meeting: live badge + relative time | `MeetingListPage.xaml.cs` | "● LIVE", "Sau 2h", "Ngày mai" |
@@ -131,6 +141,10 @@
 | ✅ | Calendar: click ngày → tạo cuộc họp | `CalendarPage.xaml.cs` | Pre-set date |
 | ✅ | Calendar: click event → mở sửa họp | `CalendarPage.xaml.cs` | MeetingId on CalendarEvent |
 | ✅ | Calendar: "Sắp tới trong tuần" | `CalendarPage.xaml.cs` | 5 cuộc họp kế tiếp |
+| ✅ | Calendar: GridSplitter resizable panel | `CalendarPage.xaml` | **v1.0.12:** Kéo thay đổi kích thước panel chi tiết (MinWidth=280, MaxWidth=600) |
+| ✅ | Meeting: Tạo nhanh (Quick Create) | `MeetingEditDialog.xaml.cs`, `MeetingListPage.xaml` | **v1.0.13:** Chế độ tạo nhanh — chỉ hiện Tab 1, ẩn 5 tab còn lại, nút ⚡ Tạo nhanh |
+| ✅ | Meeting: Mẫu cuộc họp (Templates) | `MeetingService.cs`, `MeetingListPage.xaml.cs` | **v1.0.13:** Lưu mẫu từ cuộc họp (menu ⋮), Tạo từ mẫu (nút "Từ mẫu"), Xóa mẫu |
+| ✅ | Calendar: Tạo nhanh từ lịch | `CalendarPage.xaml.cs` | **v1.0.13:** Click "Thêm cuộc họp" → mở Quick Create với ngày đã chọn |
 
 ### A6. Album ảnh
 | # | Tính năng | File chính | Ghi chú |
@@ -146,6 +160,7 @@
 | ✅ | NĐ 30/2020 toàn văn (tree view) | `LegalReferencePage.xaml` | 38 Điều, 7 Chương, 6 Phụ lục |
 | ✅ | Tìm kiếm full-text | `LegalReferencePage.xaml.cs` | Bỏ dấu TV |
 | ✅ | Feature tags per article | `LegalReferencePage.xaml.cs` | |
+| ✅ | Kiểm tra cập nhật pháp quy online | `LegalUpdateService.cs` | Tương tự TemplateStoreService, manifest.json |
 
 ### A8. Thống kê
 | # | Tính năng | File chính | Ghi chú |
@@ -163,7 +178,7 @@
 | ✅ | Đăng nhập/Đăng ký | `LoginDialog.xaml` | Email + password |
 | ✅ | Admin dashboard | `AdminDashboardPage.xaml` | Quản lý user, stats |
 | ✅ | Trang trợ giúp (F1) | `HelpPage.xaml` | Context-sensitive |
-| ✅ | Xuất Word văn bản | `WordExportService.cs` | NĐ 30/2020 format |
+| ✅ | Xuất Word văn bản | `WordExportService.cs` | NĐ 30/2020 format. **v1.0.12:** Rewrite toàn bộ — fix OpenXML ordering (RunProperties trước Text, ParagraphProperties trước Run, SectionProperties cuối Body), Unicode 4 font slots, helper `CreateStyledRun` |
 
 ---
 
@@ -240,9 +255,10 @@ Nhắc nhở khi mở app + Toast notification.
 | B3.2 | Load events: VB deadline (PersonalDeadline) + Meeting + Task từ meeting | [x] ✅ 2025-01 | `CalendarPage.xaml.cs` | |
 | B3.3 | Click event → mở VB/họp/task tương ứng | [x] ✅ 2026-02-24 | `CalendarPage.xaml.cs` | Click meeting card → MeetingEditDialog |
 | B3.4 | Color-code: 🔴 quá hạn, 🟡 sắp hạn, 🔵 họp, 🟢 task hoàn thành | [x] ✅ 2025-01 | `CalendarPage.xaml` | |
-| B3.5 | Toast notification khi mở app (VB quá hạn, sắp hạn, họp hôm nay) | [ ] | `App.xaml.cs` | Snackbar hoặc MaterialDesign dialog |
+| B3.5 | Toast notification khi mở app (VB quá hạn, sắp hạn, họp hôm nay) | [x] ✅ 2025-06 | `MainWindow.xaml.cs` | MeetingReminderService + Snackbar 2 phút/lần |
 | B3.6 | Thêm vào sidebar + navigation | [x] ✅ 2025-01 | `MainWindow.xaml` | |
-| B3.7 | Test + sửa lỗi | [ ] | | |
+| B3.7 | Chế độ xem tuần (Weekly view) | [x] ✅ 2025-06 | `CalendarPage.xaml/.cs` | Toggle Month/Week, time-slot 7:00-18:00 |
+| B3.8 | Test + sửa lỗi | [ ] | | |
 
 ---
 
@@ -374,8 +390,18 @@ Khi user chọn loại CQ = "Bệnh viện" → app gợi ý mẫu y tế. Chọ
 
 | # | Vấn đề | Status | Ghi chú |
 |---|--------|--------|---------|
-| C1 | [x] ✅ Xóa PhotoAlbumPage + PhotoAlbumPageNew, chỉ giữ Simple | v1.0.10 |
+| C1 | [x] ✅ Xóa PhotoAlbumPage + PhotoAlbumPageNew, chỉ giữ Simple | v1.0.12 |
 | C2 | [x] ✅ MeetingSeeder đã có guard clause (skip nếu count > 0) | OK |
+| C7 | [x] ✅ WordExportService.cs rewrite — fix OpenXML ordering bugs | v1.0.12 — ~21 RunProperties + ~20 ParagraphProperties violations fixed |
+| C8 | [x] ✅ MeetingWordExportService.cs — fix SectionProperties position | v1.0.12 — 4 export methods fixed |
+| C9 | [x] ✅ TemplateEditDialog.cs rewrite — UX cải tiến toàn diện | v1.0.12 — Từ feedback tập huấn |
+| C10 | [x] ✅ P7: Xuất Word + Soạn tiếp sau AI Kiểm tra | v1.0.12 — 2 options: Xuất Word chuẩn, Chuyển sang Compose |
+| C11 | [x] ✅ P6: Upload file .docx/.pdf/.txt cho 3 AI dialogs | v1.0.12 — Review + Summary + Advisory + File mẫu đối chiếu |
+| C12 | [x] ✅ TemplateViewDialog.cs rewrite — Times New Roman + badge UI | v1.0.13 — Từ feedback tập huấn |
+| C13 | [x] ✅ DocumentListPage: Status badge column + quick-switch | v1.0.13 — Click badge → ContextMenu đổi trạng thái |
+| C14 | [x] ✅ MeetingService: Template system (SaveAsTemplate, CreateFromTemplate) | v1.0.13 |
+| C15 | [x] ✅ MeetingEditDialog: Quick Create mode (ẩn 5/6 tab) | v1.0.13 |
+| C16 | [x] ✅ Startup notification: VB quá hạn + sắp hạn + cuộc họp hôm nay | v1.0.13 |
 | C3 | [ ] Biểu đồ vẽ tay bằng Rectangle — không có chart library | Cân nhắc LiveCharts2 |
 | C4 | [ ] AI results không cache | Tốn quota gọi lại |
 | C5 | [ ] Chỉ có NĐ 30/2020 trong Legal Reference | Thêm TT, Luật Lưu trữ |

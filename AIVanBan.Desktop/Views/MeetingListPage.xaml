@@ -40,6 +40,26 @@
                             <TextBlock Text="Thêm cuộc họp" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
+                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                           Padding="12,6" Click="QuickAddMeeting_Click" Margin="8,0,0,0"
+                           ToolTip="Tạo nhanh — chỉ nhập tên, thời gian, địa điểm"
+                           Foreground="#E65100" BorderBrush="#E65100">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="LightningBolt" VerticalAlignment="Center" 
+                                                    Margin="0,0,6,0" Width="18" Height="18"/>
+                            <TextBlock Text="Tạo nhanh" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                           Padding="12,6" Click="CreateFromTemplate_Click" Margin="8,0,0,0"
+                           ToolTip="Tạo cuộc họp từ mẫu đã lưu"
+                           Foreground="#6A1B9A" BorderBrush="#6A1B9A">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" 
+                                                    Margin="0,0,6,0" Width="18" Height="18"/>
+                            <TextBlock Text="Từ mẫu" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </DockPanel>
         </materialDesign:ColorZone>
@@ -106,6 +126,25 @@
                         <TextBlock Text="Xóa lọc" VerticalAlignment="Center" FontSize="12"/>
                     </StackPanel>
                 </Button>
+                
+                <!-- ═══ Quick Filter Chips ═══ -->
+                <Separator Style="{StaticResource MaterialDesignSeparator}" Margin="12,4,8,4"/>
+                <Button x:Name="btnFilterToday" Style="{StaticResource MaterialDesignFlatButton}" 
+                       Padding="10,4" Height="32" Margin="0,0,4,4" FontSize="12"
+                       Click="QuickFilter_Today" ToolTip="Chỉ hiện cuộc họp hôm nay"
+                       Content="📍 Hôm nay"/>
+                <Button x:Name="btnFilterWeek" Style="{StaticResource MaterialDesignFlatButton}" 
+                       Padding="10,4" Height="32" Margin="0,0,4,4" FontSize="12"
+                       Click="QuickFilter_Week" ToolTip="Cuộc họp tuần này"
+                       Content="📅 Tuần này"/>
+                <Button x:Name="btnFilterMonth" Style="{StaticResource MaterialDesignFlatButton}" 
+                       Padding="10,4" Height="32" Margin="0,0,4,4" FontSize="12"
+                       Click="QuickFilter_Month" ToolTip="Cuộc họp tháng này"
+                       Content="📆 Tháng này"/>
+                <Button x:Name="btnFilterUpcoming" Style="{StaticResource MaterialDesignFlatButton}" 
+                       Padding="10,4" Height="32" Margin="0,0,0,4" FontSize="12"
+                       Click="QuickFilter_Upcoming" ToolTip="Cuộc họp sắp tới (7 ngày)"
+                       Content="⏰ Sắp tới"/>
             </WrapPanel>
         </Border>
         

@@ -775,6 +775,60 @@ public partial class MeetingListPage : Page
         
         LoadMeetings();
     }
+
+    // ═══════ Quick Filter Chips ═══════
+
+    private void QuickFilter_Today(object sender, RoutedEventArgs e)
+    {
+        _isLoading = true;
+        txtSearch.Text = "";
+        cboType.SelectedIndex = 0;
+        cboStatus.SelectedIndex = 0;
+        dpFrom.SelectedDate = DateTime.Today;
+        dpTo.SelectedDate = DateTime.Today;
+        _isLoading = false;
+        LoadMeetings();
+    }
+
+    private void QuickFilter_Week(object sender, RoutedEventArgs e)
+    {
+        _isLoading = true;
+        txtSearch.Text = "";
+        cboType.SelectedIndex = 0;
+        cboStatus.SelectedIndex = 0;
+        var today = DateTime.Today;
+        // Thứ 2 đầu tuần (chuẩn VN) 
+        var dayOfWeek = ((int)today.DayOfWeek + 6) % 7; // Mon=0, Sun=6
+        dpFrom.SelectedDate = today.AddDays(-dayOfWeek);
+        dpTo.SelectedDate = today.AddDays(6 - dayOfWeek);
+        _isLoading = false;
+        LoadMeetings();
+    }
+
+    private void QuickFilter_Month(object sender, RoutedEventArgs e)
+    {
+        _isLoading = true;
+        txtSearch.Text = "";
+        cboType.SelectedIndex = 0;
+        cboStatus.SelectedIndex = 0;
+        var today = DateTime.Today;
+        dpFrom.SelectedDate = new DateTime(today.Year, today.Month, 1);
+        dpTo.SelectedDate = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
+        _isLoading = false;
+        LoadMeetings();
+    }
+
+    private void QuickFilter_Upcoming(object sender, RoutedEventArgs e)
+    {
+        _isLoading = true;
+        txtSearch.Text = "";
+        cboType.SelectedIndex = 0;
+        cboStatus.SelectedIndex = 0;
+        dpFrom.SelectedDate = DateTime.Today;
+        dpTo.SelectedDate = DateTime.Today.AddDays(7);
+        _isLoading = false;
+        LoadMeetings();
+    }
     
     private void AddMeeting_Click(object sender, RoutedEventArgs e)
     {
@@ -794,6 +848,31 @@ public partial class MeetingListPage : Page
         catch (Exception ex)
         {
             MessageBox.Show($"Lỗi khi mở dialog thêm cuộc họp:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Tạo nhanh cuộc họp — chỉ hiện form tối thiểu (tên + thời gian + địa điểm)
+    /// </summary>
+    private void QuickAddMeeting_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dialog = new MeetingEditDialog(_meetingService, _documentService, DateTime.Today)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                LoadMeetings();
+                LoadStatistics();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi mở dialog tạo nhanh:\n{ex.Message}", "Lỗi",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
@@ -1006,6 +1085,11 @@ public partial class MeetingListPage : Page
         itemDuplicate.Click += (s, _) => DuplicateMeeting(meeting);
         menu.Items.Add(itemDuplicate);
         
+        // Lưu mẫu
+        var itemSaveTemplate = new MenuItem { Header = "💾 Lưu làm mẫu cuộc họp" };
+        itemSaveTemplate.Click += (s, _) => SaveMeetingAsTemplate(meeting);
+        menu.Items.Add(itemSaveTemplate);
+        
         menu.Items.Add(new Separator());
         
         // Status changes
@@ -1115,6 +1199,150 @@ public partial class MeetingListPage : Page
         catch (Exception ex)
         {
             MessageBox.Show($"Lỗi khi nhân bản cuộc họp:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Lưu cuộc họp hiện tại thành mẫu cuộc họp
+    /// </summary>
+    private void SaveMeetingAsTemplate(Meeting meeting)
+    {
+        try
+        {
+            // Hỏi tên mẫu bằng simple dialog
+            var defaultName = meeting.Title.Replace("[Bản sao] ", "");
+            
+            var inputWindow = new Window
+            {
+                Title = "Lưu mẫu cuộc họp",
+                Width = 450, Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Window.GetWindow(this),
+                ResizeMode = ResizeMode.NoResize
+            };
+            var inputStack = new StackPanel { Margin = new Thickness(20) };
+            inputStack.Children.Add(new TextBlock
+            {
+                Text = $"Nhập tên mẫu cuộc họp:\n(Dựa trên: {meeting.Title})",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 12)
+            });
+            var inputBox = new TextBox { Text = defaultName, FontSize = 14 };
+            inputStack.Children.Add(inputBox);
+            var okBtn = new Button
+            {
+                Content = "Lưu mẫu",
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 12, 0, 0),
+                Padding = new Thickness(20, 6, 20, 6),
+                Style = (Style)FindResource("MaterialDesignRaisedButton")
+            };
+            okBtn.Click += (s2, e2) => { inputWindow.DialogResult = true; };
+            inputStack.Children.Add(okBtn);
+            inputWindow.Content = inputStack;
+
+            if (inputWindow.ShowDialog() != true || string.IsNullOrWhiteSpace(inputBox.Text)) return;
+            var input = inputBox.Text;
+
+            var template = _meetingService.SaveAsTemplate(meeting, input.Trim());
+            MessageBox.Show(
+                $"✅ Đã lưu mẫu cuộc họp:\n\n" +
+                $"📋 {template.TemplateName}\n" +
+                $"📂 Loại: {MeetingHelper.GetTypeName(template.Type)}\n" +
+                $"📍 Địa điểm: {template.Location}\n\n" +
+                "Bạn có thể tạo cuộc họp mới từ mẫu bằng nút \"Từ mẫu\" ở thanh công cụ.",
+                "Đã lưu mẫu",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi lưu mẫu:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Tạo cuộc họp từ mẫu đã lưu — hiện danh sách mẫu cho user chọn
+    /// </summary>
+    private void CreateFromTemplate_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var templates = _meetingService.GetMeetingTemplates();
+            if (templates.Count == 0)
+            {
+                MessageBox.Show(
+                    "Chưa có mẫu cuộc họp nào!\n\n" +
+                    "Để lưu mẫu: nhấn nút ⋮ (thêm tùy chọn) trên bất kỳ cuộc họp nào → \"Lưu làm mẫu\".",
+                    "Chưa có mẫu",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            var menu = new ContextMenu();
+            foreach (var tmpl in templates)
+            {
+                var typeName = MeetingHelper.GetTypeName(tmpl.Type);
+                var item = new MenuItem
+                {
+                    Header = $"📋 {tmpl.TemplateName}  ({typeName})",
+                    ToolTip = $"Địa điểm: {tmpl.Location}\nChủ trì: {tmpl.ChairPerson}\n{tmpl.Attendees?.Count ?? 0} thành viên",
+                    Tag = tmpl.Id
+                };
+                item.Click += (s, _) =>
+                {
+                    var meeting = _meetingService.CreateFromTemplate(tmpl, DateTime.Today);
+                    // Mở dialog đầy đủ để user chỉnh sửa trước khi lưu
+                    var dialog = new MeetingEditDialog(meeting, _meetingService, _documentService)
+                    {
+                        Owner = Window.GetWindow(this)
+                    };
+                    if (dialog.ShowDialog() == true)
+                    {
+                        LoadMeetings();
+                        LoadStatistics();
+                    }
+                };
+                menu.Items.Add(item);
+            }
+
+            menu.Items.Add(new Separator());
+            var deleteMenu = new MenuItem { Header = "🗑️ Quản lý mẫu..." };
+            foreach (var tmpl in templates)
+            {
+                var delItem = new MenuItem
+                {
+                    Header = $"Xóa: {tmpl.TemplateName}",
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    Tag = tmpl.Id
+                };
+                var tmplId = tmpl.Id;
+                var tmplName = tmpl.TemplateName;
+                delItem.Click += (s, _) =>
+                {
+                    if (MessageBox.Show($"Xóa mẫu \"{tmplName}\"?", "Xác nhận",
+                        MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    {
+                        _meetingService.DeleteMeetingTemplate(tmplId);
+                        MessageBox.Show("Đã xóa mẫu.", "Thông báo");
+                    }
+                };
+                deleteMenu.Items.Add(delItem);
+            }
+            menu.Items.Add(deleteMenu);
+
+            if (sender is Button btn)
+            {
+                menu.PlacementTarget = btn;
+                menu.IsOpen = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi tạo từ mẫu:\n{ex.Message}", "Lỗi",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }

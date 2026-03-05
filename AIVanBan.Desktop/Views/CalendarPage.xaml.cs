@@ -20,7 +20,9 @@ public partial class CalendarPage : Page
     private readonly MeetingService _meetingService;
     
     private DateTime _currentMonth;
+    private DateTime _currentWeekStart; // Monday of current week
     private DateTime? _selectedDate;
+    private CalendarViewMode _viewMode = CalendarViewMode.Month;
 
     // Event data for current month
     private Dictionary<DateTime, List<CalendarEvent>> _monthEvents = new();
@@ -31,6 +33,7 @@ public partial class CalendarPage : Page
         _documentService = documentService;
         _meetingService = new MeetingService();
         _currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        _currentWeekStart = GetMondayOfWeek(DateTime.Today);
         _selectedDate = DateTime.Today; // Auto-select hôm nay
         
         Loaded += (s, e) =>
@@ -40,23 +43,91 @@ public partial class CalendarPage : Page
         };
     }
 
+    #region View Mode Toggle
+
+    private enum CalendarViewMode { Month, Week }
+
+    private void ViewMonth_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewMode == CalendarViewMode.Month) return;
+        _viewMode = CalendarViewMode.Month;
+        UpdateViewToggleButtons();
+        RenderCalendar();
+    }
+
+    private void ViewWeek_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewMode == CalendarViewMode.Week) return;
+        _viewMode = CalendarViewMode.Week;
+        _currentWeekStart = GetMondayOfWeek(_selectedDate ?? DateTime.Today);
+        UpdateViewToggleButtons();
+        RenderCalendar();
+    }
+
+    private void UpdateViewToggleButtons()
+    {
+        if (_viewMode == CalendarViewMode.Month)
+        {
+            btnViewMonth.Background = new SolidColorBrush(Color.FromRgb(21, 101, 192));
+            btnViewMonth.Foreground = Brushes.White;
+            btnViewWeek.Background = Brushes.Transparent;
+            btnViewWeek.Foreground = new SolidColorBrush(Color.FromRgb(21, 101, 192));
+            cardMonthView.Visibility = Visibility.Visible;
+            cardWeekView.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            btnViewWeek.Background = new SolidColorBrush(Color.FromRgb(21, 101, 192));
+            btnViewWeek.Foreground = Brushes.White;
+            btnViewMonth.Background = Brushes.Transparent;
+            btnViewMonth.Foreground = new SolidColorBrush(Color.FromRgb(21, 101, 192));
+            cardMonthView.Visibility = Visibility.Collapsed;
+            cardWeekView.Visibility = Visibility.Visible;
+        }
+    }
+
+    private static DateTime GetMondayOfWeek(DateTime date)
+    {
+        int diff = ((int)date.DayOfWeek + 6) % 7; // Mon=0
+        return date.Date.AddDays(-diff);
+    }
+
+    #endregion
+
     #region Navigation
 
     private void PrevMonth_Click(object sender, RoutedEventArgs e)
     {
-        _currentMonth = _currentMonth.AddMonths(-1);
+        if (_viewMode == CalendarViewMode.Month)
+        {
+            _currentMonth = _currentMonth.AddMonths(-1);
+        }
+        else
+        {
+            _currentWeekStart = _currentWeekStart.AddDays(-7);
+            _currentMonth = new DateTime(_currentWeekStart.Year, _currentWeekStart.Month, 1);
+        }
         RenderCalendar();
     }
 
     private void NextMonth_Click(object sender, RoutedEventArgs e)
     {
-        _currentMonth = _currentMonth.AddMonths(1);
+        if (_viewMode == CalendarViewMode.Month)
+        {
+            _currentMonth = _currentMonth.AddMonths(1);
+        }
+        else
+        {
+            _currentWeekStart = _currentWeekStart.AddDays(7);
+            _currentMonth = new DateTime(_currentWeekStart.Year, _currentWeekStart.Month, 1);
+        }
         RenderCalendar();
     }
 
     private void Today_Click(object sender, RoutedEventArgs e)
     {
         _currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        _currentWeekStart = GetMondayOfWeek(DateTime.Today);
         _selectedDate = DateTime.Today;
         RenderCalendar();
         ShowDayDetail(DateTime.Today);
@@ -68,6 +139,12 @@ public partial class CalendarPage : Page
 
     private void RenderCalendar()
     {
+        if (_viewMode == CalendarViewMode.Week)
+        {
+            RenderWeekView();
+            return;
+        }
+        
         txtMonthYear.Text = $"Tháng {_currentMonth.Month:D2}/{_currentMonth.Year}";
 
         // Load events for the month
@@ -259,6 +336,203 @@ public partial class CalendarPage : Page
             ShowDayDetail(date);
         }
     }
+
+    #region Week View
+
+    /// <summary>
+    /// Render chế độ xem Tuần — hiển thị 7 ngày (T2→CN) với time-slot 7:00–18:00
+    /// </summary>
+    private void RenderWeekView()
+    {
+        var weekEnd = _currentWeekStart.AddDays(6);
+        txtMonthYear.Text = $"{_currentWeekStart:dd/MM} — {weekEnd:dd/MM/yyyy}";
+        
+        // Load events for the week
+        LoadMonthEvents(); // Reuses same loader (range extends ±7 days)
+
+        // Update day headers
+        var dayNames = new[] { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
+        var dayHeaders = new[] { txtWeekDay0, txtWeekDay1, txtWeekDay2, txtWeekDay3, txtWeekDay4, txtWeekDay5, txtWeekDay6 };
+        for (int i = 0; i < 7; i++)
+        {
+            var date = _currentWeekStart.AddDays(i);
+            var isToday = date.Date == DateTime.Today;
+            dayHeaders[i].Text = $"{dayNames[i]} {date:dd/MM}";
+            dayHeaders[i].FontWeight = isToday ? FontWeights.ExtraBold : FontWeights.Bold;
+            dayHeaders[i].Foreground = isToday 
+                ? new SolidColorBrush(Color.FromRgb(21, 101, 192))
+                : i == 5 ? new SolidColorBrush(Color.FromRgb(230, 81, 0))
+                : i == 6 ? new SolidColorBrush(Color.FromRgb(198, 40, 40))
+                : new SolidColorBrush(Color.FromRgb(55, 71, 79));
+        }
+
+        // Build time-slot grid
+        weekTimeGrid.Children.Clear();
+        weekTimeGrid.RowDefinitions.Clear();
+        weekTimeGrid.ColumnDefinitions.Clear();
+
+        // 8 columns: 1 for time labels + 7 for days
+        weekTimeGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(60) });
+        for (int i = 0; i < 7; i++)
+            weekTimeGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+        // 12 rows: 7:00 → 18:00
+        int startHour = 7, endHour = 18;
+        for (int h = startHour; h <= endHour; h++)
+        {
+            weekTimeGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(60) });
+        }
+
+        // Time labels + grid lines
+        for (int h = startHour; h <= endHour; h++)
+        {
+            int row = h - startHour;
+            
+            // Time label
+            var timeLabel = new TextBlock
+            {
+                Text = $"{h:D2}:00",
+                FontSize = 12,
+                Foreground = new SolidColorBrush(Color.FromRgb(130, 130, 130)),
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, -6, 0, 0)
+            };
+            Grid.SetRow(timeLabel, row);
+            Grid.SetColumn(timeLabel, 0);
+            weekTimeGrid.Children.Add(timeLabel);
+
+            // Horizontal grid lines for each day column
+            for (int d = 0; d < 7; d++)
+            {
+                var line = new Border
+                {
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(238, 238, 238)),
+                    BorderThickness = new Thickness(0.5, 0.5, 0.5, 0),
+                    Background = _currentWeekStart.AddDays(d).Date == DateTime.Today
+                        ? new SolidColorBrush(Color.FromArgb(15, 21, 101, 192))
+                        : Brushes.Transparent,
+                    Tag = _currentWeekStart.AddDays(d),
+                    Cursor = Cursors.Hand
+                };
+                line.MouseLeftButtonDown += WeekDaySlot_Click;
+                Grid.SetRow(line, row);
+                Grid.SetColumn(line, d + 1);
+                weekTimeGrid.Children.Add(line);
+            }
+        }
+
+        // Place events on the time grid
+        for (int d = 0; d < 7; d++)
+        {
+            var date = _currentWeekStart.AddDays(d);
+            if (!_monthEvents.ContainsKey(date.Date)) continue;
+
+            var events = _monthEvents[date.Date];
+            var meetingEvents = events.Where(e => e.Type == EventType.Meeting).ToList();
+            var otherEvents = events.Where(e => e.Type != EventType.Meeting).ToList();
+
+            // Place meeting events at their time slots
+            foreach (var evt in meetingEvents)
+            {
+                if (evt.MeetingId == null) continue;
+                try
+                {
+                    var meeting = _meetingService.GetMeetingById(evt.MeetingId);
+                    if (meeting == null) continue;
+
+                    int startRow = Math.Max(0, meeting.StartTime.Hour - startHour);
+                    int endRow = meeting.EndTime.HasValue 
+                        ? Math.Min(endHour - startHour, meeting.EndTime.Value.Hour - startHour)
+                        : startRow + 1;
+                    int span = Math.Max(1, endRow - startRow);
+
+                    var eventBlock = CreateWeekEventBlock(evt, meeting.StartTime.ToString("HH:mm") + 
+                        (meeting.EndTime.HasValue ? $"-{meeting.EndTime.Value:HH:mm}" : ""));
+                    eventBlock.Tag = evt.MeetingId;
+                    eventBlock.MouseLeftButtonDown += EventCard_OpenMeeting;
+                    
+                    Grid.SetRow(eventBlock, startRow);
+                    Grid.SetRowSpan(eventBlock, span);
+                    Grid.SetColumn(eventBlock, d + 1);
+                    weekTimeGrid.Children.Add(eventBlock);
+                }
+                catch { /* Skip invalid meetings */ }
+            }
+
+            // Place other events (docs, tasks) at the top (row 0)
+            if (otherEvents.Count > 0)
+            {
+                var summaryBlock = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromArgb(200, 255, 243, 224)),
+                    CornerRadius = new CornerRadius(4),
+                    Padding = new Thickness(4, 2, 4, 2),
+                    Margin = new Thickness(2, 2, 2, 0),
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Cursor = Cursors.Hand,
+                    Tag = date
+                };
+                summaryBlock.MouseLeftButtonDown += WeekDaySlot_Click;
+                summaryBlock.Child = new TextBlock
+                {
+                    Text = $"📋 {otherEvents.Count} sự kiện",
+                    FontSize = 10,
+                    Foreground = new SolidColorBrush(Color.FromRgb(230, 81, 0)),
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                };
+                Grid.SetRow(summaryBlock, 0);
+                Grid.SetColumn(summaryBlock, d + 1);
+                weekTimeGrid.Children.Add(summaryBlock);
+            }
+        }
+    }
+
+    private Border CreateWeekEventBlock(CalendarEvent evt, string timeText)
+    {
+        var block = new Border
+        {
+            Background = new SolidColorBrush(Color.FromArgb(220, evt.Color.R, evt.Color.G, evt.Color.B)),
+            CornerRadius = new CornerRadius(4),
+            Padding = new Thickness(6, 4, 6, 4),
+            Margin = new Thickness(2),
+            Cursor = Cursors.Hand,
+            ToolTip = $"{evt.FullLabel}\n{evt.Detail}"
+        };
+
+        var stack = new StackPanel();
+        stack.Children.Add(new TextBlock
+        {
+            Text = timeText,
+            FontSize = 10,
+            FontWeight = FontWeights.Bold,
+            Foreground = Brushes.White
+        });
+        stack.Children.Add(new TextBlock
+        {
+            Text = evt.FullLabel,
+            FontSize = 11,
+            Foreground = Brushes.White,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            TextWrapping = TextWrapping.Wrap,
+            MaxHeight = 36
+        });
+
+        block.Child = stack;
+        return block;
+    }
+
+    private void WeekDaySlot_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is Border border && border.Tag is DateTime date)
+        {
+            _selectedDate = date;
+            RenderCalendar();
+            ShowDayDetail(date);
+        }
+    }
+
+    #endregion
 
     #endregion
 
@@ -659,17 +933,10 @@ public partial class CalendarPage : Page
         {
             try
             {
-                // Mở dialog ở chế độ "thêm mới" (null = new)
-                var dialog = new MeetingEditDialog(null, _meetingService, _documentService)
+                // Mở dialog chế độ TẠO NHANH với ngày đã chọn
+                var dialog = new MeetingEditDialog(_meetingService, _documentService, selectedDate)
                 {
                     Owner = Window.GetWindow(this)
-                };
-                
-                // Pre-set ngày đã chọn trên lịch thay vì ngày hôm nay
-                dialog.Loaded += (s, ev) =>
-                {
-                    dialog.dpStartDate.SelectedDate = selectedDate;
-                    dialog.tpStartTime.SelectedTime = selectedDate.Date.AddHours(8);
                 };
 
                 if (dialog.ShowDialog() == true)

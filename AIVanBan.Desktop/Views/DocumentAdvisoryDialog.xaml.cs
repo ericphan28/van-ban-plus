@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -365,5 +366,71 @@ public partial class DocumentAdvisoryDialog : Window
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    /// <summary>
+    /// P6: Tải file .docx/.pdf/.txt — đổ nội dung vào ô nhập
+    /// </summary>
+    private async void UploadFile_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var openDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Tất cả file hỗ trợ|*.docx;*.pdf;*.txt|Word (*.docx)|*.docx|PDF (*.pdf)|*.pdf|Text (*.txt)|*.txt",
+                Title = "Chọn file văn bản cần tham mưu"
+            };
+
+            if (openDialog.ShowDialog() == true)
+            {
+                var filePath = openDialog.FileName;
+                var ext = Path.GetExtension(filePath).ToLowerInvariant();
+                string extractedText;
+
+                switch (ext)
+                {
+                    case ".docx":
+                        var wordReader = new WordReaderService();
+                        var result = wordReader.ReadDocx(filePath);
+                        if (!result.Success)
+                        {
+                            MessageBox.Show($"❌ Không đọc được file: {result.ErrorMessage}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        extractedText = result.FullText;
+                        break;
+
+                    case ".pdf":
+                        var aiService = new GeminiAIService();
+                        extractedText = await aiService.ReadTextFromFileAsync(filePath);
+                        if (string.IsNullOrWhiteSpace(extractedText))
+                        {
+                            MessageBox.Show("❌ Không trích xuất được nội dung từ PDF.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        break;
+
+                    case ".txt":
+                        extractedText = await File.ReadAllTextAsync(filePath);
+                        break;
+
+                    default:
+                        MessageBox.Show("Chỉ hỗ trợ file .docx, .pdf, .txt", "Không hỗ trợ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(extractedText))
+                {
+                    txtQuickInput.Text = extractedText;
+                    var fileInfo = new FileInfo(filePath);
+                    txtFileInfo.Text = $"📄 {fileInfo.Name} ({fileInfo.Length / 1024:N0} KB) — Đã đổ nội dung vào ô bên dưới";
+                    pnlFileInfo.Visibility = Visibility.Visible;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi đọc file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 }

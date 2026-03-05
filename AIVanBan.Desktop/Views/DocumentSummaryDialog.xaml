@@ -46,21 +46,43 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <TextBlock Grid.Row="0" Text="📝 Xem lại hoặc dán nội dung văn bản cần tóm tắt:" 
-                          FontSize="13" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,8"/>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="📝 Xem lại hoặc dán nội dung văn bản cần tóm tắt:" 
+                              FontSize="13" FontWeight="SemiBold" Foreground="#333" VerticalAlignment="Center"/>
+                    <Button x:Name="btnUploadFile" 
+                           Style="{StaticResource MaterialDesignOutlinedButton}"
+                           Height="28" Padding="10,0" Margin="12,0,0,0" FontSize="11"
+                           Click="UploadFile_Click"
+                           ToolTip="Tải file .docx, .pdf, .txt — nội dung sẽ được đổ vào ô bên dưới">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileUpload" Width="14" Height="14" 
+                                                   VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="📎 Tải file lên" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <Border x:Name="pnlFileInfo" Grid.Row="1" Background="#F3E5F5" CornerRadius="4" 
+                       Padding="10,6" Margin="0,0,0,8" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileDocument" Foreground="#6A1B9A" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock x:Name="txtFileInfo" Text="" FontSize="12" Foreground="#6A1B9A" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
                 
-                <TextBox x:Name="txtQuickInput" Grid.Row="1"
+                <TextBox x:Name="txtQuickInput" Grid.Row="2"
                         TextWrapping="Wrap" AcceptsReturn="True"
                         VerticalScrollBarVisibility="Auto"
                         Height="160" FontSize="13"
                         materialDesign:HintAssist.Hint="Paste nội dung văn bản vào đây..."
                         Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
                 
-                <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid Grid.Row="3" Margin="0,10,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>

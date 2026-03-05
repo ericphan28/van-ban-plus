@@ -28,17 +28,19 @@ public class DocumentReviewService
     /// <param name="documentType">Loại văn bản (Quyết định, Công văn...)</param>
     /// <param name="title">Tiêu đề/trích yếu</param>
     /// <param name="issuer">Cơ quan ban hành</param>
+    /// <param name="referenceContent">Nội dung file mẫu để đối chiếu (tùy chọn)</param>
     public async Task<DocumentReviewResult> ReviewDocumentAsync(
         string content, 
         string documentType = "",
         string title = "",
-        string issuer = "")
+        string issuer = "",
+        string? referenceContent = null)
     {
         if (string.IsNullOrWhiteSpace(content))
             throw new ArgumentException("Nội dung văn bản không được để trống.");
 
         var systemPrompt = BuildSystemPrompt();
-        var userPrompt = BuildUserPrompt(content, documentType, title, issuer);
+        var userPrompt = BuildUserPrompt(content, documentType, title, issuer, referenceContent);
 
         var responseText = await _aiService.GenerateContentAsync(userPrompt, systemPrompt);
 
@@ -164,7 +166,7 @@ QUY TẮC:
 - Chỉ trả JSON thuần, KHÔNG wrap trong ```json``` code block";
     }
 
-    private string BuildUserPrompt(string content, string documentType, string title, string issuer)
+    private string BuildUserPrompt(string content, string documentType, string title, string issuer, string? referenceContent = null)
     {
         var prompt = "KIỂM TRA VĂN BẢN SAU:\n\n";
 
@@ -176,7 +178,22 @@ QUY TẮC:
             prompt += $"🏛️ Cơ quan ban hành: {issuer}\n";
 
         prompt += $"\n--- NỘI DUNG ---\n{content}\n--- HẾT NỘI DUNG ---\n\n";
-        prompt += "Hãy phân tích toàn diện và trả về JSON.";
+
+        // P6: Nếu có file mẫu đối chiếu, thêm vào prompt
+        if (!string.IsNullOrWhiteSpace(referenceContent))
+        {
+            prompt += "\nĐỐI CHIẾU VỚI VĂN BẢN MẪU SAU:\n";
+            prompt += "--- VĂN BẢN MẪU ---\n";
+            prompt += referenceContent;
+            prompt += "\n--- HẾT VĂN BẢN MẪU ---\n\n";
+            prompt += "Hãy phân tích toàn diện văn bản cần kiểm tra, đồng thời SO SÁNH với văn bản mẫu.\n";
+            prompt += "Chỉ ra những điểm KHÁC BIỆT, THIẾU SÓT so với mẫu, và gợi ý sửa theo mẫu.\n";
+            prompt += "Trả về JSON.";
+        }
+        else
+        {
+            prompt += "Hãy phân tích toàn diện và trả về JSON.";
+        }
 
         return prompt;
     }

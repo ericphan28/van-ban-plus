@@ -11,6 +11,12 @@ namespace AIVanBan.Core.Services;
 /// <summary>
 /// Service xuất văn bản ra file Word (.docx) theo chuẩn Thông tư 01/2011/TT-BNV
 /// Tiêu chuẩn: Times New Roman 14pt, line spacing 1.3, margins 2cm/1.5cm/2cm/1cm
+///
+/// OpenXML ordering rules (bắt buộc để formatting hiển thị đúng):
+/// - RunProperties PHẢI là child ĐẦU TIÊN của Run (trước Text)
+/// - ParagraphProperties PHẢI là child ĐẦU TIÊN của Paragraph (trước Run)
+/// - SectionProperties PHẢI là child CUỐI CÙNG của Body
+/// - RunFonts cần đủ 4 slot: Ascii, HighAnsi, EastAsia, ComplexScript
 /// </summary>
 public class WordExportService
 {
@@ -20,6 +26,37 @@ public class WordExportService
     private const string SpacingMedium = "120"; // 6pt
     private const string SpacingLarge = "240"; // 12pt
 
+    #region OpenXML Helper — Tạo Run đúng thứ tự (RunProperties trước Text)
+
+    /// <summary>
+    /// Tạo Run với RunProperties ĐẶT TRƯỚC Text (bắt buộc theo OpenXML spec).
+    /// Font: Times New Roman đủ 4 slot (Ascii + HighAnsi + EastAsia + ComplexScript).
+    /// FontSize kèm FontSizeComplexScript để đảm bảo cỡ chữ đúng cho mọi ngôn ngữ.
+    /// </summary>
+    private static Run CreateStyledRun(string text, bool bold = false, bool italic = false,
+        string fontSize = "28", bool underline = false)
+    {
+        var run = new Run();
+        var rp = new RunProperties();
+        rp.AppendChild(new RunFonts()
+        {
+            Ascii = "Times New Roman",
+            HighAnsi = "Times New Roman",
+            EastAsia = "Times New Roman",
+            ComplexScript = "Times New Roman"
+        });
+        if (bold) rp.AppendChild(new Bold());
+        if (italic) rp.AppendChild(new Italic());
+        rp.AppendChild(new FontSize() { Val = fontSize });
+        rp.AppendChild(new FontSizeComplexScript() { Val = fontSize });
+        if (underline) rp.AppendChild(new Underline() { Val = UnderlineValues.Single });
+        run.AppendChild(rp); // RunProperties FIRST
+        run.AppendChild(new Text(text) { Space = SpaceProcessingModeValues.Preserve });
+        return run;
+    }
+
+    #endregion
+
     /// <summary>
     /// Xuất một văn bản ra file Word theo định dạng chuẩn hành chính nhà nước
     /// </summary>
@@ -27,22 +64,19 @@ public class WordExportService
     {
         if (document == null)
             throw new ArgumentNullException(nameof(document), "Văn bản không được null");
-            
+
         if (string.IsNullOrEmpty(outputPath))
             throw new ArgumentException("Đường dẫn file không được rỗng", nameof(outputPath));
-        
+
         try
         {
             // Tạo file Word mới
             using var wordDoc = WordprocessingDocument.Create(outputPath, WordprocessingDocumentType.Document);
-            
+
             // Thêm main document part
             var mainPart = wordDoc.AddMainDocumentPart();
             mainPart.Document = new WordDoc();
             var body = mainPart.Document.AppendChild(new Body());
-
-            // Thiết lập margins theo chuẩn: Top 2cm, Bottom 1.5cm, Left 2cm, Right 1cm
-            SetPageMargins(mainPart.Document);
 
             // Header - Logo và tiêu đề tổ chức (theo Thông tư 01/2011)
             AddHeader(body, document);
@@ -80,6 +114,10 @@ public class WordExportService
             // Footer - Chữ ký theo chuẩn
             AddSignature(body, document);
 
+            // SectionProperties PHẢI là child CUỐI CÙNG của Body (OpenXML spec)
+            // Theo Thông tư 01/2011: Top 2cm, Bottom 1.5cm, Left 2cm, Right 1cm
+            SetPageMargins(body);
+
             mainPart.Document.Save();
         }
         catch (Exception ex)
@@ -89,34 +127,30 @@ public class WordExportService
     }
 
     /// <summary>
-    /// Thiết lập margins theo chuẩn Thông tư 01/2011
+    /// Thiết lập margins theo chuẩn Thông tư 01/2011.
+    /// SectionProperties được thêm/di chuyển về cuối Body (bắt buộc theo OpenXML).
     /// Top: 2cm (1134 twips), Bottom: 1.5cm (850 twips), Left: 2cm (1134 twips), Right: 1cm (567 twips)
     /// </summary>
-    private void SetPageMargins(WordDoc document)
+    private void SetPageMargins(Body body)
     {
-        var body = document.Body;
         if (body == null) return;
 
-        var sectionProps = body.GetFirstChild<SectionProperties>();
-        if (sectionProps == null)
-        {
-            sectionProps = new SectionProperties();
-            body.AppendChild(sectionProps);
-        }
+        // Xóa SectionProperties cũ nếu có (đảm bảo luôn nằm cuối)
+        var existing = body.GetFirstChild<SectionProperties>();
+        existing?.Remove();
 
-        var pageMargin = sectionProps.GetFirstChild<PageMargin>();
-        if (pageMargin == null)
+        var sectionProps = new SectionProperties();
+        sectionProps.AppendChild(new PageMargin()
         {
-            pageMargin = new PageMargin();
-            sectionProps.AppendChild(pageMargin);
-        }
+            Top = 1134,      // 2cm
+            Bottom = 850,    // 1.5cm
+            Left = 1134,     // 2cm
+            Right = 567,     // 1cm
+            Header = 708,    // 1.25cm
+            Footer = 708     // 1.25cm
+        });
 
-        pageMargin.Top = 1134;      // 2cm
-        pageMargin.Bottom = 850;    // 1.5cm
-        pageMargin.Left = 1134;     // 2cm
-        pageMargin.Right = 567;     // 1cm
-        pageMargin.Header = 708;    // 1.25cm
-        pageMargin.Footer = 708;    // 1.25cm
+        body.AppendChild(sectionProps); // MUST be last child of Body
     }
 
     /// <summary>
@@ -124,23 +158,21 @@ public class WordExportService
     /// </summary>
     private void AddSalutation(Body body, DocModel document)
     {
-        var salutationPara = body.AppendChild(new Paragraph());
-        var salutationRun = salutationPara.AppendChild(new Run());
-        salutationRun.AppendChild(new Text("Kính gửi: [Tên cơ quan nhận]"));
-        
-        var salutationProps = salutationRun.AppendChild(new RunProperties());
-        salutationProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        salutationProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-        
-        var salutationParaProps = salutationPara.AppendChild(new ParagraphProperties());
-        salutationParaProps.AppendChild(new Justification() { Val = JustificationValues.Both });
-        salutationParaProps.AppendChild(new Indentation() { FirstLine = "567" }); // Thụt đầu dòng 1cm
-        salutationParaProps.AppendChild(new SpacingBetweenLines()
+        var para = body.AppendChild(new Paragraph());
+
+        // ParagraphProperties PHẢI là child ĐẦU TIÊN của Paragraph
+        var paraProps = para.AppendChild(new ParagraphProperties());
+        paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
+        paraProps.AppendChild(new Indentation() { FirstLine = "567" }); // Thụt đầu dòng 1cm
+        paraProps.AppendChild(new SpacingBetweenLines()
         {
             After = SpacingMedium, // 6pt spacing
             Line = LineSpacing13,
             LineRule = LineSpacingRuleValues.Auto
         });
+
+        // Run (với RunProperties trước Text) — sau ParagraphProperties
+        para.AppendChild(CreateStyledRun("Kính gửi: [Tên cơ quan nhận]"));
     }
 
     /// <summary>
@@ -170,8 +202,18 @@ public class WordExportService
                 continue;
 
             var para = body.AppendChild(new Paragraph());
-            var run = para.AppendChild(new Run());
-            
+
+            // ParagraphProperties FIRST — căn đều 2 bên, thụt đầu dòng 1cm
+            var paraProps = para.AppendChild(new ParagraphProperties());
+            paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
+            paraProps.AppendChild(new Indentation() { FirstLine = "567" }); // Thụt đầu dòng 1cm
+            paraProps.AppendChild(new SpacingBetweenLines()
+            {
+                After = "0",
+                Line = LineSpacing13,
+                LineRule = LineSpacingRuleValues.Auto
+            });
+
             // Đảm bảo text bắt đầu bằng "Căn cứ" (nếu chưa có)
             var text = basedOnItem.Trim();
             if (!text.StartsWith("Căn cứ", StringComparison.OrdinalIgnoreCase) &&
@@ -179,27 +221,9 @@ public class WordExportService
             {
                 text = "Căn cứ " + text;
             }
-            
-            run.AppendChild(new Text(text) { Space = SpaceProcessingModeValues.Preserve });
-            
-            // Font Times New Roman 14pt, IN NGHIÊNG
-            var runProps = run.AppendChild(new RunProperties());
-            runProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-            runProps.AppendChild(new Italic()); // IN NGHIÊNG
-            runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-            
-            // Căn đều 2 bên, thụt đầu dòng 1cm (giống nội dung văn bản)
-            var paraProps = para.AppendChild(new ParagraphProperties());
-            paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
-            paraProps.AppendChild(new Indentation() { FirstLine = "567" }); // Thụt đầu dòng 1cm
-            
-            // Line spacing 1.3 theo chuẩn
-            paraProps.AppendChild(new SpacingBetweenLines() 
-            { 
-                After = "0",
-                Line = LineSpacing13,
-                LineRule = LineSpacingRuleValues.Auto
-            });
+
+            // Run AFTER ParagraphProperties — font Times New Roman 14pt, IN NGHIÊNG
+            para.AppendChild(CreateStyledRun(text, italic: true));
         }
 
         // Dòng trống sau phần căn cứ, trước nội dung
@@ -220,23 +244,20 @@ public class WordExportService
     {
         if (documents == null || documents.Count == 0)
             throw new ArgumentException("Danh sách văn bản không được rỗng", nameof(documents));
-            
+
         using var wordDoc = WordprocessingDocument.Create(outputPath, WordprocessingDocumentType.Document);
         var mainPart = wordDoc.AddMainDocumentPart();
         mainPart.Document = new WordDoc();
         var body = mainPart.Document.AppendChild(new Body());
-        
-        // Thiết lập margins chung cho toàn bộ document
-        SetPageMargins(mainPart.Document);
 
         for (int i = 0; i < documents.Count; i++)
         {
             var doc = documents[i];
-            
+
             // Header
             AddHeader(body, doc);
             AddDocumentInfo(body, doc);
-            
+
             // Dòng thẩm quyền ban hành (cho QĐ, NQ, CT)
             if (IsDecisionType(doc.Type))
             {
@@ -248,7 +269,7 @@ public class WordExportService
             {
                 AddSalutation(body, doc);
             }
-            
+
             // CĂN CỨ - Phần quan trọng trong văn bản hành chính VN
             if (doc.BasedOn != null && doc.BasedOn.Length > 0)
             {
@@ -260,14 +281,14 @@ public class WordExportService
             {
                 AddDecisionLabel(body, doc);
             }
-            
+
             AddContent(body, doc);
             AddSignature(body, doc);
 
             // Thêm page break giữa các văn bản (trừ văn bản cuối)
             if (i < documents.Count - 1)
             {
-                // Tạo paragraph với page break và spacing phù hợp
+                // Tạo paragraph với page break (constructor pattern — ordering đúng sẵn)
                 var pageBreakPara = body.AppendChild(new Paragraph(
                     new ParagraphProperties(
                         new SpacingBetweenLines()
@@ -284,6 +305,9 @@ public class WordExportService
                 ));
             }
         }
+
+        // SectionProperties PHẢI là child CUỐI CÙNG của Body
+        SetPageMargins(body);
 
         mainPart.Document.Save();
     }
@@ -310,103 +334,75 @@ public class WordExportService
 
         // Row 1: Cơ quan cấp trên | CỘNG HÒA...
         var row1 = headerTable.AppendChild(new TableRow());
-        
+
         // Cell trái: Tên cơ quan cấp trên (tự động tách từ Issuer)
         var leftCell1 = row1.AppendChild(new TableCell());
         var leftCellProps1 = leftCell1.AppendChild(new TableCellProperties());
         leftCellProps1.AppendChild(new TableCellWidth() { Width = "2500", Type = TableWidthUnitValues.Pct });
-        
+
         var leftPara1 = leftCell1.AppendChild(new Paragraph());
-        var leftRun1 = leftPara1.AppendChild(new Run());
-        var parentOrg = ExtractParentOrg(document.Issuer);
-        leftRun1.AppendChild(new Text(parentOrg));
-        var leftRunProps1 = leftRun1.AppendChild(new RunProperties());
-        leftRunProps1.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        leftRunProps1.AppendChild(new Bold());
-        leftRunProps1.AppendChild(new FontSize() { Val = "28" });
-        
+        // ParagraphProperties FIRST
         var leftParaProps1 = leftPara1.AppendChild(new ParagraphProperties());
         leftParaProps1.AppendChild(new Justification() { Val = JustificationValues.Center });
         leftParaProps1.AppendChild(new SpacingBetweenLines() { After = "0", Line = SingleLine, LineRule = LineSpacingRuleValues.Auto });
+        // Run AFTER ParagraphProperties
+        var parentOrg = ExtractParentOrg(document.Issuer);
+        leftPara1.AppendChild(CreateStyledRun(parentOrg, bold: true));
 
         // Cell phải: CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
         var rightCell1 = row1.AppendChild(new TableCell());
         var rightCellProps1 = rightCell1.AppendChild(new TableCellProperties());
         rightCellProps1.AppendChild(new TableCellWidth() { Width = "2500", Type = TableWidthUnitValues.Pct });
-        
+
         var rightPara1 = rightCell1.AppendChild(new Paragraph());
-        var rightRun1 = rightPara1.AppendChild(new Run());
-        rightRun1.AppendChild(new Text("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT\u00A0NAM")); // \u00A0 = non-breaking space
-        var rightRunProps1 = rightRun1.AppendChild(new RunProperties());
-        rightRunProps1.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        rightRunProps1.AppendChild(new Bold());
-        rightRunProps1.AppendChild(new FontSize() { Val = "28" });
-        
         var rightParaProps1 = rightPara1.AppendChild(new ParagraphProperties());
         rightParaProps1.AppendChild(new Justification() { Val = JustificationValues.Center });
         rightParaProps1.AppendChild(new SpacingBetweenLines() { After = "0", Line = SingleLine, LineRule = LineSpacingRuleValues.Auto });
+        rightPara1.AppendChild(CreateStyledRun("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT\u00A0NAM", bold: true)); // \u00A0 = non-breaking space
 
         // Row 2: Tên đơn vị | Độc lập - Tự do - Hạnh phúc
         var row2 = headerTable.AppendChild(new TableRow());
-        
+
         // Cell trái: TÊN ĐƠN VỊ (gạch chân)
         var leftCell2 = row2.AppendChild(new TableCell());
         var leftCellProps2 = leftCell2.AppendChild(new TableCellProperties());
         leftCellProps2.AppendChild(new TableCellWidth() { Width = "2500", Type = TableWidthUnitValues.Pct });
-        
+
         var leftPara2 = leftCell2.AppendChild(new Paragraph());
-        var leftRun2 = leftPara2.AppendChild(new Run());
-        var subOrg = ExtractSubOrg(document.Issuer);
-        leftRun2.AppendChild(new Text(subOrg));
-        var leftRunProps2 = leftRun2.AppendChild(new RunProperties());
-        leftRunProps2.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        leftRunProps2.AppendChild(new Bold());
-        leftRunProps2.AppendChild(new Underline() { Val = UnderlineValues.Single });
-        leftRunProps2.AppendChild(new FontSize() { Val = "28" });
-        
         var leftParaProps2 = leftPara2.AppendChild(new ParagraphProperties());
         leftParaProps2.AppendChild(new Justification() { Val = JustificationValues.Center });
         leftParaProps2.AppendChild(new SpacingBetweenLines() { After = "0", Line = SingleLine, LineRule = LineSpacingRuleValues.Auto });
+        var subOrg = ExtractSubOrg(document.Issuer);
+        leftPara2.AppendChild(CreateStyledRun(subOrg, bold: true, underline: true));
 
         // Cell phải: Độc lập - Tự do - Hạnh phúc
         var rightCell2 = row2.AppendChild(new TableCell());
         var rightCellProps2 = rightCell2.AppendChild(new TableCellProperties());
         rightCellProps2.AppendChild(new TableCellWidth() { Width = "2500", Type = TableWidthUnitValues.Pct });
-        
+
         var rightPara2 = rightCell2.AppendChild(new Paragraph());
-        var rightRun2 = rightPara2.AppendChild(new Run());
-        rightRun2.AppendChild(new Text("Độc lập - Tự do - Hạnh phúc"));
-        var rightRunProps2 = rightRun2.AppendChild(new RunProperties());
-        rightRunProps2.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        rightRunProps2.AppendChild(new Bold());
-        rightRunProps2.AppendChild(new FontSize() { Val = "28" });
-        
         var rightParaProps2 = rightPara2.AppendChild(new ParagraphProperties());
         rightParaProps2.AppendChild(new Justification() { Val = JustificationValues.Center });
         rightParaProps2.AppendChild(new SpacingBetweenLines() { After = "0", Line = SingleLine, LineRule = LineSpacingRuleValues.Auto });
+        rightPara2.AppendChild(CreateStyledRun("Độc lập - Tự do - Hạnh phúc", bold: true));
 
         // Row 3: Khoảng trống | Gạch ngang
         var row3 = headerTable.AppendChild(new TableRow());
-        
+
         var leftCell3 = row3.AppendChild(new TableCell());
         var leftCellProps3 = leftCell3.AppendChild(new TableCellProperties());
         leftCellProps3.AppendChild(new TableCellWidth() { Width = "2500", Type = TableWidthUnitValues.Pct });
         leftCell3.AppendChild(new Paragraph()); // Empty
-        
+
         var rightCell3 = row3.AppendChild(new TableCell());
         var rightCellProps3 = rightCell3.AppendChild(new TableCellProperties());
         rightCellProps3.AppendChild(new TableCellWidth() { Width = "2500", Type = TableWidthUnitValues.Pct });
-        
+
         var rightPara3 = rightCell3.AppendChild(new Paragraph());
-        var rightRun3 = rightPara3.AppendChild(new Run());
-        rightRun3.AppendChild(new Text("───────────────"));
-        var rightRunProps3 = rightRun3.AppendChild(new RunProperties());
-        rightRunProps3.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        rightRunProps3.AppendChild(new FontSize() { Val = "28" });
-        
         var rightParaProps3 = rightPara3.AppendChild(new ParagraphProperties());
         rightParaProps3.AppendChild(new Justification() { Val = JustificationValues.Center });
         rightParaProps3.AppendChild(new SpacingBetweenLines() { After = SpacingLarge, Line = SingleLine, LineRule = LineSpacingRuleValues.Auto });
+        rightPara3.AppendChild(CreateStyledRun("───────────────"));
     }
 
     /// <summary>
@@ -416,6 +412,7 @@ public class WordExportService
     {
         // Số văn bản và Ngày tháng (2 cột) - Font thường 13pt
         var infoPara = body.AppendChild(new Paragraph());
+        // ParagraphProperties FIRST
         var infoProps = infoPara.AppendChild(new ParagraphProperties());
         infoProps.AppendChild(new Tabs(
             new TabStop
@@ -430,38 +427,35 @@ public class WordExportService
             Line = SingleLine,
             LineRule = LineSpacingRuleValues.Auto
         });
-        
-        // Số văn bản (bên trái) - Font Times 13pt, IN NGHIÊNG
-        var numberRun = infoPara.AppendChild(new Run());
+
+        // Số văn bản (bên trái) - Font Times 13pt, IN NGHIÊNG + TabChar
         var numberText = !string.IsNullOrEmpty(document.Number) ? document.Number : "[Số]";
-        numberRun.AppendChild(new Text($"Số: {numberText}"));
-        var numberProps = numberRun.AppendChild(new RunProperties());
-        numberProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        numberProps.AppendChild(new Italic()); // IN NGHIÊNG
-        numberProps.AppendChild(new FontSize() { Val = "26" }); // 13pt
-        
+        var numberRun = new Run();
+        // RunProperties FIRST
+        var numberRunProps = numberRun.AppendChild(new RunProperties());
+        numberRunProps.AppendChild(new RunFonts()
+        {
+            Ascii = "Times New Roman",
+            HighAnsi = "Times New Roman",
+            EastAsia = "Times New Roman",
+            ComplexScript = "Times New Roman"
+        });
+        numberRunProps.AppendChild(new Italic());
+        numberRunProps.AppendChild(new FontSize() { Val = "26" }); // 13pt
+        numberRunProps.AppendChild(new FontSizeComplexScript() { Val = "26" });
+        // Text + TabChar AFTER RunProperties
+        numberRun.AppendChild(new Text($"Số: {numberText}") { Space = SpaceProcessingModeValues.Preserve });
         numberRun.AppendChild(new TabChar());
-        
+        infoPara.AppendChild(numberRun);
+
         // Ngày tháng (bên phải) - in nghiêng 13pt
-        var dateRun = infoPara.AppendChild(new Run());
-        dateRun.AppendChild(new Text($"Ngày {document.IssueDate:dd} tháng {document.IssueDate:MM} năm {document.IssueDate:yyyy}"));
-        
-        var dateProps = dateRun.AppendChild(new RunProperties());
-        dateProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        dateProps.AppendChild(new Italic());
-        dateProps.AppendChild(new FontSize() { Val = "26" }); // 13pt
+        infoPara.AppendChild(CreateStyledRun(
+            $"Ngày {document.IssueDate:dd} tháng {document.IssueDate:MM} năm {document.IssueDate:yyyy}",
+            italic: true, fontSize: "26"));
 
         // Tên LOẠI VĂN BẢN (căn giữa, in hoa, đậm, 16pt) - VD: QUYẾT ĐỊNH, CÔNG VĂN, BÁO CÁO
         var titlePara = body.AppendChild(new Paragraph());
-        var titleRun = titlePara.AppendChild(new Run());
-        var docTypeName = GetDocumentTypeName(document.Type);
-        titleRun.AppendChild(new Text(docTypeName));
-        
-        var titleProps = titleRun.AppendChild(new RunProperties());
-        titleProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        titleProps.AppendChild(new Bold());
-        titleProps.AppendChild(new FontSize() { Val = "32" }); // 16pt
-        
+        // ParagraphProperties FIRST
         var titleParaProps = titlePara.AppendChild(new ParagraphProperties());
         titleParaProps.AppendChild(new Justification() { Val = JustificationValues.Center });
         titleParaProps.AppendChild(new SpacingBetweenLines()
@@ -470,20 +464,12 @@ public class WordExportService
             Line = SingleLine,
             LineRule = LineSpacingRuleValues.Auto
         });
+        // Run AFTER ParagraphProperties
+        var docTypeName = GetDocumentTypeName(document.Type);
+        titlePara.AppendChild(CreateStyledRun(docTypeName, bold: true, fontSize: "32")); // 16pt
 
         // Trích yếu (in nghiêng, căn giữa, 14pt) - luôn hiển thị
         var subjectPara = body.AppendChild(new Paragraph());
-        var subjectRun = subjectPara.AppendChild(new Run());
-        var subjectText = !string.IsNullOrEmpty(document.Subject) 
-            ? document.Subject 
-            : (!string.IsNullOrEmpty(document.Title) ? document.Title : "");
-        subjectRun.AppendChild(new Text(subjectText));
-        
-        var subjectProps = subjectRun.AppendChild(new RunProperties());
-        subjectProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        subjectProps.AppendChild(new Italic());
-        subjectProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-        
         var subjectParaProps = subjectPara.AppendChild(new ParagraphProperties());
         subjectParaProps.AppendChild(new Justification() { Val = JustificationValues.Center });
         subjectParaProps.AppendChild(new SpacingBetweenLines()
@@ -492,6 +478,10 @@ public class WordExportService
             Line = SingleLine,
             LineRule = LineSpacingRuleValues.Auto
         });
+        var subjectText = !string.IsNullOrEmpty(document.Subject)
+            ? document.Subject
+            : (!string.IsNullOrEmpty(document.Title) ? document.Title : "");
+        subjectPara.AppendChild(CreateStyledRun(subjectText, italic: true));
     }
 
     /// <summary>
@@ -500,25 +490,25 @@ public class WordExportService
     private void AddContent(Body body, DocModel document)
     {
         // Nội dung văn bản - chia thành các đoạn
-        var contentText = !string.IsNullOrEmpty(document.Content) 
-            ? document.Content 
+        var contentText = !string.IsNullOrEmpty(document.Content)
+            ? document.Content
             : "[Nội dung văn bản]";
-        
+
         // Loại bỏ markdown artifacts từ AI
         contentText = contentText.Replace("**", "").Replace("__", "");
         contentText = contentText.Replace("```", "").Replace("`", "");
         contentText = System.Text.RegularExpressions.Regex.Replace(
             contentText, @"^#{1,6}\s*", "", System.Text.RegularExpressions.RegexOptions.Multiline);
-        
+
         var lines = contentText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-        
+
         foreach (var line in lines)
         {
             var para = body.AppendChild(new Paragraph());
-            
+
             if (string.IsNullOrWhiteSpace(line))
             {
-                // Đoạn trống - giữ line spacing 1.3
+                // Đoạn trống - giữ line spacing 1.3 (ParagraphProperties là child duy nhất → OK)
                 var emptyProps = para.AppendChild(new ParagraphProperties());
                 emptyProps.AppendChild(new SpacingBetweenLines()
                 {
@@ -530,78 +520,59 @@ public class WordExportService
             }
 
             var trimmedLine = line.Trim();
-            
+
             // Phát hiện loại dòng để format phù hợp
             var lineType = DetectLineType(trimmedLine);
-            
-            var run = para.AppendChild(new Run());
-            run.AppendChild(new Text(trimmedLine) { Space = SpaceProcessingModeValues.Preserve });
-            
-            // Font Times New Roman
-            var runProps = run.AppendChild(new RunProperties());
-            runProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-            
-            // ParagraphProperties
-            var paraProps = para.AppendChild(new ParagraphProperties());
-            
+
+            // Xác định formatting dựa trên loại dòng
+            bool isBold = false;
+            string spacingBefore = "0";
+            string spacingAfter = "0";
+            var justification = JustificationValues.Both;
+            string? indent = "567"; // Mặc định 1cm
+
             switch (lineType)
             {
                 case ContentLineType.ChuongPhan: // Chương I, Phần thứ nhất...
-                    runProps.AppendChild(new Bold());
-                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Center });
-                    paraProps.AppendChild(new SpacingBetweenLines()
-                    {
-                        Before = SpacingLarge, After = SpacingSmall,
-                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
-                    });
+                    isBold = true;
+                    justification = JustificationValues.Center;
+                    indent = null; // Không thụt cho căn giữa
+                    spacingBefore = SpacingLarge;
+                    spacingAfter = SpacingSmall;
                     break;
-                    
+
                 case ContentLineType.Dieu: // Điều 1, Điều 2...
-                    runProps.AppendChild(new Bold());
-                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
-                    paraProps.AppendChild(new Indentation() { FirstLine = "567" });
-                    paraProps.AppendChild(new SpacingBetweenLines()
-                    {
-                        Before = SpacingMedium, After = "0",
-                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
-                    });
+                    isBold = true;
+                    spacingBefore = SpacingMedium;
                     break;
-                    
+
                 case ContentLineType.Khoan: // 1. ..., 2. ...
-                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
-                    paraProps.AppendChild(new Indentation() { FirstLine = "567" });
-                    paraProps.AppendChild(new SpacingBetweenLines()
-                    {
-                        Before = SpacingSmall, After = "0",
-                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
-                    });
+                    spacingBefore = SpacingSmall;
                     break;
-                    
+
                 case ContentLineType.Diem: // a) ..., b) ...
-                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
-                    paraProps.AppendChild(new Indentation() { FirstLine = "851" }); // Thụt sâu hơn 1.5cm
-                    paraProps.AppendChild(new SpacingBetweenLines()
-                    {
-                        After = "0",
-                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
-                    });
+                    indent = "851"; // Thụt sâu hơn 1.5cm
                     break;
-                    
+
                 default: // Nội dung thường
-                    runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-                    paraProps.AppendChild(new Justification() { Val = JustificationValues.Both });
-                    paraProps.AppendChild(new Indentation() { FirstLine = "567" });
-                    paraProps.AppendChild(new SpacingBetweenLines()
-                    {
-                        After = "0",
-                        Line = LineSpacing13, LineRule = LineSpacingRuleValues.Auto
-                    });
                     break;
             }
+
+            // ParagraphProperties FIRST
+            var paraProps = para.AppendChild(new ParagraphProperties());
+            paraProps.AppendChild(new Justification() { Val = justification });
+            if (indent != null)
+                paraProps.AppendChild(new Indentation() { FirstLine = indent });
+            paraProps.AppendChild(new SpacingBetweenLines()
+            {
+                Before = spacingBefore,
+                After = spacingAfter,
+                Line = LineSpacing13,
+                LineRule = LineSpacingRuleValues.Auto
+            });
+
+            // Run AFTER ParagraphProperties (với RunProperties trước Text)
+            para.AppendChild(CreateStyledRun(trimmedLine, bold: isBold));
         }
 
         // Khoảng cách trước chữ ký
@@ -619,13 +590,13 @@ public class WordExportService
     /// Phân loại dòng nội dung để format phù hợp trong Word
     /// </summary>
     private enum ContentLineType { Normal, ChuongPhan, Dieu, Khoan, Diem }
-    
+
     private ContentLineType DetectLineType(string line)
     {
         if (string.IsNullOrWhiteSpace(line)) return ContentLineType.Normal;
-        
+
         var trimmed = line.TrimStart();
-        
+
         // Chương I, CHƯƠNG II, Phần thứ nhất, PHẦN THỨ HAI, Mục 1, MỤC 2
         if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^(Chương|CHƯƠNG)\s+[IVXLCDM\d]+", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             return ContentLineType.ChuongPhan;
@@ -660,7 +631,7 @@ public class WordExportService
     {
         // Table 2 cột cho layout Nơi nhận (trái) và Chữ ký (phải)
         var table = body.AppendChild(new Table());
-        
+
         // Table properties: No borders, full width
         var tableProps = table.AppendChild(new TableProperties());
         tableProps.AppendChild(new TableWidth() { Width = "5000", Type = TableWidthUnitValues.Pct }); // 100% width
@@ -684,16 +655,9 @@ public class WordExportService
         var hasRecipients = document.Recipients != null && document.Recipients.Length > 0;
         if (hasRecipients || document.Direction == Direction.Di || IsDecisionType(document.Type))
         {
-            // "Nơi nhận:"
+            // "Nơi nhận:" header
             var receiverPara = leftCell.AppendChild(new Paragraph());
-            var receiverRun = receiverPara.AppendChild(new Run());
-            receiverRun.AppendChild(new Text("Nơi nhận:"));
-            
-            var receiverProps = receiverRun.AppendChild(new RunProperties());
-            receiverProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-            receiverProps.AppendChild(new Bold());
-            receiverProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-            
+            // ParagraphProperties FIRST
             var receiverParaProps = receiverPara.AppendChild(new ParagraphProperties());
             receiverParaProps.AppendChild(new SpacingBetweenLines()
             {
@@ -701,11 +665,24 @@ public class WordExportService
                 Line = LineSpacing13,
                 LineRule = LineSpacingRuleValues.Auto
             });
+            receiverPara.AppendChild(CreateStyledRun("Nơi nhận:", bold: true));
 
             // Danh sách nơi nhận (từ document.Recipients)
             var receiverListPara = leftCell.AppendChild(new Paragraph());
-            var receiverListRun = receiverListPara.AppendChild(new Run());
-            
+            var receiverListRun = new Run();
+            // RunProperties FIRST
+            var listRunProps = receiverListRun.AppendChild(new RunProperties());
+            listRunProps.AppendChild(new RunFonts()
+            {
+                Ascii = "Times New Roman",
+                HighAnsi = "Times New Roman",
+                EastAsia = "Times New Roman",
+                ComplexScript = "Times New Roman"
+            });
+            listRunProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
+            listRunProps.AppendChild(new FontSizeComplexScript() { Val = "28" });
+
+            // Text + Break elements AFTER RunProperties
             if (document.Recipients != null && document.Recipients.Length > 0)
             {
                 // Sử dụng danh sách từ document
@@ -715,20 +692,26 @@ public class WordExportService
                     {
                         receiverListRun.AppendChild(new Break());
                     }
-                    receiverListRun.AppendChild(new Text(document.Recipients[i]));
+                    receiverListRun.AppendChild(new Text(document.Recipients[i])
+                        { Space = SpaceProcessingModeValues.Preserve });
                 }
             }
             else
             {
                 // Mặc định nếu không có
-                receiverListRun.AppendChild(new Text("- Như trên;"));
+                receiverListRun.AppendChild(new Text("- Như trên;")
+                    { Space = SpaceProcessingModeValues.Preserve });
                 receiverListRun.AppendChild(new Break());
-                receiverListRun.AppendChild(new Text("- Lưu: VT."));
+                receiverListRun.AppendChild(new Text("- Lưu: VT.")
+                    { Space = SpaceProcessingModeValues.Preserve });
             }
-            
-            var listRunProps = receiverListRun.AppendChild(new RunProperties());
-            listRunProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-            listRunProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
+
+            receiverListPara.AppendChild(receiverListRun);
+        }
+        else
+        {
+            // TableCell bắt buộc phải có ít nhất 1 Paragraph (OpenXML spec)
+            leftCell.AppendChild(new Paragraph());
         }
 
         // Cột phải: Địa điểm, ngày + Chữ ký
@@ -737,17 +720,10 @@ public class WordExportService
         rightCellProps.AppendChild(new TableCellWidth() { Width = "2500", Type = TableWidthUnitValues.Pct }); // 50%
         rightCellProps.AppendChild(new TableCellVerticalAlignment() { Val = TableVerticalAlignmentValues.Top });
 
-        // Địa điểm, ngày tháng (in nghiêng, căn phải) - dùng Location từ document
-        var locationPara = rightCell.AppendChild(new Paragraph());
-        var locationRun = locationPara.AppendChild(new Run());
+        // Địa điểm, ngày tháng (in nghiêng, căn giữa) - dùng Location từ document
         var locationName = !string.IsNullOrEmpty(document.Location) ? document.Location : "...";
-        locationRun.AppendChild(new Text($"{locationName}, ngày {document.IssueDate:dd} tháng {document.IssueDate:MM} năm {document.IssueDate:yyyy}"));
-        
-        var locationProps = locationRun.AppendChild(new RunProperties());
-        locationProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        locationProps.AppendChild(new Italic());
-        locationProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-        
+        var locationPara = rightCell.AppendChild(new Paragraph());
+        // ParagraphProperties FIRST
         var locationParaProps = locationPara.AppendChild(new ParagraphProperties());
         locationParaProps.AppendChild(new Justification() { Val = JustificationValues.Center });
         locationParaProps.AppendChild(new SpacingBetweenLines()
@@ -756,19 +732,14 @@ public class WordExportService
             Line = LineSpacing13,
             LineRule = LineSpacingRuleValues.Auto
         });
+        locationPara.AppendChild(CreateStyledRun(
+            $"{locationName}, ngày {document.IssueDate:dd} tháng {document.IssueDate:MM} năm {document.IssueDate:yyyy}",
+            italic: true));
 
         // Thẩm quyền ký (TM., KT., Q. - chỉ hiện nếu có)
         if (!string.IsNullOrEmpty(document.SigningAuthority))
         {
             var tmPara = rightCell.AppendChild(new Paragraph());
-            var tmRun = tmPara.AppendChild(new Run());
-            tmRun.AppendChild(new Text(document.SigningAuthority.ToUpper()));
-            
-            var tmRunProps = tmRun.AppendChild(new RunProperties());
-            tmRunProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-            tmRunProps.AppendChild(new Bold());
-            tmRunProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-            
             var tmParaProps = tmPara.AppendChild(new ParagraphProperties());
             tmParaProps.AppendChild(new Justification() { Val = JustificationValues.Center });
             tmParaProps.AppendChild(new SpacingBetweenLines()
@@ -777,19 +748,12 @@ public class WordExportService
                 Line = LineSpacing13,
                 LineRule = LineSpacingRuleValues.Auto
             });
+            tmPara.AppendChild(CreateStyledRun(document.SigningAuthority.ToUpper(), bold: true));
         }
 
         // Chức danh ký (CHỦ TỊCH, GIÁM ĐỐC, TRƯỞNG PHÒNG...)
         var signingTitle = !string.IsNullOrEmpty(document.SigningTitle) ? document.SigningTitle.ToUpper() : "[CHỨC DANH]";
         var titlePara = rightCell.AppendChild(new Paragraph());
-        var titleRun = titlePara.AppendChild(new Run());
-        titleRun.AppendChild(new Text(signingTitle));
-        
-        var titleRunProps = titleRun.AppendChild(new RunProperties());
-        titleRunProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        titleRunProps.AppendChild(new Bold());
-        titleRunProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-        
         var titleParaProps = titlePara.AppendChild(new ParagraphProperties());
         titleParaProps.AppendChild(new Justification() { Val = JustificationValues.Center });
         titleParaProps.AppendChild(new SpacingBetweenLines()
@@ -798,17 +762,10 @@ public class WordExportService
             Line = LineSpacing13,
             LineRule = LineSpacingRuleValues.Auto
         });
+        titlePara.AppendChild(CreateStyledRun(signingTitle, bold: true));
 
-        // "(Ký, ghi rõ họ tên và đóng dấu)" (in nghiêng, căn phải)
+        // "(Ký, ghi rõ họ tên và đóng dấu)" (in nghiêng, căn giữa)
         var signNotePara = rightCell.AppendChild(new Paragraph());
-        var signNoteRun = signNotePara.AppendChild(new Run());
-        signNoteRun.AppendChild(new Text("(Ký, ghi rõ họ tên và đóng dấu)"));
-        
-        var noteRunProps = signNoteRun.AppendChild(new RunProperties());
-        noteRunProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        noteRunProps.AppendChild(new Italic());
-        noteRunProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-        
         var noteParaProps = signNotePara.AppendChild(new ParagraphProperties());
         noteParaProps.AppendChild(new Justification() { Val = JustificationValues.Center });
         noteParaProps.AppendChild(new SpacingBetweenLines()
@@ -817,6 +774,7 @@ public class WordExportService
             Line = LineSpacing13,
             LineRule = LineSpacingRuleValues.Auto
         });
+        signNotePara.AppendChild(CreateStyledRun("(Ký, ghi rõ họ tên và đóng dấu)", italic: true));
 
         // Khoảng trống cho chữ ký (3 dòng, trong rightCell)
         for (int i = 0; i < 3; i++)
@@ -831,20 +789,13 @@ public class WordExportService
             });
         }
 
-        // Họ tên người ký (in đậm, căn phải, KHÔNG in hoa)
+        // Họ tên người ký (in đậm, căn giữa, KHÔNG in hoa)
         var namePara = rightCell.AppendChild(new Paragraph());
-        var nameRun = namePara.AppendChild(new Run());
-        nameRun.AppendChild(new Text(!string.IsNullOrEmpty(document.SignedBy)
-            ? document.SignedBy
-            : "[Họ tên người ký]"));
-        
-        var nameRunProps = nameRun.AppendChild(new RunProperties());
-        nameRunProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        nameRunProps.AppendChild(new Bold());
-        nameRunProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-        
         var nameParaProps = namePara.AppendChild(new ParagraphProperties());
         nameParaProps.AppendChild(new Justification() { Val = JustificationValues.Center });
+        namePara.AppendChild(CreateStyledRun(
+            !string.IsNullOrEmpty(document.SignedBy) ? document.SignedBy : "[Họ tên người ký]",
+            bold: true));
     }
 
     #region Export Content (Reusable - Xuất nội dung text bất kỳ ra Word chuẩn)
@@ -856,25 +807,25 @@ public class WordExportService
     {
         /// <summary>Tên đơn vị ban hành (VD: "UBND xã Gia Kiệm")</summary>
         public string OrgName { get; set; } = "";
-        
+
         /// <summary>Tên loại văn bản in hoa (VD: "BÁO CÁO")</summary>
         public string DocumentTypeName { get; set; } = "BÁO CÁO";
-        
+
         /// <summary>Trích yếu (VD: "Tình hình kinh tế - xã hội tháng 01/2026")</summary>
         public string Subject { get; set; } = "";
-        
+
         /// <summary>Họ tên người ký</summary>
         public string SignerName { get; set; } = "";
-        
+
         /// <summary>Chức danh người ký (VD: "Chủ tịch UBND", "Trưởng Công an xã")</summary>
         public string SignerTitle { get; set; } = "";
-        
+
         /// <summary>Địa danh (VD: "Gia Kiệm"). Nếu rỗng sẽ tự trích từ OrgName</summary>
         public string Location { get; set; } = "";
-        
+
         /// <summary>Ngày ký. Mặc định = hôm nay</summary>
         public DateTime IssueDate { get; set; } = DateTime.Now;
-        
+
         /// <summary>Danh sách nơi nhận (tùy chọn). VD: ["Như trên;", "Lưu: VT."]</summary>
         public string[]? Recipients { get; set; }
     }
@@ -903,8 +854,8 @@ public class WordExportService
             Content = content,
             SignedBy = options.SignerName,
             SigningTitle = options.SignerTitle,
-            Location = !string.IsNullOrEmpty(options.Location) 
-                ? options.Location 
+            Location = !string.IsNullOrEmpty(options.Location)
+                ? options.Location
                 : ExtractLocationFromOrg(options.OrgName),
             IssueDate = options.IssueDate,
             Recipients = options.Recipients ?? new[] { "- Như trên;", "- Lưu: VT." },
@@ -918,9 +869,6 @@ public class WordExportService
             mainPart.Document = new WordDoc();
             var body = mainPart.Document.AppendChild(new Body());
 
-            // Margins theo TT01/2011
-            SetPageMargins(mainPart.Document);
-
             // Header: Cơ quan | Quốc hiệu
             AddHeader(body, tempDoc);
 
@@ -932,6 +880,9 @@ public class WordExportService
 
             // Chữ ký (Nơi nhận | Chức danh + Tên)
             AddSignature(body, tempDoc);
+
+            // SectionProperties PHẢI là child CUỐI CÙNG của Body — Margins theo TT01/2011
+            SetPageMargins(body);
 
             mainPart.Document.Save();
         }
@@ -948,10 +899,10 @@ public class WordExportService
     private string ExtractLocationFromOrg(string orgName)
     {
         if (string.IsNullOrEmpty(orgName)) return "...";
-        
+
         var locationPrefixes = new[] { " xã ", " huyện ", " tỉnh ", " thành phố ", " TP. ", " TP ",
             " thị xã ", " thị trấn ", " phường ", " quận " };
-        
+
         foreach (var prefix in locationPrefixes)
         {
             var idx = orgName.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
@@ -960,7 +911,7 @@ public class WordExportService
                 return orgName.Substring(idx + prefix.Length).Trim();
             }
         }
-        
+
         return "...";
     }
 
@@ -1024,16 +975,16 @@ public class WordExportService
     private string ExtractParentOrg(string issuer)
     {
         if (string.IsNullOrEmpty(issuer)) return "[CƠ QUAN CẤP TRÊN]";
-        
+
         var upper = issuer.ToUpper().Trim();
-        
+
         // Các pattern phổ biến: tách tên tổ chức khỏi tên địa phương
         // "ỦY BAN NHÂN DÂN XÃ/HUYỆN/TỈNH/TP..." → "ỦY BAN NHÂN DÂN"
         var locationPrefixes = new[] {
             " XÃ ", " HUYỆN ", " TỈNH ", " THÀNH PHỐ ", " TP. ", " TP ", " THỊ XÃ ", " THỊ TRẤN ",
             " PHƯỜNG ", " QUẬN ", " THÀNH PHỐ "
         };
-        
+
         foreach (var prefix in locationPrefixes)
         {
             var idx = upper.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
@@ -1042,7 +993,7 @@ public class WordExportService
                 return upper.Substring(0, idx).Trim();
             }
         }
-        
+
         // Fallback: không tách được thì trả về nguyên bản
         return upper;
     }
@@ -1055,14 +1006,14 @@ public class WordExportService
     private string ExtractSubOrg(string issuer)
     {
         if (string.IsNullOrEmpty(issuer)) return "[TÊN ĐƠN VỊ]";
-        
+
         var upper = issuer.ToUpper().Trim();
-        
+
         var locationPrefixes = new[] {
             " XÃ ", " HUYỆN ", " TỈNH ", " THÀNH PHỐ ", " TP. ", " TP ", " THỊ XÃ ", " THỊ TRẤN ",
             " PHƯỜNG ", " QUẬN "
         };
-        
+
         foreach (var prefix in locationPrefixes)
         {
             var idx = upper.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
@@ -1071,7 +1022,7 @@ public class WordExportService
                 return upper.Substring(idx).Trim();
             }
         }
-        
+
         // Fallback: trả về toàn bộ (gạch chân)
         return upper;
     }
@@ -1085,7 +1036,7 @@ public class WordExportService
     {
         // Tạo dòng: [ChứcDanh] [CơQuanBanHành]
         var authorityText = "";
-        
+
         if (!string.IsNullOrEmpty(document.SigningTitle) && !string.IsNullOrEmpty(document.Issuer))
         {
             authorityText = $"{document.SigningTitle.ToUpper()} {document.Issuer.ToUpper()}";
@@ -1098,18 +1049,11 @@ public class WordExportService
         {
             authorityText = document.Issuer.ToUpper();
         }
-        
+
         if (string.IsNullOrEmpty(authorityText)) return;
 
         var para = body.AppendChild(new Paragraph());
-        var run = para.AppendChild(new Run());
-        run.AppendChild(new Text(authorityText));
-        
-        var runProps = run.AppendChild(new RunProperties());
-        runProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        runProps.AppendChild(new Bold());
-        runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-        
+        // ParagraphProperties FIRST
         var paraProps = para.AppendChild(new ParagraphProperties());
         paraProps.AppendChild(new Justification() { Val = JustificationValues.Center });
         paraProps.AppendChild(new SpacingBetweenLines()
@@ -1118,6 +1062,8 @@ public class WordExportService
             Line = SingleLine,
             LineRule = LineSpacingRuleValues.Auto
         });
+        // Run AFTER ParagraphProperties
+        para.AppendChild(CreateStyledRun(authorityText, bold: true));
     }
 
     /// <summary>
@@ -1130,14 +1076,7 @@ public class WordExportService
         if (string.IsNullOrEmpty(label)) return;
 
         var para = body.AppendChild(new Paragraph());
-        var run = para.AppendChild(new Run());
-        run.AppendChild(new Text(label));
-        
-        var runProps = run.AppendChild(new RunProperties());
-        runProps.AppendChild(new RunFonts() { Ascii = "Times New Roman", HighAnsi = "Times New Roman" });
-        runProps.AppendChild(new Bold());
-        runProps.AppendChild(new FontSize() { Val = "28" }); // 14pt
-        
+        // ParagraphProperties FIRST
         var paraProps = para.AppendChild(new ParagraphProperties());
         paraProps.AppendChild(new Justification() { Val = JustificationValues.Center });
         paraProps.AppendChild(new SpacingBetweenLines()
@@ -1146,6 +1085,8 @@ public class WordExportService
             Line = LineSpacing13,
             LineRule = LineSpacingRuleValues.Auto
         });
+        // Run AFTER ParagraphProperties
+        para.AppendChild(CreateStyledRun(label, bold: true));
     }
 
     #endregion

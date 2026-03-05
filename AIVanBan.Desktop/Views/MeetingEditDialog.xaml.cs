@@ -15,6 +15,7 @@ public partial class MeetingEditDialog : Window
     private readonly SimpleAlbumService _albumService;
     private Meeting _meeting;
     private bool _isNew;
+    private bool _isQuickCreate;
     
     // Danh sách attendees, tasks, documents (working copies)
     private List<MeetingAttendee> _attendees = new();
@@ -48,6 +49,34 @@ public partial class MeetingEditDialog : Window
             Title = $"Sửa: {_meeting.Title}";
             LoadMeetingData();
         }
+    }
+
+    /// <summary>
+    /// Chế độ TẠO NHANH — chỉ hiện Tab 1 (Thông tin), ẩn các tab còn lại.
+    /// Dùng khi user muốn tạo nhanh từ Lịch hoặc MeetingList.
+    /// </summary>
+    public MeetingEditDialog(MeetingService meetingService, DocumentService? documentService, DateTime? presetDate)
+        : this(null, meetingService, documentService)
+    {
+        _isQuickCreate = true;
+        txtDialogTitle.Text = "⚡ TẠO NHANH CUỘC HỌP";
+        Title = "Tạo nhanh cuộc họp";
+        Height = 480;
+        
+        // Preset date/time if given
+        if (presetDate.HasValue)
+        {
+            dpStartDate.SelectedDate = presetDate.Value.Date;
+            tpStartTime.SelectedTime = presetDate.Value.Date.AddHours(8);
+        }
+        
+        // Ẩn các tab không cần thiết — chỉ giữ Tab 1 (Thông tin chung)
+        for (int i = tabControl.Items.Count - 1; i >= 1; i--)
+        {
+            if (tabControl.Items[i] is TabItem tab)
+                tab.Visibility = Visibility.Collapsed;
+        }
+        tabControl.SelectedIndex = 0;
     }
     
     #region Initialize

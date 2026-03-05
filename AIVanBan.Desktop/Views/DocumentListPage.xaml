@@ -448,6 +448,20 @@
                                           VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"
                                           Foreground="#FF6B35" Margin="8,0,0,0"
                                           Visibility="Collapsed"/>
+                                
+                                <!-- ☑ Nút Chọn tất cả — luôn hiển thị, dễ phát hiện -->
+                                <Separator Style="{StaticResource MaterialDesignSeparator}" Margin="10,4"/>
+                                <Button x:Name="btnSelectAll" Click="SelectAll_Click"
+                                       Style="{StaticResource MaterialDesignFlatButton}"
+                                       Height="28" Padding="8,0"
+                                       ToolTip="Chọn tất cả văn bản hiển thị (Ctrl+A)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CheckboxMultipleMarked" Width="16" Height="16" 
+                                                                VerticalAlignment="Center" Margin="0,0,4,0"
+                                                                Foreground="#1565C0"/>
+                                        <TextBlock Text="Chọn tất cả" FontSize="12" Foreground="#1565C0" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
                             
                             <!-- Bulk Actions Toolbar (hiện khi có item được chọn) -->
@@ -795,6 +809,28 @@
                                             </TextBlock>
                                         </TextBlock.ToolTip>
                                     </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <!-- Cột Trạng thái workflow — click để chuyển nhanh -->
+                        <DataGridTemplateColumn Header="Trạng thái" Width="110" MinWidth="95" SortMemberPath="WorkflowStatus" CanUserSort="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding StatusColor}" 
+                                           CornerRadius="10" 
+                                           Padding="8,3"
+                                           HorizontalAlignment="Center"
+                                           Cursor="Hand"
+                                           ToolTip="{Binding StatusTooltip}"
+                                           MouseLeftButtonDown="StatusBadge_Click"
+                                           Tag="{Binding Id}">
+                                        <TextBlock Text="{Binding StatusText}" 
+                                                  Foreground="White" 
+                                                  FontSize="10"
+                                                  FontWeight="Bold"
+                                                  HorizontalAlignment="Center"/>
+                                    </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

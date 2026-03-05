@@ -457,6 +457,12 @@
                     </StackPanel>
                 </DockPanel>
             </Border>
+
+            <!-- Snackbar cho nhắc nhở cuộc họp -->
+            <materialDesign:Snackbar x:Name="MainSnackbar" 
+                                      MessageQueue="{materialDesign:MessageQueue}"
+                                      HorizontalAlignment="Center"
+                                      Panel.ZIndex="1000"/>
         </Grid>
     </materialDesign:DialogHost>
 </Window>

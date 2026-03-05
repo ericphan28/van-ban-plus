@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -10,6 +11,7 @@ public partial class PeriodicReportDialog : Window
 {
     private readonly DocumentService _documentService;
     private readonly PeriodicReportService _reportService;
+    private readonly WordReaderService _wordReader = new();
     private string _generatedContent = string.Empty;
 
     public Document? GeneratedDocument { get; private set; }
@@ -1121,5 +1123,202 @@ TUYÊN TRUYỀN PCTN:
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    // ===== IMPORT TỪ FILE WORD =====
+
+    /// <summary>
+    /// Nhập nhiều file Word BC tháng → gộp nội dung (text + bảng biểu) vào ô Số liệu.
+    /// Dùng cho tổng hợp BC tháng → quý/6 tháng/năm.
+    /// </summary>
+    private void ImportWordFiles_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "Word Documents (*.docx)|*.docx|All files (*.*)|*.*",
+            Title = "Chọn file báo cáo tháng (.docx) — có thể chọn nhiều file",
+            Multiselect = true
+        };
+
+        if (dialog.ShowDialog() != true || dialog.FileNames.Length == 0) return;
+
+        try
+        {
+            var fileNames = dialog.FileNames.OrderBy(f => f).ToArray();
+            var summaries = new List<string>();
+
+            // Đọc tóm tắt từng file
+            foreach (var f in fileNames)
+                summaries.Add(_wordReader.GetQuickSummary(f));
+
+            // Hỏi xác nhận
+            var confirmMsg = $"📂 Đã chọn {fileNames.Length} file Word:\n\n" +
+                             string.Join("\n", summaries) +
+                             "\n\n• Bấm YES để gộp nội dung vào ô \"Số liệu hiện tại\"\n" +
+                             "• Bấm NO để hủy";
+
+            if (MessageBox.Show(confirmMsg, "Xác nhận nhập từ Word",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            // Đọc và gộp nội dung
+            var merged = _wordReader.ReadAndMergeMultipleDocx(fileNames, includeFileName: true);
+
+            if (string.IsNullOrWhiteSpace(merged))
+            {
+                MessageBox.Show("Không trích xuất được nội dung từ các file đã chọn.",
+                    "Không có dữ liệu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Nếu đã có nội dung, hỏi ghi đè hay nối thêm
+            if (!string.IsNullOrWhiteSpace(txtRawData.Text))
+            {
+                var result = MessageBox.Show(
+                    "Ô số liệu đã có nội dung.\n\n" +
+                    "• Bấm YES để thay thế toàn bộ\n" +
+                    "• Bấm NO để nối thêm vào cuối\n" +
+                    "• Bấm Cancel để hủy",
+                    "Đã có số liệu", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Cancel) return;
+                if (result == MessageBoxResult.No)
+                {
+                    txtRawData.Text = txtRawData.Text.TrimEnd() + "\n\n" + merged;
+                    UpdateImportInfo(fileNames);
+                    return;
+                }
+            }
+
+            txtRawData.Text = merged;
+            UpdateImportInfo(fileNames);
+
+            // Tự động chọn loại kỳ phù hợp nếu chọn nhiều file
+            if (fileNames.Length >= 3 && cboPeriodType.SelectedItem as string != "Quý")
+            {
+                cboPeriodType.SelectedItem = "Quý";
+                MessageBox.Show(
+                    $"✅ Đã nhập {fileNames.Length} file BC tháng (gồm cả bảng biểu)!\n\n" +
+                    "💡 Đã tự động chọn kỳ = \"Quý\".\n" +
+                    "Bấm \"🤖 Tạo báo cáo\" để AI tổng hợp thành BC quý.",
+                    "Nhập thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else if (fileNames.Length >= 6 && cboPeriodType.SelectedItem as string != "6 tháng")
+            {
+                cboPeriodType.SelectedItem = "6 tháng";
+                MessageBox.Show(
+                    $"✅ Đã nhập {fileNames.Length} file BC tháng!\n" +
+                    "Đã tự động chọn kỳ = \"6 tháng\".",
+                    "Nhập thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show(
+                    $"✅ Đã nhập {fileNames.Length} file Word (gồm cả bảng biểu)!\n\n" +
+                    "Bấm \"🤖 Tạo báo cáo\" để AI phân tích và tổng hợp.",
+                    "Nhập thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi đọc file Word:\n\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Nhập 1 file Word vào ô Số liệu (có trích xuất bảng biểu)
+    /// </summary>
+    private void ImportWordToData_Click(object sender, RoutedEventArgs e)
+    {
+        var content = ImportSingleWordFile("Chọn file Word chứa số liệu báo cáo");
+        if (content == null) return;
+
+        if (!string.IsNullOrWhiteSpace(txtRawData.Text))
+        {
+            var result = MessageBox.Show(
+                "Ô số liệu đã có nội dung.\n\n" +
+                "• YES = Thay thế | NO = Nối thêm | Cancel = Hủy",
+                "Đã có số liệu", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Cancel) return;
+            if (result == MessageBoxResult.No)
+            {
+                txtRawData.Text = txtRawData.Text.TrimEnd() + "\n\n--- Từ file Word ---\n" + content;
+                return;
+            }
+        }
+
+        txtRawData.Text = content;
+    }
+
+    /// <summary>
+    /// Nhập 1 file Word vào ô BC kỳ trước
+    /// </summary>
+    private void ImportWordToPrevious_Click(object sender, RoutedEventArgs e)
+    {
+        var content = ImportSingleWordFile("Chọn file Word báo cáo kỳ trước");
+        if (content == null) return;
+
+        txtPreviousReport.Text = content;
+        MessageBox.Show("✅ Đã nhập nội dung BC kỳ trước từ file Word (gồm bảng biểu nếu có).",
+            "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// Helper: mở dialog chọn 1 file Word, đọc và trả về nội dung (text + bảng)
+    /// </summary>
+    private string? ImportSingleWordFile(string title)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "Word Documents (*.docx)|*.docx|All files (*.*)|*.*",
+            Title = title,
+            Multiselect = false
+        };
+
+        if (dialog.ShowDialog() != true) return null;
+
+        try
+        {
+            var result = _wordReader.ReadDocx(dialog.FileName);
+
+            if (!result.Success)
+            {
+                MessageBox.Show($"Lỗi đọc file:\n{result.ErrorMessage}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(result.FullText))
+            {
+                MessageBox.Show("File Word không có nội dung.", "Trống",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return null;
+            }
+
+            var tableInfo = result.TableCount > 0
+                ? $"\n📊 Đã trích xuất {result.TableCount} bảng biểu."
+                : "";
+
+            MessageBox.Show(
+                $"📄 {result.FileName}\n" +
+                $"   {result.ParagraphCount} đoạn văn bản{tableInfo}",
+                "Đã đọc file", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            return result.FullText;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi:\n{ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            return null;
+        }
+    }
+
+    private void UpdateImportInfo(string[] fileNames)
+    {
+        txtImportedFilesInfo.Text = $"✅ Đã nhập {fileNames.Length} file: " +
+            string.Join(", ", fileNames.Select(Path.GetFileName));
+        txtImportedFilesInfo.Visibility = Visibility.Visible;
     }
 }

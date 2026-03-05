@@ -53,6 +53,12 @@ public class DocumentViewModel
     public Visibility RestoreVisibility { get; set; } = Visibility.Collapsed;
     public Visibility EditVisibility { get; set; } = Visibility.Visible;
     
+    // Trạng thái workflow — hiển thị badge trong DataGrid
+    public DocumentStatus WorkflowStatus { get; set; } = DocumentStatus.Draft;
+    public string StatusText { get; set; } = "Nháp";
+    public string StatusColor { get; set; } = "#757575";
+    public string StatusTooltip { get; set; } = string.Empty;
+    
     public static DocumentViewModel FromDocument(Document doc, DocumentService? service = null)
     {
         var vm = new DocumentViewModel
@@ -143,6 +149,32 @@ public class DocumentViewModel
         {
             vm.CopyIndicator = $"📋 {doc.CopyType.GetDisplayName().ToUpper()} ({doc.CopySymbol})";
         }
+        
+        // Trạng thái workflow — hiển thị badge
+        vm.WorkflowStatus = doc.WorkflowStatus;
+        vm.StatusText = doc.WorkflowStatus.GetDisplayName();
+        vm.StatusColor = doc.WorkflowStatus switch
+        {
+            DocumentStatus.Draft => "#757575",           // Xám
+            DocumentStatus.PendingApproval => "#E65100", // Cam
+            DocumentStatus.Approved => "#1565C0",        // Xanh dương
+            DocumentStatus.Signed => "#2E7D32",          // Xanh lá
+            DocumentStatus.Published => "#6A1B9A",       // Tím
+            DocumentStatus.Sent => "#00838F",            // Teal
+            DocumentStatus.Archived => "#37474F",        // Xám đậm
+            _ => "#757575"
+        };
+        vm.StatusTooltip = doc.WorkflowStatus switch
+        {
+            DocumentStatus.Draft => "Nháp — Đang soạn thảo, chưa trình ký",
+            DocumentStatus.PendingApproval => "Trình ký — Đã trình lãnh đạo, chờ duyệt",
+            DocumentStatus.Approved => "Đã duyệt — Lãnh đạo đã duyệt, chờ ký",
+            DocumentStatus.Signed => "Đã ký — Chờ phát hành, đăng ký số",
+            DocumentStatus.Published => "Đã phát hành — Có số văn bản chính thức",
+            DocumentStatus.Sent => "Đã gửi — Đã gửi đến nơi nhận",
+            DocumentStatus.Archived => "Lưu trữ — Đã hoàn thành, lưu hồ sơ",
+            _ => ""
+        };
         
         // Cảnh báo hạn xử lý — Điều 24, NĐ 30/2020
         vm.DueDate = doc.DueDate;
@@ -1024,6 +1056,60 @@ public partial class DocumentListPage : Page
             MessageBox.Show($"Lỗi khi tạo dữ liệu demo:\n{ex.Message}", "Lỗi", 
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    /// <summary>
+    /// Click vào badge trạng thái → hiện ContextMenu chuyển nhanh
+    /// </summary>
+    private void StatusBadge_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is not Border badge || badge.Tag is not string docId) return;
+
+        var doc = _documentService.GetDocument(docId);
+        if (doc == null) return;
+
+        var menu = new ContextMenu();
+        var statuses = new[]
+        {
+            (DocumentStatus.Draft,            "📝 Nháp",            "Đang soạn thảo, chưa trình ký"),
+            (DocumentStatus.PendingApproval,  "📤 Trình ký",        "Đã trình lãnh đạo, chờ duyệt"),
+            (DocumentStatus.Approved,         "✅ Đã duyệt",        "Lãnh đạo đã duyệt, chờ ký"),
+            (DocumentStatus.Signed,           "✍️ Đã ký",           "Chờ phát hành, đăng ký số"),
+            (DocumentStatus.Published,        "📢 Đã phát hành",    "Có số văn bản chính thức"),
+            (DocumentStatus.Sent,             "📨 Đã gửi",          "Đã gửi đến nơi nhận"),
+            (DocumentStatus.Archived,         "🗄️ Lưu trữ",        "Đã hoàn thành, lưu hồ sơ")
+        };
+
+        foreach (var (status, label, tip) in statuses)
+        {
+            var item = new MenuItem
+            {
+                Header = label,
+                ToolTip = tip,
+                IsCheckable = false,
+                FontWeight = doc.WorkflowStatus == status ? FontWeights.Bold : FontWeights.Normal,
+                IsEnabled = doc.WorkflowStatus != status
+            };
+            
+            // Đánh dấu trạng thái hiện tại
+            if (doc.WorkflowStatus == status)
+            {
+                item.Icon = new PackIcon { Kind = PackIconKind.CheckCircle, Foreground = Brushes.Green };
+            }
+
+            var capturedStatus = status;
+            item.Click += (s, args) =>
+            {
+                doc.WorkflowStatus = capturedStatus;
+                _documentService.UpdateDocument(doc);
+                LoadDocuments();
+            };
+            menu.Items.Add(item);
+        }
+
+        badge.ContextMenu = menu;
+        menu.IsOpen = true;
+        e.Handled = true;
     }
 
     private void ViewDocument_Click(object sender, RoutedEventArgs e)

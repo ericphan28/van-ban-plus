@@ -7,8 +7,9 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="400"/>
+            <ColumnDefinition Width="*" MinWidth="500"/>
+            <ColumnDefinition Width="5"/><!-- GridSplitter -->
+            <ColumnDefinition Width="400" MinWidth="280" MaxWidth="600"/>
         </Grid.ColumnDefinitions>
 
         <!-- ═══ LEFT: LỊCH ═══ -->
@@ -44,6 +45,27 @@
                                VerticalAlignment="Center"/>
                     
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- View Toggle: Tháng / Tuần -->
+                        <Border Background="#E3F2FD" CornerRadius="8" Padding="2" Margin="0,0,16,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="btnViewMonth" Content="📅 Tháng" 
+                                        Click="ViewMonth_Click" FontSize="13" FontWeight="SemiBold"
+                                        Padding="12,6" Margin="2" Height="32"
+                                        Background="#1565C0" Foreground="White" BorderThickness="0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                    </Button.Resources>
+                                </Button>
+                                <Button x:Name="btnViewWeek" Content="📋 Tuần"
+                                        Click="ViewWeek_Click" FontSize="13" FontWeight="SemiBold"
+                                        Padding="12,6" Margin="2" Height="32"
+                                        Background="Transparent" Foreground="#1565C0" BorderThickness="0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+                        </Border>
                         <Border Background="#FFCDD2" CornerRadius="6" Padding="10,5" Margin="0,0,8,0">
                             <TextBlock Text="🔴 Quá hạn" FontSize="13" FontWeight="Medium" Foreground="#C62828"/>
                         </Border>
@@ -60,8 +82,8 @@
                 </Grid>
             </materialDesign:Card>
             
-            <!-- CALENDAR GRID -->
-            <materialDesign:Card Padding="12" materialDesign:ElevationAssist.Elevation="Dp2">
+            <!-- CALENDAR GRID — MONTH VIEW -->
+            <materialDesign:Card x:Name="cardMonthView" Padding="12" materialDesign:ElevationAssist.Elevation="Dp2">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="44"/>
@@ -90,10 +112,54 @@
                     <UniformGrid x:Name="calendarGrid" Grid.Row="1" Columns="7" Rows="6"/>
                 </Grid>
             </materialDesign:Card>
+
+            <!-- CALENDAR GRID — WEEK VIEW -->
+            <materialDesign:Card x:Name="cardWeekView" Padding="12" materialDesign:ElevationAssist.Elevation="Dp2"
+                                 Visibility="Collapsed">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Tiêu đề ngày trong tuần (với ngày cụ thể) -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60"/><!-- Cột giờ -->
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="txtWeekDay0" Grid.Column="1" Text="T2 01/01" FontWeight="Bold" FontSize="13" Foreground="#37474F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtWeekDay1" Grid.Column="2" Text="T3 02/01" FontWeight="Bold" FontSize="13" Foreground="#37474F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtWeekDay2" Grid.Column="3" Text="T4 03/01" FontWeight="Bold" FontSize="13" Foreground="#37474F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtWeekDay3" Grid.Column="4" Text="T5 04/01" FontWeight="Bold" FontSize="13" Foreground="#37474F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtWeekDay4" Grid.Column="5" Text="T6 05/01" FontWeight="Bold" FontSize="13" Foreground="#37474F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtWeekDay5" Grid.Column="6" Text="T7 06/01" FontWeight="Bold" FontSize="13" Foreground="#E65100" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtWeekDay6" Grid.Column="7" Text="CN 07/01" FontWeight="Bold" FontSize="13" Foreground="#C62828" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                    
+                    <!-- Time-slot grid -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <Grid x:Name="weekTimeGrid"/>
+                    </ScrollViewer>
+                </Grid>
+            </materialDesign:Card>
         </DockPanel>
 
+        <!-- ═══ SPLITTER: Kéo để thay đổi kích thước ═══ -->
+        <GridSplitter Grid.Column="1" Width="5" 
+                     HorizontalAlignment="Stretch" 
+                     Background="Transparent"
+                     Cursor="SizeWE"/>
+
         <!-- ═══ RIGHT: CHI TIẾT NGÀY ═══ -->
-        <Border Grid.Column="1" Margin="0,20,20,20">
+        <Border Grid.Column="2" Margin="0,20,20,20">
             <materialDesign:Card Padding="20" materialDesign:ElevationAssist.Elevation="Dp2">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,16">

@@ -32,6 +32,41 @@ public partial class AIComposeDialog : Window
         LoadTemplates();
     }
 
+    /// <summary>
+    /// P7: Điền sẵn nội dung vào editor (dùng khi chuyển từ AI Kiểm tra sang Soạn thảo)
+    /// </summary>
+    public void SetPrefilledContent(string content, string documentType = "", string title = "")
+    {
+        if (string.IsNullOrWhiteSpace(content)) return;
+
+        // Điền nội dung vào RichTextBox khi dialog đã load xong
+        this.Loaded += (s, e) =>
+        {
+            try
+            {
+                // Đặt nội dung vào RichTextBox
+                var flowDoc = new System.Windows.Documents.FlowDocument();
+                foreach (var line in content.Split('\n'))
+                {
+                    var para = new System.Windows.Documents.Paragraph(
+                        new System.Windows.Documents.Run(line))
+                    {
+                        FontFamily = new FontFamily("Times New Roman"),
+                        FontSize = 14,
+                        Margin = new Thickness(0, 2, 0, 2)
+                    };
+                    flowDoc.Blocks.Add(para);
+                }
+                GeneratedContentRichTextBox.Document = flowDoc;
+
+                // Chuyển sang tab kết quả nếu có
+                if (!string.IsNullOrWhiteSpace(title))
+                    this.Title = $"✏️ AI Soạn thảo — {title} (từ Kiểm tra VB)";
+            }
+            catch { /* Bỏ qua nếu control chưa sẵn sàng */ }
+        };
+    }
+
     private void LoadTemplates()
     {
         var templates = _documentService.GetAllTemplates();

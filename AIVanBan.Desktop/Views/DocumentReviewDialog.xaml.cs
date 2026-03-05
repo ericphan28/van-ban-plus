@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -15,11 +16,18 @@ public partial class DocumentReviewDialog : Window
     private DocumentReviewResult? _result;
     private DispatcherTimer? _timer;
     private int _elapsedSeconds;
+    private string? _referenceContent;
+    private string? _uploadedFilePath;
 
     /// <summary>
     /// Nội dung đã sửa (nếu user chọn "Áp dụng")
     /// </summary>
     public string? AppliedContent { get; private set; }
+
+    /// <summary>
+    /// Nội dung AI đề xuất (dùng cho "Soạn tiếp" và "Xuất Word")
+    /// </summary>
+    public string? SuggestedContent => _result?.SuggestedContent;
 
     /// <summary>
     /// Constructor duy nhất — luôn hiện ô nhập nội dung trước.
@@ -94,7 +102,7 @@ public partial class DocumentReviewDialog : Window
         try
         {
             var reviewService = new DocumentReviewService();
-            _result = await reviewService.ReviewDocumentAsync(_content, _documentType, _title, _issuer);
+            _result = await reviewService.ReviewDocumentAsync(_content, _documentType, _title, _issuer, _referenceContent);
             DisplayResults(_result);
         }
         catch (Exception ex)
@@ -144,10 +152,14 @@ public partial class DocumentReviewDialog : Window
         {
             txtSuggestedContent.Text = result.SuggestedContent;
             btnApply.Visibility = Visibility.Visible;
+            btnExportWord.Visibility = Visibility.Visible;
+            btnComposeContinue.Visibility = Visibility.Visible;
         }
         else
         {
             txtSuggestedContent.Text = "(AI không đề xuất sửa nội dung — văn bản đã tốt hoặc chỉ có lỗi nhỏ)";
+            // Vẫn cho xuất Word nội dung gốc nếu user muốn
+            btnExportWord.Visibility = Visibility.Visible;
         }
 
         // Show copy button
@@ -296,6 +308,8 @@ public partial class DocumentReviewDialog : Window
         scoreBadge.Visibility = Visibility.Collapsed;
         btnApply.Visibility = Visibility.Collapsed;
         btnCopyResult.Visibility = Visibility.Collapsed;
+        btnExportWord.Visibility = Visibility.Collapsed;
+        btnComposeContinue.Visibility = Visibility.Collapsed;
         txtScoreText.Text = "";
     }
 
@@ -327,6 +341,256 @@ public partial class DocumentReviewDialog : Window
         DialogResult = false;
         Close();
     }
+
+    #region P7: Xuất Word + Soạn tiếp
+
+    /// <summary>
+    /// P7: Xuất nội dung đã sửa ra file Word chuẩn NĐ 30/2020
+    /// </summary>
+    private void ExportWord_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var contentToExport = _result?.SuggestedContent ?? _content;
+            if (string.IsNullOrWhiteSpace(contentToExport))
+            {
+                MessageBox.Show("Không có nội dung để xuất.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Word Document (*.docx)|*.docx",
+                DefaultExt = ".docx",
+                FileName = $"VB_DaSua_{DateTime.Now:yyyyMMdd_HHmmss}"
+            };
+
+            if (saveDialog.ShowDialog() == true)
+            {
+                var exportService = new WordExportService();
+                var options = new WordExportService.ExportContentOptions
+                {
+                    DocumentTypeName = !string.IsNullOrWhiteSpace(_documentType) ? _documentType.ToUpperInvariant() : "VĂN BẢN",
+                    Subject = _title ?? "",
+                };
+
+                // Đọc thông tin cơ quan từ OrganizationConfig (nếu có)
+                try
+                {
+                    var docService = new DocumentService();
+                    var orgConfig = docService.GetOrganizationConfig();
+                    options.OrgName = orgConfig.Name ?? "";
+                }
+                catch { /* Bỏ qua nếu không đọc được config */ }
+
+                exportService.ExportContent(saveDialog.FileName, contentToExport, options);
+
+                MessageBox.Show($"✅ Đã xuất file Word thành công!\n\n{saveDialog.FileName}",
+                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Mở file sau khi xuất
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = saveDialog.FileName,
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi xuất Word: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// P7: Chuyển nội dung đã sửa sang giao diện AI Soạn thảo để chỉnh sửa tiếp
+    /// </summary>
+    private void ComposeContinue_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var contentToCompose = _result?.SuggestedContent;
+            if (string.IsNullOrWhiteSpace(contentToCompose))
+            {
+                MessageBox.Show("Không có nội dung đã sửa để chuyển.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                "Mở giao diện AI Soạn thảo với nội dung đã sửa?\n\n" +
+                "Bạn có thể chỉnh sửa thêm, lưu vào hệ thống hoặc xuất Word từ đó.",
+                "Chuyển sang Soạn thảo",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm == MessageBoxResult.Yes)
+            {
+                var docService = new DocumentService();
+                var composeDialog = new AIComposeDialog(docService);
+                composeDialog.SetPrefilledContent(contentToCompose, _documentType, _title);
+                composeDialog.Owner = this.Owner; // Set owner to MainWindow
+                this.Close();
+                composeDialog.ShowDialog();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
+    #region P6: Upload file + File mẫu đối chiếu
+
+    /// <summary>
+    /// P6: Tải file .docx/.pdf/.txt — đổ nội dung vào ô nhập
+    /// </summary>
+    private async void UploadFile_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var openDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Tất cả file hỗ trợ|*.docx;*.pdf;*.txt|Word (*.docx)|*.docx|PDF (*.pdf)|*.pdf|Text (*.txt)|*.txt",
+                Title = "Chọn file văn bản cần kiểm tra"
+            };
+
+            if (openDialog.ShowDialog() == true)
+            {
+                var filePath = openDialog.FileName;
+                var ext = Path.GetExtension(filePath).ToLowerInvariant();
+                string extractedText;
+
+                switch (ext)
+                {
+                    case ".docx":
+                        var wordReader = new WordReaderService();
+                        var result = wordReader.ReadDocx(filePath);
+                        if (!result.Success)
+                        {
+                            MessageBox.Show($"❌ Không đọc được file: {result.ErrorMessage}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        extractedText = result.FullText;
+                        break;
+
+                    case ".pdf":
+                        var aiService = new GeminiAIService();
+                        extractedText = await aiService.ReadTextFromFileAsync(filePath);
+                        if (string.IsNullOrWhiteSpace(extractedText))
+                        {
+                            MessageBox.Show("❌ Không trích xuất được nội dung từ PDF.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        break;
+
+                    case ".txt":
+                        extractedText = await File.ReadAllTextAsync(filePath);
+                        break;
+
+                    default:
+                        MessageBox.Show("Chỉ hỗ trợ file .docx, .pdf, .txt", "Không hỗ trợ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(extractedText))
+                {
+                    txtQuickInput.Text = extractedText;
+                    _uploadedFilePath = filePath;
+
+                    // Hiện file info bar
+                    var fileInfo = new FileInfo(filePath);
+                    txtFileInfo.Text = $"📄 {fileInfo.Name} ({fileInfo.Length / 1024:N0} KB) — Đã đổ nội dung vào ô bên dưới";
+                    pnlFileInfo.Visibility = Visibility.Visible;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi đọc file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// P6: Tải file mẫu để AI so sánh, đối chiếu với VB cần kiểm tra
+    /// </summary>
+    private async void UploadReference_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var openDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Tất cả file hỗ trợ|*.docx;*.pdf;*.txt|Word (*.docx)|*.docx|PDF (*.pdf)|*.pdf|Text (*.txt)|*.txt",
+                Title = "Chọn file mẫu để đối chiếu"
+            };
+
+            if (openDialog.ShowDialog() == true)
+            {
+                var filePath = openDialog.FileName;
+                var ext = Path.GetExtension(filePath).ToLowerInvariant();
+                string extractedText;
+
+                switch (ext)
+                {
+                    case ".docx":
+                        var wordReader = new WordReaderService();
+                        var result = wordReader.ReadDocx(filePath);
+                        if (!result.Success)
+                        {
+                            MessageBox.Show($"❌ Không đọc được file mẫu: {result.ErrorMessage}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        extractedText = result.FullText;
+                        break;
+
+                    case ".pdf":
+                        var aiService = new GeminiAIService();
+                        extractedText = await aiService.ReadTextFromFileAsync(filePath);
+                        if (string.IsNullOrWhiteSpace(extractedText))
+                        {
+                            MessageBox.Show("❌ Không trích xuất được nội dung từ PDF mẫu.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                        break;
+
+                    case ".txt":
+                        extractedText = await File.ReadAllTextAsync(filePath);
+                        break;
+
+                    default:
+                        MessageBox.Show("Chỉ hỗ trợ file .docx, .pdf, .txt", "Không hỗ trợ", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(extractedText))
+                {
+                    _referenceContent = extractedText;
+                    var fileInfo = new FileInfo(filePath);
+                    txtReferenceInfo.Text = $"📄 Mẫu: {fileInfo.Name} ({fileInfo.Length / 1024:N0} KB, {extractedText.Length:N0} ký tự)";
+                    pnlReferenceInfo.Visibility = Visibility.Visible;
+
+                    MessageBox.Show($"✅ Đã tải file mẫu thành công!\nAI sẽ so sánh VB cần kiểm tra với file mẫu này.",
+                        "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi đọc file mẫu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Xóa file mẫu đối chiếu
+    /// </summary>
+    private void ClearReference_Click(object sender, RoutedEventArgs e)
+    {
+        _referenceContent = null;
+        pnlReferenceInfo.Visibility = Visibility.Collapsed;
+    }
+
+    #endregion
 }
 
 /// <summary>

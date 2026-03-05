@@ -17,6 +17,10 @@ public partial class MainWindow : Window
     private readonly AlbumStructureService _albumService;
     private bool _isSidebarCollapsed = false;
     
+    // Meeting reminder timer — kiểm tra mỗi 2 phút
+    private readonly System.Windows.Threading.DispatcherTimer _reminderTimer;
+    private readonly MeetingReminderService _reminderService;
+    
     public MainWindow()
     {
         try
@@ -28,6 +32,15 @@ public partial class MainWindow : Window
             
             Console.WriteLine("🔧 Initializing AlbumStructureService...");
             _albumService = new AlbumStructureService();
+            
+            // Initialize reminder service
+            _reminderService = new MeetingReminderService(new MeetingService());
+            _reminderTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMinutes(2) // Kiểm tra mỗi 2 phút
+            };
+            _reminderTimer.Tick += ReminderTimer_Tick;
+            _reminderTimer.Start();
             
             // Initialize album templates AFTER DocumentService is fully initialized
             Console.WriteLine("🔧 Initializing album templates...");
@@ -85,27 +98,87 @@ public partial class MainWindow : Window
     }
     
     /// <summary>
-    /// Kiểm tra và cảnh báo VB quá hạn khi khởi động — Điều 24, NĐ 30/2020
+    /// Kiểm tra và cảnh báo VB quá hạn + cuộc họp sắp diễn ra khi khởi động — Điều 24, NĐ 30/2020
     /// </summary>
     private void CheckOverdueOnStartup()
     {
         try
         {
+            var sb = new System.Text.StringBuilder();
+            bool hasWarnings = false;
+
+            // === 1. VB quá hạn ===
             var overdueList = _documentService.GetOverdueDocuments();
             if (overdueList.Count > 0)
             {
+                hasWarnings = true;
                 var details = string.Join("\n", overdueList
                     .OrderBy(d => d.DueDate)
                     .Take(5)
                     .Select(d => $"  • {d.Number} — {d.Title} (hạn: {d.DueDate:dd/MM/yyyy})"));
-                
                 var moreText = overdueList.Count > 5 ? $"\n  ... và {overdueList.Count - 5} VB khác" : "";
+                sb.AppendLine($"⚠️ CÓ {overdueList.Count} VĂN BẢN ĐẾN ĐÃ QUÁ HẠN XỬ LÝ!\n");
+                sb.AppendLine($"{details}{moreText}");
+            }
+
+            // === 2. VB sắp hết hạn (trong 3 ngày tới) ===
+            var allDocs = _documentService.GetAllDocuments();
+            var dueSoon = allDocs.Where(d =>
+                d.DueDate.HasValue && !d.IsDeleted
+                && d.Direction == Direction.Den
+                && d.WorkflowStatus != DocumentStatus.Archived
+                && d.WorkflowStatus != DocumentStatus.Published
+                && (d.DueDate.Value.Date - DateTime.Today).Days >= 0
+                && (d.DueDate.Value.Date - DateTime.Today).Days <= 3
+            ).ToList();
+            
+            if (dueSoon.Count > 0)
+            {
+                hasWarnings = true;
+                if (sb.Length > 0) sb.AppendLine("\n─────────────────────────────\n");
+                sb.AppendLine($"⏰ {dueSoon.Count} VĂN BẢN SẮP HẾT HẠN (trong 3 ngày):\n");
+                foreach (var d in dueSoon.Take(5))
+                {
+                    var days = (d.DueDate!.Value.Date - DateTime.Today).Days;
+                    var urgency = days == 0 ? "HÔM NAY" : $"còn {days} ngày";
+                    sb.AppendLine($"  • {d.Number} — {d.Title} ({urgency})");
+                }
+                if (dueSoon.Count > 5) sb.AppendLine($"  ... và {dueSoon.Count - 5} VB khác");
+            }
+
+            // === 3. Cuộc họp trong hôm nay ===
+            try
+            {
+                var meetingService = new MeetingService();
+                var todayMeetings = meetingService.GetMeetingsByDateRange(DateTime.Today, DateTime.Today.AddDays(1))
+                    .Where(m => m.Status != MeetingStatus.Cancelled && m.Status != MeetingStatus.Completed)
+                    .OrderBy(m => m.StartTime)
+                    .ToList();
                 
+                if (todayMeetings.Count > 0)
+                {
+                    hasWarnings = true;
+                    if (sb.Length > 0) sb.AppendLine("\n─────────────────────────────\n");
+                    sb.AppendLine($"📅 {todayMeetings.Count} CUỘC HỌP HÔM NAY:\n");
+                    foreach (var m in todayMeetings.Take(5))
+                    {
+                        sb.AppendLine($"  • {m.StartTime:HH:mm} — {m.Title}");
+                        if (!string.IsNullOrWhiteSpace(m.Location))
+                            sb.AppendLine($"    📍 {m.Location}");
+                    }
+                    if (todayMeetings.Count > 5) sb.AppendLine($"  ... và {todayMeetings.Count - 5} cuộc họp khác");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ CheckMeetings error: {ex.Message}");
+            }
+
+            if (hasWarnings)
+            {
                 MessageBox.Show(
-                    $"⚠️ CÓ {overdueList.Count} VĂN BẢN ĐẾN ĐÃ QUÁ HẠN XỬ LÝ!\n\n" +
-                    $"{details}{moreText}\n\n" +
-                    "Vui lòng xử lý hoặc cập nhật hạn giải quyết.",
-                    "Cảnh báo quá hạn — Điều 24, NĐ 30/2020",
+                    sb.ToString(),
+                    "📋 Thông báo khi khởi động — VanBanPlus",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
@@ -113,6 +186,46 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             Console.WriteLine($"⚠️ CheckOverdueOnStartup error: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Kiểm tra nhắc nhở cuộc họp định kỳ (mỗi 2 phút)
+    /// </summary>
+    private void ReminderTimer_Tick(object? sender, EventArgs e)
+    {
+        try
+        {
+            var reminders = _reminderService.CheckUpcomingReminders();
+            foreach (var reminder in reminders)
+            {
+                // Hiển thị Snackbar notification 
+                var message = $"🔔 NHẮC NHỞ: {reminder.Meeting.Title} — " +
+                             $"{reminder.Meeting.StartTime:HH:mm}" +
+                             (reminder.MinutesUntilStart <= 1 ? " (BẮT ĐẦU NGAY!)" : $" (còn {reminder.MinutesUntilStart} phút)");
+                
+                if (!string.IsNullOrWhiteSpace(reminder.Meeting.Location))
+                    message += $" 📍 {reminder.Meeting.Location}";
+                
+                MainSnackbar.MessageQueue?.Enqueue(
+                    message,
+                    "XEM",
+                    (meetingId) =>
+                    {
+                        // Navigate to calendar when user clicks "XEM"
+                        MainFrame.Navigate(new Views.CalendarPage(_documentService));
+                    },
+                    reminder.Meeting.Id,
+                    false,
+                    true,
+                    TimeSpan.FromSeconds(10)); // Hiển thị 10 giây
+                
+                Console.WriteLine($"🔔 Reminder shown: {reminder.Meeting.Title}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ ReminderTimer error: {ex.Message}");
         }
     }
     

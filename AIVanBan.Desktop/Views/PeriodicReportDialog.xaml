@@ -71,6 +71,36 @@
                         </StackPanel>
                     </materialDesign:Card>
 
+                    <!-- Import từ file Word (tháng → quý) -->
+                    <materialDesign:Card Padding="16" Margin="0,0,0,12"
+                                         Background="#E3F2FD">
+                        <StackPanel>
+                            <TextBlock Text="📂 Nhập từ file Word (tổng hợp tháng → quý)" 
+                                      FontWeight="Bold" FontSize="14" 
+                                      Foreground="#0D47A1"
+                                      Margin="0,0,0,4"/>
+                            <TextBlock Text="Chọn nhiều file BC tháng (.docx) → tự trích xuất nội dung + bảng biểu → AI tổng hợp thành BC quý"
+                                      FontSize="11" Foreground="#1565C0" TextWrapping="Wrap"
+                                      Margin="0,0,0,8"/>
+                            <Button x:Name="btnImportWordFiles"
+                                   Style="{StaticResource MaterialDesignRaisedButton}"
+                                   Background="#1565C0" Foreground="White"
+                                   Click="ImportWordFiles_Click"
+                                   HorizontalAlignment="Stretch"
+                                   Padding="12,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FileWordBox" Width="20" Height="20" Margin="0,0,8,0"/>
+                                    <TextBlock Text="📂 Chọn file Word báo cáo tháng..."/>
+                                </StackPanel>
+                            </Button>
+                            <TextBlock x:Name="txtImportedFilesInfo"
+                                      Text=""
+                                      FontSize="11" Foreground="#2E7D32" TextWrapping="Wrap"
+                                      Margin="0,6,0,0"
+                                      Visibility="Collapsed"/>
+                        </StackPanel>
+                    </materialDesign:Card>
+
                     <!-- Thông tin cơ bản -->
                     <materialDesign:Card Padding="16" Margin="0,0,0,12">
                         <StackPanel>
@@ -132,16 +162,29 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="📈 Số liệu kỳ hiện tại" 
                                           FontWeight="SemiBold" FontSize="14"/>
-                                <Button x:Name="btnAutoFillStats" Grid.Column="1"
-                                        Style="{StaticResource MaterialDesignOutlinedButton}"
-                                        Height="30" FontSize="11" Padding="10,0"
-                                        Click="AutoFillStats_Click"
-                                        ToolTip="Tự động trích xuất số liệu từ sổ văn bản trong kỳ báo cáo">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="DatabaseExport" Width="16" Height="16" Margin="0,0,4,0"/>
-                                        <TextBlock Text="Lấy từ sổ VB"/>
-                                    </StackPanel>
-                                </Button>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button x:Name="btnImportWordData" 
+                                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                                            Height="30" FontSize="11" Padding="10,0"
+                                            Click="ImportWordToData_Click"
+                                            ToolTip="Nhập số liệu từ file Word (.docx) có bảng biểu"
+                                            Margin="0,0,6,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="FileWord" Width="16" Height="16" Margin="0,0,4,0"/>
+                                            <TextBlock Text="Từ Word"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="btnAutoFillStats"
+                                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                                            Height="30" FontSize="11" Padding="10,0"
+                                            Click="AutoFillStats_Click"
+                                            ToolTip="Tự động trích xuất số liệu từ sổ văn bản trong kỳ báo cáo">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="DatabaseExport" Width="16" Height="16" Margin="0,0,4,0"/>
+                                            <TextBlock Text="Lấy từ sổ VB"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
                             </Grid>
                             <TextBlock Text="Nhập/paste số liệu tự do, hoặc nhấn 'Lấy từ sổ VB' để auto-fill từ hệ thống."
                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
@@ -184,13 +227,24 @@
                                 <TextBlock Text="📋 Báo cáo kỳ trước (tùy chọn)" 
                                           FontWeight="SemiBold" FontSize="14"
                                           VerticalAlignment="Center"/>
-                                <ComboBox x:Name="cboPreviousReport"
-                                         Grid.Column="1"
-                                         materialDesign:HintAssist.Hint="Chọn từ DB"
-                                         Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                         Width="160" FontSize="12"
-                                         DisplayMemberPath="Title"
-                                         SelectionChanged="PreviousReport_Changed"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                           Height="30" FontSize="11" Padding="8,0"
+                                           Click="ImportWordToPrevious_Click"
+                                           ToolTip="Nhập BC kỳ trước từ file Word"
+                                           Margin="0,0,6,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="FileWord" Width="14" Height="14" Margin="0,0,3,0"/>
+                                            <TextBlock Text="Word"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <ComboBox x:Name="cboPreviousReport"
+                                             materialDesign:HintAssist.Hint="Chọn từ DB"
+                                             Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                             Width="140" FontSize="12"
+                                             DisplayMemberPath="Title"
+                                             SelectionChanged="PreviousReport_Changed"/>
+                                </StackPanel>
                             </Grid>
                             <TextBlock Text="Paste nội dung BC kỳ trước để AI so sánh tự động."
                                       Foreground="{DynamicResource MaterialDesignBodyLight}"

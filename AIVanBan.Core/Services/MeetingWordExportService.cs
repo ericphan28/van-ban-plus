@@ -47,7 +47,6 @@ public class MeetingWordExportService
         var mainPart = wordDoc.AddMainDocumentPart();
         mainPart.Document = new WordDoc();
         var body = mainPart.Document.AppendChild(new Body());
-        SetPageMargins(body);
         
         // === QUỐC HIỆU + TIÊU NGỮ ===
         AddQuocHieu(body);
@@ -140,6 +139,8 @@ public class MeetingWordExportService
         
         AddSignatureBlock(body, "THƯ KÝ", meeting.Secretary, "CHỦ TRÌ", meeting.ChairPerson);
         
+        // SectionProperties PHẢI là child CUỐI CÙNG của Body (OpenXML spec)
+        SetPageMargins(body);
         mainPart.Document.Save();
     }
     
@@ -153,7 +154,6 @@ public class MeetingWordExportService
         var mainPart = wordDoc.AddMainDocumentPart();
         mainPart.Document = new WordDoc();
         var body = mainPart.Document.AppendChild(new Body());
-        SetPageMargins(body);
         
         AddQuocHieu(body);
         AddOrgHeader(body, meeting.OrganizingUnit);
@@ -196,6 +196,8 @@ public class MeetingWordExportService
         
         AddNoiNhanAndSignature(body, meeting);
         
+        // SectionProperties PHẢI là child CUỐI CÙNG của Body (OpenXML spec)
+        SetPageMargins(body);
         mainPart.Document.Save();
     }
     
@@ -209,7 +211,6 @@ public class MeetingWordExportService
         var mainPart = wordDoc.AddMainDocumentPart();
         mainPart.Document = new WordDoc();
         var body = mainPart.Document.AppendChild(new Body());
-        SetPageMargins(body);
         
         // === HEADER ===
         AddCenteredBold(body, "BÁO CÁO TỔNG HỢP CUỘC HỌP", FontSize16);
@@ -300,6 +301,8 @@ public class MeetingWordExportService
         AddEmptyLine(body);
         AddFooterInfo(body);
         
+        // SectionProperties PHẢI là child CUỐI CÙNG của Body (OpenXML spec)
+        SetPageMargins(body);
         mainPart.Document.Save();
     }
     
@@ -313,7 +316,6 @@ public class MeetingWordExportService
         var mainPart = wordDoc.AddMainDocumentPart();
         mainPart.Document = new WordDoc();
         var body = mainPart.Document.AppendChild(new Body());
-        SetPageMargins(body, landscape: true);
         
         // === HEADER ===
         AddCenteredBold(body, "BẢNG TỔNG HỢP CÁC CUỘC HỌP", FontSize16);
@@ -400,7 +402,7 @@ public class MeetingWordExportService
         
         body.AppendChild(statTable);
         AddEmptyLine(body);
-        
+
         // === CHI TIẾT TỪNG CUỘC HỌP (nếu có kết luận/nhiệm vụ) ===
         var meetingsWithContent = meetings
             .Where(m => !string.IsNullOrEmpty(m.Conclusion) || (m.Tasks?.Count > 0))
@@ -442,6 +444,8 @@ public class MeetingWordExportService
         // === FOOTER ===
         AddFooterInfo(body);
         
+        // SectionProperties PHẢI là child CUỐI CÙNG của Body (OpenXML spec)
+        SetPageMargins(body, landscape: true);
         mainPart.Document.Save();
     }
     
@@ -875,8 +879,16 @@ public class MeetingWordExportService
     // PRIVATE: Paragraph helpers
     // ========================================================================
     
+    /// <summary>
+    /// Thiết lập page margins. PHẢI gọi SAU khi đã thêm hết nội dung
+    /// vì SectionProperties bắt buộc là child cuối cùng của Body (OpenXML spec).
+    /// </summary>
     private void SetPageMargins(Body body, bool landscape = false)
     {
+        // Xóa SectionProperties cũ nếu có (đảm bảo luôn nằm cuối)
+        var existing = body.GetFirstChild<SectionProperties>();
+        existing?.Remove();
+
         var sectionProps = new SectionProperties();
         if (landscape)
         {

@@ -118,6 +118,22 @@ public class Meeting
     public DateTime CreatedDate { get; set; } = DateTime.Now;
     public string ModifiedBy { get; set; } = string.Empty;
     public DateTime? ModifiedDate { get; set; }
+    
+    // === MẪU CUỘC HỌP (Meeting Template) ===
+    
+    /// <summary>Đánh dấu đây là mẫu cuộc họp (không phải cuộc họp thực)</summary>
+    public bool IsTemplate { get; set; } = false;
+    
+    /// <summary>Tên mẫu (VD: "Họp giao ban tuần", "Họp UBND thường kỳ")</summary>
+    public string TemplateName { get; set; } = string.Empty;
+    
+    // === NHẮC NHỞ ===
+    
+    /// <summary>Nhắc nhở trước bao nhiêu phút (0 = không nhắc, mặc định 15 phút)</summary>
+    public int ReminderMinutesBefore { get; set; } = 15;
+    
+    /// <summary>Đã hiển thị nhắc nhở cho lần gần nhất chưa (tránh nhắc lặp)</summary>
+    public bool ReminderShown { get; set; } = false;
 }
 
 /// <summary>

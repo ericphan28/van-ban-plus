@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using AIVanBan.Core.Models;
 using AIVanBan.Core.Services;
@@ -92,7 +94,9 @@ public partial class TemplateManagementPage : Page
             var keyword = txtSearch.Text.ToLower();
             filtered = filtered.Where(t =>
                 t.Name.ToLower().Contains(keyword) ||
-                t.Description.ToLower().Contains(keyword));
+                t.Description.ToLower().Contains(keyword) ||
+                (t.Category ?? "").ToLower().Contains(keyword) ||
+                (t.Tags != null && t.Tags.Any(tag => tag.ToLower().Contains(keyword))));
         }
 
         // Type filter
@@ -104,6 +108,17 @@ public partial class TemplateManagementPage : Page
         }
 
         dgTemplates.ItemsSource = filtered.ToList();
+
+        // Nhóm theo Loại văn bản nếu không lọc theo loại cụ thể
+        if (cboFilterType.SelectedIndex <= 0)
+        {
+            var view = CollectionViewSource.GetDefaultView(dgTemplates.ItemsSource);
+            if (view != null)
+            {
+                view.GroupDescriptions.Clear();
+                view.GroupDescriptions.Add(new PropertyGroupDescription("Type"));
+            }
+        }
     }
 
     private void Search_KeyUp(object sender, KeyEventArgs e)
@@ -151,8 +166,51 @@ public partial class TemplateManagementPage : Page
             if (template != null)
             {
                 var viewer = new TemplateViewDialog(template);
-                viewer.ShowDialog();
+                viewer.Owner = Window.GetWindow(this);
+                if (viewer.ShowDialog() == true && viewer.WantsUseTemplate)
+                {
+                    // Người dùng nhấn "Sử dụng mẫu này" → chuyển sang AI Soạn thảo
+                    OpenComposeWithTemplate(template);
+                }
             }
+        }
+    }
+
+    /// <summary>
+    /// Mở AI Compose Dialog với template đã chọn — dùng chung cho cả ViewTemplate và UseTemplate
+    /// </summary>
+    private void OpenComposeWithTemplate(DocumentTemplate template)
+    {
+        try
+        {
+            var dialog = new AIComposeDialog(_documentService, preSelectedTemplateId: template.Id);
+            dialog.Owner = Window.GetWindow(this);
+
+            if (dialog.ShowDialog() == true && dialog.GeneratedDocument != null)
+            {
+                template.UsageCount++;
+                _documentService.UpdateTemplate(template);
+                _documentService.AddDocument(dialog.GeneratedDocument);
+
+                MessageBox.Show(
+                    $"✅ Đã tạo và lưu văn bản:\n\n" +
+                    $"📋 {dialog.GeneratedDocument.Title}\n" +
+                    $"📁 Loại: {dialog.GeneratedDocument.Type.GetDisplayName()}\n" +
+                    $"🏢 Cơ quan: {dialog.GeneratedDocument.Issuer}",
+                    "Thành công",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                
+                LoadTemplates(); // Refresh usage count
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"❌ Lỗi khi tạo văn bản:\n{ex.Message}",
+                "Lỗi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -163,39 +221,7 @@ public partial class TemplateManagementPage : Page
             var template = _documentService.GetTemplateById(id);
             if (template != null)
             {
-                try
-                {
-                    // Mở AI Compose Dialog với template đã chọn sẵn
-                    var dialog = new AIComposeDialog(_documentService, preSelectedTemplateId: template.Id);
-                    dialog.Owner = Window.GetWindow(this);
-                    
-                    if (dialog.ShowDialog() == true && dialog.GeneratedDocument != null)
-                    {
-                        // Tăng usage count
-                        template.UsageCount++;
-                        _documentService.UpdateTemplate(template);
-                        
-                        // Lưu document vào DB
-                        _documentService.AddDocument(dialog.GeneratedDocument);
-                        
-                        MessageBox.Show(
-                            $"✅ Đã tạo và lưu văn bản:\n\n" +
-                            $"📋 {dialog.GeneratedDocument.Title}\n" +
-                            $"📁 Loại: {dialog.GeneratedDocument.Type.GetDisplayName()}\n" +
-                            $"🏢 Cơ quan: {dialog.GeneratedDocument.Issuer}",
-                            "Thành công",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        $"❌ Lỗi khi tạo văn bản:\n{ex.Message}",
-                        "Lỗi",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
+                OpenComposeWithTemplate(template);
             }
         }
     }

@@ -36,6 +36,15 @@ public partial class DocumentListPage
         dgDocuments.SelectedItems.Clear();
         UpdateBulkActionsUI();
     }
+
+    /// <summary>
+    /// Chọn tất cả văn bản đang hiển thị trong DataGrid (Ctrl+A cũng hoạt động)
+    /// </summary>
+    private void SelectAll_Click(object sender, RoutedEventArgs e)
+    {
+        dgDocuments.SelectAll();
+        UpdateBulkActionsUI();
+    }
     
     private void BulkDelete_Click(object sender, RoutedEventArgs e)
     {
