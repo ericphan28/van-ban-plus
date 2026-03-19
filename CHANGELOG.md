@@ -2,6 +2,44 @@
 
 ---
 
+## v1.0.14 — UI/UX Improvements (2026-06-14)
+
+> **10 files changed**  
+> Trọng tâm: Cải thiện trải nghiệm người dùng từ audit toàn diện
+
+### ✨ Cải tiến UX
+
+#### SnackbarHelper — Toast notification thay MessageBox
+- Tạo `Services/SnackbarHelper.cs` — helper tập trung cho toast
+- Thay **15+ MessageBox.Show** bằng Snackbar cho thông báo thành công
+- Áp dụng: DocumentListPage, MeetingListPage, MainWindow
+
+#### Tìm kiếm văn bản thông minh hơn
+- **Debounce 300ms** — không gọi filter mỗi keystroke
+- **Phím Escape** — xóa ô tìm kiếm và bỏ chọn dòng hiện tại
+- **Enter** — tìm ngay lập tức
+
+#### AI Sidebar gọn gàng
+- 6 nút phẳng → 2 nút chính (Soạn VB, Kiểm tra VB) + Expander "Công cụ AI khác"
+- 4 tool phụ (Scan OCR, Báo cáo, Tham mưu, Tóm tắt) gom vào nhóm mở rộng
+
+#### DocumentEditDialog — Form phân nhóm rõ ràng
+- 3 GroupBox: "📄 Thông tin cơ bản" / "🏷️ Phân loại & Thẩm quyền" / "📝 Nội dung & Đính kèm"
+- MinHeight/MinWidth cho window
+
+#### MeetingListPage — Dropdown thay 3 nút riêng
+- "Thêm cuộc họp ▼" → ContextMenu: Tạo đầy đủ / Tạo nhanh / Từ mẫu
+
+### 🎨 Polish
+
+- **GridSplitter hiển thị rõ** (#E0E0E0) — DocumentListPage, CalendarPage
+- **Preview status**: "🟢 Mới" → relative time ("Hôm nay", "3 ngày trước")
+- **Vietnamese text**: "Double-click" → "Nhấn đúp", "Right-click" → "Nhấn chuột phải"
+- **Abbreviation tooltips**: "Ngày BH:" → "Ngày ban hành:" + ToolTip
+- **Version fix**: v1.0.9 → v1.0.13 trên status bar
+
+---
+
 ## v1.0.9 — Tuân thủ NĐ 30/2020/NĐ-CP
 
 > **59 files changed, +5,715 lines, -1,168 lines**  

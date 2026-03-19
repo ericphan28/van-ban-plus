@@ -142,7 +142,7 @@
                             <TextBlock x:Name="txtPerfOverdueRate" Text="- %" FontSize="12" Foreground="#C62828"/>
                         </StackPanel>
                         <StackPanel>
-                            <TextBlock Text="TB ngày xử lý" FontSize="11" Foreground="#888"/>
+                            <TextBlock Text="Trung bình ngày xử lý" FontSize="11" Foreground="#888"/>
                             <TextBlock x:Name="txtPerfAvgDays" Text="-" FontSize="22" FontWeight="Bold" Foreground="#FF8F00" Margin="0,2,0,0"/>
                             <TextBlock Text="ngày/VB" FontSize="12" Foreground="#FF8F00"/>
                         </StackPanel>
@@ -345,7 +345,7 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="± Kỳ trước" Binding="{Binding DeltaText}" Width="90">
+                            <DataGridTextColumn Header="So với kỳ trước" Binding="{Binding DeltaText}" Width="110">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="HorizontalAlignment" Value="Center"/>

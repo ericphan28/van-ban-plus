@@ -1149,8 +1149,9 @@ public class SeedDataService
     /// <summary>
     /// Tạo văn bản demo nhất quán (Title ↔ Subject ↔ Content ↔ Type ↔ Direction ↔ Issuer).
     /// Mặc định tạo 50 mẫu — phủ 25+ loại VB, nhiều phòng ban.
+    /// orgName: Tên cơ quan của user (VD: "Sở Nội vụ tỉnh Đồng Nai") — dùng thay cho "Giám đốc Sở" trong mẫu.
     /// </summary>
-    public List<Document> GenerateDemoDocuments(int count = 50)
+    public List<Document> GenerateDemoDocuments(int count = 50, string orgName = "Sở Nội vụ")
     {
         var documents = new List<Document>();
         var templates = GetTemplates();
@@ -1163,6 +1164,9 @@ public class SeedDataService
             var issueDate = DateTime.Now.AddDays(-Math.Min(daysAgo, 365));
             var numberSeq = i + 1;
 
+            // Map Issuer: chức danh → tên cơ quan đúng chuẩn NĐ 30/2020
+            var (realIssuer, signingTitle) = MapIssuer(tmpl.Issuer, orgName);
+
             // Tạo số VB đúng format: Số/KýHiệu-CơQuan — Theo Phụ lục VI, NĐ 30/2020
             var orgAbbr = GetOrgAbbreviation(tmpl.Issuer);
             var number = $"{numberSeq:000}/{tmpl.NumberPrefix}-{orgAbbr}";
@@ -1173,7 +1177,8 @@ public class SeedDataService
                 Title = tmpl.Title,
                 Subject = tmpl.Subject,
                 Content = tmpl.Content,
-                Issuer = tmpl.Issuer,
+                Issuer = realIssuer,
+                SigningTitle = signingTitle,
                 IssueDate = issueDate,
                 Type = tmpl.Type,
                 Direction = tmpl.Direction,
@@ -1199,8 +1204,9 @@ public class SeedDataService
 
                 if (doc.WorkflowStatus >= DocumentStatus.Signed)
                 {
-                    doc.SignedBy = "Giám đốc Trần Văn B";
+                    doc.SignedBy = "Trần Văn B";
                     doc.SignedDate = doc.IssueDate.AddDays(-1);
+                    // SigningTitle đã được set từ MapIssuer ở trên
                 }
                 if (doc.WorkflowStatus == DocumentStatus.Published)
                 {
@@ -1263,6 +1269,33 @@ public class SeedDataService
         }
 
         return documents;
+    }
+
+    /// <summary>
+    /// Map Issuer từ template (có thể chứa chức danh) → tên cơ quan + chức danh ký
+    /// Theo NĐ 30/2020: Issuer = tên cơ quan, SigningTitle = chức danh người ký
+    /// </summary>
+    private static (string Issuer, string SigningTitle) MapIssuer(string templateIssuer, string orgName)
+    {
+        return templateIssuer switch
+        {
+            // Chức danh → org name + tách signing title
+            "Giám đốc Sở" => (orgName, "Giám đốc"),
+            "Ban Giám đốc" => (orgName, "Giám đốc"),
+            "Chánh Văn phòng Sở" => (orgName, "Chánh Văn phòng"),
+
+            // Đơn vị nội bộ — giữ nguyên, không có signing title riêng
+            "Văn phòng Sở" => ($"Văn phòng {orgName}", "Chánh Văn phòng"),
+            "Phòng Tài chính - Kế toán" => (templateIssuer, "Trưởng phòng"),
+            "Phòng Công nghệ thông tin" => (templateIssuer, "Trưởng phòng"),
+            "Phòng Tổ chức - Hành chính" => (templateIssuer, "Trưởng phòng"),
+            "Phòng Quản lý Quy hoạch" => (templateIssuer, "Trưởng phòng"),
+            "Phòng Thanh tra" => (templateIssuer, "Trưởng phòng"),
+            "Hội nghị CBCC" => (templateIssuer, ""),
+
+            // Cơ quan ngoài (VB đến) — giữ nguyên
+            _ => (templateIssuer, "")
+        };
     }
 
     /// <summary>

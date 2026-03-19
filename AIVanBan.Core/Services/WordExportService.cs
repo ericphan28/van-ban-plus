@@ -78,6 +78,11 @@ public class WordExportService
             mainPart.Document = new WordDoc();
             var body = mainPart.Document.AppendChild(new Body());
 
+            // ═══ TIỀN XỬ LÝ: Tách căn cứ + làm sạch nội dung trước khi xuất ═══
+            // Content từ AI hoặc seed data có thể chứa sẵn căn cứ, nhãn QĐ, Kính gửi...
+            // → Tách ra các field riêng để tránh trùng lặp khi xuất
+            CleanupDocumentContent(document);
+
             // Header - Logo và tiêu đề tổ chức (theo Thông tư 01/2011)
             AddHeader(body, document);
 
@@ -254,6 +259,9 @@ public class WordExportService
         {
             var doc = documents[i];
 
+            // Tiền xử lý: tách căn cứ + làm sạch nội dung
+            CleanupDocumentContent(doc);
+
             // Header
             AddHeader(body, doc);
             AddDocumentInfo(body, doc);
@@ -345,9 +353,12 @@ public class WordExportService
         var leftParaProps1 = leftPara1.AppendChild(new ParagraphProperties());
         leftParaProps1.AppendChild(new Justification() { Val = JustificationValues.Center });
         leftParaProps1.AppendChild(new SpacingBetweenLines() { After = "0", Line = SingleLine, LineRule = LineSpacingRuleValues.Auto });
-        // Run AFTER ParagraphProperties
+        // Run AFTER ParagraphProperties — nếu không có cơ quan cấp trên thì để trống
         var parentOrg = ExtractParentOrg(document.Issuer);
-        leftPara1.AppendChild(CreateStyledRun(parentOrg, bold: true));
+        if (!string.IsNullOrEmpty(parentOrg))
+        {
+            leftPara1.AppendChild(CreateStyledRun(parentOrg, bold: true));
+        }
 
         // Cell phải: CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
         var rightCell1 = row1.AppendChild(new TableCell());
@@ -373,7 +384,10 @@ public class WordExportService
         leftParaProps2.AppendChild(new Justification() { Val = JustificationValues.Center });
         leftParaProps2.AppendChild(new SpacingBetweenLines() { After = "0", Line = SingleLine, LineRule = LineSpacingRuleValues.Auto });
         var subOrg = ExtractSubOrg(document.Issuer);
-        leftPara2.AppendChild(CreateStyledRun(subOrg, bold: true, underline: true));
+        if (!string.IsNullOrEmpty(subOrg))
+        {
+            leftPara2.AppendChild(CreateStyledRun(subOrg, bold: true, underline: true));
+        }
 
         // Cell phải: Độc lập - Tự do - Hạnh phúc
         var rightCell2 = row2.AppendChild(new TableCell());
@@ -487,6 +501,101 @@ public class WordExportService
     /// <summary>
     /// Nội dung văn bản: Font Times 14pt, line spacing 1.3, căn đều 2 bên
     /// </summary>
+    /// <summary>
+    /// Tiền xử lý: Tách căn cứ pháp lý, loại bỏ nhãn QĐ, Kính gửi... khỏi Content
+    /// để tránh trùng lặp khi xuất Word (vì WordExportService tự thêm các phần này)
+    /// </summary>
+    private void CleanupDocumentContent(DocModel document)
+    {
+        if (string.IsNullOrEmpty(document.Content)) return;
+
+        var lines = document.Content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        var cleanedLines = new List<string>();
+        var extractedBasedOn = new List<string>();
+        bool passedLeadingSection = false;
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            var trimmed = lines[i].Trim();
+            var upper = trimmed.ToUpper();
+
+            // Bỏ qua dòng trống ở đầu
+            if (!passedLeadingSection && string.IsNullOrWhiteSpace(trimmed))
+                continue;
+
+            // ── Bỏ dòng "Kính gửi:..." (AddSalutation đã xử lý) ──
+            if (!passedLeadingSection && trimmed.StartsWith("Kính gửi", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            // ── Bỏ dòng thẩm quyền trùng: "GIÁM ĐỐC SỞ...", "CHỦ TỊCH..." ──
+            if (!passedLeadingSection && IsAuthorityLine(upper))
+                continue;
+
+            // ── Tách dòng Căn cứ / Theo vào BasedOn[] ──
+            if (!passedLeadingSection && 
+                (trimmed.StartsWith("Căn cứ", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Theo ", StringComparison.OrdinalIgnoreCase) ||
+                 trimmed.StartsWith("Xét ", StringComparison.OrdinalIgnoreCase)))
+            {
+                extractedBasedOn.Add(trimmed);
+                continue;
+            }
+
+            // ── Bỏ nhãn "QUYẾT ĐỊNH:", "NGHỊ QUYẾT:" (AddDecisionLabel đã thêm) ──
+            if (!passedLeadingSection && IsDecisionLabelLine(upper))
+            {
+                passedLeadingSection = true; // Mọi thứ sau nhãn QĐ là nội dung thật
+                continue;
+            }
+
+            // Dòng trống sau phần căn cứ, trước nội dung → bỏ
+            if (!passedLeadingSection && string.IsNullOrWhiteSpace(trimmed))
+                continue;
+
+            // Đánh dấu bắt đầu nội dung thật
+            passedLeadingSection = true;
+            cleanedLines.Add(lines[i]); // Giữ nguyên indentation gốc
+        }
+
+        // Cập nhật Content đã làm sạch
+        document.Content = string.Join("\n", cleanedLines);
+
+        // Nếu BasedOn trống và tách được căn cứ từ Content → gán vào
+        if ((document.BasedOn == null || document.BasedOn.Length == 0) && extractedBasedOn.Count > 0)
+        {
+            document.BasedOn = extractedBasedOn.ToArray();
+        }
+    }
+
+    /// <summary>Kiểm tra dòng có phải nhãn quyết định (QUYẾT ĐỊNH:, NGHỊ QUYẾT:...)</summary>
+    private static bool IsDecisionLabelLine(string upperLine)
+    {
+        var labels = new[] { "QUYẾT ĐỊNH:", "NGHỊ QUYẾT:", "CHỈ THỊ:", "QUYẾT NGHỊ:" };
+        foreach (var label in labels)
+        {
+            if (upperLine == label || upperLine == label.TrimEnd(':'))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>Kiểm tra dòng có phải dòng thẩm quyền (GIÁM ĐỐC, CHỦ TỊCH...)</summary>
+    private static bool IsAuthorityLine(string upperLine)
+    {
+        if (string.IsNullOrWhiteSpace(upperLine)) return false;
+        var authorityPrefixes = new[] {
+            "GIÁM ĐỐC", "PHÓ GIÁM ĐỐC", "CHỦ TỊCH", "PHÓ CHỦ TỊCH",
+            "CHÁNH VĂN PHÒNG", "TRƯỞNG BAN", "TRƯỞNG PHÒNG",
+            "BỘ TRƯỞNG", "THỨ TRƯỞNG", "TỔNG GIÁM ĐỐC"
+        };
+        foreach (var prefix in authorityPrefixes)
+        {
+            if (upperLine.StartsWith(prefix) && !upperLine.Contains("ĐIỆN")) // "GIÁM ĐỐC SỞ ĐIỆN:" là nội dung
+                return true;
+        }
+        return false;
+    }
+
     private void AddContent(Body body, DocModel document)
     {
         // Nội dung văn bản - chia thành các đoạn
@@ -572,7 +681,25 @@ public class WordExportService
             });
 
             // Run AFTER ParagraphProperties (với RunProperties trước Text)
-            para.AppendChild(CreateStyledRun(trimmedLine, bold: isBold));
+            if (lineType == ContentLineType.Dieu)
+            {
+                // Điều X. — chỉ in đậm phần "Điều X." theo NĐ 30/2020
+                var dieuMatch = System.Text.RegularExpressions.Regex.Match(trimmedLine, @"^(Điều\s+\d+[\.:]\s*)(.*)$");
+                if (dieuMatch.Success)
+                {
+                    para.AppendChild(CreateStyledRun(dieuMatch.Groups[1].Value, bold: true));
+                    if (!string.IsNullOrEmpty(dieuMatch.Groups[2].Value))
+                        para.AppendChild(CreateStyledRun(dieuMatch.Groups[2].Value, bold: false));
+                }
+                else
+                {
+                    para.AppendChild(CreateStyledRun(trimmedLine, bold: true));
+                }
+            }
+            else
+            {
+                para.AppendChild(CreateStyledRun(trimmedLine, bold: isBold));
+            }
         }
 
         // Khoảng cách trước chữ ký
@@ -604,8 +731,10 @@ public class WordExportService
             return ContentLineType.ChuongPhan;
         if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^(Mục|MỤC)\s+\d+", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             return ContentLineType.ChuongPhan;
-        // QUY ĐỊNH CHUNG, QUY ĐỊNH CỤ THỂ (tiêu đề chương)
-        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^[A-ZÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬĐÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ\s]+$") && trimmed.Length <= 80)
+
+        // Tiêu đề La Mã + chữ hoa: "I. MỤC TIÊU:", "II. NỘI DUNG:", "III. KINH PHÍ:"
+        // Chỉ match khi bắt đầu bằng số La Mã + dấu chấm + toàn chữ hoa
+        if (System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^[IVXLCDM]+\.\s+[A-ZÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬĐÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ\s,\-:]+$") && trimmed.Length <= 60)
             return ContentLineType.ChuongPhan;
 
         // Điều 1. ..., Điều 12: ...
@@ -870,6 +999,7 @@ public class WordExportService
             var body = mainPart.Document.AppendChild(new Body());
 
             // Header: Cơ quan | Quốc hiệu
+            CleanupDocumentContent(tempDoc);
             AddHeader(body, tempDoc);
 
             // Số VB + Ngày + Tên loại + Trích yếu
@@ -974,15 +1104,15 @@ public class WordExportService
     /// </summary>
     private string ExtractParentOrg(string issuer)
     {
-        if (string.IsNullOrEmpty(issuer)) return "[CƠ QUAN CẤP TRÊN]";
+        if (string.IsNullOrEmpty(issuer)) return "";
 
-        var upper = issuer.ToUpper().Trim();
+        var upper = StripTitleKeywords(issuer.ToUpper().Trim());
 
         // Các pattern phổ biến: tách tên tổ chức khỏi tên địa phương
         // "ỦY BAN NHÂN DÂN XÃ/HUYỆN/TỈNH/TP..." → "ỦY BAN NHÂN DÂN"
         var locationPrefixes = new[] {
             " XÃ ", " HUYỆN ", " TỈNH ", " THÀNH PHỐ ", " TP. ", " TP ", " THỊ XÃ ", " THỊ TRẤN ",
-            " PHƯỜNG ", " QUẬN ", " THÀNH PHỐ "
+            " PHƯỜNG ", " QUẬN "
         };
 
         foreach (var prefix in locationPrefixes)
@@ -994,8 +1124,8 @@ public class WordExportService
             }
         }
 
-        // Fallback: không tách được thì trả về nguyên bản
-        return upper;
+        // Sở, Ban, Ngành cấp tỉnh hoặc single-level org → không có cơ quan cấp trên
+        return "";
     }
 
     /// <summary>
@@ -1005,9 +1135,9 @@ public class WordExportService
     /// </summary>
     private string ExtractSubOrg(string issuer)
     {
-        if (string.IsNullOrEmpty(issuer)) return "[TÊN ĐƠN VỊ]";
+        if (string.IsNullOrEmpty(issuer)) return "";
 
-        var upper = issuer.ToUpper().Trim();
+        var upper = StripTitleKeywords(issuer.ToUpper().Trim());
 
         var locationPrefixes = new[] {
             " XÃ ", " HUYỆN ", " TỈNH ", " THÀNH PHỐ ", " TP. ", " TP ", " THỊ XÃ ", " THỊ TRẤN ",
@@ -1023,8 +1153,43 @@ public class WordExportService
             }
         }
 
-        // Fallback: trả về toàn bộ (gạch chân)
+        // Single-level org (Sở, Ban, Ngành...) → trả về toàn bộ tên (gạch chân)
         return upper;
+    }
+
+    /// <summary>
+    /// Loại bỏ chức danh khỏi tên cơ quan ("GIÁM ĐỐC SỞ NỘI VỤ" → "SỞ NỘI VỤ")
+    /// Tránh lẫn lộn giữa Issuer (cơ quan) và SigningTitle (chức danh)
+    /// </summary>
+    private string StripTitleKeywords(string orgName)
+    {
+        if (string.IsNullOrEmpty(orgName)) return orgName;
+
+        var titlePrefixes = new[] {
+            "GIÁM ĐỐC ", "PHÓ GIÁM ĐỐC ",
+            "CHỦ TỊCH ", "PHÓ CHỦ TỊCH ",
+            "TRƯỞNG BAN ", "PHÓ TRƯỞNG BAN ",
+            "TRƯỞNG PHÒNG ", "PHÓ TRƯỞNG PHÒNG ",
+            "CHÁNH VĂN PHÒNG ", "PHÓ CHÁNH VĂN PHÒNG ",
+            "TỔNG GIÁM ĐỐC ", "PHÓ TỔNG GIÁM ĐỐC ",
+            "BÍ THƯ ", "PHÓ BÍ THƯ ",
+            "CHÁNH ÁN ", "VIỆN TRƯỞNG "
+        };
+
+        foreach (var prefix in titlePrefixes)
+        {
+            if (orgName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                var stripped = orgName.Substring(prefix.Length).Trim();
+                // Chỉ strip nếu phần còn lại đủ dài để là tên cơ quan có nghĩa
+                // VD: "GIÁM ĐỐC SỞ NỘI VỤ" → "SỞ NỘI VỤ" (OK, 10 chars)
+                // VD: "GIÁM ĐỐC SỞ" → "SỞ" (3 chars, quá ngắn → không strip)
+                if (!string.IsNullOrEmpty(stripped) && stripped.Length >= 5)
+                    return stripped;
+            }
+        }
+
+        return orgName;
     }
 
     /// <summary>
@@ -1034,20 +1199,34 @@ public class WordExportService
     /// </summary>
     private void AddAuthorityLine(Body body, DocModel document)
     {
-        // Tạo dòng: [ChứcDanh] [CơQuanBanHành]
+        // Tạo dòng thẩm quyền: [ChứcDanh] [CơQuanBanHành]
+        // VD: "GIÁM ĐỐC SỞ NỘI VỤ", "CHỦ TỊCH UBND XÃ GIA KIỆM"
         var authorityText = "";
 
-        if (!string.IsNullOrEmpty(document.SigningTitle) && !string.IsNullOrEmpty(document.Issuer))
+        var signingTitle = document.SigningTitle?.Trim().ToUpper() ?? "";
+        var issuer = document.Issuer?.Trim().ToUpper() ?? "";
+        var cleanIssuer = StripTitleKeywords(issuer); // Bỏ chức danh khỏi tên CQ nếu bị lẫn
+
+        if (!string.IsNullOrEmpty(signingTitle) && !string.IsNullOrEmpty(cleanIssuer))
         {
-            authorityText = $"{document.SigningTitle.ToUpper()} {document.Issuer.ToUpper()}";
+            // Tránh trùng: nếu SigningTitle đã chứa trong Issuer thì dùng Issuer trực tiếp
+            if (issuer.Contains(signingTitle, StringComparison.OrdinalIgnoreCase))
+            {
+                authorityText = issuer;
+            }
+            else
+            {
+                authorityText = $"{signingTitle} {cleanIssuer}";
+            }
         }
-        else if (!string.IsNullOrEmpty(document.SigningTitle))
+        else if (!string.IsNullOrEmpty(signingTitle))
         {
-            authorityText = document.SigningTitle.ToUpper();
+            authorityText = signingTitle;
         }
-        else if (!string.IsNullOrEmpty(document.Issuer))
+        else if (!string.IsNullOrEmpty(issuer))
         {
-            authorityText = document.Issuer.ToUpper();
+            // Issuer có thể chứa cả chức danh (VD: "Giám đốc Sở") — dùng nguyên
+            authorityText = issuer;
         }
 
         if (string.IsNullOrEmpty(authorityText)) return;

@@ -3,7 +3,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using AIVanBan.Core.Models;
 using AIVanBan.Core.Services;
 using AIVanBan.Desktop.Services;
@@ -17,9 +19,16 @@ public partial class MainWindow : Window
     private readonly AlbumStructureService _albumService;
     private bool _isSidebarCollapsed = false;
     
+    // Active sidebar button tracking
+    private Button? _activeSidebarButton;
+    private static readonly System.Windows.Media.SolidColorBrush ActiveBg = 
+        new(System.Windows.Media.Color.FromArgb(30, 33, 150, 243)); // #1E2196F3
+    private static readonly System.Windows.Media.SolidColorBrush ActiveBorder = 
+        new(System.Windows.Media.Color.FromRgb(33, 150, 243)); // #2196F3
+    
     // Meeting reminder timer — kiểm tra mỗi 2 phút
-    private readonly System.Windows.Threading.DispatcherTimer _reminderTimer;
-    private readonly MeetingReminderService _reminderService;
+    private System.Windows.Threading.DispatcherTimer? _reminderTimer;
+    private MeetingReminderService? _reminderService;
     
     public MainWindow()
     {
@@ -27,52 +36,31 @@ public partial class MainWindow : Window
         {
             InitializeComponent();
             
+            // === PHASE 1: Minimal init — chỉ tạo services cần thiết để hiển thị UI ===
             Console.WriteLine("🔧 Initializing DocumentService...");
             _documentService = new DocumentService();
             
             Console.WriteLine("🔧 Initializing AlbumStructureService...");
             _albumService = new AlbumStructureService();
             
-            // Initialize reminder service
-            _reminderService = new MeetingReminderService(new MeetingService());
-            _reminderTimer = new System.Windows.Threading.DispatcherTimer
-            {
-                Interval = TimeSpan.FromMinutes(2) // Kiểm tra mỗi 2 phút
-            };
-            _reminderTimer.Tick += ReminderTimer_Tick;
-            _reminderTimer.Start();
+            // Initialize SnackbarHelper
+            SnackbarHelper.Initialize(MainSnackbar);
             
-            // Initialize album templates AFTER DocumentService is fully initialized
-            Console.WriteLine("🔧 Initializing album templates...");
-            _albumService.InitializeDefaultTemplates();
-            
-            // Seed default document templates if needed
-            Console.WriteLine("🔧 Seeding default data...");
-            InitializeDefaultData();
-            
-            // Unified first-run setup — tạo cả thư mục tài liệu + album ảnh
-            Console.WriteLine("🔧 Checking first-run setup...");
-            CheckFirstRunSetup();
-            
-            Console.WriteLine("🔧 Loading statistics...");
-            LoadStatistics();
-            
-            Console.WriteLine("🔧 Loading API status bar...");
-            LoadApiStatusBar();
-            
-            // Cập nhật trạng thái sidebar AI buttons
+            // Cập nhật trạng thái sidebar AI buttons (lightweight, UI only)
             Console.WriteLine("🔧 Updating AI sidebar state...");
             UpdateAiSidebarState();
             
-            // Navigate to Dashboard on startup
+            // Navigate to Dashboard IMMEDIATELY — user thấy UI ngay
             Console.WriteLine("🔧 Loading Dashboard...");
             WelcomeScreen.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new Views.DashboardPage(_documentService));
+            SetActiveSidebarButton(btnDashboard);
             
-            // Cảnh báo VB quá hạn khi khởi động — Theo Điều 24, NĐ 30/2020
-            CheckOverdueOnStartup();
+            // === PHASE 2: Heavy init deferred to ContentRendered ===
+            // (chạy SAU KHI window đã render xong — user đã thấy giao diện)
+            ContentRendered += MainWindow_ContentRendered;
             
-            Console.WriteLine("✅ MainWindow initialized successfully!");
+            Console.WriteLine("✅ MainWindow UI initialized — heavy init deferred to ContentRendered");
         }
         catch (Exception ex)
         {
@@ -93,99 +81,173 @@ public partial class MainWindow : Window
                 MessageBoxImage.Error
             );
             
-            throw; // Re-throw to show in global exception handler
+            throw;
         }
     }
     
     /// <summary>
-    /// Kiểm tra và cảnh báo VB quá hạn + cuộc họp sắp diễn ra khi khởi động — Điều 24, NĐ 30/2020
+    /// Phase 2 — Heavy initialization SAU KHI window đã render.
+    /// User đã thấy Dashboard → các tác vụ nặng chạy ở đây.
     /// </summary>
-    private void CheckOverdueOnStartup()
+    private async void MainWindow_ContentRendered(object? sender, EventArgs e)
+    {
+        ContentRendered -= MainWindow_ContentRendered; // Chỉ chạy 1 lần
+        
+        try
+        {
+            // --- Background tasks (không block UI) ---
+            
+            // 1. Auto-backup — chạy trên background thread (ZIP nặng nhất)
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var backupService = new AIVanBan.Core.Services.BackupService();
+                    var backupResult = backupService.AutoBackup();
+                    if (backupResult.Success && !backupResult.Skipped)
+                        Console.WriteLine($"✅ Auto-backup: {backupResult.FilePath}");
+                    else if (backupResult.Skipped)
+                        Console.WriteLine("✅ Auto-backup: Skipped (recent backup exists)");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ Auto-backup failed: {ex.Message}");
+                }
+            });
+            
+            // 2. Seed templates + album (first-run heavy, subsequent = fast skip)
+            await Task.Run(() =>
+            {
+                Console.WriteLine("🔧 Initializing album templates...");
+                _albumService.InitializeDefaultTemplates();
+                
+                Console.WriteLine("🔧 Seeding default data...");
+                var seeder = new TemplateSeeder(_documentService);
+                seeder.SeedDefaultTemplates();
+            });
+            
+            // 3. First-run setup wizard (needs UI thread — may show dialog)
+            Console.WriteLine("🔧 Checking first-run setup...");
+            CheckFirstRunSetup();
+            
+            // 4. Meeting reminder service
+            _reminderService = new MeetingReminderService(new MeetingService());
+            _reminderTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMinutes(2)
+            };
+            _reminderTimer.Tick += ReminderTimer_Tick;
+            _reminderTimer.Start();
+            
+            // 5. Load statistics (quick DB queries)
+            Console.WriteLine("🔧 Loading statistics...");
+            LoadStatistics();
+            
+            // 6. Load API status bar
+            Console.WriteLine("🔧 Loading API status bar...");
+            LoadApiStatusBar();
+            
+            // 7. Check overdue — async, non-blocking Snackbar
+            await CheckOverdueOnStartupAsync();
+            
+            // 8. Delayed update check (10 seconds after startup)
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10));
+                Dispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        AppUpdateService.CheckForUpdateSilent();
+                        Console.WriteLine("✅ Update check triggered (deferred 10s)");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"⚠️ Deferred update check failed: {ex.Message}");
+                    }
+                });
+            });
+            
+            Console.WriteLine("✅ MainWindow fully initialized!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ ContentRendered init error: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Kiểm tra và cảnh báo VB quá hạn + cuộc họp sắp diễn ra khi khởi động — Điều 24, NĐ 30/2020.
+    /// Async version: chạy DB queries trên background thread, hiển thị Snackbar thay MessageBox.
+    /// </summary>
+    private async Task CheckOverdueOnStartupAsync()
     {
         try
         {
-            var sb = new System.Text.StringBuilder();
-            bool hasWarnings = false;
-
-            // === 1. VB quá hạn ===
-            var overdueList = _documentService.GetOverdueDocuments();
-            if (overdueList.Count > 0)
+            // Chạy DB queries trên background thread
+            var (overdueCount, dueSoonCount, meetingCount, summaryText) = await Task.Run(() =>
             {
-                hasWarnings = true;
-                var details = string.Join("\n", overdueList
-                    .OrderBy(d => d.DueDate)
-                    .Take(5)
-                    .Select(d => $"  • {d.Number} — {d.Title} (hạn: {d.DueDate:dd/MM/yyyy})"));
-                var moreText = overdueList.Count > 5 ? $"\n  ... và {overdueList.Count - 5} VB khác" : "";
-                sb.AppendLine($"⚠️ CÓ {overdueList.Count} VĂN BẢN ĐẾN ĐÃ QUÁ HẠN XỬ LÝ!\n");
-                sb.AppendLine($"{details}{moreText}");
-            }
+                var sb = new System.Text.StringBuilder();
+                int overdue = 0, dueSoon = 0, meetings = 0;
 
-            // === 2. VB sắp hết hạn (trong 3 ngày tới) ===
-            var allDocs = _documentService.GetAllDocuments();
-            var dueSoon = allDocs.Where(d =>
-                d.DueDate.HasValue && !d.IsDeleted
-                && d.Direction == Direction.Den
-                && d.WorkflowStatus != DocumentStatus.Archived
-                && d.WorkflowStatus != DocumentStatus.Published
-                && (d.DueDate.Value.Date - DateTime.Today).Days >= 0
-                && (d.DueDate.Value.Date - DateTime.Today).Days <= 3
-            ).ToList();
-            
-            if (dueSoon.Count > 0)
-            {
-                hasWarnings = true;
-                if (sb.Length > 0) sb.AppendLine("\n─────────────────────────────\n");
-                sb.AppendLine($"⏰ {dueSoon.Count} VĂN BẢN SẮP HẾT HẠN (trong 3 ngày):\n");
-                foreach (var d in dueSoon.Take(5))
+                // 1. VB quá hạn
+                var overdueList = _documentService.GetOverdueDocuments();
+                overdue = overdueList.Count;
+
+                // 2. VB sắp hết hạn (3 ngày)
+                var allDocs = _documentService.GetAllDocuments();
+                var dueSoonList = allDocs.Where(d =>
+                    d.DueDate.HasValue && !d.IsDeleted
+                    && d.Direction == Direction.Den
+                    && d.WorkflowStatus != DocumentStatus.Archived
+                    && d.WorkflowStatus != DocumentStatus.Published
+                    && (d.DueDate.Value.Date - DateTime.Today).Days >= 0
+                    && (d.DueDate.Value.Date - DateTime.Today).Days <= 3
+                ).ToList();
+                dueSoon = dueSoonList.Count;
+
+                // 3. Cuộc họp hôm nay
+                try
                 {
-                    var days = (d.DueDate!.Value.Date - DateTime.Today).Days;
-                    var urgency = days == 0 ? "HÔM NAY" : $"còn {days} ngày";
-                    sb.AppendLine($"  • {d.Number} — {d.Title} ({urgency})");
+                    var meetingService = new MeetingService();
+                    var todayMeetings = meetingService.GetMeetingsByDateRange(DateTime.Today, DateTime.Today.AddDays(1))
+                        .Where(m => m.Status != MeetingStatus.Cancelled && m.Status != MeetingStatus.Completed)
+                        .ToList();
+                    meetings = todayMeetings.Count;
                 }
-                if (dueSoon.Count > 5) sb.AppendLine($"  ... và {dueSoon.Count - 5} VB khác");
-            }
+                catch { }
 
-            // === 3. Cuộc họp trong hôm nay ===
-            try
+                // Build compact summary for Snackbar
+                var parts = new System.Collections.Generic.List<string>();
+                if (overdue > 0) parts.Add($"⚠️ {overdue} VB quá hạn");
+                if (dueSoon > 0) parts.Add($"⏰ {dueSoon} VB sắp hết hạn");
+                if (meetings > 0) parts.Add($"📅 {meetings} cuộc họp hôm nay");
+
+                return (overdue, dueSoon, meetings, string.Join("  ·  ", parts));
+            });
+
+            // Hiển thị Snackbar (non-blocking) thay vì MessageBox
+            if (overdueCount > 0 || dueSoonCount > 0 || meetingCount > 0)
             {
-                var meetingService = new MeetingService();
-                var todayMeetings = meetingService.GetMeetingsByDateRange(DateTime.Today, DateTime.Today.AddDays(1))
-                    .Where(m => m.Status != MeetingStatus.Cancelled && m.Status != MeetingStatus.Completed)
-                    .OrderBy(m => m.StartTime)
-                    .ToList();
-                
-                if (todayMeetings.Count > 0)
-                {
-                    hasWarnings = true;
-                    if (sb.Length > 0) sb.AppendLine("\n─────────────────────────────\n");
-                    sb.AppendLine($"📅 {todayMeetings.Count} CUỘC HỌP HÔM NAY:\n");
-                    foreach (var m in todayMeetings.Take(5))
+                MainSnackbar.MessageQueue?.Enqueue(
+                    summaryText,
+                    "XEM CHI TIẾT",
+                    (_) =>
                     {
-                        sb.AppendLine($"  • {m.StartTime:HH:mm} — {m.Title}");
-                        if (!string.IsNullOrWhiteSpace(m.Location))
-                            sb.AppendLine($"    📍 {m.Location}");
-                    }
-                    if (todayMeetings.Count > 5) sb.AppendLine($"  ... và {todayMeetings.Count - 5} cuộc họp khác");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"⚠️ CheckMeetings error: {ex.Message}");
-            }
-
-            if (hasWarnings)
-            {
-                MessageBox.Show(
-                    sb.ToString(),
-                    "📋 Thông báo khi khởi động — VanBanPlus",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                        // Khi user click "XEM CHI TIẾT" → navigate to Dashboard
+                        MainFrame.Navigate(new Views.DashboardPage(_documentService));
+                    },
+                    null,
+                    false,
+                    true,
+                    TimeSpan.FromSeconds(8));
+                    
+                Console.WriteLine($"📋 Startup notification: {summaryText}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️ CheckOverdueOnStartup error: {ex.Message}");
+            Console.WriteLine($"⚠️ CheckOverdueOnStartupAsync error: {ex.Message}");
         }
     }
     
@@ -196,6 +258,7 @@ public partial class MainWindow : Window
     {
         try
         {
+            if (_reminderService == null) return;
             var reminders = _reminderService.CheckUpcomingReminders();
             foreach (var reminder in reminders)
             {
@@ -225,7 +288,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️ ReminderTimer error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"⚠️ ReminderTimer error: {ex.Message}\n{ex.StackTrace}");
         }
     }
     
@@ -278,6 +341,7 @@ public partial class MainWindow : Window
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.DashboardPage(_documentService));
+        SetActiveSidebarButton(btnDashboard);
     }
     
     private void NavigateToDocuments(object sender, RoutedEventArgs e)
@@ -286,6 +350,7 @@ public partial class MainWindow : Window
         {
             WelcomeScreen.Visibility = Visibility.Collapsed;
             MainFrame.Navigate(new Views.DocumentListPage(_documentService));
+            SetActiveSidebarButton(btnDocuments);
         }
         catch (Exception ex)
         {
@@ -308,11 +373,42 @@ public partial class MainWindow : Window
             txtGroupAI.Opacity = aiReady ? 0.85 : 0.4;
 
         // Dim/enable từng button AI trên sidebar
-        var aiButtons = new[] { btnAI, btnAIReport, btnAIScan, btnAIReview, btnAIAdvisory, btnAISummary };
+        var aiButtons = new[] { btnAI, btnAIReview, btnAIScan, btnAIReport, btnAIAdvisory, btnAISummary };
         foreach (var btn in aiButtons)
         {
             if (btn != null)
                 btn.Opacity = opacity;
+        }
+        
+        // Dim expander
+        if (aiToolsExpander != null)
+            aiToolsExpander.Opacity = opacity;
+    }
+
+    /// <summary>
+    /// Highlight sidebar button đang active — đổi background + border trái.
+    /// Reset button cũ về mặc định.
+    /// </summary>
+    private void SetActiveSidebarButton(Button? activeBtn)
+    {
+        // Reset button cũ
+        if (_activeSidebarButton != null)
+        {
+            _activeSidebarButton.Background = System.Windows.Media.Brushes.Transparent;
+            _activeSidebarButton.BorderBrush = System.Windows.Media.Brushes.Transparent;
+            _activeSidebarButton.BorderThickness = new Thickness(0);
+            _activeSidebarButton.FontWeight = FontWeights.Normal;
+        }
+
+        _activeSidebarButton = activeBtn;
+
+        // Set active style
+        if (activeBtn != null)
+        {
+            activeBtn.Background = ActiveBg;
+            activeBtn.BorderBrush = ActiveBorder;
+            activeBtn.BorderThickness = new Thickness(3, 0, 0, 0);
+            activeBtn.FontWeight = FontWeights.SemiBold;
         }
     }
     
@@ -321,6 +417,7 @@ public partial class MainWindow : Window
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.AIGeneratorPage(_documentService));
+        SetActiveSidebarButton(btnAI);
     }
 
     private void OpenAIReport_Click(object sender, RoutedEventArgs e)
@@ -357,7 +454,7 @@ public partial class MainWindow : Window
         {
             doc.Content = dialog.AppliedContent;
             _documentService.UpdateDocument(doc);
-            MessageBox.Show("✅ Đã áp dụng nội dung đã sửa vào văn bản!", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+            SnackbarHelper.ShowSuccess("Đã áp dụng nội dung đã sửa vào văn bản!");
         }
     }
 
@@ -510,6 +607,7 @@ public partial class MainWindow : Window
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.TemplateManagementPage(_documentService));
+        SetActiveSidebarButton(btnTemplates);
     }
 
     // Theo Điều 1, NĐ 30/2020/NĐ-CP — Tra cứu pháp quy văn thư
@@ -517,36 +615,42 @@ public partial class MainWindow : Window
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.LegalReferencePage());
+        SetActiveSidebarButton(btnLegalRef);
     }
 
     private void NavigateToStatistics(object sender, RoutedEventArgs e)
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.StatisticsPage(_documentService));
+        SetActiveSidebarButton(btnStatistics);
     }
     
     private void NavigateToPhotos(object? sender, RoutedEventArgs? e)
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.PhotoAlbumPageSimple());
+        SetActiveSidebarButton(btnPhotos);
     }
 
     private void NavigateToMeetings(object sender, RoutedEventArgs e)
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.MeetingListPage(_documentService));
+        SetActiveSidebarButton(btnMeetings);
     }
 
     private void NavigateToCalendar(object sender, RoutedEventArgs e)
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.CalendarPage(_documentService));
+        SetActiveSidebarButton(btnCalendar);
     }
 
     private void NavigateToBackup(object sender, RoutedEventArgs e)
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.BackupRestorePage());
+        SetActiveSidebarButton(btnBackup);
     }
 
     private void Help_Click(object sender, RoutedEventArgs e)
@@ -586,12 +690,14 @@ public partial class MainWindow : Window
             MainFrame.Navigate(new Views.HelpPage(sectionName));
         else
             MainFrame.Navigate(new Views.HelpPage());
+        SetActiveSidebarButton(btnHelp);
     }
 
     private void NavigateToAdmin(object sender, RoutedEventArgs e)
     {
         WelcomeScreen.Visibility = Visibility.Collapsed;
         MainFrame.Navigate(new Views.AdminDashboardPage());
+        SetActiveSidebarButton(btnAdmin);
     }
 
     /// <summary>
@@ -686,11 +792,8 @@ public partial class MainWindow : Window
                 txtMeetings.Visibility = Visibility.Collapsed;
                 txtCalendar.Visibility = Visibility.Collapsed;
                 txtAI.Visibility = Visibility.Collapsed;
-                txtAIReport.Visibility = Visibility.Collapsed;
-                txtAIScan.Visibility = Visibility.Collapsed;
                 txtAIReview.Visibility = Visibility.Collapsed;
-                txtAIAdvisory.Visibility = Visibility.Collapsed;
-                txtAISummary.Visibility = Visibility.Collapsed;
+                if (aiToolsExpander != null) aiToolsExpander.Visibility = Visibility.Collapsed;
                 txtAlbumSetup.Visibility = Visibility.Collapsed;
                 txtBackup.Visibility = Visibility.Collapsed;
                 txtHelp.Visibility = Visibility.Collapsed;
@@ -705,8 +808,8 @@ public partial class MainWindow : Window
                 
                 // Center button content
                 var allButtons = new[] { btnDashboard, btnDocuments, btnTemplates,
-                    btnLegalRef, btnStatistics, btnPhotos, btnMeetings, btnAI, btnAIReport, btnAIScan, btnAIReview,
-                    btnAIAdvisory, btnAISummary, btnAlbumSetup, btnBackup, btnHelp };
+                    btnLegalRef, btnStatistics, btnPhotos, btnMeetings, btnCalendar, btnAI, btnAIReview,
+                    btnAlbumSetup, btnBackup, btnHelp };
                 foreach (var btn in allButtons)
                 {
                     btn.HorizontalContentAlignment = HorizontalAlignment.Center;
@@ -730,11 +833,8 @@ public partial class MainWindow : Window
                 txtMeetings.Visibility = Visibility.Visible;
                 txtCalendar.Visibility = Visibility.Visible;
                 txtAI.Visibility = Visibility.Visible;
-                txtAIReport.Visibility = Visibility.Visible;
-                txtAIScan.Visibility = Visibility.Visible;
                 txtAIReview.Visibility = Visibility.Visible;
-                txtAIAdvisory.Visibility = Visibility.Visible;
-                txtAISummary.Visibility = Visibility.Visible;
+                if (aiToolsExpander != null) aiToolsExpander.Visibility = Visibility.Visible;
                 txtAlbumSetup.Visibility = Visibility.Visible;
                 txtBackup.Visibility = Visibility.Visible;
                 txtHelp.Visibility = Visibility.Visible;
@@ -749,8 +849,8 @@ public partial class MainWindow : Window
                 
                 // Restore button alignment
                 var allButtons = new[] { btnDashboard, btnDocuments, btnTemplates,
-                    btnLegalRef, btnStatistics, btnPhotos, btnMeetings, btnAI, btnAIReport, btnAIScan, btnAIReview,
-                    btnAIAdvisory, btnAISummary, btnAlbumSetup, btnBackup, btnHelp };
+                    btnLegalRef, btnStatistics, btnPhotos, btnMeetings, btnCalendar, btnAI, btnAIReview,
+                    btnAlbumSetup, btnBackup, btnHelp };
                 foreach (var btn in allButtons)
                 {
                     btn.HorizontalContentAlignment = HorizontalAlignment.Left;

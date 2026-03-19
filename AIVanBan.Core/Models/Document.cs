@@ -84,6 +84,20 @@ public class Document
     public DateTime? DeletedDate { get; set; }
     public string? DeletedBy { get; set; }
     
+    // ═══════ SỔ THEO DÕI CÁ NHÂN — Theo dõi VB từ góc nhìn cán bộ xử lý ═══════
+    /// <summary>Trạng thái xử lý cá nhân (Chưa xử lý / Đang xử lý / Đã xử lý / Chuyển tiếp)</summary>
+    public PersonalStatus MyStatus { get; set; } = PersonalStatus.ChuaXuLy;
+    /// <summary>Hạn xử lý cá nhân (có thể khác DueDate chính thức)</summary>
+    public DateTime? PersonalDeadline { get; set; }
+    /// <summary>Ghi chú cá nhân về VB (bút phê, nhắc nhở)</summary>
+    public string PersonalNote { get; set; } = string.Empty;
+    /// <summary>Đánh dấu sao — VB quan trọng cần theo dõi</summary>
+    public bool IsStarred { get; set; } = false;
+    /// <summary>Mức ưu tiên cá nhân (1-5, mặc định 3)</summary>
+    public int PersonalPriority { get; set; } = 3;
+    /// <summary>Danh sách ghi chú bút phê theo thời gian (JSON serialized)</summary>
+    public List<PersonalNoteEntry> Notes { get; set; } = new();
+    
     // Bản sao — Theo Điều 25-27, NĐ 30/2020/NĐ-CP
     public CopyType CopyType { get; set; } = CopyType.None; // Loại bản sao (None = VB gốc)
     public string OriginalDocumentId { get; set; } = string.Empty; // ID VB gốc (nếu là bản sao)
@@ -299,6 +313,29 @@ public static class EnumDisplayHelper
         _ => "Nháp"
     };
 
+    public static string GetDisplayName(this PersonalStatus status) => status switch
+    {
+        PersonalStatus.ChuaXuLy => "Chưa xử lý",
+        PersonalStatus.DangXuLy => "Đang xử lý",
+        PersonalStatus.DaXuLy => "Đã xử lý",
+        PersonalStatus.ChuyenTiep => "Chuyển tiếp",
+        _ => "Chưa xử lý"
+    };
+
+    public static string GetDisplayName(this NoteType type) => type switch
+    {
+        NoteType.ButPhe => "📝 Bút phê",
+        NoteType.ChiDao => "📋 Chỉ đạo",
+        NoteType.NhanXet => "💬 Nhận xét",
+        NoteType.NhacNho => "⏰ Nhắc nhở",
+        _ => "📝 Bút phê"
+    };
+
+    public static List<KeyValuePair<PersonalStatus, string>> GetPersonalStatusItems() =>
+        Enum.GetValues<PersonalStatus>()
+            .Select(v => new KeyValuePair<PersonalStatus, string>(v, v.GetDisplayName()))
+            .ToList();
+
     /// <summary>
     /// Ký hiệu viết tắt bản sao — Theo Phụ lục III, NĐ 30/2020/NĐ-CP
     /// </summary>
@@ -390,4 +427,38 @@ public enum CopyType
     SaoY,       // Sao y — Ký hiệu: SY
     SaoLuc,     // Sao lục — Ký hiệu: SL
     TrichSao    // Trích sao — Ký hiệu: TrS
+}
+
+/// <summary>
+/// Trạng thái xử lý cá nhân — Sổ theo dõi VB cá nhân
+/// </summary>
+public enum PersonalStatus
+{
+    ChuaXuLy,       // Chưa xử lý (mặc định)
+    DangXuLy,       // Đang xử lý
+    DaXuLy,         // Đã xử lý
+    ChuyenTiep      // Đã chuyển tiếp cho người/đơn vị khác
+}
+
+/// <summary>
+/// Một ghi chú bút phê gắn vào văn bản — lưu theo thời gian
+/// </summary>
+public class PersonalNoteEntry
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public string Content { get; set; } = string.Empty;
+    /// <summary>Loại ghi chú: ButPhe, ChiDao, NhanXet, NhacNho</summary>
+    public NoteType Type { get; set; } = NoteType.ButPhe;
+}
+
+/// <summary>
+/// Loại ghi chú bút phê
+/// </summary>
+public enum NoteType
+{
+    ButPhe,     // Bút phê của lãnh đạo
+    ChiDao,     // Ý kiến chỉ đạo
+    NhanXet,    // Nhận xét cá nhân
+    NhacNho     // Nhắc nhở, ghi nhớ
 }

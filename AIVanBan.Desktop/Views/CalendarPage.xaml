@@ -155,7 +155,7 @@
         <!-- ═══ SPLITTER: Kéo để thay đổi kích thước ═══ -->
         <GridSplitter Grid.Column="1" Width="5" 
                      HorizontalAlignment="Stretch" 
-                     Background="Transparent"
+                     Background="#E0E0E0"
                      Cursor="SizeWE"/>
 
         <!-- ═══ RIGHT: CHI TIẾT NGÀY ═══ -->

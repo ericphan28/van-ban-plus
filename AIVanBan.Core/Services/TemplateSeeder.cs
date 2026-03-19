@@ -140,13 +140,9 @@ public class TemplateSeeder
             CreateUBNDKeHoachXayDungNongThonMoiTemplate(),
         };
 
-        foreach (var template in templates)
-        {
-            _documentService.AddTemplate(template);
-            Console.WriteLine($"  ✓ Added: {template.Name}");
-        }
-
-        Console.WriteLine($"✅ Seeded {templates.Count} default templates successfully!");
+        // Bulk insert — nhanh hơn nhiều so với insert từng cái
+        var count = _documentService.BulkInsertTemplates(templates);
+        Console.WriteLine($"✅ Seeded {count} default templates successfully (bulk insert)!");
     }
 
     #region Công văn Templates

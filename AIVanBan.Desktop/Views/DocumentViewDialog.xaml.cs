@@ -290,6 +290,37 @@ public partial class DocumentViewDialog : Window
             filePanel.Children.Add(fileRow);
         }
         
+        // === CARD 8: SỔ THEO DÕI CÁ NHÂN ===
+        if (txtViewMyStatus != null)
+        {
+            txtViewMyStatus.Text = doc.MyStatus.GetDisplayName();
+            txtViewMyStatus.Foreground = new SolidColorBrush(doc.MyStatus switch
+            {
+                PersonalStatus.ChuaXuLy => Color.FromRgb(158, 158, 158),
+                PersonalStatus.DangXuLy => Color.FromRgb(251, 140, 0),
+                PersonalStatus.DaXuLy => Color.FromRgb(67, 160, 71),
+                PersonalStatus.ChuyenTiep => Color.FromRgb(30, 136, 229),
+                _ => Color.FromRgb(158, 158, 158)
+            });
+        }
+        if (txtViewStarred != null)
+            txtViewStarred.Text = doc.IsStarred ? "⭐ Đánh dấu quan trọng" : "☆ Chưa đánh dấu";
+        if (txtViewPersonalDeadline != null)
+            txtViewPersonalDeadline.Text = doc.PersonalDeadline?.ToString("dd/MM/yyyy") ?? "— Chưa đặt";
+        if (txtViewPriority != null)
+            txtViewPriority.Text = doc.PersonalPriority switch
+            {
+                1 => "⚪ Rất thấp",
+                2 => "🔵 Thấp",
+                3 => "🟡 Bình thường",
+                4 => "🟠 Cao",
+                5 => "🔴 Rất cao",
+                _ => "🟡 Bình thường"
+            };
+        
+        // Hiện ghi chú bút phê
+        LoadNotes(doc);
+        
         // === FOOTER: Audit info ===
         var auditParts = new List<string>();
         auditParts.Add($"Tạo: {doc.CreatedDate:dd/MM/yyyy HH:mm}");
@@ -369,5 +400,53 @@ public partial class DocumentViewDialog : Window
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    /// <summary>Load ghi chú bút phê vào ItemsControl</summary>
+    private void LoadNotes(Document doc)
+    {
+        var notes = (doc.Notes ?? new List<PersonalNoteEntry>())
+            .OrderByDescending(n => n.CreatedDate)
+            .Select(n => new { n.Content, n.CreatedDate, TypeDisplay = n.Type.GetDisplayName() })
+            .ToList();
+        
+        if (icViewNotes != null)
+            icViewNotes.ItemsSource = notes;
+        
+        if (txtNoNotes != null)
+            txtNoNotes.Visibility = notes.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>Thêm ghi chú bút phê</summary>
+    private void AddNote_Click(object sender, RoutedEventArgs e)
+    {
+        AddNoteFromTextBox();
+    }
+
+    private void NewNote_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            AddNoteFromTextBox();
+            e.Handled = true;
+        }
+    }
+
+    private void AddNoteFromTextBox()
+    {
+        var text = txtNewNote?.Text?.Trim();
+        if (string.IsNullOrEmpty(text) || _documentService == null) return;
+        
+        _documentService.AddNote(_document.Id, text);
+        txtNewNote!.Text = string.Empty;
+        IsEdited = true;
+        
+        // Reload document to refresh notes
+        var updated = _documentService.GetDocument(_document.Id);
+        if (updated != null)
+        {
+            _document = updated;
+            LoadNotes(updated);
+        }
     }
 }

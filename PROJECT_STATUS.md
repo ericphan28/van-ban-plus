@@ -4,8 +4,8 @@
 > Copilot/AI agent: **Luôn đọc file này đầu tiên** trước khi làm bất kỳ tính năng nào.
 > Sau khi hoàn thành tính năng: **Cập nhật file này** ngay lập tức.
 >
-> **Phiên bản hiện tại:** v1.0.13 (chốt 2026-06-09)
-> **Cập nhật lần cuối:** 2026-06-09
+> **Phiên bản hiện tại:** v1.0.14 (UI/UX improvements — 2026-06-14)
+> **Cập nhật lần cuối:** 2026-06-14
 > **Kiến trúc:** WPF .NET 9 + LiteDB + MaterialDesign-in-XAML
 
 ---
@@ -208,11 +208,11 @@
 
 | # | Task | Status | File cần tạo/sửa | Ghi chú |
 |---|------|--------|-------------------|---------|
-| B1.1 | Thêm field vào Document: `MyStatus` (Chưa XL/Đang XL/Đã XL/Chuyển tiếp), `AssignedTo`, `AssignedBy`, `PersonalDeadline`, `PersonalNote`, `IsStarred`, `Priority` | [ ] | `Document.cs` | Mang tính cá nhân, không liên quan DocumentStatus |
-| B1.2 | UI: Cột trạng thái cá nhân trong DataGrid (icon/badge) | [ ] | `DocumentListPage.xaml` | Màu: 🔴 Quá hạn, 🟡 Sắp hạn, 🟢 Đã xong, ⚪ Chưa XL |
-| B1.3 | UI: Panel "Theo dõi cá nhân" trong Preview panel | [ ] | `DocumentListPage.xaml` | Hiện: Trạng thái, giao cho, hạn, ghi chú, sao |
-| B1.4 | UI: Quick-action buttons (Đánh dấu XL xong, Đặt deadline, Ghi chú, Star) | [ ] | `DocumentListPage.xaml` | 1-click thay đổi trạng thái |
-| B1.5 | Lọc: "VB chưa xử lý" / "VB quá hạn" / "VB đánh dấu sao" / "VB tôi giao" | [ ] | `DocumentListPage.xaml.cs` | Quick filter buttons |
+| B1.1 | Thêm field vào Document: `MyStatus` (Chưa XL/Đang XL/Đã XL/Chuyển tiếp), `AssignedTo`, `AssignedBy`, `PersonalDeadline`, `PersonalNote`, `IsStarred`, `Priority` | [x] | `Document.cs` | Thêm PersonalStatus enum, PersonalNoteEntry class, NoteType enum (21/06) |
+| B1.2 | UI: Cột trạng thái cá nhân trong DataGrid (icon/badge) | [x] | `DocumentListPage.xaml` | Cột ⭐ Star + cột "Cá nhân" badge (21/06) |
+| B1.3 | UI: Panel "Theo dõi cá nhân" trong Preview panel | [x] | `DocumentListPage.xaml` | Card vàng với status, priority, deadline, notes timeline (21/06) |
+| B1.4 | UI: Quick-action buttons (Đánh dấu XL xong, Đặt deadline, Ghi chú, Star) | [x] | `DocumentListPage.xaml` | Click star toggle, click badge đổi status (21/06) |
+| B1.5 | Lọc: "VB chưa xử lý" / "VB quá hạn" / "VB đánh dấu sao" / "VB tôi giao" | [x] | `DocumentListPage.xaml.cs` | 3 filter buttons: ⭐ Quan trọng, ⬜ Chưa XL, ⚠ Quá hạn (21/06) |
 | B1.6 | Dashboard: Card "VB cần xử lý hôm nay" + "VB quá hạn" (theo trạng thái cá nhân) | [ ] | `DashboardPage.xaml` | Thay thế/bổ sung alert hiện có |
 | B1.7 | Xuất Excel: Danh sách VB tôi đang theo dõi (lọc theo kỳ/trạng thái) | [ ] | `ExcelExportService.cs` | Để báo cáo công việc cá nhân |
 | B1.8 | Test + sửa lỗi | [ ] | | |
@@ -231,11 +231,11 @@
 
 | # | Task | Status | File cần tạo/sửa | Ghi chú |
 |---|------|--------|-------------------|---------|
-| B2.1 | Model `PersonalNote` (nội dung, ngày, loại: BútPhê/GhiChú/NhắcNhở/Liên hệ, giao cho ai, hạn) | [ ] | `AIVanBan.Core/Models/` | Đây là danh sách notes trên 1 VB |
-| B2.2 | Thêm `List<PersonalNote>` vào `Document` | [ ] | `Document.cs` | |
-| B2.3 | UI: Panel ghi chú trong Preview (danh sách notes + nút thêm) | [ ] | `DocumentListPage.xaml` | Inline, không cần dialog riêng |
-| B2.4 | UI: Quick-add note (textbox + Enter = thêm note) | [ ] | `DocumentListPage.xaml` | Nhanh như chat |
-| B2.5 | UI: Hiển thị notes trong DocumentViewDialog | [ ] | `DocumentViewDialog.xaml` | Timeline style |
+| B2.1 | Model `PersonalNote` (nội dung, ngày, loại: BútPhê/GhiChú/NhắcNhở/Liên hệ, giao cho ai, hạn) | [x] | `AIVanBan.Core/Models/` | PersonalNoteEntry class + NoteType enum (21/06) |
+| B2.2 | Thêm `List<PersonalNote>` vào `Document` | [x] | `Document.cs` | List<PersonalNoteEntry> Notes (21/06) |
+| B2.3 | UI: Panel ghi chú trong Preview (danh sách notes + nút thêm) | [x] | `DocumentListPage.xaml` | icPreviewNotes + txtQuickNote + AddQuickNote_Click (21/06) |
+| B2.4 | UI: Quick-add note (textbox + Enter = thêm note) | [x] | `DocumentListPage.xaml` | Enter key handler + Send button (21/06) |
+| B2.5 | UI: Hiển thị notes trong DocumentViewDialog | [x] | `DocumentViewDialog.xaml` | Timeline card + add note inline (21/06) |
 | B2.6 | Dashboard: "Bút phê/Ghi chú gần đây" | [ ] | `DashboardPage.xaml` | Top 10 notes mới nhất |
 | B2.7 | Tìm kiếm trong notes | [ ] | `DocumentListPage.xaml.cs` | Tìm VB theo nội dung ghi chú |
 | B2.8 | Test + sửa lỗi | [ ] | | |
@@ -402,6 +402,15 @@ Khi user chọn loại CQ = "Bệnh viện" → app gợi ý mẫu y tế. Chọ
 | C14 | [x] ✅ MeetingService: Template system (SaveAsTemplate, CreateFromTemplate) | v1.0.13 |
 | C15 | [x] ✅ MeetingEditDialog: Quick Create mode (ẩn 5/6 tab) | v1.0.13 |
 | C16 | [x] ✅ Startup notification: VB quá hạn + sắp hạn + cuộc họp hôm nay | v1.0.13 |
+| C17 | [x] ✅ SnackbarHelper — Toast thay MessageBox cho success/info | v1.0.14 — DocumentListPage, MeetingListPage, MainWindow |
+| C18 | [x] ✅ Search debounce 300ms + Escape clear | v1.0.14 — DocumentListPage UX |
+| C19 | [x] ✅ AI Sidebar consolidation (Expander gom 4 tool phụ) | v1.0.14 — MainWindow sidebar |
+| C20 | [x] ✅ DocumentEditDialog: 3 GroupBox sections | v1.0.14 — Thông tin cơ bản / Phân loại / Nội dung |
+| C21 | [x] ✅ MeetingListPage: 3 buttons → 1 dropdown menu | v1.0.14 — Thêm cuộc họp ▼ |
+| C22 | [x] ✅ GridSplitter visible (#E0E0E0) — Document, Calendar | v1.0.14 — Người dùng nhìn thấy thanh kéo |
+| C23 | [x] ✅ Preview status: relative time + workflow status | v1.0.14 — "Hôm nay", "3 ngày trước" thay thế "🟢 Mới" |
+| C24 | [x] ✅ PhotoAlbum: Vietnamese text (Nhấn đúp, Nhấn chuột phải) | v1.0.14 |
+| C25 | [x] ✅ Abbreviation tooltips (Ngày BH → Ngày ban hành) | v1.0.14 |
 | C3 | [ ] Biểu đồ vẽ tay bằng Rectangle — không có chart library | Cân nhắc LiveCharts2 |
 | C4 | [ ] AI results không cache | Tốn quota gọi lại |
 | C5 | [ ] Chỉ có NĐ 30/2020 trong Legal Reference | Thêm TT, Luật Lưu trữ |

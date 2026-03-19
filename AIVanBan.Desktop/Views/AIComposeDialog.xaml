@@ -96,7 +96,7 @@
 
                 <ComboBox x:Name="SampleScenarioComboBox"
                          Grid.Column="1"
-                         materialDesign:HintAssist.Hint="Chọn kịch bản mẫu (40 mẫu)"
+                         materialDesign:HintAssist.Hint="Chọn mẫu có sẵn (40 mẫu)"
                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                          SelectionChanged="SampleScenarioComboBox_SelectionChanged"
                          Margin="0,0,10,0"

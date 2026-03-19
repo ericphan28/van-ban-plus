@@ -119,7 +119,7 @@
                                        Style="{StaticResource MaterialDesignOutlinedDatePicker}"/>
                             
                             <materialDesign:TimePicker x:Name="tpStartTime" Grid.Column="2"
-                                                      materialDesign:HintAssist.Hint="Giờ BĐ"
+                                                      materialDesign:HintAssist.Hint="Giờ bắt đầu"
                                                       materialDesign:HintAssist.IsFloating="True"
                                                       Is24Hours="True"
                                                       Style="{StaticResource MaterialDesignOutlinedTimePicker}"/>
@@ -130,7 +130,7 @@
                                        Style="{StaticResource MaterialDesignOutlinedDatePicker}"/>
                             
                             <materialDesign:TimePicker x:Name="tpEndTime" Grid.Column="6"
-                                                      materialDesign:HintAssist.Hint="Giờ KT"
+                                                      materialDesign:HintAssist.Hint="Giờ kết thúc"
                                                       materialDesign:HintAssist.IsFloating="True"
                                                       Is24Hours="True"
                                                       Style="{StaticResource MaterialDesignOutlinedTimePicker}"/>

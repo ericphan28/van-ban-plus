@@ -2,7 +2,7 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-      Title="Quản lý tài liệu"
+      Title="Quản lý văn bản"
       Focusable="True"
       KeyDown="Page_KeyDown">
     
@@ -19,7 +19,7 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="📄 QUẢN LÝ TÀI LIỆU" 
+            <TextBlock Text="📄 QUẢN LÝ VĂN BẢN" 
                        FontSize="18" FontWeight="Bold" 
                        VerticalAlignment="Center"/>
             <TextBlock Text="  •  " Foreground="#CCC" VerticalAlignment="Center" Margin="10,0"/>
@@ -116,6 +116,37 @@
                             </StackPanel>
                         </Button>
                         
+                        <!-- Separator -->
+                        <Border Width="1" Background="#E0E0E0" Margin="10,4" VerticalAlignment="Stretch"/>
+                        
+                        <!-- Lọc sổ theo dõi cá nhân -->
+                        <Button x:Name="btnFilterStarred"
+                               Style="{StaticResource MaterialDesignOutlinedButton}"
+                               Height="32" Padding="12,0"
+                               Click="FilterStarred_Click"
+                               Margin="0,0,6,0"
+                               BorderBrush="#FFC107">
+                            <TextBlock Text="⭐ Quan trọng" FontSize="12"/>
+                        </Button>
+                        
+                        <Button x:Name="btnFilterUnprocessed"
+                               Style="{StaticResource MaterialDesignOutlinedButton}"
+                               Height="32" Padding="12,0"
+                               Click="FilterUnprocessed_Click"
+                               Margin="0,0,6,0"
+                               BorderBrush="#FB8C00">
+                            <TextBlock Text="⬜ Chưa xử lý" FontSize="12"/>
+                        </Button>
+                        
+                        <Button x:Name="btnFilterOverdue"
+                               Style="{StaticResource MaterialDesignOutlinedButton}"
+                               Height="32" Padding="12,0"
+                               Click="FilterOverdue_Click"
+                               Margin="0,0,0,0"
+                               BorderBrush="#C62828">
+                            <TextBlock Text="⚠ Quá hạn" FontSize="12"/>
+                        </Button>
+                        
                         <!-- Thùng rác toggle -->
                         <Button x:Name="btnTrashToggle"
                                Style="{StaticResource MaterialDesignOutlinedButton}"
@@ -191,7 +222,7 @@
                                 </Button>
                                 <Separator/>
                                 <Button Click="GenerateDemo_Click" HorizontalContentAlignment="Left" Padding="12,8"
-                                        ToolTip="Tạo 20 văn bản mẫu (có hạn XL) để test">
+                                        ToolTip="Tạo 20 văn bản mẫu (có hạn xử lý) để thử nghiệm">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="DatabasePlus" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#FF9800"/>
                                         <TextBlock Text="Tạo dữ liệu demo" VerticalAlignment="Center"/>
@@ -418,7 +449,8 @@
             <!-- SPLITTER 1 -->
             <GridSplitter Grid.Column="1" Width="5" 
                          HorizontalAlignment="Stretch" 
-                         Background="Transparent"/>
+                         Background="#E0E0E0"
+                         Cursor="SizeWE"/>
 
             <!-- COLUMN 2: DataGrid -->
             <materialDesign:Card Grid.Column="2">
@@ -690,6 +722,22 @@
                     </DataGrid.Resources>
                     
                     <DataGrid.Columns>
+                        <!-- Đánh dấu sao — Sổ theo dõi cá nhân -->
+                        <DataGridTemplateColumn Header="⭐" Width="36" MinWidth="36" SortMemberPath="IsStarred" CanUserSort="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding StarIcon}" 
+                                              Foreground="{Binding StarColor}" 
+                                              FontSize="18" 
+                                              HorizontalAlignment="Center"
+                                              Cursor="Hand"
+                                              MouseLeftButtonDown="StarToggle_Click"
+                                              Tag="{Binding Id}"
+                                              ToolTip="Đánh dấu sao"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTextColumn Header="Số VB" Binding="{Binding Number}" Width="100" MinWidth="80" SortMemberPath="Number" CanUserSort="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
@@ -794,7 +842,7 @@
                         </DataGridTextColumn>
                         
                         <!-- Cột Hạn xử lý — Điều 24, NĐ 30/2020 -->
-                        <DataGridTemplateColumn Header="Hạn XL" Width="110" MinWidth="100" SortMemberPath="DueDate" CanUserSort="True">
+                        <DataGridTemplateColumn Header="Hạn xử lý" Width="110" MinWidth="100" SortMemberPath="DueDate" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DeadlineText}" 
@@ -828,6 +876,28 @@
                                         <TextBlock Text="{Binding StatusText}" 
                                                   Foreground="White" 
                                                   FontSize="10"
+                                                  FontWeight="Bold"
+                                                  HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <!-- Trạng thái xử lý cá nhân — Sổ theo dõi -->
+                        <DataGridTemplateColumn Header="Cá nhân" Width="75" MinWidth="70" SortMemberPath="MyStatus" CanUserSort="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding MyStatusColor}" 
+                                           CornerRadius="8" 
+                                           Padding="6,2"
+                                           HorizontalAlignment="Center"
+                                           Cursor="Hand"
+                                           MouseLeftButtonDown="PersonalStatusBadge_Click"
+                                           Tag="{Binding Id}"
+                                           ToolTip="Click để đổi trạng thái xử lý cá nhân">
+                                        <TextBlock Text="{Binding MyStatusText}" 
+                                                  Foreground="White" 
+                                                  FontSize="9.5"
                                                   FontWeight="Bold"
                                                   HorizontalAlignment="Center"/>
                                     </Border>
@@ -921,7 +991,8 @@
             <!-- SPLITTER 2 -->
             <GridSplitter Grid.Column="3" Width="5" 
                          HorizontalAlignment="Stretch" 
-                         Background="Transparent"/>
+                         Background="#E0E0E0"
+                         Cursor="SizeWE"/>
 
             <!-- COLUMN 3: PREVIEW PANEL -->
             <materialDesign:Card Grid.Column="4">
@@ -999,7 +1070,8 @@
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Loại:" FontWeight="SemiBold" Margin="0,0,0,6"/>
                                         <TextBlock Grid.Row="0" Grid.Column="1" x:Name="txtPreviewType" Text="..." Margin="0,0,0,6"/>
                                         
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Ngày BH:" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Ngày ban hành:" FontWeight="SemiBold" Margin="0,0,0,6"
+                                                   ToolTip="Ngày ban hành văn bản"/>
                                         <TextBlock Grid.Row="1" Grid.Column="1" x:Name="txtPreviewDate" Text="..." Margin="0,0,0,6"/>
                                         
                                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Cơ quan:" FontWeight="SemiBold" Margin="0,0,0,6"/>
@@ -1007,6 +1079,99 @@
                                         
                                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Trạng thái:" FontWeight="SemiBold"/>
                                         <TextBlock Grid.Row="3" Grid.Column="1" x:Name="txtPreviewStatus" Text="..."/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Sổ theo dõi cá nhân Card -->
+                            <Border x:Name="personalTrackingCard"
+                                   Background="#FFFDE7" 
+                                   BorderBrush="#FFD54F" 
+                                   BorderThickness="1"
+                                   CornerRadius="4"
+                                   Padding="12"
+                                   Margin="0,0,0,12"
+                                   Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock Text="📋 SỔ THEO DÕI CÁ NHÂN" 
+                                              FontWeight="Bold" 
+                                              FontSize="12"
+                                              Foreground="#F57F17"
+                                              Margin="0,0,0,8"/>
+                                    
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Trạng thái:" 
+                                                   FontWeight="SemiBold" Margin="0,0,8,6" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="txtPreviewMyStatus" 
+                                                   Text="Chưa xử lý" FontWeight="Bold" Margin="0,0,0,6"
+                                                   VerticalAlignment="Center"/>
+                                        
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Ưu tiên:" 
+                                                   FontWeight="SemiBold" Margin="0,0,8,6" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="txtPreviewPriority" 
+                                                   Text="..." Margin="0,0,0,6"/>
+                                        
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Hạn cá nhân:" 
+                                                   FontWeight="SemiBold" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="txtPreviewPersonalDeadline" 
+                                                   Text="—"/>
+                                    </Grid>
+                                    
+                                    <!-- Ghi chú bút phê -->
+                                    <TextBlock Text="📝 Ghi chú:" FontWeight="SemiBold" FontSize="11.5" 
+                                              Margin="0,4,0,4"/>
+                                    <ItemsControl x:Name="icPreviewNotes" Margin="0,0,0,4">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="White" CornerRadius="3" Padding="8,4" 
+                                                        Margin="0,0,0,4" BorderBrush="#E0E0E0" BorderThickness="1">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap" 
+                                                                   FontSize="12"/>
+                                                        <TextBlock FontSize="10" Foreground="#999" Margin="0,2,0,0">
+                                                            <TextBlock.Text>
+                                                                <MultiBinding StringFormat="{}{0} — {1:dd/MM/yyyy HH:mm}">
+                                                                    <Binding Path="TypeDisplay"/>
+                                                                    <Binding Path="CreatedDate"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    
+                                    <!-- Quick add note -->
+                                    <Grid Margin="0,4,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox x:Name="txtQuickNote" 
+                                                materialDesign:HintAssist.Hint="Thêm ghi chú..."
+                                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                FontSize="12"
+                                                Height="32"
+                                                Padding="8,4"
+                                                KeyDown="QuickNote_KeyDown"/>
+                                        <Button Grid.Column="1" 
+                                               Style="{StaticResource MaterialDesignIconButton}"
+                                               Width="32" Height="32" Margin="4,0,0,0"
+                                               ToolTip="Thêm ghi chú (Enter)"
+                                               Click="AddQuickNote_Click">
+                                            <materialDesign:PackIcon Kind="Send" Width="16" Height="16"/>
+                                        </Button>
                                     </Grid>
                                 </StackPanel>
                             </Border>

@@ -180,12 +180,13 @@ public class MeetingReminderServiceTests : IDisposable
     }
 
     [Fact]
-    public void CheckUpcomingReminders_ReminderSetToZero_SkipsIt()
+    public void CheckUpcomingReminders_ReminderSetToZero_DefaultsTo15()
     {
-        // Arrange — user tắt nhắc (ReminderMinutesBefore = 0)
+        // Arrange — ReminderMinutesBefore = 0 (meeting cũ trước khi có field, LiteDB trả 0)
+        // Service sẽ tự default lên 15 phút cho backwards compatibility
         var meeting = AddTestMeeting(new Meeting
         {
-            Title = "[TEST] Họp không nhắc",
+            Title = "[TEST] Họp không có ReminderMinutesBefore (cũ)",
             StartTime = DateTime.Now.AddMinutes(10),
             ReminderMinutesBefore = 0,
             Status = MeetingStatus.Scheduled,
@@ -195,8 +196,8 @@ public class MeetingReminderServiceTests : IDisposable
         // Act
         var reminders = _reminderService.CheckUpcomingReminders();
 
-        // Assert
-        Assert.DoesNotContain(reminders, r => r.Meeting.Id == meeting.Id);
+        // Assert — meeting cũ được default 15 phút, nên vẫn nhắc nhở
+        Assert.Contains(reminders, r => r.Meeting.Id == meeting.Id);
     }
 
     [Fact]

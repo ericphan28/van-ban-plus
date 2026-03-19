@@ -327,7 +327,7 @@ public partial class UnifiedSetupWizard : Window
                 {
                     Console.WriteLine("📄 [UnifiedWizard] Seeding demo documents...");
                     var seedService = new SeedDataService(_documentService);
-                    seedService.GenerateDemoDocuments();
+                    seedService.GenerateDemoDocuments(orgName: orgName);
                     
                     Console.WriteLine("📅 [UnifiedWizard] Seeding demo meetings...");
                     var meetingSeeder = new MeetingSeeder(_meetingService);

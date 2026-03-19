@@ -34,31 +34,24 @@
                         </StackPanel>
                     </Button>
                     <Button x:Name="btnAddMeeting" Style="{StaticResource MaterialDesignRaisedButton}"
-                           Padding="16,6" Click="AddMeeting_Click" ToolTip="Thêm cuộc họp mới">
+                           Padding="16,6" ToolTip="Thêm cuộc họp mới"
+                           Click="AddMeetingDropdown_Click">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Plus" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock Text="Thêm cuộc họp" VerticalAlignment="Center"/>
+                            <materialDesign:PackIcon Kind="ChevronDown" VerticalAlignment="Center" Margin="6,0,0,0" Width="16" Height="16"/>
                         </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                           Padding="12,6" Click="QuickAddMeeting_Click" Margin="8,0,0,0"
-                           ToolTip="Tạo nhanh — chỉ nhập tên, thời gian, địa điểm"
-                           Foreground="#E65100" BorderBrush="#E65100">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="LightningBolt" VerticalAlignment="Center" 
-                                                    Margin="0,0,6,0" Width="18" Height="18"/>
-                            <TextBlock Text="Tạo nhanh" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                           Padding="12,6" Click="CreateFromTemplate_Click" Margin="8,0,0,0"
-                           ToolTip="Tạo cuộc họp từ mẫu đã lưu"
-                           Foreground="#6A1B9A" BorderBrush="#6A1B9A">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" 
-                                                    Margin="0,0,6,0" Width="18" Height="18"/>
-                            <TextBlock Text="Từ mẫu" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                        </StackPanel>
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="📋 Tạo đầy đủ" Click="AddMeeting_Click"
+                                         ToolTip="Nhập đầy đủ thông tin cuộc họp (6 tab)"/>
+                                <MenuItem Header="⚡ Tạo nhanh" Click="QuickAddMeeting_Click"
+                                         ToolTip="Chỉ nhập tên, thời gian, địa điểm"/>
+                                <Separator/>
+                                <MenuItem Header="📄 Từ mẫu đã lưu" Click="CreateFromTemplate_Click"
+                                         ToolTip="Tạo cuộc họp từ mẫu đã lưu"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
                     </Button>
                 </StackPanel>
             </DockPanel>
@@ -231,7 +224,7 @@
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock x:Name="txtStatPending" Text="0" FontSize="20" FontWeight="Bold" Foreground="#283593"/>
-                            <TextBlock Text="NV chưa xong" FontSize="10" Foreground="#9E9E9E"/>
+                            <TextBlock Text="Nhiệm vụ chưa xong" FontSize="10" Foreground="#9E9E9E"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -286,10 +279,12 @@
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                           Padding="20,8" Click="SeedDemoMeetings_Click">
+                           Padding="20,8" Click="SeedDemoMeetings_Click"
+                           Foreground="#9E9E9E" BorderBrush="#E0E0E0"
+                           ToolTip="⚠️ Chỉ dùng để thử nghiệm — sẽ tạo dữ liệu mẫu">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="DatabaseImport" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock Text="Tạo dữ liệu mẫu" VerticalAlignment="Center"/>
+                            <TextBlock Text="Thử với dữ liệu mẫu" VerticalAlignment="Center" FontSize="12"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>

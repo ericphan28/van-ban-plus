@@ -155,13 +155,13 @@
                                                            Width="48" 
                                                            Height="48" 
                                                            Foreground="White"/>
-                                    <TextBlock Text="Double-click để mở" 
+                                    <TextBlock Text="Nhấn đúp để mở" 
                                                Foreground="White" 
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                HorizontalAlignment="Center"
                                                Margin="0,10,0,0"/>
-                                    <TextBlock Text="Right-click cho thêm tùy chọn" 
+                                    <TextBlock Text="Nhấn chuột phải cho thêm tùy chọn" 
                                                Foreground="#EEEEEE" 
                                                FontSize="11"
                                                HorizontalAlignment="Center"

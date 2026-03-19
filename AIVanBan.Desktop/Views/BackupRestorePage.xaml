@@ -101,7 +101,7 @@
                           Text="Tự động sao lưu: Đang kiểm tra..."
                           FontSize="13" VerticalAlignment="Center"/>
                 <Button x:Name="btnOpenBackupFolder" Style="{StaticResource MaterialDesignFlatButton}"
-                       Content="📂 Mở thư mục backup" Margin="20,0,0,0"
+                       Content="📂 Mở thư mục sao lưu" Margin="20,0,0,0"
                        Click="BtnOpenBackupFolder_Click" FontSize="12"/>
             </StackPanel>
         </materialDesign:Card>
@@ -133,7 +133,7 @@
                      HorizontalGridLinesBrush="{DynamicResource MaterialDesignDivider}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Loại" Binding="{Binding TypeLabel}" Width="80"/>
-                    <DataGridTextColumn Header="Tên file" Binding="{Binding FileName}" Width="*"/>
+                    <DataGridTextColumn Header="Tên tệp" Binding="{Binding FileName}" Width="*"/>
                     <DataGridTextColumn Header="Dung lượng" Binding="{Binding FileSizeFormatted}" Width="100"/>
                     <DataGridTextColumn Header="Ngày tạo" Binding="{Binding CreatedDate, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
                     <DataGridTemplateColumn Header="Thao tác" Width="180">

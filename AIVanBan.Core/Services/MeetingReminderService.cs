@@ -39,14 +39,21 @@ public class MeetingReminderService
         try
         {
             var now = DateTime.Now;
-            // Lấy cuộc họp trong 2 giờ tới
+            // Lấy cuộc họp trong ngày hôm nay, chưa bắt đầu
             var upcoming = _meetingService.GetMeetingsByDateRange(now.Date, now.Date.AddDays(1))
                 .Where(m => m.Status != MeetingStatus.Cancelled 
                          && m.Status != MeetingStatus.Completed
                          && !m.IsTemplate
-                         && m.ReminderMinutesBefore > 0
                          && m.StartTime > now) // Chưa bắt đầu
                 .ToList();
+            
+            // Fix: meetings cũ trước khi có field ReminderMinutesBefore → LiteDB trả 0
+            // Gán default 15 phút cho các meeting có ReminderMinutesBefore = 0
+            foreach (var m in upcoming)
+            {
+                if (m.ReminderMinutesBefore <= 0)
+                    m.ReminderMinutesBefore = 15; // Default 15 phút
+            }
 
             foreach (var meeting in upcoming)
             {
@@ -76,7 +83,8 @@ public class MeetingReminderService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️ MeetingReminderService error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"⚠️ MeetingReminderService error: {ex.Message}");
+            System.Diagnostics.Trace.WriteLine($"⚠️ MeetingReminderService error: {ex.Message}\n{ex.StackTrace}");
         }
         
         return reminders;

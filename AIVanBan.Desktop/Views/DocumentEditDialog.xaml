@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="Thêm văn bản mới" Height="780" Width="850"
+        MinHeight="600" MinWidth="700"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource MaterialDesignPaper}">
     
@@ -14,6 +15,11 @@
 
         <ScrollViewer Grid.Row="0">
             <StackPanel>
+                <!-- ═══ NHÓM 1: THÔNG TIN CƠ BẢN ═══ -->
+                <GroupBox Header="📄 Thông tin cơ bản" 
+                         Margin="0,0,0,16" Padding="12,8"
+                         materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                    <StackPanel>
                 <!-- Số văn bản + Auto-increment -->
                 <Grid Margin="0,0,0,15">
                     <Grid.ColumnDefinitions>
@@ -100,6 +106,13 @@
                         </ComboBox.ToolTip>
                     </ComboBox>
                 </Grid>
+
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="🏷️ Phân loại &amp; Thẩm quyền" 
+                         Margin="0,0,0,16" Padding="12,8"
+                         materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                    <StackPanel>
 
                 <!-- Mức độ khẩn + Độ mật — Điều 8 khoản 3b, NĐ 30/2020 -->
                 <Grid Margin="0,0,0,15">
@@ -323,6 +336,15 @@
                     </TextBox>
                 </Grid>
 
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- ═══ NHÓM 3: NỘI DUNG & ĐÍNH KÈM ═══ -->
+                <GroupBox Header="📝 Nội dung &amp; Đính kèm" 
+                         Margin="0,0,0,16" Padding="12,8"
+                         materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                    <StackPanel>
+
                 <!-- Trích yếu -->
                 <TextBox x:Name="txtSubject" 
                          materialDesign:HintAssist.Hint="Trích yếu"
@@ -524,6 +546,8 @@
                         </StackPanel>
                     </Button>
                 </Grid>
+                    </StackPanel>
+                </GroupBox>
             </StackPanel>
         </ScrollViewer>
 
@@ -532,6 +556,11 @@
             <Button Style="{StaticResource MaterialDesignFlatButton}"
                    Content="Hủy" Margin="0,0,10,0"
                    Click="Cancel_Click"/>
+            <Button x:Name="btnSaveAndNew" 
+                   Style="{StaticResource MaterialDesignOutlinedButton}"
+                   Content="💾 Lưu &amp; Thêm mới" Margin="0,0,10,0"
+                   ToolTip="Lưu văn bản hiện tại và mở form thêm văn bản mới"
+                   Click="SaveAndAddNew_Click"/>
             <Button Style="{StaticResource MaterialDesignRaisedButton}"
                    Content="Lưu"
                    Click="Save_Click"/>

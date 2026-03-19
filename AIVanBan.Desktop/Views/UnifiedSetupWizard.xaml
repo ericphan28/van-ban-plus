@@ -148,7 +148,7 @@
                             <StackPanel>
                                 <TextBlock Text="💡 Thiết lập này sẽ tạo đồng thời:" 
                                            FontWeight="SemiBold" FontSize="13" Margin="0,0,0,8"/>
-                                <TextBlock Text="📂 Cấu trúc thư mục Quản lý Tài liệu (VB đến, VB đi, hồ sơ...)" 
+                                <TextBlock Text="📂 Cấu trúc thư mục Quản lý Văn bản (VB đến, VB đi, hồ sơ...)" 
                                            FontSize="12" Margin="12,2"/>
                                 <TextBlock Text="🖼️ Cấu trúc Album Ảnh theo nghiệp vụ (sự kiện, công trình, lễ hội...)" 
                                            FontSize="12" Margin="12,2"/>

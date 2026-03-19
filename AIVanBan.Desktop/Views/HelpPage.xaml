@@ -555,7 +555,7 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                             <TextBlock FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8">
                                 <Run Text="① Thanh tiêu đề (trên cùng)"/>
                             </TextBlock>
-                            <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• Tên phần mềm + các nút: Kiểm tra cập nhật, Cài đặt API (⚙), Trợ giúp (❓), Giới thiệu (ℹ)</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• Tên phần mềm + các nút: Kiểm tra cập nhật, Thiết lập kết nối AI (⚙), Trợ giúp (❓), Giới thiệu (ℹ)</TextBlock>
                         </StackPanel>
                     </Border>
 
@@ -565,7 +565,7 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                                 <Run Text="② Menu bên trái (sidebar)"/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Trang chủ</Bold> — Bảng tổng quan, thống kê, cảnh báo</TextBlock>
-                            <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Văn bản</Bold> — Quản lý tài liệu, Mẫu văn bản, Tra cứu pháp quy, Thống kê</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Văn bản</Bold> — Quản lý văn bản, Mẫu văn bản, Tra cứu pháp quy, Thống kê</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Công việc</Bold> — Album ảnh, Cuộc họp, Lịch tổng hợp</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>✨ AI Nâng cao</Bold> — Soạn VB, Báo cáo, Scan OCR, Kiểm tra, Tham mưu, Tóm tắt</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">• <Bold>Hệ thống</Bold> — Cấu hình Album, Sao lưu, Trợ giúp</TextBlock>
@@ -641,7 +641,7 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
 
                     <Border Style="{StaticResource StepCard}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 1:</Bold> Vào menu <Bold>Quản lý tài liệu</Bold> ở sidebar trái.</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 1:</Bold> Vào menu <Bold>Quản lý văn bản</Bold> ở sidebar trái.</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 2:</Bold> Nhấn nút <Bold>+ Thêm</Bold> trên thanh công cụ.</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 3:</Bold> Điền thông tin văn bản:</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="24,0,0,0">• <Bold>Số văn bản</Bold> — VD: 123/QĐ-UBND</TextBlock>

@@ -59,6 +59,16 @@ public class DocumentViewModel
     public string StatusColor { get; set; } = "#757575";
     public string StatusTooltip { get; set; } = string.Empty;
     
+    // Sổ theo dõi cá nhân
+    public bool IsStarred { get; set; } = false;
+    public string StarIcon { get; set; } = "☆";
+    public string StarColor { get; set; } = "#BDBDBD";
+    public PersonalStatus MyStatus { get; set; } = PersonalStatus.ChuaXuLy;
+    public string MyStatusText { get; set; } = "Chưa XL";
+    public string MyStatusColor { get; set; } = "#9E9E9E";
+    public DateTime? PersonalDeadline { get; set; }
+    public int NoteCount { get; set; } = 0;
+    
     public static DocumentViewModel FromDocument(Document doc, DocumentService? service = null)
     {
         var vm = new DocumentViewModel
@@ -178,6 +188,22 @@ public class DocumentViewModel
         
         // Cảnh báo hạn xử lý — Điều 24, NĐ 30/2020
         vm.DueDate = doc.DueDate;
+        vm.PersonalDeadline = doc.PersonalDeadline;
+        
+        // Sổ theo dõi cá nhân
+        vm.IsStarred = doc.IsStarred;
+        vm.StarIcon = doc.IsStarred ? "★" : "☆";
+        vm.StarColor = doc.IsStarred ? "#FFC107" : "#BDBDBD";
+        vm.MyStatus = doc.MyStatus;
+        (vm.MyStatusText, vm.MyStatusColor) = doc.MyStatus switch
+        {
+            PersonalStatus.ChuaXuLy => ("Chưa XL", "#9E9E9E"),
+            PersonalStatus.DangXuLy => ("Đang XL", "#FB8C00"),
+            PersonalStatus.DaXuLy => ("Đã XL", "#43A047"),
+            PersonalStatus.ChuyenTiep => ("Chuyển", "#1E88E5"),
+            _ => ("Chưa XL", "#9E9E9E")
+        };
+        vm.NoteCount = doc.Notes?.Count ?? 0;
         if (doc.DueDate.HasValue && doc.Direction == Direction.Den
             && doc.WorkflowStatus != DocumentStatus.Archived
             && doc.WorkflowStatus != DocumentStatus.Published)
@@ -209,11 +235,26 @@ public partial class DocumentListPage : Page
     private DateTime? _quickFilterStart = null;
     private DateTime? _quickFilterEnd = null;
     private bool _isTrashView = false; // Thùng rác mode
+    private string _personalFilter = ""; // starred, unprocessed, overdue
+    
+    // Debounce timer cho search — tránh ApplyFilters mỗi keystroke
+    private readonly System.Windows.Threading.DispatcherTimer _searchDebounceTimer;
 
     public DocumentListPage(DocumentService documentService)
     {
         InitializeComponent();
         _documentService = documentService;
+        
+        // Init search debounce: chờ 300ms sau keystroke cuối mới search
+        _searchDebounceTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(300)
+        };
+        _searchDebounceTimer.Tick += (s, e) =>
+        {
+            _searchDebounceTimer.Stop();
+            ApplyFilters();
+        };
         
         // Check if first-time setup needed
         CheckAndRunSetup();
@@ -480,6 +521,21 @@ public partial class DocumentListPage : Page
                 };
                 filtered = filtered.Where(d => d.WorkflowStatus == status);
             }
+            
+            // Personal tracking filters — Sổ theo dõi cá nhân
+            if (_personalFilter == "starred")
+                filtered = filtered.Where(d => d.IsStarred);
+            else if (_personalFilter == "unprocessed")
+                filtered = filtered.Where(d => d.MyStatus == PersonalStatus.ChuaXuLy);
+            else if (_personalFilter == "overdue")
+            {
+                var now = DateTime.Now;
+                filtered = filtered.Where(d => 
+                    d.MyStatus != PersonalStatus.DaXuLy 
+                    && d.MyStatus != PersonalStatus.ChuyenTiep
+                    && ((d.PersonalDeadline.HasValue && d.PersonalDeadline.Value < now)
+                        || (d.DueDate.HasValue && d.DueDate.Value < now)));
+            }
 
             var result = filtered.OrderByDescending(d => d.IssueDate)
                                 .Select(d => DocumentViewModel.FromDocument(d, _documentService))
@@ -661,6 +717,7 @@ public partial class DocumentListPage : Page
     {
         _quickFilterStart = null;
         _quickFilterEnd = null;
+        _personalFilter = "";
         txtSearch.Text = string.Empty;
         cboType.SelectedIndex = 0;
         cboYear.SelectedIndex = 0;
@@ -673,7 +730,48 @@ public partial class DocumentListPage : Page
         if (dpToDate != null) dpToDate.SelectedDate = null;
         if (cboWorkflowStatus != null) cboWorkflowStatus.SelectedIndex = 0;
         
+        ResetPersonalFilterStyles();
         ApplyFilters();
+    }
+
+    /// <summary>Lọc VB đánh dấu sao</summary>
+    private void FilterStarred_Click(object sender, RoutedEventArgs e)
+    {
+        _personalFilter = _personalFilter == "starred" ? "" : "starred";
+        ResetPersonalFilterStyles();
+        if (_personalFilter == "starred")
+            btnFilterStarred.Background = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromArgb(40, 255, 193, 7));
+        ApplyFilters();
+    }
+
+    /// <summary>Lọc VB chưa xử lý</summary>
+    private void FilterUnprocessed_Click(object sender, RoutedEventArgs e)
+    {
+        _personalFilter = _personalFilter == "unprocessed" ? "" : "unprocessed";
+        ResetPersonalFilterStyles();
+        if (_personalFilter == "unprocessed")
+            btnFilterUnprocessed.Background = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromArgb(40, 251, 140, 0));
+        ApplyFilters();
+    }
+
+    /// <summary>Lọc VB quá hạn</summary>
+    private void FilterOverdue_Click(object sender, RoutedEventArgs e)
+    {
+        _personalFilter = _personalFilter == "overdue" ? "" : "overdue";
+        ResetPersonalFilterStyles();
+        if (_personalFilter == "overdue")
+            btnFilterOverdue.Background = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromArgb(40, 198, 40, 40));
+        ApplyFilters();
+    }
+
+    private void ResetPersonalFilterStyles()
+    {
+        btnFilterStarred.Background = System.Windows.Media.Brushes.Transparent;
+        btnFilterUnprocessed.Background = System.Windows.Media.Brushes.Transparent;
+        btnFilterOverdue.Background = System.Windows.Media.Brushes.Transparent;
     }
     
     private void ResetQuickFilterStyles()
@@ -795,8 +893,34 @@ public partial class DocumentListPage : Page
     {
         try
         {
-            Console.WriteLine($"🔍 Search_KeyUp: Text='{txtSearch.Text}'");
-            ApplyFilters();
+            // Escape key: clear search text
+            if (e.Key == Key.Escape)
+            {
+                if (!string.IsNullOrEmpty(txtSearch.Text))
+                {
+                    txtSearch.Text = string.Empty;
+                    ApplyFilters();
+                    e.Handled = true;
+                    return;
+                }
+                // Nếu search đã trống, bỏ chọn DataGrid
+                if (dgDocuments != null)
+                    dgDocuments.SelectedItem = null;
+                e.Handled = true;
+                return;
+            }
+            
+            // Enter: search ngay lập tức
+            if (e.Key == Key.Enter)
+            {
+                _searchDebounceTimer.Stop();
+                ApplyFilters();
+                return;
+            }
+            
+            // Debounce: chờ 300ms rồi mới search
+            _searchDebounceTimer.Stop();
+            _searchDebounceTimer.Start();
         }
         catch (Exception ex)
         {
@@ -910,8 +1034,7 @@ public partial class DocumentListPage : Page
         {
             _documentService.RestoreDocument(id);
             LoadDocuments();
-            MessageBox.Show("✅ Đã khôi phục văn bản!", "Thành công",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Services.SnackbarHelper.ShowSuccess("Đã khôi phục văn bản!");
         }
     }
     
@@ -934,8 +1057,7 @@ public partial class DocumentListPage : Page
         {
             var deleted = _documentService.EmptyTrash();
             LoadDocuments();
-            MessageBox.Show($"✅ Đã xóa vĩnh viễn {deleted} văn bản.", "Thành công",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Services.SnackbarHelper.ShowSuccess($"Đã xóa vĩnh viễn {deleted} văn bản.");
         }
     }
 
@@ -953,8 +1075,26 @@ public partial class DocumentListPage : Page
             // Reload documents in current folder
             LoadDocuments();
             
-            MessageBox.Show("✅ Đã thêm văn bản thành công!", "Thành công",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Services.SnackbarHelper.ShowSuccess("Đã thêm văn bản thành công!");
+            
+            // Nếu chọn "Lưu & Thêm mới" → mở lại dialog với defaults giữ lại
+            if (dialog.SaveAndAddNew)
+            {
+                var lastDoc = dialog.Document;
+                var newDialog = new DocumentEditDialog(null, _selectedFolderId, _documentService);
+                // Auto-fill defaults từ VB vừa lưu để tăng tốc nhập liệu
+                newDialog.Loaded += (s, args) =>
+                {
+                    newDialog.PreFillDefaults(lastDoc.Issuer, lastDoc.Location, lastDoc.Direction, lastDoc.Type);
+                };
+                if (newDialog.ShowDialog() == true && newDialog.Document != null)
+                {
+                    _documentService.AddDocument(newDialog.Document);
+                    LoadFolders();
+                    LoadDocuments();
+                    Services.SnackbarHelper.ShowSuccess("Đã thêm văn bản thành công!");
+                }
+            }
         }
     }
 
@@ -982,25 +1122,11 @@ public partial class DocumentListPage : Page
                 if (dialog.CreatedDocuments.Count == 1)
                 {
                     var doc = dialog.CreatedDocuments[0];
-                    MessageBox.Show(
-                        $"✅ Đã nhập và lưu văn bản từ scan:\n\n" +
-                        $"Số VB: {doc.Number}\n" +
-                        $"Tiêu đề: {doc.Title}",
-                        "Thành công",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    Services.SnackbarHelper.ShowSuccess($"Đã nhập VB: {doc.Number} — {doc.Title}");
                 }
                 else
                 {
-                    var summary = string.Join("\n", dialog.CreatedDocuments
-                        .Take(5)
-                        .Select((d, i) => $"  {i + 1}. {d.Number} — {d.Title}"));
-                    if (dialog.CreatedDocuments.Count > 5)
-                        summary += $"\n  ... và {dialog.CreatedDocuments.Count - 5} văn bản khác";
-                    
-                    MessageBox.Show(
-                        $"✅ Đã nhập và lưu {dialog.CreatedDocuments.Count} văn bản từ scan:\n\n{summary}",
-                        "Thành công",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    Services.SnackbarHelper.ShowSuccess($"Đã nhập {dialog.CreatedDocuments.Count} văn bản từ scan.");
                 }
             }
         }
@@ -1034,7 +1160,10 @@ public partial class DocumentListPage : Page
 
             // Tạo mới 50 VB demo nhất quán — phủ 25+ loại VB theo Điều 7, NĐ 30/2020
             var seedService = new AIVanBan.Core.Services.SeedDataService(_documentService);
-            var docs = seedService.GenerateDemoDocuments();
+            // Lấy tên cơ quan từ OrganizationConfig (nếu có)
+            var orgConfig = _documentService.GetOrganizationConfig();
+            var orgName = !string.IsNullOrEmpty(orgConfig?.Name) ? orgConfig.Name : "Sở Nội vụ";
+            var docs = seedService.GenerateDemoDocuments(orgName: orgName);
 
             LoadDocuments();
             
@@ -1112,6 +1241,58 @@ public partial class DocumentListPage : Page
         e.Handled = true;
     }
 
+    /// <summary>Toggle đánh dấu sao — Sổ theo dõi cá nhân</summary>
+    private void StarToggle_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is not TextBlock star || star.Tag is not string docId) return;
+        _documentService.ToggleStar(docId);
+        LoadDocuments();
+        e.Handled = true;
+    }
+
+    /// <summary>Đổi trạng thái xử lý cá nhân — Sổ theo dõi cá nhân</summary>
+    private void PersonalStatusBadge_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is not Border badge || badge.Tag is not string docId) return;
+
+        var doc = _documentService.GetDocument(docId);
+        if (doc == null) return;
+
+        var menu = new ContextMenu();
+        var statuses = new[]
+        {
+            (PersonalStatus.ChuaXuLy,   "⬜ Chưa xử lý"),
+            (PersonalStatus.DangXuLy,   "🟠 Đang xử lý"),
+            (PersonalStatus.DaXuLy,     "✅ Đã xử lý"),
+            (PersonalStatus.ChuyenTiep,  "➡️ Chuyển tiếp")
+        };
+
+        foreach (var (status, label) in statuses)
+        {
+            var item = new MenuItem
+            {
+                Header = label,
+                FontWeight = doc.MyStatus == status ? FontWeights.Bold : FontWeights.Normal,
+                IsEnabled = doc.MyStatus != status
+            };
+            if (doc.MyStatus == status)
+                item.Icon = new PackIcon { Kind = PackIconKind.CheckCircle, Foreground = Brushes.Green };
+
+            var capturedStatus = status;
+            item.Click += (s, args) =>
+            {
+                _documentService.UpdatePersonalStatus(docId, capturedStatus);
+                LoadDocuments();
+                Services.SnackbarHelper.ShowSuccess($"Đã đổi trạng thái → {capturedStatus.GetDisplayName()}");
+            };
+            menu.Items.Add(item);
+        }
+
+        badge.ContextMenu = menu;
+        menu.IsOpen = true;
+        e.Handled = true;
+    }
+
     private void ViewDocument_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -1149,8 +1330,7 @@ public partial class DocumentListPage : Page
                     {
                         _documentService.UpdateDocument(dialog.Document);
                         LoadDocuments();
-                        MessageBox.Show("✅ Đã cập nhật văn bản!", "Thành công",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        Services.SnackbarHelper.ShowSuccess("Đã cập nhật văn bản!");
                     }
                 }
             }
@@ -1190,8 +1370,7 @@ public partial class DocumentListPage : Page
                 doc.Content = dialog.AppliedContent;
                 _documentService.UpdateDocument(doc);
                 LoadDocuments();
-                MessageBox.Show("✅ Đã áp dụng nội dung đã sửa vào văn bản!", 
-                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                Services.SnackbarHelper.ShowSuccess("Đã áp dụng nội dung đã sửa vào văn bản!");
             }
         }
         catch (Exception ex)
@@ -1360,8 +1539,7 @@ public partial class DocumentListPage : Page
                     {
                         _documentService.PermanentDeleteDocument(id);
                         LoadDocuments();
-                        MessageBox.Show("✅ Đã xóa vĩnh viễn!", "Thành công",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        Services.SnackbarHelper.ShowSuccess("Đã xóa vĩnh viễn!");
                     }
                 }
                 else
@@ -1376,8 +1554,7 @@ public partial class DocumentListPage : Page
                     {
                         _documentService.SoftDeleteDocument(id);
                         LoadDocuments();
-                        MessageBox.Show("✅ Đã chuyển vào thùng rác!\nBạn có thể khôi phục trong mục Thùng rác.", "Thành công",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        Services.SnackbarHelper.ShowSuccess("Đã chuyển vào thùng rác! Bạn có thể khôi phục trong mục Thùng rác.");
                     }
                 }
             }
@@ -1690,7 +1867,55 @@ public partial class DocumentListPage : Page
                 txtPreviewIssuer.Text = doc.Issuer ?? "Chưa có thông tin";
             
             if (txtPreviewStatus != null) 
-                txtPreviewStatus.Text = GetDocumentStatusText(doc.IssueDate);
+                txtPreviewStatus.Text = $"{GetWorkflowStatusText(doc.WorkflowStatus)} · {GetDocumentStatusText(doc.IssueDate)}";
+            
+            // ═══════ Sổ theo dõi cá nhân ═══════
+            if (personalTrackingCard != null)
+            {
+                personalTrackingCard.Visibility = Visibility.Visible;
+                personalTrackingCard.Tag = doc.Id; // Lưu ID để dùng khi thêm note
+                
+                if (txtPreviewMyStatus != null)
+                {
+                    txtPreviewMyStatus.Text = doc.MyStatus.GetDisplayName();
+                    txtPreviewMyStatus.Foreground = new System.Windows.Media.SolidColorBrush(
+                        doc.MyStatus switch
+                        {
+                            PersonalStatus.ChuaXuLy => System.Windows.Media.Color.FromRgb(158, 158, 158),
+                            PersonalStatus.DangXuLy => System.Windows.Media.Color.FromRgb(251, 140, 0),
+                            PersonalStatus.DaXuLy => System.Windows.Media.Color.FromRgb(67, 160, 71),
+                            PersonalStatus.ChuyenTiep => System.Windows.Media.Color.FromRgb(30, 136, 229),
+                            _ => System.Windows.Media.Color.FromRgb(158, 158, 158)
+                        });
+                }
+                
+                if (txtPreviewPriority != null)
+                    txtPreviewPriority.Text = doc.PersonalPriority switch
+                    {
+                        1 => "⚪ Rất thấp",
+                        2 => "🔵 Thấp",
+                        3 => "🟡 Bình thường",
+                        4 => "🟠 Cao",
+                        5 => "🔴 Rất cao",
+                        _ => "🟡 Bình thường"
+                    };
+                
+                if (txtPreviewPersonalDeadline != null)
+                    txtPreviewPersonalDeadline.Text = doc.PersonalDeadline?.ToString("dd/MM/yyyy") ?? "—";
+                
+                // Hiện ghi chú bút phê
+                if (icPreviewNotes != null)
+                {
+                    var notes = (doc.Notes ?? new List<PersonalNoteEntry>())
+                        .OrderByDescending(n => n.CreatedDate)
+                        .Take(5)
+                        .Select(n => new { n.Content, n.CreatedDate, TypeDisplay = n.Type.GetDisplayName() })
+                        .ToList();
+                    icPreviewNotes.ItemsSource = notes;
+                }
+                
+                if (txtQuickNote != null) txtQuickNote.Text = string.Empty;
+            }
             
             // Set button tags
             if (btnPreviewEdit != null) btnPreviewEdit.Tag = doc.Id;
@@ -1770,6 +1995,7 @@ public partial class DocumentListPage : Page
         try
         {
             if (docInfoCard != null) docInfoCard.Visibility = Visibility.Collapsed;
+            if (personalTrackingCard != null) personalTrackingCard.Visibility = Visibility.Collapsed;
             if (docContentCard != null) docContentCard.Visibility = Visibility.Collapsed;
             if (recipientsCard != null) recipientsCard.Visibility = Visibility.Collapsed;
             if (previewActions != null) previewActions.Visibility = Visibility.Collapsed;
@@ -1781,6 +2007,39 @@ public partial class DocumentListPage : Page
             Console.WriteLine($"❌ Error in HideDocumentPreview: {ex.Message}");
         }
     }
+
+    /// <summary>Thêm ghi chú nhanh từ preview panel</summary>
+    private void AddQuickNote_Click(object sender, RoutedEventArgs e)
+    {
+        AddQuickNoteFromPreview();
+    }
+
+    private void QuickNote_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            AddQuickNoteFromPreview();
+            e.Handled = true;
+        }
+    }
+
+    private void AddQuickNoteFromPreview()
+    {
+        var noteText = txtQuickNote?.Text?.Trim();
+        if (string.IsNullOrEmpty(noteText)) return;
+        
+        var docId = personalTrackingCard?.Tag as string;
+        if (string.IsNullOrEmpty(docId)) return;
+        
+        _documentService.AddNote(docId, noteText);
+        txtQuickNote!.Text = string.Empty;
+        
+        // Refresh preview
+        if (dgDocuments.SelectedItem is DocumentViewModel docVm)
+            ShowDocumentPreview(docVm);
+        
+        Services.SnackbarHelper.ShowSuccess("Đã thêm ghi chú!");
+    }
     
     /// <summary>
     /// Lấy tên hiển thị loại VB — delegate sang EnumDisplayHelper (đủ 29 loại, NĐ 30/2020)
@@ -1789,14 +2048,38 @@ public partial class DocumentListPage : Page
     
     private string GetDocumentStatusText(DateTime issueDate)
     {
-        // Simple status based on date
+        // Hiện thời gian tương đối thay vì status mâu thuẫn với workflow
         var daysSinceIssue = (DateTime.Now - issueDate).Days;
-        if (daysSinceIssue <= 7)
-            return "🟢 Mới";
+        if (daysSinceIssue == 0)
+            return "Hôm nay";
+        else if (daysSinceIssue == 1)
+            return "Hôm qua";
+        else if (daysSinceIssue <= 7)
+            return $"{daysSinceIssue} ngày trước";
         else if (daysSinceIssue <= 30)
-            return "🟡 Gần đây";
+            return $"{daysSinceIssue / 7} tuần trước";
+        else if (daysSinceIssue <= 365)
+            return $"{daysSinceIssue / 30} tháng trước";
         else
-            return "⚪ Cũ";
+            return issueDate.ToString("dd/MM/yyyy");
+    }
+    
+    /// <summary>
+    /// Lấy text trạng thái workflow để hiện trong Preview panel
+    /// </summary>
+    private string GetWorkflowStatusText(DocumentStatus status)
+    {
+        return status switch
+        {
+            DocumentStatus.Draft => "📝 Nháp",
+            DocumentStatus.PendingApproval => "📤 Trình ký",
+            DocumentStatus.Approved => "✅ Đã duyệt",
+            DocumentStatus.Signed => "🖊️ Đã ký",
+            DocumentStatus.Published => "📢 Đã phát hành",
+            DocumentStatus.Sent => "📨 Đã gửi",
+            DocumentStatus.Archived => "📁 Lưu trữ",
+            _ => "—"
+        };
     }
     
     private void SetupOrganization_Click(object sender, RoutedEventArgs e)
@@ -1807,8 +2090,7 @@ public partial class DocumentListPage : Page
         if (setupDialog.ShowDialog() == true)
         {
             LoadFolders();
-            MessageBox.Show("✅ Đã tạo lại cấu trúc thư mục!", "Thành công",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Services.SnackbarHelper.ShowSuccess("Đã tạo lại cấu trúc thư mục!");
         }
     }
 
@@ -2023,8 +2305,7 @@ public partial class DocumentListPage : Page
                 _documentService.DeleteFolder(selectedFolder.Id);
                 LoadFolders();
                 LoadDocuments();
-                MessageBox.Show("✅ Đã xóa thư mục!", "Thành công",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                Services.SnackbarHelper.ShowSuccess("Đã xóa thư mục!");
             }
         }
         catch (Exception ex)

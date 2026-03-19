@@ -302,6 +302,93 @@ public class DocumentService : IDisposable
     
     #endregion
     
+    #region Sổ theo dõi cá nhân — Personal Tracking
+    
+    /// <summary>Cập nhật trạng thái xử lý cá nhân</summary>
+    public bool UpdatePersonalStatus(string docId, PersonalStatus status)
+    {
+        var doc = GetDocument(docId);
+        if (doc == null) return false;
+        doc.MyStatus = status;
+        doc.ModifiedDate = DateTime.Now;
+        return UpdateDocument(doc);
+    }
+
+    /// <summary>Toggle đánh dấu sao</summary>
+    public bool ToggleStar(string docId)
+    {
+        var doc = GetDocument(docId);
+        if (doc == null) return false;
+        doc.IsStarred = !doc.IsStarred;
+        doc.ModifiedDate = DateTime.Now;
+        return UpdateDocument(doc);
+    }
+
+    /// <summary>Thêm ghi chú bút phê vào VB</summary>
+    public bool AddNote(string docId, string content, NoteType type = NoteType.ButPhe)
+    {
+        var doc = GetDocument(docId);
+        if (doc == null) return false;
+        doc.Notes ??= new List<PersonalNoteEntry>();
+        doc.Notes.Add(new PersonalNoteEntry
+        {
+            Content = content,
+            Type = type,
+            CreatedDate = DateTime.Now
+        });
+        doc.ModifiedDate = DateTime.Now;
+        return UpdateDocument(doc);
+    }
+
+    /// <summary>Xóa ghi chú bút phê</summary>
+    public bool DeleteNote(string docId, string noteId)
+    {
+        var doc = GetDocument(docId);
+        if (doc == null) return false;
+        doc.Notes ??= new List<PersonalNoteEntry>();
+        var removed = doc.Notes.RemoveAll(n => n.Id == noteId);
+        if (removed == 0) return false;
+        doc.ModifiedDate = DateTime.Now;
+        return UpdateDocument(doc);
+    }
+
+    /// <summary>Lấy VB đánh dấu sao</summary>
+    public List<Document> GetStarredDocuments()
+    {
+        var collection = _db.GetCollection<Document>("documents");
+        return collection.FindAll()
+            .Where(d => !d.IsDeleted && d.IsStarred)
+            .OrderByDescending(d => d.ModifiedDate ?? d.CreatedDate)
+            .ToList();
+    }
+
+    /// <summary>Lấy VB chưa xử lý</summary>
+    public List<Document> GetUnprocessedDocuments()
+    {
+        var collection = _db.GetCollection<Document>("documents");
+        return collection.FindAll()
+            .Where(d => !d.IsDeleted && d.MyStatus == PersonalStatus.ChuaXuLy)
+            .OrderByDescending(d => d.IssueDate)
+            .ToList();
+    }
+
+    /// <summary>Lấy VB quá hạn cá nhân (PersonalDeadline hoặc DueDate đã qua)</summary>
+    public List<Document> GetPersonalOverdueDocuments()
+    {
+        var now = DateTime.Now;
+        var collection = _db.GetCollection<Document>("documents");
+        return collection.FindAll()
+            .Where(d => !d.IsDeleted 
+                && d.MyStatus != PersonalStatus.DaXuLy 
+                && d.MyStatus != PersonalStatus.ChuyenTiep
+                && ((d.PersonalDeadline.HasValue && d.PersonalDeadline.Value < now)
+                    || (d.DueDate.HasValue && d.DueDate.Value < now)))
+            .OrderBy(d => d.PersonalDeadline ?? d.DueDate ?? d.IssueDate)
+            .ToList();
+    }
+
+    #endregion
+    
     #region Auto-increment số VB — Theo Điều 15, NĐ 30/2020/NĐ-CP
     
     /// <summary>
@@ -499,6 +586,15 @@ public class DocumentService : IDisposable
         var collection = _db.GetCollection<DocumentTemplate>("templates");
         collection.Insert(template);
         return template;
+    }
+    
+    /// <summary>
+    /// Bulk insert templates — much faster than individual inserts for first-run seeding.
+    /// </summary>
+    public int BulkInsertTemplates(IEnumerable<DocumentTemplate> templates)
+    {
+        var collection = _db.GetCollection<DocumentTemplate>("templates");
+        return collection.InsertBulk(templates);
     }
     
     public List<DocumentTemplate> GetAllTemplates()

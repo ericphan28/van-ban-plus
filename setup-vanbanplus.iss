@@ -4,7 +4,7 @@
 ; ============================================================
 
 #define MyAppName "VanBanPlus"
-#define MyAppVersion "1.0.13"
+#define MyAppVersion "1.0.14"
 #define MyAppPublisher "Cong ty TNHH Gia Kiem So"
 #define MyAppURL "https://giakiemso.com"
 #define MyAppExeName "AIVanBan.Desktop.exe"
@@ -67,7 +67,7 @@ Name: "startup"; Description: "Start VanBanPlus when Windows starts"; GroupDescr
 ; Self-contained single file - app + runtime đóng gói trong 1 EXE
 Source: "{#PublishDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 ; All subfolders (localization, etc.)
-Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "{#MyAppExeName}"
+Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "{#MyAppExeName},*.db,*.litedb,*.bak,*.log,settings.json,*.pdb,*.cache"
 
 [Icons]
 ; Start Menu shortcuts

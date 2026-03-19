@@ -138,7 +138,7 @@ public class AboutDialog : Window
         bodyStack.Children.Add(new TextBlock
         {
             Text = "VanBanPlus là phần mềm hỗ trợ quản lý văn bản hành chính dành cho cán bộ, công chức. " +
-                   "Tích hợp AI giúp soạn thảo văn bản nhanh chóng, quản lý tài liệu, " +
+                   "Tích hợp AI giúp soạn thảo văn bản nhanh chóng, quản lý hồ sơ tài liệu, " +
                    "album ảnh công việc và biên bản cuộc họp.",
             TextWrapping = TextWrapping.Wrap,
             FontSize = 12.5,

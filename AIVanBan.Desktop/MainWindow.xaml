@@ -48,7 +48,7 @@
                                 Click="CheckForUpdates_Click" Foreground="White">
                             <materialDesign:PackIcon Kind="Update" Width="22" Height="22"/>
                         </Button>
-                        <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="Cài đặt API"
+                        <Button Style="{StaticResource MaterialDesignIconButton}" ToolTip="Thiết lập kết nối AI"
                                 Click="Settings_Click" Foreground="White">
                             <materialDesign:PackIcon Kind="CogOutline" Width="22" Height="22"/>
                         </Button>
@@ -118,7 +118,7 @@
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="FileDocument" Width="22" Height="22" 
                                                                 VerticalAlignment="Center"/>
-                                        <TextBlock x:Name="txtDocuments" Text="Quản lý tài liệu" FontSize="13" Margin="12,0,0,0" 
+                                        <TextBlock x:Name="txtDocuments" Text="Quản lý văn bản" FontSize="13" Margin="12,0,0,0" 
                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
@@ -201,10 +201,11 @@
                                 </Button>
 
                                 <!-- ═══════ NHÓM: AI NÂNG CAO ═══════ -->
-                                <TextBlock x:Name="txtGroupAI" Text="✨ AI NÂNG CAO" FontSize="11" FontWeight="Bold" 
+                                <TextBlock x:Name="txtGroupAI" Text="AI NÂNG CAO" FontSize="11" FontWeight="Bold" 
                                           Foreground="#FF9800" Opacity="0.85"
                                           Margin="20,14,0,6"/>
 
+                                <!-- AI chính: Soạn VB + Kiểm tra -->
                                 <Button x:Name="btnAI" Style="{StaticResource MaterialDesignFlatButton}" 
                                        Height="38" HorizontalContentAlignment="Left" 
                                        Padding="20,0,0,0" Click="NavigateToAI"
@@ -213,30 +214,6 @@
                                         <materialDesign:PackIcon Kind="Creation" Width="20" Height="20" 
                                                                 VerticalAlignment="Center" Foreground="#FF9800"/>
                                         <TextBlock x:Name="txtAI" Text="Soạn văn bản" FontSize="13" Margin="12,0,0,0" 
-                                                  VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
-
-                                <Button x:Name="btnAIReport" Style="{StaticResource MaterialDesignFlatButton}" 
-                                       Height="38" HorizontalContentAlignment="Left" 
-                                       Padding="20,0,0,0" Click="OpenAIReport_Click"
-                                       ToolTip="AI tạo báo cáo định kỳ">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="ChartBar" Width="20" Height="20" 
-                                                                VerticalAlignment="Center" Foreground="#FF9800"/>
-                                        <TextBlock x:Name="txtAIReport" Text="Báo cáo" FontSize="13" Margin="12,0,0,0" 
-                                                  VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
-
-                                <Button x:Name="btnAIScan" Style="{StaticResource MaterialDesignFlatButton}" 
-                                       Height="38" HorizontalContentAlignment="Left" 
-                                       Padding="20,0,0,0" Click="OpenAIScan_Click"
-                                       ToolTip="AI đọc văn bản từ ảnh/PDF">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="Scanner" Width="20" Height="20" 
-                                                                VerticalAlignment="Center" Foreground="#FF9800"/>
-                                        <TextBlock x:Name="txtAIScan" Text="Scan OCR" FontSize="13" Margin="12,0,0,0" 
                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
@@ -253,29 +230,65 @@
                                     </StackPanel>
                                 </Button>
 
-                                <Button x:Name="btnAIAdvisory" Style="{StaticResource MaterialDesignFlatButton}" 
-                                       Height="38" HorizontalContentAlignment="Left" 
-                                       Padding="20,0,0,0" Click="OpenAIAdvisory_Click"
-                                       ToolTip="AI tham mưu xử lý văn bản đến">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="LightbulbOn" Width="20" Height="20" 
-                                                                VerticalAlignment="Center" Foreground="#FF9800"/>
-                                        <TextBlock x:Name="txtAIAdvisory" Text="Tham mưu" FontSize="13" Margin="12,0,0,0" 
-                                                  VerticalAlignment="Center"/>
+                                <!-- AI Công cụ khác — Expander gọn gàng -->
+                                <Expander x:Name="aiToolsExpander" Margin="4,2,0,0" 
+                                         Padding="0" IsExpanded="False"
+                                         Background="Transparent" BorderThickness="0">
+                                    <Expander.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="DotsHorizontal" Width="18" Height="18" 
+                                                                    VerticalAlignment="Center" Foreground="#FF9800" Margin="0,0,8,0"/>
+                                            <TextBlock x:Name="txtAIMore" Text="Công cụ AI khác" FontSize="12" 
+                                                      VerticalAlignment="Center" Opacity="0.8"/>
+                                        </StackPanel>
+                                    </Expander.Header>
+                                    <StackPanel Margin="0,0,0,0">
+                                        <Button x:Name="btnAIScan" Style="{StaticResource MaterialDesignFlatButton}" 
+                                               Height="34" HorizontalContentAlignment="Left" 
+                                               Padding="28,0,0,0" Click="OpenAIScan_Click"
+                                               ToolTip="AI đọc văn bản từ ảnh/PDF">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Scanner" Width="18" Height="18" 
+                                                                        VerticalAlignment="Center" Foreground="#FF9800"/>
+                                                <TextBlock x:Name="txtAIScan" Text="Scan OCR" FontSize="12" Margin="10,0,0,0" 
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button x:Name="btnAIReport" Style="{StaticResource MaterialDesignFlatButton}" 
+                                               Height="34" HorizontalContentAlignment="Left" 
+                                               Padding="28,0,0,0" Click="OpenAIReport_Click"
+                                               ToolTip="AI tạo báo cáo định kỳ">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="ChartBar" Width="18" Height="18" 
+                                                                        VerticalAlignment="Center" Foreground="#FF9800"/>
+                                                <TextBlock x:Name="txtAIReport" Text="Báo cáo" FontSize="12" Margin="10,0,0,0" 
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button x:Name="btnAIAdvisory" Style="{StaticResource MaterialDesignFlatButton}" 
+                                               Height="34" HorizontalContentAlignment="Left" 
+                                               Padding="28,0,0,0" Click="OpenAIAdvisory_Click"
+                                               ToolTip="AI tham mưu xử lý văn bản đến">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="LightbulbOn" Width="18" Height="18" 
+                                                                        VerticalAlignment="Center" Foreground="#FF9800"/>
+                                                <TextBlock x:Name="txtAIAdvisory" Text="Tham mưu" FontSize="12" Margin="10,0,0,0" 
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button x:Name="btnAISummary" Style="{StaticResource MaterialDesignFlatButton}" 
+                                               Height="34" HorizontalContentAlignment="Left" 
+                                               Padding="28,0,0,0" Click="OpenAISummary_Click"
+                                               ToolTip="AI tóm tắt nội dung văn bản">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="TextBoxCheck" Width="18" Height="18" 
+                                                                        VerticalAlignment="Center" Foreground="#FF9800"/>
+                                                <TextBlock x:Name="txtAISummary" Text="Tóm tắt" FontSize="12" Margin="10,0,0,0" 
+                                                          VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
                                     </StackPanel>
-                                </Button>
-
-                                <Button x:Name="btnAISummary" Style="{StaticResource MaterialDesignFlatButton}" 
-                                       Height="38" HorizontalContentAlignment="Left" 
-                                       Padding="20,0,0,0" Click="OpenAISummary_Click"
-                                       ToolTip="AI tóm tắt nội dung văn bản">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="TextBoxCheck" Width="20" Height="20" 
-                                                                VerticalAlignment="Center" Foreground="#FF9800"/>
-                                        <TextBlock x:Name="txtAISummary" Text="Tóm tắt" FontSize="13" Margin="12,0,0,0" 
-                                                  VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Button>
+                                </Expander>
 
                                 <!-- ═══════ NHÓM: HỆ THỐNG ═══════ -->
                                 <TextBlock x:Name="txtGroupSystem" Text="HỆ THỐNG" FontSize="11" FontWeight="Bold" 
@@ -373,7 +386,7 @@
                         <TextBlock Text="Chào mừng đến AI Văn Bản Hành Chính" 
                                   FontSize="24" FontWeight="Bold" 
                                   TextAlignment="Center" Margin="0,20,0,10"/>
-                        <TextBlock Text="Quản lý tài liệu thông minh với AI" 
+                        <TextBlock Text="Quản lý văn bản thông minh với AI" 
                                   FontSize="16" 
                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
                                   TextAlignment="Center"/>
@@ -431,7 +444,7 @@
                                   MouseLeftButtonUp="BrandUrl_Click"
                                   ToolTip="https://giakiemso.com"/>
                         <TextBlock Text=" │ " FontSize="11" Opacity="0.3" VerticalAlignment="Center"/>
-                        <TextBlock Text="v1.0.9" FontSize="10" VerticalAlignment="Center" 
+                        <TextBlock x:Name="txtAppVersion" Text="v1.0.14" FontSize="10" VerticalAlignment="Center" 
                                   Opacity="0.5" FontWeight="SemiBold"
                                   Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                     </StackPanel>
@@ -460,8 +473,10 @@
 
             <!-- Snackbar cho nhắc nhở cuộc họp -->
             <materialDesign:Snackbar x:Name="MainSnackbar" 
+                                      Grid.Row="1"
                                       MessageQueue="{materialDesign:MessageQueue}"
                                       HorizontalAlignment="Center"
+                                      VerticalAlignment="Bottom"
                                       Panel.ZIndex="1000"/>
         </Grid>
     </materialDesign:DialogHost>

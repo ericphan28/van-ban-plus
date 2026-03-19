@@ -10,6 +10,8 @@ namespace AIVanBan.Desktop.Views;
 public partial class DocumentEditDialog : Window
 {
     public Document? Document { get; private set; }
+    /// <summary>True nếu user chọn "Lưu & Thêm mới" — caller sẽ mở lại dialog</summary>
+    public bool SaveAndAddNew { get; private set; }
     private DocumentService? _documentService;
 
     public DocumentEditDialog(Document? document = null, string? folderId = null, DocumentService? documentService = null)
@@ -327,6 +329,27 @@ public partial class DocumentEditDialog : Window
 
         DialogResult = true;
         Close();
+    }
+
+    /// <summary>Lưu văn bản hiện tại rồi caller sẽ mở form thêm mới</summary>
+    private void SaveAndAddNew_Click(object sender, RoutedEventArgs e)
+    {
+        SaveAndAddNew = true;
+        Save_Click(sender, e); // Reuse validation + save logic
+    }
+
+    /// <summary>
+    /// Pre-fill defaults từ VB trước (dùng cho "Lưu & Thêm mới").
+    /// Giữ lại CQ ban hành, địa danh, hướng VB, loại VB và set ngày = hôm nay.
+    /// </summary>
+    public void PreFillDefaults(string issuer, string location, Direction direction, DocumentType type)
+    {
+        txtIssuer.Text = issuer ?? "";
+        txtLocation.Text = location ?? "";
+        dpIssueDate.SelectedDate = DateTime.Now;
+        cboDirection.SelectedValue = direction;
+        cboType.SelectedValue = type;
+        UpdateDirectionPanels();
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
