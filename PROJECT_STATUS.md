@@ -180,6 +180,29 @@
 | ✅ | Trang trợ giúp (F1) | `HelpPage.xaml` | Context-sensitive |
 | ✅ | Xuất Word văn bản | `WordExportService.cs` | NĐ 30/2020 format. **v1.0.12:** Rewrite toàn bộ — fix OpenXML ordering (RunProperties trước Text, ParagraphProperties trước Run, SectionProperties cuối Body), Unicode 4 font slots, helper `CreateStyledRun` |
 
+### A10. Cloud Sync & Monetization (MỚI — 2025-01)
+| # | Tính năng | File chính | Ghi chú |
+|---|-----------|-----------|---------|
+| ✅ | SQL Migration — 15 bảng cloud | `vanbanplus-api/supabase/migrations/001_cloud_storage.sql` | cloud_documents, cloud_meetings, cloud_templates, cloud_folders, cloud_attachments, cloud_photos, document_versions, cloud_backups, sync_log, user_devices, storage_usage, teams, team_members, shared_documents + RLS |
+| ✅ | TypeScript types cloud | `vanbanplus-api/src/types/cloud.ts` | CloudDocument, CloudMeeting, SyncPush/Pull, Team, SharePermission... |
+| ✅ | Cloud quota & device management | `vanbanplus-api/src/lib/cloud-quota.ts` | checkCloudAccess, checkStorageQuota, checkDeviceLimit, registerDevice |
+| ✅ | Sync push/pull engine (API) | `vanbanplus-api/src/lib/cloud-sync.ts` | Last-Write-Wins, full sync, conflict detection |
+| ✅ | Cloud CRUD operations | `vanbanplus-api/src/lib/cloud-storage.ts` | Generic cloudCreate/Update/Delete/List with pagination |
+| ✅ | Version history | `vanbanplus-api/src/lib/cloud-versions.ts` | createDocumentVersion, restoreVersion, cleanupOld |
+| ✅ | Cloud backup | `vanbanplus-api/src/lib/cloud-backup.ts` | Supabase Storage upload, list, restore |
+| ✅ | Team sharing | `vanbanplus-api/src/lib/cloud-sharing.ts` | Teams CRUD, member management, document sharing |
+| ✅ | API Routes (7 endpoints) | `vanbanplus-api/src/app/api/cloud/*` | sync, documents, meetings, storage, backup, versions, sharing |
+| ✅ | C# Sync Models | `AIVanBan.Core/Models/SyncModels.cs` | SyncState, SyncMetadata, SyncResult, CloudSyncSettings... |
+| ✅ | C# Cloud API Client | `AIVanBan.Core/Services/CloudApiClient.cs` | HTTP wrapper cho tất cả cloud API endpoints |
+| ✅ | C# Cloud Sync Service | `AIVanBan.Core/Services/CloudSyncService.cs` | Local-first sync orchestrator, background worker, auto-sync |
+| ✅ | SyncTracker static helper | `AIVanBan.Core/Services/SyncTracker.cs` | Đánh dấu thay đổi local sau CRUD — thread-safe, no-op khi sync tắt |
+| ✅ | Tích hợp vào DocumentService | `AIVanBan.Core/Services/DocumentService.cs` | MarkChanged/MarkDeleted sau mọi Add/Update/Delete (Document, Template, Photo, Album, Folder) |
+| ✅ | Tích hợp vào MeetingService | `AIVanBan.Core/Services/MeetingService.cs` | MarkChanged/MarkDeleted sau Add/Update/Delete Meeting |
+| ✅ | CloudSync Settings in AppSettings | `AIVanBan.Core/Services/AppSettingsService.cs` | CloudSyncSettings property, ExtraSettings dictionary |
+| ✅ | Bảng giá mới (4 gói + cloud) | `vanbanplus-api/src/app/bang-gia/page.tsx` | Free/Starter 99K/Pro 249K/Business 599K — hiển thị tính năng cloud |
+| ✅ | Desktop Cloud Sync Dialog | `AIVanBan.Desktop/Views/CloudSyncDialog.xaml` | Bật/tắt sync, cấu hình, sync now, backup, restore |
+| ✅ | Cloud button on MainWindow | `AIVanBan.Desktop/MainWindow.xaml` | Nút ☁ Cloud trên toolbar |
+
 ---
 
 ## 🔲 B. TÍNH NĂNG CHƯA CÓ — Checklist triển khai (Góc nhìn CÁ NHÂN)
@@ -411,6 +434,9 @@ Khi user chọn loại CQ = "Bệnh viện" → app gợi ý mẫu y tế. Chọ
 | C23 | [x] ✅ Preview status: relative time + workflow status | v1.0.14 — "Hôm nay", "3 ngày trước" thay thế "🟢 Mới" |
 | C24 | [x] ✅ PhotoAlbum: Vietnamese text (Nhấn đúp, Nhấn chuột phải) | v1.0.14 |
 | C25 | [x] ✅ Abbreviation tooltips (Ngày BH → Ngày ban hành) | v1.0.14 |
+| C26 | [x] ✅ Sort cột "Số VB" numeric-aware (NumberSortKey) | v1.0.15 — Tester feedback: "10" không còn xếp trước "2" |
+| C27 | [x] ✅ Form mẫu sẵn khi thêm VB (auto prefill Issuer/Location/Signer/Số VB) | v1.0.15 — Tester feedback: không phải nhập lại toàn bộ trường |
+| C28 | [x] ✅ Auto cập nhật trạng thái sang "Đã phát hành" sau khi xuất Word | v1.0.15 — Tester feedback: không biết trạng thái cập nhật ra sao |
 | C3 | [ ] Biểu đồ vẽ tay bằng Rectangle — không có chart library | Cân nhắc LiveCharts2 |
 | C4 | [ ] AI results không cache | Tốn quota gọi lại |
 | C5 | [ ] Chỉ có NĐ 30/2020 trong Legal Reference | Thêm TT, Luật Lưu trữ |

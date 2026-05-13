@@ -7,6 +7,8 @@
         mc:Ignorable="d"
         Title="VanBanPlus — Gia Kiệm Số" 
         Height="800" Width="1400"
+        MinHeight="700" MinWidth="1100"
+        WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource MaterialDesignPaper}"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -462,6 +464,12 @@
                                 FontSize="11" Height="24" Padding="8,0"
                                 Click="Logout_Click" Visibility="Collapsed"
                                 Foreground="OrangeRed"/>
+                        <TextBlock Text="│" FontSize="12" Opacity="0.3" VerticalAlignment="Center" Margin="4,0"/>
+                        <Button x:Name="btnCloudSync" Content="☁ Cloud" 
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                FontSize="11" Height="24" Padding="8,0"
+                                Click="CloudSync_Click"
+                                ToolTip="Đồng bộ đám mây"/>
                         <TextBlock Text="│" FontSize="12" Opacity="0.3" VerticalAlignment="Center" Margin="4,0"/>
                         <Button x:Name="btnSettingsQuick" Content="⚙ Cài đặt" 
                                 Style="{StaticResource MaterialDesignFlatButton}"

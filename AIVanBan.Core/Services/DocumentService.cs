@@ -57,6 +57,7 @@ public class DocumentService : IDisposable
     {
         var collection = _db.GetCollection<Document>("documents");
         collection.Insert(document);
+        SyncTracker.MarkChanged(document.Id, SyncTracker.EntityTypes.Document);
         return document;
     }
     
@@ -66,7 +67,9 @@ public class DocumentService : IDisposable
         document.ModifiedDate = DateTime.Now;
         
         var collection = _db.GetCollection<Document>("documents");
-        return collection.Update(document);
+        var result = collection.Update(document);
+        if (result) SyncTracker.MarkChanged(document.Id, SyncTracker.EntityTypes.Document);
+        return result;
     }
     
     public bool DeleteDocument(string id)
@@ -93,7 +96,9 @@ public class DocumentService : IDisposable
         }
         
         var collection = _db.GetCollection<Document>("documents");
-        return collection.Delete(id);
+        var result = collection.Delete(id);
+        if (result) SyncTracker.MarkDeleted(id, SyncTracker.EntityTypes.Document);
+        return result;
     }
     
     public Document? GetDocument(string id)
@@ -241,7 +246,9 @@ public class DocumentService : IDisposable
         doc.IsDeleted = true;
         doc.DeletedDate = DateTime.Now;
         doc.DeletedBy = Environment.UserName;
-        return collection.Update(doc);
+        var result = collection.Update(doc);
+        if (result) SyncTracker.MarkChanged(doc.Id, SyncTracker.EntityTypes.Document);
+        return result;
     }
     
     /// <summary>
@@ -256,7 +263,9 @@ public class DocumentService : IDisposable
         doc.IsDeleted = false;
         doc.DeletedDate = null;
         doc.DeletedBy = null;
-        return collection.Update(doc);
+        var result = collection.Update(doc);
+        if (result) SyncTracker.MarkChanged(doc.Id, SyncTracker.EntityTypes.Document);
+        return result;
     }
     
     /// <summary>
@@ -585,6 +594,7 @@ public class DocumentService : IDisposable
     {
         var collection = _db.GetCollection<DocumentTemplate>("templates");
         collection.Insert(template);
+        SyncTracker.MarkChanged(template.Id, SyncTracker.EntityTypes.Template);
         return template;
     }
     
@@ -619,12 +629,14 @@ public class DocumentService : IDisposable
     {
         var collection = _db.GetCollection<DocumentTemplate>("templates");
         collection.Update(template);
+        SyncTracker.MarkChanged(template.Id, SyncTracker.EntityTypes.Template);
     }
     
     public void DeleteTemplate(string id)
     {
         var collection = _db.GetCollection<DocumentTemplate>("templates");
         collection.Delete(id);
+        SyncTracker.MarkDeleted(id, SyncTracker.EntityTypes.Template);
     }
     
     /// <summary>
@@ -644,6 +656,7 @@ public class DocumentService : IDisposable
     {
         var collection = _db.GetCollection<Photo>("photos");
         collection.Insert(photo);
+        SyncTracker.MarkChanged(photo.Id, SyncTracker.EntityTypes.Photo);
         return photo;
     }
     
@@ -663,6 +676,7 @@ public class DocumentService : IDisposable
     {
         var collection = _db.GetCollection<Album>("albums");
         collection.Insert(album);
+        SyncTracker.MarkChanged(album.Id, SyncTracker.EntityTypes.Album);
         return album;
     }
     
@@ -676,18 +690,21 @@ public class DocumentService : IDisposable
     {
         var collection = _db.GetCollection<Photo>("photos");
         collection.Update(photo);
+        SyncTracker.MarkChanged(photo.Id, SyncTracker.EntityTypes.Photo);
     }
     
     public void DeletePhoto(string id)
     {
         var collection = _db.GetCollection<Photo>("photos");
         collection.Delete(id);
+        SyncTracker.MarkDeleted(id, SyncTracker.EntityTypes.Photo);
     }
     
     public void UpdateAlbum(Album album)
     {
         var collection = _db.GetCollection<Album>("albums");
         collection.Update(album);
+        SyncTracker.MarkChanged(album.Id, SyncTracker.EntityTypes.Album);
     }
     
     #endregion
@@ -752,12 +769,14 @@ public class DocumentService : IDisposable
 
         var folders = _db.GetCollection<Folder>("folders");
         folders.Insert(folder);
+        SyncTracker.MarkChanged(folder.Id, SyncTracker.EntityTypes.Folder);
     }
 
     public void UpdateFolder(Folder folder)
     {
         var folders = _db.GetCollection<Folder>("folders");
         folders.Update(folder);
+        SyncTracker.MarkChanged(folder.Id, SyncTracker.EntityTypes.Folder);
     }
 
     public void DeleteFolder(string id)
@@ -771,6 +790,7 @@ public class DocumentService : IDisposable
 
         var folders = _db.GetCollection<Folder>("folders");
         folders.Delete(id);
+        SyncTracker.MarkDeleted(id, SyncTracker.EntityTypes.Folder);
     }
 
     public void InitializeDefaultFolders()

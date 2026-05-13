@@ -103,89 +103,126 @@ public partial class DocumentListPage
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-            
-            // Show folder selection dialog
-            var folders = _documentService.GetAllFolders();
-            var dialog = new Window
+
+            MoveDocumentsToFolder(selectedDocs.Select(d => d.Id).ToList());
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Lỗi khi di chuyển:\n{ex.Message}", "Lỗi",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Di chuyển 1 văn bản (gọi từ nút Di chuyển trên từng dòng).
+    /// </summary>
+    private void MoveDocument_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is FrameworkElement fe && fe.Tag is string docId && !string.IsNullOrEmpty(docId))
             {
-                Title = "Chọn thư mục đích",
-                Width = 400,
-                Height = 500,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen
-            };
-            
-            var tree = new TreeView { Margin = new Thickness(10) };
-            BuildFolderTreeForDialog(tree, folders);
-            
-            var grid = new Grid { Margin = new Thickness(10) };
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            
-            Grid.SetRow(tree, 0);
-            grid.Children.Add(tree);
-            
-            var btnPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Margin = new Thickness(0, 10, 0, 0)
-            };
-            Grid.SetRow(btnPanel, 1);
-            
-            var btnOk = new Button { Content = "Di chuyển", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
-            var btnCancel = new Button { Content = "Hủy", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center };
-            
-            btnOk.Click += (s, args) =>
-            {
-                var selectedItem = tree.SelectedItem as TreeViewItem;
-                if (selectedItem?.Tag is FolderNode selectedFolder)
-                {
-                    dialog.Tag = selectedFolder.Id;
-                    dialog.DialogResult = true;
-                    dialog.Close();
-                }
-                else
-                {
-                    MessageBox.Show("Vui lòng chọn thư mục đích!", "Thông báo",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-            };
-            
-            btnCancel.Click += (s, args) => dialog.Close();
-            
-            btnPanel.Children.Add(btnOk);
-            btnPanel.Children.Add(btnCancel);
-            grid.Children.Add(btnPanel);
-            
-            dialog.Content = grid;
-            
-            if (dialog.ShowDialog() == true && dialog.Tag != null)
-            {
-                string targetFolderId = dialog.Tag.ToString()!;
-                int successCount = 0;
-                
-                foreach (var docVm in selectedDocs)
-                {
-                    var doc = _documentService.GetDocument(docVm.Id);
-                    if (doc != null)
-                    {
-                        doc.FolderId = targetFolderId;
-                        if (_documentService.UpdateDocument(doc))
-                            successCount++;
-                    }
-                }
-                
-                LoadFolders();
-                LoadDocuments();
-                
-                MessageBox.Show($"✅ Đã di chuyển {successCount}/{selectedDocs.Count} văn bản!",
-                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                MoveDocumentsToFolder(new List<string> { docId });
             }
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Lỗi khi di chuyển:\n{ex.Message}", "Lỗi",
                 MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Hiển thị dialog chọn thư mục, sau đó cập nhật FolderId cho danh sách văn bản truyền vào.
+    /// </summary>
+    private void MoveDocumentsToFolder(List<string> documentIds)
+    {
+        if (documentIds == null || documentIds.Count == 0) return;
+
+        var folders = _documentService.GetAllFolders();
+        if (folders.Count == 0)
+        {
+            MessageBox.Show(
+                "Chưa có thư mục nào để di chuyển vào.\nVui lòng tạo thư mục trước.",
+                "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var dialog = new Window
+        {
+            Title = $"Chọn thư mục đích ({documentIds.Count} văn bản)",
+            Width = 420,
+            Height = 520,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Owner = Window.GetWindow(this)
+        };
+
+        var tree = new TreeView { Margin = new Thickness(10) };
+        BuildFolderTreeForDialog(tree, folders);
+
+        var grid = new Grid { Margin = new Thickness(10) };
+        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        Grid.SetRow(tree, 0);
+        grid.Children.Add(tree);
+
+        var btnPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+        Grid.SetRow(btnPanel, 1);
+
+        var btnOk = new Button { Content = "Di chuyển", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0), IsDefault = true };
+        var btnCancel = new Button { Content = "Hủy", MinWidth = 100, Height = 36, Padding = new Thickness(16, 0, 16, 0), VerticalContentAlignment = VerticalAlignment.Center, IsCancel = true };
+
+        btnOk.Click += (s, args) =>
+        {
+            // tree.SelectedItem trả về TreeViewItem (vì ta thêm trực tiếp vào Items, không dùng ItemsSource)
+            if (tree.SelectedItem is TreeViewItem selectedItem && selectedItem.Tag is FolderNode selectedFolder)
+            {
+                dialog.Tag = selectedFolder.Id;
+                dialog.DialogResult = true;
+                dialog.Close();
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn thư mục đích!", "Thông báo",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        };
+
+        btnCancel.Click += (s, args) => dialog.Close();
+
+        btnPanel.Children.Add(btnOk);
+        btnPanel.Children.Add(btnCancel);
+        grid.Children.Add(btnPanel);
+
+        dialog.Content = grid;
+
+        if (dialog.ShowDialog() == true && dialog.Tag != null)
+        {
+            string targetFolderId = dialog.Tag.ToString()!;
+            int successCount = 0;
+
+            foreach (var docId in documentIds)
+            {
+                var doc = _documentService.GetDocument(docId);
+                if (doc != null)
+                {
+                    doc.FolderId = targetFolderId;
+                    if (_documentService.UpdateDocument(doc))
+                        successCount++;
+                }
+            }
+
+            LoadFolders();
+            LoadDocuments();
+
+            MessageBox.Show($"✅ Đã di chuyển {successCount}/{documentIds.Count} văn bản!",
+                "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
     

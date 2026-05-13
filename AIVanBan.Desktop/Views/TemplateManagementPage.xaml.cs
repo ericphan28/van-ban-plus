@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -40,10 +41,10 @@ public partial class TemplateManagementPage : Page
         ApplyFilters();
     }
 
-    private void SeedDefaultTemplates_Click(object sender, RoutedEventArgs e)
+    private async void SeedDefaultTemplates_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
-            "⚠️ CẢNH BÁO: Thao tác này sẽ XÓA TẤT CẢ các mẫu hiện tại và tạo lại 20 mẫu mặc định.\n\n" +
+            "⚠️ CẢNH BÁO: Thao tác này sẽ XÓA TẤT CẢ các mẫu hiện tại và tạo lại 70+ mẫu mặc định theo NĐ 30/2020.\n\n" +
             "Bạn có chắc muốn tiếp tục?",
             "Xác nhận khởi tạo lại",
             MessageBoxButton.YesNo,
@@ -53,16 +54,16 @@ public partial class TemplateManagementPage : Page
         {
             try
             {
-                // Xóa tất cả templates hiện tại
-                var allTemplates = _documentService.GetAllTemplates();
-                foreach (var template in allTemplates)
-                {
-                    _documentService.DeleteTemplate(template.Id);
-                }
+                Mouse.OverrideCursor = Cursors.Wait;
 
-                // Chạy seeder để tạo 20 mẫu mới
-                var seeder = new TemplateSeeder(_documentService);
-                seeder.SeedDefaultTemplates();
+                // Xóa NHANH toàn bộ collection (1 thao tác) thay vì xoá từng cái (chậm với 70+ mẫu)
+                // và seed lại trên thread nền để UI không bị treo
+                await Task.Run(() =>
+                {
+                    _documentService.DropTemplatesCollection();
+                    var seeder = new TemplateSeeder(_documentService);
+                    seeder.SeedDefaultTemplates();
+                });
 
                 // Reload UI
                 LoadTemplates();
@@ -80,6 +81,10 @@ public partial class TemplateManagementPage : Page
                     "Lỗi",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
             }
         }
     }

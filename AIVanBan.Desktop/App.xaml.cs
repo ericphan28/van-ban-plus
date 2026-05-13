@@ -14,9 +14,30 @@ namespace AIVanBan.Desktop;
 /// </summary>
 public partial class App : Application
 {
+    /// <summary>
+    /// Tham số test resolution: --size=WxH (VD: --size=1920x1080)
+    /// Khi có tham số này → bỏ Maximized, set kích thước cố định để test responsive
+    /// </summary>
+    public static (int Width, int Height)? TestSize { get; private set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        
+        // Parse --size=WxH để test ở các độ phân giải khác nhau
+        foreach (var arg in e.Args)
+        {
+            if (arg.StartsWith("--size=", StringComparison.OrdinalIgnoreCase))
+            {
+                var val = arg.Substring("--size=".Length);
+                var parts = val.Split('x', 'X');
+                if (parts.Length == 2 && int.TryParse(parts[0], out var w) && int.TryParse(parts[1], out var h))
+                {
+                    TestSize = (w, h);
+                    Console.WriteLine($"🧪 Test mode: {w}x{h}");
+                }
+            }
+        }
         
         // Global exception handlers
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;

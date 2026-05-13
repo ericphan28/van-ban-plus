@@ -4,7 +4,7 @@
 ; ============================================================
 
 #define MyAppName "VanBanPlus"
-#define MyAppVersion "1.0.14"
+#define MyAppVersion "1.0.15"
 #define MyAppPublisher "Cong ty TNHH Gia Kiem So"
 #define MyAppURL "https://giakiemso.com"
 #define MyAppExeName "AIVanBan.Desktop.exe"

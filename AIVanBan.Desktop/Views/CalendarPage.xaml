@@ -18,47 +18,47 @@
             <!-- HEADER: Điều hướng tháng -->
             <materialDesign:Card DockPanel.Dock="Top" Padding="20,14" Margin="0,0,0,16"
                                  materialDesign:ElevationAssist.Elevation="Dp2">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <DockPanel LastChildFill="True">
+
+                    <!-- LEFT: Nav buttons + Today + Tháng/năm (cùng nhóm, không bị căn giữa cứng) -->
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
                         <Button Style="{StaticResource MaterialDesignIconButton}"
-                                Width="40" Height="40" Click="PrevMonth_Click" ToolTip="Tháng trước">
-                            <materialDesign:PackIcon Kind="ChevronLeft" Width="28" Height="28"/>
+                                Width="36" Height="36" Click="PrevMonth_Click" ToolTip="Tháng trước">
+                            <materialDesign:PackIcon Kind="ChevronLeft" Width="24" Height="24"/>
                         </Button>
                         <Button Style="{StaticResource MaterialDesignIconButton}"
-                                Width="40" Height="40" Click="NextMonth_Click" ToolTip="Tháng sau">
-                            <materialDesign:PackIcon Kind="ChevronRight" Width="28" Height="28"/>
+                                Width="36" Height="36" Click="NextMonth_Click" ToolTip="Tháng sau">
+                            <materialDesign:PackIcon Kind="ChevronRight" Width="24" Height="24"/>
                         </Button>
                         <Button Style="{StaticResource MaterialDesignFlatButton}"
-                                Height="36" Click="Today_Click" Margin="10,0,0,0"
-                                Content="📍 Hôm nay" FontSize="14" FontWeight="Medium"/>
+                                Height="34" Click="Today_Click" Margin="6,0,12,0"
+                                Content="📍 Hôm nay" FontSize="13" FontWeight="Medium"
+                                Padding="10,0"/>
+                        <TextBlock x:Name="txtMonthYear"
+                                   Text="Tháng 01/2025" FontSize="20" FontWeight="Bold"
+                                   Foreground="#1A237E"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"
+                                   MinWidth="140"/>
                     </StackPanel>
-                    
-                    <TextBlock x:Name="txtMonthYear" Grid.Column="1"
-                               Text="Tháng 01/2025" FontSize="24" FontWeight="Bold"
-                               Foreground="#1A237E" HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                    
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <!-- RIGHT: View toggle + Legend (wrap khi cửa sổ hẹp) -->
+                    <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Orientation="Horizontal" Margin="12,0,0,0">
                         <!-- View Toggle: Tháng / Tuần -->
-                        <Border Background="#E3F2FD" CornerRadius="8" Padding="2" Margin="0,0,16,0">
+                        <Border Background="#E3F2FD" CornerRadius="8" Padding="2" Margin="0,2,12,2">
                             <StackPanel Orientation="Horizontal">
                                 <Button x:Name="btnViewMonth" Content="📅 Tháng" 
-                                        Click="ViewMonth_Click" FontSize="13" FontWeight="SemiBold"
-                                        Padding="12,6" Margin="2" Height="32"
+                                        Click="ViewMonth_Click" FontSize="12" FontWeight="SemiBold"
+                                        Padding="10,4" Margin="2" Height="30"
                                         Background="#1565C0" Foreground="White" BorderThickness="0">
                                     <Button.Resources>
                                         <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
                                     </Button.Resources>
                                 </Button>
                                 <Button x:Name="btnViewWeek" Content="📋 Tuần"
-                                        Click="ViewWeek_Click" FontSize="13" FontWeight="SemiBold"
-                                        Padding="12,6" Margin="2" Height="32"
+                                        Click="ViewWeek_Click" FontSize="12" FontWeight="SemiBold"
+                                        Padding="10,4" Margin="2" Height="30"
                                         Background="Transparent" Foreground="#1565C0" BorderThickness="0">
                                     <Button.Resources>
                                         <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
@@ -66,20 +66,20 @@
                                 </Button>
                             </StackPanel>
                         </Border>
-                        <Border Background="#FFCDD2" CornerRadius="6" Padding="10,5" Margin="0,0,8,0">
-                            <TextBlock Text="🔴 Quá hạn" FontSize="13" FontWeight="Medium" Foreground="#C62828"/>
+                        <Border Background="#FFCDD2" CornerRadius="6" Padding="8,4" Margin="0,2,6,2">
+                            <TextBlock Text="🔴 Quá hạn" FontSize="12" FontWeight="Medium" Foreground="#C62828"/>
                         </Border>
-                        <Border Background="#FFF9C4" CornerRadius="6" Padding="10,5" Margin="0,0,8,0">
-                            <TextBlock Text="🟡 Sắp hạn" FontSize="13" FontWeight="Medium" Foreground="#F57F17"/>
+                        <Border Background="#FFF9C4" CornerRadius="6" Padding="8,4" Margin="0,2,6,2">
+                            <TextBlock Text="🟡 Sắp hạn" FontSize="12" FontWeight="Medium" Foreground="#F57F17"/>
                         </Border>
-                        <Border Background="#BBDEFB" CornerRadius="6" Padding="10,5" Margin="0,0,8,0">
-                            <TextBlock Text="🔵 Họp" FontSize="13" FontWeight="Medium" Foreground="#1565C0"/>
+                        <Border Background="#BBDEFB" CornerRadius="6" Padding="8,4" Margin="0,2,6,2">
+                            <TextBlock Text="🔵 Họp" FontSize="12" FontWeight="Medium" Foreground="#1565C0"/>
                         </Border>
-                        <Border Background="#C8E6C9" CornerRadius="6" Padding="10,5">
-                            <TextBlock Text="🟢 Nhiệm vụ" FontSize="13" FontWeight="Medium" Foreground="#2E7D32"/>
+                        <Border Background="#C8E6C9" CornerRadius="6" Padding="8,4" Margin="0,2,0,2">
+                            <TextBlock Text="🟢 Nhiệm vụ" FontSize="12" FontWeight="Medium" Foreground="#2E7D32"/>
                         </Border>
-                    </StackPanel>
-                </Grid>
+                    </WrapPanel>
+                </DockPanel>
             </materialDesign:Card>
             
             <!-- CALENDAR GRID — MONTH VIEW -->

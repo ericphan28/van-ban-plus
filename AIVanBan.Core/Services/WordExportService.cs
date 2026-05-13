@@ -512,6 +512,7 @@ public class WordExportService
         var lines = document.Content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         var cleanedLines = new List<string>();
         var extractedBasedOn = new List<string>();
+        var extractedRecipients = new List<string>();
         bool passedLeadingSection = false;
 
         for (int i = 0; i < lines.Length; i++)
@@ -521,6 +522,38 @@ public class WordExportService
 
             // Bỏ qua dòng trống ở đầu
             if (!passedLeadingSection && string.IsNullOrWhiteSpace(trimmed))
+                continue;
+
+            // ── Bỏ Quốc hiệu: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM" ──
+            if (!passedLeadingSection && upper.Contains("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM"))
+                continue;
+
+            // ── Bỏ Tiêu ngữ: "Độc lập - Tự do - Hạnh phúc" ──
+            if (!passedLeadingSection && upper.Contains("ĐỘC LẬP") && upper.Contains("TỰ DO") && upper.Contains("HẠNH PHÚC"))
+                continue;
+
+            // ── Bỏ dòng gạch ngang trang trí (────, ═══, ---) ──
+            if (!passedLeadingSection && IsDecorativeLine(trimmed))
+                continue;
+
+            // ── Bỏ tên cơ quan/tổ chức in hoa ở đầu (ỦY BAN NHÂN DÂN..., PHÒNG TÀI CHÍNH...) ──
+            if (!passedLeadingSection && IsOrgNameLine(upper))
+                continue;
+
+            // ── Bỏ dòng "Số: ..." (AddDocumentInfo đã thêm) ──
+            if (!passedLeadingSection && IsDocumentNumberLine(trimmed))
+                continue;
+
+            // ── Bỏ dòng ngày tháng ("..., ngày ... tháng ... năm ...") ──
+            if (!passedLeadingSection && IsDateLine(trimmed))
+                continue;
+
+            // ── Bỏ tên loại văn bản in hoa (BÁO CÁO, CÔNG VĂN, QUYẾT ĐỊNH...) ──
+            if (!passedLeadingSection && IsDocumentTypeLine(upper))
+                continue;
+
+            // ── Bỏ dòng trích yếu "Về việc ..." / "V/v ..." ──
+            if (!passedLeadingSection && IsSubjectLine(trimmed))
                 continue;
 
             // ── Bỏ dòng "Kính gửi:..." (AddSalutation đã xử lý) ──
@@ -557,6 +590,10 @@ public class WordExportService
             cleanedLines.Add(lines[i]); // Giữ nguyên indentation gốc
         }
 
+        // ═══ Phase 2: Loại bỏ phần "Nơi nhận:" + chữ ký ở cuối nội dung ═══
+        // (AddSignature đã tự thêm phần này)
+        RemoveTrailingSignatureAndRecipients(cleanedLines, extractedRecipients);
+
         // Cập nhật Content đã làm sạch
         document.Content = string.Join("\n", cleanedLines);
 
@@ -565,6 +602,173 @@ public class WordExportService
         {
             document.BasedOn = extractedBasedOn.ToArray();
         }
+
+        // Nếu Recipients trống và tách được từ Content → gán vào
+        if ((document.Recipients == null || document.Recipients.Length == 0) && extractedRecipients.Count > 0)
+        {
+            document.Recipients = extractedRecipients.ToArray();
+        }
+    }
+
+    /// <summary>Kiểm tra dòng có phải đường kẻ trang trí (─── , ═══, ---)</summary>
+    private static bool IsDecorativeLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)) return false;
+        var clean = line.Trim();
+        // Dòng chỉ gồm các ký tự trang trí
+        return clean.Length >= 3 && clean.All(c => c == '─' || c == '═' || c == '-' || c == '—' || c == '━' || c == '_');
+    }
+
+    /// <summary>Kiểm tra dòng có phải tên cơ quan/tổ chức in hoa</summary>
+    private static bool IsOrgNameLine(string upperLine)
+    {
+        if (string.IsNullOrWhiteSpace(upperLine) || upperLine.Length < 5 || upperLine.Length > 80) return false;
+        // Các tiền tố phổ biến của tên cơ quan hành chính VN
+        var orgPrefixes = new[] {
+            "ỦY BAN NHÂN DÂN", "UBND", "HỘI ĐỒNG NHÂN DÂN", "HĐND",
+            "SỞ ", "PHÒNG ", "BAN ", "CHI CỤC ", "CỤC ",
+            "BỘ ", "VĂN PHÒNG ", "TRUNG TÂM ", "HỘI ", "ĐOÀN ",
+            "CÔNG AN ", "BỘ CHỈ HUY ", "VIỆN ", "TRƯỜNG ",
+            "ĐẢNG ỦY", "ĐẢNG BỘ", "CHI BỘ"
+        };
+        foreach (var prefix in orgPrefixes)
+        {
+            if (upperLine.StartsWith(prefix))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>Kiểm tra dòng có phải dòng số văn bản: "Số: ...", "Số:..."</summary>
+    private static bool IsDocumentNumberLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)) return false;
+        var trimmed = line.Trim();
+        return trimmed.StartsWith("Số:", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("Số :", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Kiểm tra dòng có phải dòng ngày tháng ("..., ngày ... tháng ... năm ...")</summary>
+    private static bool IsDateLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)) return false;
+        var lower = line.ToLower().Trim();
+        return lower.Contains("ngày") && lower.Contains("tháng") && lower.Contains("năm") && lower.Length < 80;
+    }
+
+    /// <summary>Kiểm tra dòng có phải tên loại văn bản in hoa đứng riêng (BÁO CÁO, CÔNG VĂN...)</summary>
+    private static bool IsDocumentTypeLine(string upperLine)
+    {
+        if (string.IsNullOrWhiteSpace(upperLine)) return false;
+        var clean = upperLine.Trim();
+        var docTypeNames = new[] {
+            "BÁO CÁO", "CÔNG VĂN", "QUYẾT ĐỊNH", "TỜ TRÌNH", "KẾ HOẠCH",
+            "THÔNG BÁO", "NGHỊ QUYẾT", "CHỈ THỊ", "HƯỚNG DẪN", "THÔNG TƯ",
+            "QUY ĐỊNH", "QUY CHẾ", "NGHỊ ĐỊNH", "LUẬT", "VĂN BẢN",
+            "BIÊN BẢN", "HỢP ĐỒNG", "GIẤY MỜI", "GIẤY GIỚI THIỆU",
+            "PHIẾU CHUYỂN", "PHIẾU GỬI", "CÔNG ĐIỆN", "ĐỀ ÁN"
+        };
+        foreach (var name in docTypeNames)
+        {
+            if (clean == name) return true;
+        }
+        return false;
+    }
+
+    /// <summary>Kiểm tra dòng có phải trích yếu: "Về việc ...", "V/v ..."</summary>
+    private static bool IsSubjectLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)) return false;
+        var trimmed = line.Trim();
+        return trimmed.StartsWith("Về việc", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("V/v", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("V/V", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Loại bỏ phần "Nơi nhận:" và khối chữ ký ở cuối nội dung.
+    /// Tìm từ cuối lên trên để phát hiện "Nơi nhận:" hoặc dòng chức danh ký.
+    /// </summary>
+    private static void RemoveTrailingSignatureAndRecipients(List<string> lines, List<string> extractedRecipients)
+    {
+        if (lines.Count == 0) return;
+
+        // Tìm vị trí "Nơi nhận:" từ cuối lên (chỉ tìm trong 25 dòng cuối)
+        int noiNhanIndex = -1;
+        int searchStart = Math.Max(0, lines.Count - 25);
+        for (int i = lines.Count - 1; i >= searchStart; i--)
+        {
+            var trimmed = lines[i].Trim();
+            if (trimmed.StartsWith("Nơi nhận", StringComparison.OrdinalIgnoreCase))
+            {
+                noiNhanIndex = i;
+                break;
+            }
+        }
+
+        if (noiNhanIndex >= 0)
+        {
+            // Tách danh sách nơi nhận để lưu vào document.Recipients
+            for (int i = noiNhanIndex + 1; i < lines.Count; i++)
+            {
+                var recipientLine = lines[i].Trim();
+                if (!string.IsNullOrWhiteSpace(recipientLine) && !IsSignaturePatternLine(recipientLine))
+                {
+                    // Bỏ dấu "- " ở đầu nếu có
+                    if (recipientLine.StartsWith("- "))
+                        recipientLine = recipientLine.Substring(2).Trim();
+                    extractedRecipients.Add(recipientLine);
+                }
+            }
+
+            // Xóa từ "Nơi nhận:" đến hết — nhưng cũng check phía trước nếu có
+            // dòng kết luận trống dư thừa
+            while (noiNhanIndex > 0 && string.IsNullOrWhiteSpace(lines[noiNhanIndex - 1].Trim()))
+                noiNhanIndex--;
+            lines.RemoveRange(noiNhanIndex, lines.Count - noiNhanIndex);
+            return;
+        }
+
+        // Nếu không có "Nơi nhận:", tìm khối chữ ký ở cuối (TRƯỞNG PHÒNG, CHỦ TỊCH...)
+        // Tìm từ cuối lên, gặp dòng chức danh in hoa → xóa từ đó đến hết
+        int signatureStart = -1;
+        for (int i = lines.Count - 1; i >= searchStart; i--)
+        {
+            var trimmed = lines[i].Trim();
+            var upper = trimmed.ToUpper();
+            if (IsAuthorityLine(upper) || IsSignaturePatternLine(trimmed))
+            {
+                signatureStart = i;
+                // Tiếp tục lên trên để bắt toàn bộ block chữ ký
+            }
+            else if (!string.IsNullOrWhiteSpace(trimmed) && signatureStart >= 0)
+            {
+                // Gặp nội dung thật → dừng
+                break;
+            }
+        }
+
+        if (signatureStart >= 0)
+        {
+            // Xóa dòng trống trước block chữ ký
+            while (signatureStart > 0 && string.IsNullOrWhiteSpace(lines[signatureStart - 1].Trim()))
+                signatureStart--;
+            lines.RemoveRange(signatureStart, lines.Count - signatureStart);
+        }
+    }
+
+    /// <summary>Kiểm tra dòng có phải pattern chữ ký: "(Chữ ký, dấu)", "(Ký, ghi rõ họ tên...)", "(Họ và tên)"</summary>
+    private static bool IsSignaturePatternLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)) return false;
+        var trimmed = line.Trim().ToLower();
+        return trimmed.Contains("(chữ ký") ||
+               trimmed.Contains("(ký,") ||
+               trimmed.Contains("(ký tên") ||
+               trimmed.Contains("(họ và tên") ||
+               trimmed.Contains("(họ tên") ||
+               trimmed.Contains("ghi rõ họ tên") ||
+               trimmed.Contains("đóng dấu");
     }
 
     /// <summary>Kiểm tra dòng có phải nhãn quyết định (QUYẾT ĐỊNH:, NGHỊ QUYẾT:...)</summary>

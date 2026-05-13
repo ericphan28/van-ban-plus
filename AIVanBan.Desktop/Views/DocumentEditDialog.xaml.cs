@@ -54,6 +54,9 @@ public partial class DocumentEditDialog : Window
         // Load thẩm quyền ký — Điều 13, NĐ 30/2020
         cboSigningAuthority.SelectedIndex = 0; // (Ký trực tiếp)
 
+        // Load danh sách thư mục — cho phép chọn / đổi thư mục lưu
+        LoadFolderCombo();
+
         if (document != null)
         {
             Document = document;
@@ -71,9 +74,165 @@ public partial class DocumentEditDialog : Window
             cboDirection.SelectedIndex = 0;
             cboUrgency.SelectedValue = UrgencyLevel.Thuong;
             cboSecurity.SelectedValue = SecurityLevel.Thuong;
+
+            // Set selected folder in combo (if any)
+            cboFolder.SelectedValue = Document.FolderId ?? string.Empty;
+
+            // ⭐ FORM MẪU SẴN — Auto-prefill defaults khi tạo VB mới
+            // (Trước đây user phải nhập lại toàn bộ trường — tester feedback v1.0.14)
+            ApplyNewDocumentDefaults();
         }
         
         UpdateDirectionPanels();
+    }
+
+    /// <summary>
+    /// Load tất cả thư mục vào ComboBox để user chọn / đổi thư mục lưu.
+    /// </summary>
+    private void LoadFolderCombo()
+    {
+        try
+        {
+            var items = new List<Folder>
+            {
+                new Folder { Id = string.Empty, Name = "(Không thuộc thư mục nào)" }
+            };
+
+            if (_documentService != null)
+            {
+                var allFolders = _documentService.GetAllFolders()
+                    .OrderBy(f => f.SortOrder)
+                    .ThenBy(f => f.Name)
+                    .ToList();
+
+                // Build hierarchical display (thêm "→" indent cho thư mục con)
+                var rootFolders = allFolders.Where(f => string.IsNullOrEmpty(f.ParentId)).ToList();
+                foreach (var root in rootFolders)
+                {
+                    items.Add(new Folder { Id = root.Id, Name = $"📁 {root.Name}" });
+                    AppendChildFolders(root.Id, allFolders, items, 1);
+                }
+
+                // Folders không có parent hợp lệ (mồ côi)
+                var rootIds = rootFolders.Select(f => f.Id).ToHashSet();
+                var orphans = allFolders.Where(f => !string.IsNullOrEmpty(f.ParentId) && !allFolders.Any(p => p.Id == f.ParentId)).ToList();
+                foreach (var o in orphans)
+                {
+                    items.Add(new Folder { Id = o.Id, Name = $"📁 {o.Name}" });
+                }
+            }
+
+            cboFolder.ItemsSource = items;
+        }
+        catch
+        {
+            // không chặn dialog nếu lỗi load thư mục
+        }
+    }
+
+    private void AppendChildFolders(string parentId, List<Folder> allFolders, List<Folder> output, int level)
+    {
+        var children = allFolders.Where(f => f.ParentId == parentId).ToList();
+        var indent = new string(' ', level * 4);
+        foreach (var c in children)
+        {
+            output.Add(new Folder { Id = c.Id, Name = $"{indent}↳ {c.Name}" });
+            AppendChildFolders(c.Id, allFolders, output, level + 1);
+        }
+    }
+
+    /// <summary>
+    /// Auto-prefill các trường thường dùng khi tạo VB mới:
+    /// - Cơ quan ban hành (Issuer) ← OrganizationConfig.Name
+    /// - Địa danh (Location) ← VB gần nhất hoặc settings
+    /// - Người ký, chức danh ký ← VB gần nhất hoặc UserFullName
+    /// - Số VB ← tự sinh theo loại VB mặc định + cơ quan
+    /// - Ngày ban hành ← hôm nay
+    /// </summary>
+    private void ApplyNewDocumentDefaults()
+    {
+        try
+        {
+            // 1) Lấy cấu hình cơ quan
+            string orgName = "";
+            string orgAbbr = "UBND";
+            try
+            {
+                if (_documentService != null)
+                {
+                    var org = _documentService.GetOrganizationConfig();
+                    if (!string.IsNullOrWhiteSpace(org.Name)) orgName = org.Name;
+                    if (!string.IsNullOrWhiteSpace(org.Abbreviation)) orgAbbr = org.Abbreviation;
+                }
+            }
+            catch { /* ignore */ }
+
+            // 2) Lấy VB gần nhất cùng hướng (Đi) để mượn Location, SignedBy, SigningTitle
+            Document? lastDoc = null;
+            try
+            {
+                if (_documentService != null)
+                {
+                    lastDoc = _documentService.GetAllDocuments()
+                        .Where(d => !d.IsDeleted && d.Direction == Direction.Di)
+                        .OrderByDescending(d => d.CreatedDate)
+                        .FirstOrDefault();
+                }
+            }
+            catch { /* ignore */ }
+
+            // 3) Lấy thông tin user từ AppSettings (fallback signer)
+            string userFullName = "";
+            string defaultSigner = "";
+            string defaultSigningTitle = "";
+            string defaultLocation = "";
+            try
+            {
+                var settings = AIVanBan.Core.Services.AppSettingsService.Load();
+                userFullName = settings.UserFullName ?? "";
+                defaultSigner = AIVanBan.Core.Services.AppSettingsService.GetRawSettingValue("Org.DefaultSigner") ?? "";
+                defaultSigningTitle = AIVanBan.Core.Services.AppSettingsService.GetRawSettingValue("Org.DefaultSigningTitle") ?? "";
+                defaultLocation = AIVanBan.Core.Services.AppSettingsService.GetRawSettingValue("Org.DefaultLocation") ?? "";
+            }
+            catch { /* ignore */ }
+
+            // 4) Điền các giá trị mặc định
+            // ƯU TIÊN: Cấu hình cơ quan (user vừa thiết lập) → VB gần nhất (fallback)
+            // (Tránh trường hợp user đổi cơ quan trong Settings nhưng form vẫn hiện cơ quan cũ từ VB trước)
+            txtIssuer.Text = !string.IsNullOrWhiteSpace(orgName)
+                ? orgName
+                : (lastDoc?.Issuer ?? "");
+
+            txtLocation.Text = !string.IsNullOrWhiteSpace(defaultLocation)
+                ? defaultLocation
+                : (lastDoc?.Location ?? "");
+
+            txtSignedBy.Text = !string.IsNullOrWhiteSpace(defaultSigner)
+                ? defaultSigner
+                : (!string.IsNullOrWhiteSpace(lastDoc?.SignedBy) ? lastDoc!.SignedBy : userFullName);
+
+            txtSigningTitle.Text = !string.IsNullOrWhiteSpace(defaultSigningTitle)
+                ? defaultSigningTitle
+                : (lastDoc?.SigningTitle ?? "");
+
+            dpIssueDate.SelectedDate = DateTime.Now;
+
+            // 5) Auto-cấp số VB cho loại VB mặc định (Công văn / loại đầu tiên)
+            try
+            {
+                if (_documentService != null && cboType.SelectedValue is DocumentType defType)
+                {
+                    var symbol = _documentService.GenerateDocumentSymbol(
+                        defType, orgAbbr, Direction.Di, isSecret: false);
+                    txtNumber.Text = symbol;
+                }
+            }
+            catch { /* không chặn nếu lỗi cấp số */ }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ ApplyNewDocumentDefaults error: {ex.Message}");
+        }
     }
 
     private void LoadDocument()
@@ -134,6 +293,9 @@ public partial class DocumentEditDialog : Window
         cboDirection.SelectedValue = Document.Direction;
         cboUrgency.SelectedValue = Document.UrgencyLevel;
         cboSecurity.SelectedValue = Document.SecurityLevel;
+
+        // Thư mục lưu — chọn đúng FolderId hiện tại (hoặc rỗng = không thuộc thư mục)
+        cboFolder.SelectedValue = Document.FolderId ?? string.Empty;
         
         // VB đến fields
         if (Document.ArrivalNumber > 0)
@@ -185,7 +347,26 @@ public partial class DocumentEditDialog : Window
 
     private void CboType_Changed(object sender, SelectionChangedEventArgs e)
     {
-        // Có thể dùng để auto-suggest template
+        // Khi tạo VB mới và Số VB còn rỗng/auto → tự động cập nhật ký hiệu theo loại mới
+        // (chỉ áp dụng cho doc mới — Document.Id chưa có trong DB)
+        if (!IsLoaded || Document == null || _documentService == null) return;
+        if (!string.IsNullOrEmpty(Document.Number) && Document.Number != txtNumber.Text)
+        {
+            // Đang sửa VB đã lưu — không tự đổi số
+            return;
+        }
+        try
+        {
+            if (cboType.SelectedValue is DocumentType newType)
+            {
+                var org = _documentService.GetOrganizationConfig();
+                var orgAbbr = !string.IsNullOrWhiteSpace(org.Abbreviation) ? org.Abbreviation : "UBND";
+                var direction = cboDirection.SelectedValue is Direction d ? d : Direction.Di;
+                var isSecret = cboSecurity.SelectedValue is SecurityLevel s && s != SecurityLevel.Thuong;
+                txtNumber.Text = _documentService.GenerateDocumentSymbol(newType, orgAbbr, direction, isSecret: isSecret);
+            }
+        }
+        catch { /* ignore */ }
     }
 
     /// <summary>
@@ -308,6 +489,12 @@ public partial class DocumentEditDialog : Window
         // Mức độ khẩn, Độ mật — Điều 8 khoản 3b, NĐ 30/2020
         Document.UrgencyLevel = cboUrgency.SelectedValue is UrgencyLevel u ? u : UrgencyLevel.Thuong;
         Document.SecurityLevel = cboSecurity.SelectedValue is SecurityLevel s ? s : SecurityLevel.Thuong;
+
+        // Thư mục lưu — cho phép chuyển vào thư mục mong muốn ngay khi soạn/sửa
+        if (cboFolder.SelectedValue is string selectedFolderId)
+        {
+            Document.FolderId = selectedFolderId ?? string.Empty;
+        }
         
         // VB đến — Điều 22, 24, NĐ 30/2020
         if (Document.Direction == Direction.Den)

@@ -120,16 +120,26 @@ QUY TẮC QUAN TRỌNG:
 
     private DocumentSummary ParseResult(string responseText)
     {
-        // Strip markdown code fences nếu AI trả về ```json...```
+        if (string.IsNullOrWhiteSpace(responseText))
+            throw new Exception("AI không trả về kết quả.");
+
         var text = responseText.Trim();
+
+        // 1) Strip markdown code fences ```json ... ```
         if (text.StartsWith("```"))
         {
             var firstNewline = text.IndexOf('\n');
-            if (firstNewline > 0)
-                text = text.Substring(firstNewline + 1);
-            if (text.EndsWith("```"))
-                text = text.Substring(0, text.Length - 3);
+            if (firstNewline > 0) text = text.Substring(firstNewline + 1);
+            if (text.EndsWith("```")) text = text.Substring(0, text.Length - 3);
             text = text.Trim();
+        }
+
+        // 2) Bóc tách phần JSON: tìm '{' đầu tiên và '}' cuối cùng
+        var firstBrace = text.IndexOf('{');
+        var lastBrace = text.LastIndexOf('}');
+        if (firstBrace >= 0 && lastBrace > firstBrace)
+        {
+            text = text.Substring(firstBrace, lastBrace - firstBrace + 1);
         }
 
         var options = new JsonSerializerOptions
@@ -139,19 +149,129 @@ QUY TẮC QUAN TRỌNG:
             ReadCommentHandling = JsonCommentHandling.Skip
         };
 
+        // 3) Thử parse trực tiếp
         try
         {
-            return JsonSerializer.Deserialize<DocumentSummary>(text, options)
-                ?? throw new Exception("Kết quả tóm tắt rỗng.");
+            var parsed = JsonSerializer.Deserialize<DocumentSummary>(text, options);
+            if (parsed != null && !string.IsNullOrWhiteSpace(parsed.Brief))
+                return parsed;
         }
-        catch (JsonException)
+        catch (JsonException) { /* fallthrough */ }
+
+        // 4) Thử sửa JSON bị cắt cụt — đóng các ngoặc còn dở
+        try
         {
-            // Fallback: tạo summary thủ công từ raw text
-            return new DocumentSummary
-            {
-                Brief = text.Length > 500 ? text.Substring(0, 500) + "..." : text,
-                Notes = "⚠️ AI trả về không đúng định dạng, hiển thị nội dung thô."
-            };
+            var repaired = TryRepairTruncatedJson(text);
+            var parsed = JsonSerializer.Deserialize<DocumentSummary>(repaired, options);
+            if (parsed != null && !string.IsNullOrWhiteSpace(parsed.Brief))
+                return parsed;
         }
+        catch (JsonException) { /* fallthrough */ }
+
+        // 5) Cuối cùng: trích các trường chính bằng regex từ JSON lỗi
+        // — KHÔNG hiển thị raw JSON cho user nữa
+        return ExtractFieldsByRegex(text);
+    }
+
+    /// <summary>
+    /// Thử "vá" JSON bị cắt cụt: đếm ngoặc { } [ ] và bổ sung phần thiếu
+    /// </summary>
+    private static string TryRepairTruncatedJson(string json)
+    {
+        int braceOpen = 0, braceClose = 0, bracketOpen = 0, bracketClose = 0;
+        bool inString = false; char prev = '\0';
+        foreach (var c in json)
+        {
+            if (c == '"' && prev != '\\') inString = !inString;
+            if (!inString)
+            {
+                if (c == '{') braceOpen++;
+                else if (c == '}') braceClose++;
+                else if (c == '[') bracketOpen++;
+                else if (c == ']') bracketClose++;
+            }
+            prev = c;
+        }
+
+        var s = json.TrimEnd().TrimEnd(',');
+        // Đóng string đang dở
+        if (inString) s += "\"";
+        // Đóng các array thiếu
+        for (int i = 0; i < bracketOpen - bracketClose; i++) s += "]";
+        // Đóng các object thiếu
+        for (int i = 0; i < braceOpen - braceClose; i++) s += "}";
+        return s;
+    }
+
+    /// <summary>
+    /// Khi JSON không parse được, trích các trường chính bằng regex để hiển thị
+    /// </summary>
+    private static DocumentSummary ExtractFieldsByRegex(string text)
+    {
+        string Pick(string key)
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(
+                text,
+                "\"" + key + "\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"",
+                System.Text.RegularExpressions.RegexOptions.Singleline);
+            return m.Success ? m.Groups[1].Value.Replace("\\\"", "\"").Replace("\\n", "\n") : "";
+        }
+
+        var result = new DocumentSummary
+        {
+            Brief = Pick("brief"),
+            DocumentType = Pick("document_type"),
+            IssuingAuthority = Pick("issuing_authority"),
+            TargetAudience = Pick("target_audience"),
+            Impact = Pick("impact"),
+            Notes = Pick("notes")
+        };
+
+        if (string.IsNullOrWhiteSpace(result.Brief))
+            result.Brief = "(AI không trả về tóm tắt hợp lệ — vui lòng thử lại)";
+
+        // Trích key_points đơn giản: tìm các cặp heading/content
+        var kpMatches = System.Text.RegularExpressions.Regex.Matches(
+            text,
+            "\"heading\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"\\s*,\\s*\"content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+        foreach (System.Text.RegularExpressions.Match m in kpMatches)
+        {
+            result.KeyPoints.Add(new SummaryKeyPoint
+            {
+                Heading = m.Groups[1].Value,
+                Content = m.Groups[2].Value
+            });
+        }
+
+        // Trích các array string đơn giản: legal_bases, effective_dates, key_figures
+        result.LegalBases = ExtractStringArray(text, "legal_bases");
+        result.EffectiveDates = ExtractStringArray(text, "effective_dates");
+        result.KeyFigures = ExtractStringArray(text, "key_figures");
+
+        if (string.IsNullOrWhiteSpace(result.Notes))
+            result.Notes = "⚠️ AI trả về định dạng không chuẩn — kết quả có thể chưa đầy đủ. Nhấn 🔄 Thử lại để tóm tắt lại.";
+
+        return result;
+    }
+
+    private static List<string> ExtractStringArray(string text, string key)
+    {
+        var list = new List<string>();
+        var arrMatch = System.Text.RegularExpressions.Regex.Match(
+            text,
+            "\"" + key + "\"\\s*:\\s*\\[(.*?)\\]",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+        if (!arrMatch.Success) return list;
+
+        var items = System.Text.RegularExpressions.Regex.Matches(
+            arrMatch.Groups[1].Value,
+            "\"((?:[^\"\\\\]|\\\\.)*)\"",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+        foreach (System.Text.RegularExpressions.Match m in items)
+        {
+            list.Add(m.Groups[1].Value);
+        }
+        return list;
     }
 }

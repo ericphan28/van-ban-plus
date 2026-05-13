@@ -54,18 +54,8 @@ public partial class DocumentViewDialog : Window
         txtIssuer.Text = !string.IsNullOrEmpty(doc.Issuer) ? doc.Issuer : "—";
         txtCategory.Text = !string.IsNullOrEmpty(doc.Category) ? doc.Category : "—";
         
-        // Workflow status
-        txtWorkflowStatus.Text = doc.WorkflowStatus switch
-        {
-            DocumentStatus.Draft => "📝 Nháp",
-            DocumentStatus.PendingApproval => "⏳ Chờ duyệt",
-            DocumentStatus.Approved => "✅ Đã duyệt",
-            DocumentStatus.Signed => "✍️ Đã ký",
-            DocumentStatus.Published => "📢 Đã phát hành",
-            DocumentStatus.Sent => "📬 Đã gửi",
-            DocumentStatus.Archived => "📦 Lưu trữ",
-            _ => "—"
-        };
+        // Workflow status — dùng GetDisplayName() đã có emoji
+        txtWorkflowStatus.Text = doc.WorkflowStatus.GetDisplayName();
         
         txtStatus.Text = doc.Status ?? "Còn hiệu lực";
         if (doc.Status == "Còn hiệu lực")

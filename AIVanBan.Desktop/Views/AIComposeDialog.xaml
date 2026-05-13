@@ -283,6 +283,7 @@
                                                 AcceptsTab="True"
                                                 AcceptsReturn="True"
                                                 InputMethod.IsInputMethodEnabled="True"
+                                                TextChanged="GeneratedContentRichTextBox_TextChanged"
                                                 BorderThickness="0"/>
                                 </ScrollViewer>
                             </Border>

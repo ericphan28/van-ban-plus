@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -25,6 +26,8 @@ public class DocumentViewModel
 {
     public string Id { get; set; } = string.Empty;
     public string Number { get; set; } = string.Empty;
+    /// <summary>Khóa sort numeric cho cột Số VB (tách phần số trước dấu "/"). VD: "15/CV-UBND" → 15</summary>
+    public long NumberSortKey { get; set; } = 0;
     public string Title { get; set; } = string.Empty;
     public DocumentType Type { get; set; }
     public string TypeText { get; set; } = string.Empty;
@@ -55,7 +58,7 @@ public class DocumentViewModel
     
     // Trạng thái workflow — hiển thị badge trong DataGrid
     public DocumentStatus WorkflowStatus { get; set; } = DocumentStatus.Draft;
-    public string StatusText { get; set; } = "Nháp";
+    public string StatusText { get; set; } = "📝 Đang soạn";
     public string StatusColor { get; set; } = "#757575";
     public string StatusTooltip { get; set; } = string.Empty;
     
@@ -69,12 +72,29 @@ public class DocumentViewModel
     public DateTime? PersonalDeadline { get; set; }
     public int NoteCount { get; set; } = 0;
     
+    /// <summary>
+    /// Trích phần số đầu của ký hiệu VB ("123/CV-UBND" → 123) để sort numeric.
+    /// Trả về 0 nếu không parse được.
+    /// </summary>
+    public static long ParseNumberSortKey(string? number)
+    {
+        if (string.IsNullOrWhiteSpace(number)) return 0;
+        var head = number.Split('/', '-', ' ').FirstOrDefault()?.Trim();
+        if (string.IsNullOrEmpty(head)) return 0;
+        // Lấy các ký tự số ở đầu chuỗi
+        int i = 0;
+        while (i < head.Length && char.IsDigit(head[i])) i++;
+        if (i == 0) return 0;
+        return long.TryParse(head.Substring(0, i), out var n) ? n : 0;
+    }
+
     public static DocumentViewModel FromDocument(Document doc, DocumentService? service = null)
     {
         var vm = new DocumentViewModel
         {
             Id = doc.Id,
             Number = doc.Number,
+            NumberSortKey = ParseNumberSortKey(doc.Number),
             Title = doc.Title,
             Type = doc.Type,
             IssueDate = doc.IssueDate,
@@ -174,15 +194,18 @@ public class DocumentViewModel
             DocumentStatus.Archived => "#37474F",        // Xám đậm
             _ => "#757575"
         };
+        // Context-aware tooltip: hiển thị trạng thái hiện tại + gợi ý bước tiếp theo
+        var nextStatus = doc.WorkflowStatus.GetNextStatus();
+        var nextHint = nextStatus.HasValue ? $"\n💡 Click để chuyển → {nextStatus.Value.GetDisplayName()}" : "\n✅ Đã hoàn thành quy trình";
         vm.StatusTooltip = doc.WorkflowStatus switch
         {
-            DocumentStatus.Draft => "Nháp — Đang soạn thảo, chưa trình ký",
-            DocumentStatus.PendingApproval => "Trình ký — Đã trình lãnh đạo, chờ duyệt",
-            DocumentStatus.Approved => "Đã duyệt — Lãnh đạo đã duyệt, chờ ký",
-            DocumentStatus.Signed => "Đã ký — Chờ phát hành, đăng ký số",
-            DocumentStatus.Published => "Đã phát hành — Có số văn bản chính thức",
-            DocumentStatus.Sent => "Đã gửi — Đã gửi đến nơi nhận",
-            DocumentStatus.Archived => "Lưu trữ — Đã hoàn thành, lưu hồ sơ",
+            DocumentStatus.Draft => $"📝 Đang soạn — Tôi đang soạn thảo VB này{nextHint}",
+            DocumentStatus.PendingApproval => $"📤 Đã trình sếp — Đã đưa lãnh đạo xem/ký{nextHint}",
+            DocumentStatus.Approved => $"✅ Sếp đã duyệt — Lãnh đạo OK, chờ ký chính thức{nextHint}",
+            DocumentStatus.Signed => $"✍️ Đã ký — Chờ phát hành, đăng ký số{nextHint}",
+            DocumentStatus.Published => $"📢 Đã phát hành — Có số văn bản chính thức{nextHint}",
+            DocumentStatus.Sent => $"📨 Đã gửi — Đã gửi đến nơi nhận{nextHint}",
+            DocumentStatus.Archived => $"🗄️ Xong — Đã hoàn thành, lưu hồ sơ{nextHint}",
             _ => ""
         };
         
@@ -255,6 +278,21 @@ public partial class DocumentListPage : Page
             _searchDebounceTimer.Stop();
             ApplyFilters();
         };
+        
+        // Ẩn banner hướng dẫn nếu user đã đóng trước đó
+        try
+        {
+            var settingsPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "AIVanBan", "settings.json");
+            if (File.Exists(settingsPath))
+            {
+                var json = File.ReadAllText(settingsPath);
+                if (json.Contains("\"statusGuideHidden\":true"))
+                    pnlStatusGuide.Visibility = Visibility.Collapsed;
+            }
+        }
+        catch { /* Bỏ qua */ }
         
         // Check if first-time setup needed
         CheckAndRunSetup();
@@ -360,11 +398,13 @@ public partial class DocumentListPage : Page
         if (cboWorkflowStatus != null)
         {
             cboWorkflowStatus.Items.Add("Tất cả");
-            cboWorkflowStatus.Items.Add("Nháp");
-            cboWorkflowStatus.Items.Add("Chờ duyệt");
-            cboWorkflowStatus.Items.Add("Đã duyệt");
-            cboWorkflowStatus.Items.Add("Đã ký");
-            cboWorkflowStatus.Items.Add("Đã phát hành");
+            cboWorkflowStatus.Items.Add("📝 Đang soạn");
+            cboWorkflowStatus.Items.Add("📤 Đã trình sếp");
+            cboWorkflowStatus.Items.Add("✅ Sếp đã duyệt");
+            cboWorkflowStatus.Items.Add("✍️ Đã ký");
+            cboWorkflowStatus.Items.Add("📢 Đã phát hành");
+            cboWorkflowStatus.Items.Add("📨 Đã gửi");
+            cboWorkflowStatus.Items.Add("🗄️ Xong — Lưu hồ sơ");
             cboWorkflowStatus.SelectedIndex = 0;
         }
     }
@@ -517,6 +557,8 @@ public partial class DocumentListPage : Page
                     3 => DocumentStatus.Approved,
                     4 => DocumentStatus.Signed,
                     5 => DocumentStatus.Published,
+                    6 => DocumentStatus.Sent,
+                    7 => DocumentStatus.Archived,
                     _ => DocumentStatus.Draft
                 };
                 filtered = filtered.Where(d => d.WorkflowStatus == status);
@@ -537,9 +579,15 @@ public partial class DocumentListPage : Page
                         || (d.DueDate.HasValue && d.DueDate.Value < now)));
             }
 
-            var result = filtered.OrderByDescending(d => d.IssueDate)
-                                .Select(d => DocumentViewModel.FromDocument(d, _documentService))
-                                .ToList();
+            // Sắp xếp mặc định: Năm DESC → Số VB ASC (numeric-aware)
+            // Trước đây chỉ sort theo IssueDate, làm số VB "10" hiển thị trước "2" do so sánh chuỗi.
+            var result = filtered
+                .Select(d => DocumentViewModel.FromDocument(d, _documentService))
+                .OrderByDescending(vm => vm.IssueDate.Year)
+                .ThenBy(vm => vm.Type)
+                .ThenBy(vm => vm.NumberSortKey)
+                .ThenByDescending(vm => vm.IssueDate)
+                .ToList();
             
             // Hiện nút Phục hồi khi ở chế độ thùng rác
             if (_isTrashView)
@@ -1198,16 +1246,31 @@ public partial class DocumentListPage : Page
         if (doc == null) return;
 
         var menu = new ContextMenu();
+        
+        // Header: hướng dẫn
+        var header = new MenuItem
+        {
+            Header = "📋 Chuyển trạng thái văn bản",
+            IsEnabled = false,
+            FontWeight = FontWeights.Bold,
+            FontSize = 12
+        };
+        menu.Items.Add(header);
+        menu.Items.Add(new Separator());
+        
         var statuses = new[]
         {
-            (DocumentStatus.Draft,            "📝 Nháp",            "Đang soạn thảo, chưa trình ký"),
-            (DocumentStatus.PendingApproval,  "📤 Trình ký",        "Đã trình lãnh đạo, chờ duyệt"),
-            (DocumentStatus.Approved,         "✅ Đã duyệt",        "Lãnh đạo đã duyệt, chờ ký"),
-            (DocumentStatus.Signed,           "✍️ Đã ký",           "Chờ phát hành, đăng ký số"),
-            (DocumentStatus.Published,        "📢 Đã phát hành",    "Có số văn bản chính thức"),
-            (DocumentStatus.Sent,             "📨 Đã gửi",          "Đã gửi đến nơi nhận"),
-            (DocumentStatus.Archived,         "🗄️ Lưu trữ",        "Đã hoàn thành, lưu hồ sơ")
+            (DocumentStatus.Draft,            "📝 Đang soạn",         "Tôi đang soạn thảo VB này"),
+            (DocumentStatus.PendingApproval,  "📤 Đã trình sếp",      "Đã đưa lãnh đạo xem/ký"),
+            (DocumentStatus.Approved,         "✅ Sếp đã duyệt",      "Lãnh đạo OK, chờ ký chính thức"),
+            (DocumentStatus.Signed,           "✍️ Đã ký",             "Đã ký xong, chờ phát hành"),
+            (DocumentStatus.Published,        "📢 Đã phát hành",      "Có số VB chính thức"),
+            (DocumentStatus.Sent,             "📨 Đã gửi",            "Đã gửi đến nơi nhận"),
+            (DocumentStatus.Archived,         "🗄️ Xong — Lưu hồ sơ", "Đã hoàn thành, lưu hồ sơ")
         };
+        
+        // Gợi ý bước tiếp theo
+        var nextStatus = doc.WorkflowStatus.GetNextStatus();
 
         foreach (var (status, label, tip) in statuses)
         {
@@ -1220,10 +1283,16 @@ public partial class DocumentListPage : Page
                 IsEnabled = doc.WorkflowStatus != status
             };
             
-            // Đánh dấu trạng thái hiện tại
+            // Đánh dấu trạng thái hiện tại + gợi ý bước tiếp
             if (doc.WorkflowStatus == status)
             {
                 item.Icon = new PackIcon { Kind = PackIconKind.CheckCircle, Foreground = Brushes.Green };
+            }
+            else if (nextStatus.HasValue && status == nextStatus.Value)
+            {
+                item.Icon = new PackIcon { Kind = PackIconKind.ArrowRight, Foreground = Brushes.Orange };
+                item.FontWeight = FontWeights.SemiBold;
+                item.Header = $"{label}  ← Bước tiếp";
             }
 
             var capturedStatus = status;
@@ -1232,6 +1301,7 @@ public partial class DocumentListPage : Page
                 doc.WorkflowStatus = capturedStatus;
                 _documentService.UpdateDocument(doc);
                 LoadDocuments();
+                Services.SnackbarHelper.ShowSuccess($"Đã chuyển trạng thái → {capturedStatus.GetDisplayName()}");
             };
             menu.Items.Add(item);
         }
@@ -1248,6 +1318,32 @@ public partial class DocumentListPage : Page
         _documentService.ToggleStar(docId);
         LoadDocuments();
         e.Handled = true;
+    }
+
+    /// <summary>Đóng banner hướng dẫn trạng thái + lưu setting để không hiện lại</summary>
+    private void CloseStatusGuide_Click(object sender, RoutedEventArgs e)
+    {
+        pnlStatusGuide.Visibility = Visibility.Collapsed;
+        try
+        {
+            var settingsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AIVanBan");
+            var settingsPath = Path.Combine(settingsDir, "settings.json");
+            
+            var json = "{}";
+            if (File.Exists(settingsPath))
+                json = File.ReadAllText(settingsPath);
+            
+            // Thêm flag statusGuideHidden vào settings
+            if (!json.Contains("statusGuideHidden"))
+            {
+                json = json.TrimEnd().TrimEnd('}') + (json.Contains(":") ? "," : "") 
+                    + "\"statusGuideHidden\":true}";
+                Directory.CreateDirectory(settingsDir);
+                File.WriteAllText(settingsPath, json);
+            }
+        }
+        catch { /* Bỏ qua nếu không ghi được */ }
     }
 
     /// <summary>Đổi trạng thái xử lý cá nhân — Sổ theo dõi cá nhân</summary>
@@ -1615,6 +1711,10 @@ public partial class DocumentListPage : Page
                     var wordService = new AIVanBan.Core.Services.WordExportService();
                     wordService.ExportDocument(doc, saveDialog.FileName);
 
+                    // ⭐ Auto-update workflow status sau khi xuất Word thành công
+                    // (Tester feedback v1.0.14: trạng thái VB không tự cập nhật khi xuất → user không biết)
+                    SuggestStatusUpdateAfterExport(doc);
+
                     var result = MessageBox.Show(
                         $"✅ Đã xuất văn bản ra file:\n{saveDialog.FileName}\n\nBạn có muốn mở file không?", 
                         "Xuất Word thành công",
@@ -1637,6 +1737,57 @@ public partial class DocumentListPage : Page
             Console.WriteLine($"❌ Error in ExportWord_Click: {ex.Message}");
             MessageBox.Show($"Lỗi khi xuất Word:\n{ex.Message}", "Lỗi", 
                 MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Sau khi xuất Word thành công, gợi ý cập nhật trạng thái workflow.
+    /// Chỉ gợi ý nếu trạng thái hiện tại là pre-published (Draft/PendingApproval/Approved/Signed).
+    /// (Tester feedback v1.0.14: trạng thái VB không tự cập nhật khi xuất Word)
+    /// </summary>
+    private void SuggestStatusUpdateAfterExport(Document doc)
+    {
+        try
+        {
+            if (doc.WorkflowStatus == DocumentStatus.Published
+                || doc.WorkflowStatus == DocumentStatus.Sent
+                || doc.WorkflowStatus == DocumentStatus.Archived)
+            {
+                return;
+            }
+
+            var currentLabel = doc.WorkflowStatus switch
+            {
+                DocumentStatus.Draft => "📝 Đang soạn (Nháp)",
+                DocumentStatus.PendingApproval => "⏳ Chờ duyệt",
+                DocumentStatus.Approved => "✅ Đã duyệt",
+                DocumentStatus.Signed => "✍️ Đã ký",
+                _ => doc.WorkflowStatus.ToString()
+            };
+
+            var msg = $"📄 Văn bản đã được xuất ra Word.\n\n" +
+                      $"Trạng thái hiện tại: {currentLabel}\n\n" +
+                      $"Bạn có muốn cập nhật trạng thái sang \"📢 Đã phát hành\" để đánh dấu VB đã hoàn tất?\n\n" +
+                      $"• [Yes] → Chuyển sang \"Đã phát hành\"\n" +
+                      $"• [No] → Giữ nguyên trạng thái";
+
+            var ans = MessageBox.Show(msg, "Cập nhật trạng thái văn bản",
+                MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (ans == MessageBoxResult.Yes)
+            {
+                doc.WorkflowStatus = DocumentStatus.Published;
+                doc.PublishedDate = DateTime.Now;
+                doc.PublishedBy = Environment.UserName;
+                doc.ModifiedDate = DateTime.Now;
+                doc.ModifiedBy = Environment.UserName;
+                _documentService.UpdateDocument(doc);
+                LoadDocuments(); // refresh DataGrid để badge hiển thị màu mới
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ SuggestStatusUpdateAfterExport error: {ex.Message}");
         }
     }
 

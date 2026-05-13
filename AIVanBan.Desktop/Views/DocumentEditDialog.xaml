@@ -507,6 +507,23 @@
                     </ComboBox>
                 </Grid>
 
+                <!-- Thư mục lưu — cho phép chọn / đổi thư mục đích -->
+                <ComboBox x:Name="cboFolder"
+                          materialDesign:HintAssist.Hint="Thư mục lưu văn bản"
+                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                          DisplayMemberPath="Name"
+                          SelectedValuePath="Id"
+                          Margin="0,0,0,15">
+                    <ComboBox.ToolTip>
+                        <ToolTip>
+                            <TextBlock TextWrapping="Wrap" MaxWidth="320">
+                                Chọn thư mục đích để lưu văn bản. Có thể đổi thư mục bất cứ lúc nào.
+                                Nếu không chọn, văn bản sẽ nằm ở mục "Tất cả văn bản".
+                            </TextBlock>
+                        </ToolTip>
+                    </ComboBox.ToolTip>
+                </ComboBox>
+
                 <!-- Nhãn / Tags -->
                 <TextBox x:Name="txtTags" 
                          materialDesign:HintAssist.Hint="Nhãn (tags), phân cách bằng dấu phẩy"

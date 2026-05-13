@@ -346,8 +346,8 @@
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="NewBox" Width="18" Height="18" 
                                                         VerticalAlignment="Center" Margin="0,0,8,0"
-                                                        Foreground="#4CAF50"/>
-                                <TextBlock Text="Có gì mới?" Foreground="#4CAF50" FontWeight="SemiBold"/>
+                                                        Foreground="#E53935"/>
+                                <TextBlock Text="Có gì mới? (v1.0.15)" Foreground="#E53935" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource TocButton}" Tag="secBackup" Click="TocItem_Click">
@@ -1613,15 +1613,57 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
+                    <!-- ════ Version 1.0.15 — Tháng 5/2026 (MỚI NHẤT) ════ -->
+                    <Border Style="{StaticResource ChangelogCard}" BorderBrush="#E53935" BorderThickness="2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Border Background="#E53935" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock Text="v1.0.15 — Tháng 5/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                </Border>
+                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#BF360C" Margin="4,4,0,4">
+                                ✨ Cải tiến lớn cho AI Soạn thảo &amp; Quản lý văn bản
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Lưu văn bản từ mẫu đúng nội dung</Bold> — Sửa lỗi khi bấm "Tải mẫu" rồi "Lưu" thì văn bản chỉ có khung trống. Nay tự thay placeholder <Italic>[TÊN ĐƠN VỊ], [Vấn đề công văn], [Nội dung công văn]…</Italic> bằng dữ liệu thực.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Hộp thoại chọn thư mục khi lưu</Bold> — Bấm <Bold>💾 Lưu văn bản</Bold> trong AI Soạn thảo → hiện cây thư mục để chọn nơi lưu (không còn tự động lưu vào mặc định).
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Nút "💾 Lưu văn bản" tự sáng sau khi Tải mẫu</Bold> — Không cần dùng AI vẫn có thể lưu trực tiếp từ mẫu mặc định.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>3 cách di chuyển văn bản vào thư mục</Bold>: (A) Ngay lúc lưu trong AI Soạn thảo · (B) Icon 📁 trên cột Thao tác từng dòng · (C) Bulk move khi tích chọn nhiều dòng.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>ComboBox Thư mục</Bold> trong dialog Sửa văn bản — đổi thư mục văn bản trực tiếp khi sửa thông tin.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ⚡ <Bold>Tăng tốc nạp mẫu mặc định</Bold> — Nạp lại 70+ mẫu chỉ <Bold>1–3 giây</Bold> (trước đây 30–60 giây). Bật virtualization cho danh sách mẫu.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                📋 <Bold>Trang Trợ giúp cập nhật</Bold> — Bổ sung mục "Có gì mới (v1.0.15)" này. Xem chi tiết tại <Italic>docs/HUONG_DAN_CAP_NHAT_THANG_5_2026.html</Italic>.
+                            </TextBlock>
+                            <Border Background="#FFF3E0" Padding="8" Margin="4,8,0,0" CornerRadius="4">
+                                <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" FontSize="11">
+                                    💡 <Bold>Lưu ý quy trình duyệt văn bản:</Bold> Văn bản đi qua 7 trạng thái tuần tự —
+                                    📝 Nháp → 📤 Trình ký → ✅ Đã duyệt → ✍️ Đã ký → 📢 Đã phát hành → 📨 Đã gửi → 🗄️ Lưu trữ.
+                                    Văn bản từ <Bold>📢 Đã phát hành</Bold> trở đi KHÔNG được sửa nội dung — phải đính chính/thu hồi bằng VB mới.
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Version 1.8 (v1.0.11) -->
                     <Border Style="{StaticResource ChangelogCard}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#4CAF50" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
                                     <TextBlock Text="v1.8 — Tháng 2/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                </Border>
-                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Cập nhật trang Trợ giúp</Bold> — nội dung chính xác, bỏ link video chưa có</TextBlock>

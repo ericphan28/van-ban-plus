@@ -37,6 +37,7 @@ public class MeetingService : IDisposable
     {
         var collection = _db.GetCollection<Meeting>("meetings");
         collection.Insert(meeting);
+        SyncTracker.MarkChanged(meeting.Id, SyncTracker.EntityTypes.Meeting);
         return meeting;
     }
     
@@ -49,13 +50,17 @@ public class MeetingService : IDisposable
         AutoUpdateOverdueTasks(meeting);
         
         var collection = _db.GetCollection<Meeting>("meetings");
-        return collection.Update(meeting);
+        var result = collection.Update(meeting);
+        if (result) SyncTracker.MarkChanged(meeting.Id, SyncTracker.EntityTypes.Meeting);
+        return result;
     }
     
     public bool DeleteMeeting(string id)
     {
         var collection = _db.GetCollection<Meeting>("meetings");
-        return collection.Delete(id);
+        var result = collection.Delete(id);
+        if (result) SyncTracker.MarkDeleted(id, SyncTracker.EntityTypes.Meeting);
+        return result;
     }
     
     public Meeting? GetMeetingById(string id)
@@ -456,10 +461,19 @@ public class MeetingService : IDisposable
     }
 
     /// <summary>
-    /// Tạo cuộc họp mới từ mẫu — copy mẫu, reset metadata
+    /// Tạo cuộc họp mới từ mẫu — copy mẫu, reset metadata, preserve duration
     /// </summary>
     public Meeting CreateFromTemplate(Meeting template, DateTime startDate)
     {
+        // Preserve duration từ mẫu gốc: nếu mẫu kéo dài 2h → meeting mới cũng 2h
+        var startTime = startDate.Date.AddHours(template.StartTime.Hour).AddMinutes(template.StartTime.Minute);
+        DateTime? endTime = null;
+        if (template.EndTime.HasValue)
+        {
+            var duration = template.EndTime.Value - template.StartTime;
+            endTime = startTime.Add(duration);
+        }
+        
         var meeting = new Meeting
         {
             IsTemplate = false,
@@ -484,10 +498,8 @@ public class MeetingService : IDisposable
                 Role = a.Role
             }).ToList() ?? new(),
             Status = MeetingStatus.Scheduled,
-            StartTime = startDate.Date.AddHours(template.StartTime.Hour).AddMinutes(template.StartTime.Minute),
-            EndTime = template.EndTime.HasValue
-                ? startDate.Date.AddHours(template.EndTime.Value.Hour).AddMinutes(template.EndTime.Value.Minute)
-                : null,
+            StartTime = startTime,
+            EndTime = endTime,
             IsAllDay = template.IsAllDay,
             CreatedDate = DateTime.Now
         };

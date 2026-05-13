@@ -25,9 +25,11 @@ public partial class DocumentReviewDialog : Window
     public string? AppliedContent { get; private set; }
 
     /// <summary>
-    /// Nội dung AI đề xuất (dùng cho "Soạn tiếp" và "Xuất Word")
+    /// Nội dung đã sửa (lấy từ TextBox — có thể đã được user chỉnh sửa thêm)
     /// </summary>
-    public string? SuggestedContent => _result?.SuggestedContent;
+    public string? SuggestedContent => !string.IsNullOrWhiteSpace(txtSuggestedContent?.Text) 
+        ? txtSuggestedContent.Text.Trim() 
+        : _result?.SuggestedContent;
 
     /// <summary>
     /// Constructor duy nhất — luôn hiện ô nhập nội dung trước.
@@ -151,19 +153,17 @@ public partial class DocumentReviewDialog : Window
         if (!string.IsNullOrWhiteSpace(result.SuggestedContent))
         {
             txtSuggestedContent.Text = result.SuggestedContent;
+            // Hiện panel actions với tất cả options
+            pnlActions.Visibility = Visibility.Visible;
             btnApply.Visibility = Visibility.Visible;
-            btnExportWord.Visibility = Visibility.Visible;
-            btnComposeContinue.Visibility = Visibility.Visible;
         }
         else
         {
             txtSuggestedContent.Text = "(AI không đề xuất sửa nội dung — văn bản đã tốt hoặc chỉ có lỗi nhỏ)";
             // Vẫn cho xuất Word nội dung gốc nếu user muốn
-            btnExportWord.Visibility = Visibility.Visible;
+            pnlActions.Visibility = Visibility.Visible;
+            btnApply.Visibility = Visibility.Collapsed;
         }
-
-        // Show copy button
-        btnCopyResult.Visibility = Visibility.Visible;
     }
 
     private void ShowError(string message)
@@ -280,7 +280,9 @@ public partial class DocumentReviewDialog : Window
 
     private void Apply_Click(object sender, RoutedEventArgs e)
     {
-        if (_result != null && !string.IsNullOrWhiteSpace(_result.SuggestedContent))
+        // Lấy nội dung từ TextBox (user có thể đã chỉnh sửa trực tiếp)
+        var editedContent = txtSuggestedContent.Text?.Trim();
+        if (!string.IsNullOrWhiteSpace(editedContent))
         {
             var confirm = MessageBox.Show(
                 "Bạn có muốn áp dụng nội dung đã sửa vào văn bản?\n\n" +
@@ -291,7 +293,7 @@ public partial class DocumentReviewDialog : Window
 
             if (confirm == MessageBoxResult.Yes)
             {
-                AppliedContent = _result.SuggestedContent;
+                AppliedContent = editedContent;
                 DialogResult = true;
                 Close();
             }
@@ -306,10 +308,7 @@ public partial class DocumentReviewDialog : Window
         pnlError.Visibility = Visibility.Collapsed;
         pnlResults.Visibility = Visibility.Collapsed;
         scoreBadge.Visibility = Visibility.Collapsed;
-        btnApply.Visibility = Visibility.Collapsed;
-        btnCopyResult.Visibility = Visibility.Collapsed;
-        btnExportWord.Visibility = Visibility.Collapsed;
-        btnComposeContinue.Visibility = Visibility.Collapsed;
+        pnlActions.Visibility = Visibility.Collapsed;
         txtScoreText.Text = "";
     }
 
@@ -351,7 +350,10 @@ public partial class DocumentReviewDialog : Window
     {
         try
         {
-            var contentToExport = _result?.SuggestedContent ?? _content;
+            // Ưu tiên lấy nội dung từ TextBox (user có thể đã chỉnh sửa trực tiếp)
+            var contentToExport = !string.IsNullOrWhiteSpace(txtSuggestedContent.Text) 
+                ? txtSuggestedContent.Text.Trim() 
+                : _content;
             if (string.IsNullOrWhiteSpace(contentToExport))
             {
                 MessageBox.Show("Không có nội dung để xuất.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -385,8 +387,8 @@ public partial class DocumentReviewDialog : Window
 
                 exportService.ExportContent(saveDialog.FileName, contentToExport, options);
 
-                MessageBox.Show($"✅ Đã xuất file Word thành công!\n\n{saveDialog.FileName}",
-                    "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"✅ Đã xuất file Word thành công!\n\n{saveDialog.FileName}\n\n💡 Gợi ý: Nhớ đổi trạng thái VB sang 'Đã trình sếp' hoặc 'Đã ký' \nnếu bạn đã hoàn tất soạn thảo.",
+                    "Xuất thành công", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 // Mở file sau khi xuất
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
@@ -402,42 +404,7 @@ public partial class DocumentReviewDialog : Window
         }
     }
 
-    /// <summary>
-    /// P7: Chuyển nội dung đã sửa sang giao diện AI Soạn thảo để chỉnh sửa tiếp
-    /// </summary>
-    private void ComposeContinue_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            var contentToCompose = _result?.SuggestedContent;
-            if (string.IsNullOrWhiteSpace(contentToCompose))
-            {
-                MessageBox.Show("Không có nội dung đã sửa để chuyển.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
 
-            var confirm = MessageBox.Show(
-                "Mở giao diện AI Soạn thảo với nội dung đã sửa?\n\n" +
-                "Bạn có thể chỉnh sửa thêm, lưu vào hệ thống hoặc xuất Word từ đó.",
-                "Chuyển sang Soạn thảo",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (confirm == MessageBoxResult.Yes)
-            {
-                var docService = new DocumentService();
-                var composeDialog = new AIComposeDialog(docService);
-                composeDialog.SetPrefilledContent(contentToCompose, _documentType, _title);
-                composeDialog.Owner = this.Owner; // Set owner to MainWindow
-                this.Close();
-                composeDialog.ShowDialog();
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
 
     #endregion
 

@@ -78,6 +78,12 @@
                       CanUserAddRows="False"
                       SelectionMode="Single"
                       IsReadOnly="True"
+                      EnableRowVirtualization="True"
+                      EnableColumnVirtualization="True"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                      ScrollViewer.CanContentScroll="True"
                       MouseDoubleClick="Template_DoubleClick">
                 
                 <!-- Nhóm theo Loại văn bản để dễ tìm -->

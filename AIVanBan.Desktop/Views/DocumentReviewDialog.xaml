@@ -306,7 +306,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="📝 VĂN BẢN SAU KHI SỬA" 
+                            <TextBlock Grid.Column="0" Text="📝 VĂN BẢN SAU KHI SỬA (có thể chỉnh sửa)" 
                                       FontWeight="Bold" FontSize="14" Foreground="#1565C0"
                                       VerticalAlignment="Center"/>
                             <Button x:Name="btnCopySuggested" Grid.Column="1"
@@ -327,9 +327,10 @@
                         <TextBox x:Name="txtSuggestedContent" 
                                 TextWrapping="Wrap" AcceptsReturn="True"
                                 VerticalScrollBarVisibility="Auto"
-                                IsReadOnly="True"
+                                IsReadOnly="False"
                                 FontSize="13" Padding="14" BorderThickness="0"
-                                FontFamily="Segoe UI"/>
+                                FontFamily="Segoe UI"
+                                materialDesign:HintAssist.Hint="Bạn có thể chỉnh sửa trực tiếp nội dung tại đây"/>
                     </Border>
                 </Grid>
             </Grid>
@@ -347,65 +348,76 @@
             </StackPanel>
         </Grid>
 
-        <!-- FOOTER -->
+        <!-- FOOTER: Panel options rõ ràng -->
         <Border Grid.Row="3" Background="White" BorderBrush="#E0E0E0" 
                BorderThickness="0,1,0,0" Padding="16,10">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Score text -->
+                <TextBlock x:Name="txtScoreText" Grid.Row="0" 
+                          FontSize="13" Foreground="#666" Margin="0,0,0,8"/>
 
-                <TextBlock x:Name="txtScoreText" Grid.Column="0" 
-                          VerticalAlignment="Center" FontSize="13" Foreground="#666"/>
-
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button x:Name="btnCopyResult"
-                           Style="{StaticResource MaterialDesignRaisedButton}"
-                           Background="#00796B" Foreground="White"
-                           Click="CopyResult_Click"
-                           Margin="0,0,8,0"
-                           Visibility="Collapsed"
-                           ToolTip="Copy toàn bộ kết quả kiểm tra vào clipboard">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <TextBlock Text="📋 Copy kết quả" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="btnExportWord"
-                           Style="{StaticResource MaterialDesignRaisedButton}"
-                           Background="#2E7D32" Foreground="White"
-                           Click="ExportWord_Click"
-                           Margin="0,0,8,0"
-                           Visibility="Collapsed"
-                           ToolTip="Xuất nội dung đã sửa ra file Word chuẩn NĐ 30/2020">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FileWord" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <TextBlock Text="📄 Xuất Word" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="btnComposeContinue"
-                           Style="{StaticResource MaterialDesignRaisedButton}"
-                           Background="#E65100" Foreground="White"
-                           Click="ComposeContinue_Click"
-                           Margin="0,0,8,0"
-                           Visibility="Collapsed"
-                           ToolTip="Mở giao diện Soạn thảo AI với nội dung đã sửa">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FileEditOutline" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <TextBlock Text="✏️ Soạn tiếp" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="btnApply" Content="✅ Áp dụng nội dung đã sửa"
-                           Style="{StaticResource MaterialDesignRaisedButton}"
-                           Background="#1565C0" Foreground="White"
-                           Click="Apply_Click"
-                           Margin="0,0,8,0"
-                           Visibility="Collapsed"/>
-                    <Button Content="Đóng"
+                <!-- Options panel — hiện sau khi kiểm tra xong -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Action buttons panel -->
+                    <StackPanel x:Name="pnlActions" Grid.Column="0" Orientation="Horizontal" Visibility="Collapsed">
+                        <!-- Option 1: Xuất Word -->
+                        <Button x:Name="btnExportWord"
+                               Style="{StaticResource MaterialDesignRaisedButton}"
+                               Background="#2E7D32" Foreground="White"
+                               Click="ExportWord_Click"
+                               Margin="0,0,8,0"
+                               Height="36"
+                               ToolTip="Tải file Word (.docx) chuẩn NĐ 30/2020 về máy tính">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FileWord" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="📄 Xuất Word" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <!-- Option 2: Áp dụng nội dung đã sửa -->
+                        <Button x:Name="btnApply"
+                               Style="{StaticResource MaterialDesignRaisedButton}"
+                               Background="#1565C0" Foreground="White"
+                               Click="Apply_Click"
+                               Margin="0,0,8,0"
+                               Height="36"
+                               ToolTip="Áp dụng nội dung đã sửa và đóng cửa sổ">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Check" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="✅ Áp dụng" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <!-- Copy kết quả -->
+                        <Button x:Name="btnCopyResult"
+                               Style="{StaticResource MaterialDesignOutlinedButton}"
+                               Click="CopyResult_Click"
+                               Margin="0,0,8,0"
+                               Height="36"
+                               ToolTip="Copy toàn bộ kết quả kiểm tra vào clipboard">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="Copy" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    
+                    <!-- Đóng -->
+                    <Button Grid.Column="1" Content="Đóng"
                            Style="{StaticResource MaterialDesignOutlinedButton}"
-                           Click="Close_Click"/>
-                </StackPanel>
+                           Click="Close_Click"
+                           Height="36"/>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

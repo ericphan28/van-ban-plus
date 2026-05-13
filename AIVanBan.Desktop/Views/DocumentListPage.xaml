@@ -14,6 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -38,8 +39,34 @@
             </TextBlock>
         </StackPanel>
 
+        <!-- Banner hướng dẫn trạng thái VB — hiện lần đầu, đóng được -->
+        <Border x:Name="pnlStatusGuide" Grid.Row="1" 
+                Background="#FFF8E1" BorderBrush="#FFD54F" BorderThickness="1"
+                CornerRadius="6" Padding="12,8" Margin="0,0,0,8"
+                Visibility="Visible">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="💡" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="12">
+                    <Run FontWeight="SemiBold" Text="Hướng dẫn: "/><Run Text="Click vào "/>
+                    <Run FontWeight="Bold" Foreground="#E65100" Text="badge trạng thái"/><Run Text=" trong cột 'Trạng thái' để chuyển bước: "/>
+                    <Run Text="Đang soạn → Đã trình sếp → Sếp đã duyệt → Đã ký → Phát hành → Gửi → Lưu hồ sơ. "/>
+                    <Run Foreground="#666" Text="Đây là ghi nhận CÁ NHÂN, không phải duyệt chính thức."/>
+                </TextBlock>
+                <Button Grid.Column="2" Content="✕" 
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        FontSize="14" Padding="4" MinWidth="28" Height="28"
+                        Click="CloseStatusGuide_Click"
+                        ToolTip="Đóng hướng dẫn"/>
+            </Grid>
+        </Border>
+
         <!-- Toolbar -->
-        <materialDesign:Card Grid.Row="1" Padding="10" Margin="0,0,0,8">
+        <materialDesign:Card Grid.Row="2" Padding="10" Margin="0,0,0,8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -264,7 +291,7 @@
         </materialDesign:Card>
         
         <!-- Advanced Search Panel -->
-        <materialDesign:Card x:Name="advancedPanel" Grid.Row="1" 
+        <materialDesign:Card x:Name="advancedPanel" Grid.Row="2" 
                             Padding="15" Margin="0,0,0,15"
                             Visibility="Collapsed">
             <Grid>
@@ -343,7 +370,7 @@
         </materialDesign:Card>
 
         <!-- Layout 3 CỘT: TreeView | DataGrid | Preview Panel -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="220"/>
                 <ColumnDefinition Width="5"/>
@@ -738,7 +765,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Số VB" Binding="{Binding Number}" Width="100" MinWidth="80" SortMemberPath="Number" CanUserSort="True">
+                        <DataGridTextColumn Header="Số VB" Binding="{Binding Number}" Width="100" MinWidth="80" SortMemberPath="NumberSortKey" CanUserSort="True">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -862,7 +889,7 @@
                         </DataGridTemplateColumn>
                         
                         <!-- Cột Trạng thái workflow — click để chuyển nhanh -->
-                        <DataGridTemplateColumn Header="Trạng thái" Width="110" MinWidth="95" SortMemberPath="WorkflowStatus" CanUserSort="True">
+                        <DataGridTemplateColumn Header="Trạng thái" Width="130" MinWidth="110" SortMemberPath="WorkflowStatus" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="{Binding StatusColor}" 
@@ -871,7 +898,7 @@
                                            HorizontalAlignment="Center"
                                            Cursor="Hand"
                                            ToolTip="{Binding StatusTooltip}"
-                                           MouseLeftButtonDown="StatusBadge_Click"
+                                           PreviewMouseLeftButtonDown="StatusBadge_Click"
                                            Tag="{Binding Id}">
                                         <TextBlock Text="{Binding StatusText}" 
                                                   Foreground="White" 
@@ -892,7 +919,7 @@
                                            Padding="6,2"
                                            HorizontalAlignment="Center"
                                            Cursor="Hand"
-                                           MouseLeftButtonDown="PersonalStatusBadge_Click"
+                                           PreviewMouseLeftButtonDown="PersonalStatusBadge_Click"
                                            Tag="{Binding Id}"
                                            ToolTip="Click để đổi trạng thái xử lý cá nhân">
                                         <TextBlock Text="{Binding MyStatusText}" 
@@ -941,7 +968,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         
-                        <DataGridTemplateColumn Header="Thao tác" Width="140" MinWidth="140">
+                        <DataGridTemplateColumn Header="Thao tác" Width="170" MinWidth="170">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -957,6 +984,14 @@
                                                 Width="30" Height="30"
                                                 Visibility="{Binding EditVisibility}">
                                             <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18"/>
+                                        </Button>
+                                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                                                ToolTip="Di chuyển sang thư mục khác"
+                                                Click="MoveDocument_Click"
+                                                Tag="{Binding Id}"
+                                                Width="30" Height="30"
+                                                Visibility="{Binding EditVisibility}">
+                                            <materialDesign:PackIcon Kind="FolderMove" Width="18" Height="18" Foreground="#1565C0"/>
                                         </Button>
                                         <Button Style="{StaticResource MaterialDesignIconButton}"
                                                 ToolTip="Xuất Word (.docx)" Click="ExportWord_Click"

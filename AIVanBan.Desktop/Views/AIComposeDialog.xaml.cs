@@ -18,6 +18,9 @@ public partial class AIComposeDialog : Window
     private readonly GeminiAIService _aiService;
     private DocumentTemplate? _selectedTemplate;
     private readonly Dictionary<string, TextBox> _fieldInputs = new();
+    // true = nội dung trong RichTextBox được sinh bởi AI (cần parse tách header/căn cứ/nơi nhận)
+    // false = nội dung từ "Tải mẫu" hoặc người dùng tự gõ → giữ NGUYÊN khi lưu
+    private bool _contentFromAI = false;
     private readonly string? _preSelectedTemplateId;
 
     public Document? GeneratedDocument { get; private set; }
@@ -30,6 +33,16 @@ public partial class AIComposeDialog : Window
         _preSelectedTemplateId = preSelectedTemplateId;
         
         LoadTemplates();
+    }
+
+    /// <summary>
+    /// Khi nội dung trong RichTextBox thay đổi (do AI hoặc user gõ tay) → bật/tắt nút Lưu.
+    /// </summary>
+    private void GeneratedContentRichTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (SaveDocumentButton == null) return;
+        var text = GetRichTextContent();
+        SaveDocumentButton.IsEnabled = !string.IsNullOrWhiteSpace(text);
     }
 
     /// <summary>
@@ -59,7 +72,11 @@ public partial class AIComposeDialog : Window
                 }
                 GeneratedContentRichTextBox.Document = flowDoc;
 
-                // Chuyển sang tab kết quả nếu có
+                // Hiện và mở rộng panel nội dung để user thấy ngay
+                PreviewExpander.Visibility = Visibility.Visible;
+                PreviewExpander.IsExpanded = true;
+
+                // Chuyển tiêu đề
                 if (!string.IsNullOrWhiteSpace(title))
                     this.Title = $"✏️ AI Soạn thảo — {title} (từ Kiểm tra VB)";
             }
@@ -231,8 +248,148 @@ public partial class AIComposeDialog : Window
         }
         
         var scenarioName = (SampleScenarioComboBox.SelectedItem as ComboBoxItem)?.Content;
-        MessageBox.Show($"✅ Đã tải dữ liệu mẫu: {scenarioName}\n📝 Đã điền {filledCount}/{_selectedTemplate.RequiredFields.Length} trường.\n\n💡 Nhấn \"Tạo văn bản với AI\" để tạo văn bản.", 
+
+        // ➕ Đổ luôn nội dung mẫu (TemplateContent) — thay placeholder [xxx] / {xxx} bằng dữ liệu vừa nhập —
+        // vào RichTextBox để user có thể bấm "Lưu văn bản" ngay mà KHÔNG cần dùng AI.
+        // Nhờ event TextChanged, nút "💾 Lưu văn bản" sẽ tự sáng lên.
+        try
+        {
+            var preview = BuildTemplatePreviewContent();
+            if (!string.IsNullOrWhiteSpace(preview))
+            {
+                SetRichTextContent(preview);
+                _contentFromAI = false; // nội dung từ mẫu → KHÔNG parse khi lưu
+                PreviewExpander.Visibility = Visibility.Visible;
+                PreviewExpander.IsExpanded = true;
+                if (SaveDocumentButton != null) SaveDocumentButton.IsEnabled = true;
+            }
+        }
+        catch { /* không chặn flow nếu lỗi preview */ }
+
+        MessageBox.Show($"✅ Đã tải dữ liệu mẫu: {scenarioName}\n📝 Đã điền {filledCount}/{_selectedTemplate.RequiredFields.Length} trường.\n\n💡 Bấm \"✨ Tạo văn bản với AI\" để AI viết hoàn chỉnh, hoặc bấm thẳng \"💾 Lưu văn bản\" nếu chỉ cần dùng mẫu gốc.", 
             "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// Tạo nội dung xem trước từ TemplateContent: thay các placeholder {field} hoặc [field]
+    /// bằng giá trị người dùng đã nhập trong các ô input. Dùng khi user muốn LƯU VB
+    /// trực tiếp từ mẫu mà không cần gọi AI.
+    /// </summary>
+    private string BuildTemplatePreviewContent()
+    {
+        if (_selectedTemplate == null) return string.Empty;
+        var content = _selectedTemplate.TemplateContent ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(content)) content = _selectedTemplate.Content ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(content)) return string.Empty;
+
+        // Bước 1: thay placeholder dạng {field_name} (ít gặp, chỉ trong AIPrompt)
+        foreach (var kv in _fieldInputs)
+        {
+            var value = kv.Value?.Text ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(value)) continue;
+            content = content.Replace("{" + kv.Key + "}", value);
+        }
+
+        // Bước 2: thay placeholder dạng [tiếng Việt] trong TemplateContent
+        // (ví dụ [TÊN ĐƠN VỊ], [Cơ quan nhận], [Nội dung công văn], [Vấn đề công văn]...)
+        // Dùng regex MỜ: nếu nội dung trong [] chứa keyword → thay bằng giá trị input.
+        var keywordMap = BuildPlaceholderKeywordMap();
+        // Regex bắt mọi placeholder dạng [xxx] (không chứa [ hoặc ])
+        var placeholderRegex = new System.Text.RegularExpressions.Regex(@"\[([^\[\]]+)\]");
+        content = placeholderRegex.Replace(content, match =>
+        {
+            var inner = match.Groups[1].Value.Trim();
+            // Duyệt từng field, nếu placeholder chứa BẤT KỲ keyword nào của field
+            // và field có giá trị → thay bằng giá trị đó.
+            foreach (var kv in keywordMap)
+            {
+                if (!_fieldInputs.TryGetValue(kv.Key, out var tb)) continue;
+                var value = tb?.Text ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(value)) continue;
+                foreach (var kw in kv.Value)
+                {
+                    if (inner.IndexOf(kw, StringComparison.OrdinalIgnoreCase) >= 0)
+                        return value;
+                }
+            }
+            return match.Value; // không match → giữ nguyên
+        });
+
+        // Bước 3: điền địa danh + ngày tháng năm hiện tại (nếu có)
+        var today = DateTime.Now;
+        content = ReplaceCaseInsensitive(content, "[Địa danh]", "Gia Kiệm");
+        // [Địa danh], ngày [  ] tháng [  ] năm 202[  ]
+        content = content.Replace("ngày [  ] tháng [  ] năm 202[  ]",
+            $"ngày {today.Day:00} tháng {today.Month:00} năm {today.Year}");
+        content = content.Replace("ngày [ ] tháng [ ] năm 202[ ]",
+            $"ngày {today.Day:00} tháng {today.Month:00} năm {today.Year}");
+
+        return content;
+    }
+
+    /// <summary>
+    /// Map field key → các KEYWORD để dò tìm trong nội dung placeholder [xxx].
+    /// Ví dụ: "content" có keyword "Nội dung" sẽ khớp với [Nội dung], [Nội dung công văn], [Nội dung chính]...
+    /// LƯU Ý thứ tự field quan trọng: keyword ĐẶC HIỆU (signer_name, signer_title) phải đứng TRƯỚC
+    /// keyword chung chung (from_org, content) để tránh khớp nhầm.
+    /// </summary>
+    private Dictionary<string, string[]> BuildPlaceholderKeywordMap()
+    {
+        // Dùng Dictionary giữ thứ tự insertion (.NET behavior)
+        return new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            // ƯU TIÊN cao: chức danh + tên ký (specific)
+            ["signer_title"]    = new[] { "CHỨC DANH", "Chức danh", "Chức vụ" },
+            ["chairman_name"]   = new[] { "Chủ tịch" },
+            ["signer_name"]     = new[] { "Họ và tên", "Họ tên người ký", "Tên người ký", "Người ký" },
+
+            // Cơ quan nhận (đặt trước "from_org" vì đều có chữ "cơ quan/đơn vị")
+            ["to_org"]          = new[] { "Cơ quan nhận", "Đơn vị nhận", "Phòng/Ban nhận", "Tên cơ quan/đơn vị nhận" },
+            ["to_department"]   = new[] { "Phòng/Ban nhận", "Bộ phận nhận" },
+            ["recipient"]       = new[] { "Người nhận" },
+
+            // Cơ quan ban hành
+            ["from_org"]        = new[] { "TÊN ĐƠN VỊ", "TÊN CƠ QUAN", "tên đơn vị", "tên cơ quan", "đơn vị gửi", "cơ quan ban hành", "đơn vị" },
+            ["org_name"]        = new[] { "TÊN ĐƠN VỊ", "TÊN CƠ QUAN" },
+
+            // Nội dung & vấn đề
+            ["subject"]         = new[] { "Vấn đề", "Trích yếu", "Tên văn bản", "tên sự việc", "Sự việc" },
+            ["content"]         = new[] { "Nội dung" },
+
+            // Khác
+            ["reply_to_number"] = new[] { "số CV", "số công văn" },
+            ["abbr"]            = new[] { "Viết tắt" },
+            ["doc_number"]      = new[] { "Số văn bản" },
+            ["issue_date"]      = new[] { "Ngày ban hành" },
+        };
+    }
+
+    /// <summary>
+    /// (Đã thay thế bằng BuildPlaceholderKeywordMap - giữ lại cho tương thích nếu cần)
+    /// </summary>
+    private Dictionary<string, string[]> BuildPlaceholderAliasMap()
+    {
+        return BuildPlaceholderKeywordMap();
+    }
+
+    private static string ReplaceCaseInsensitive(string input, string search, string replacement)
+    {
+        if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(search)) return input;
+        int idx = 0;
+        var sb = new System.Text.StringBuilder();
+        while (idx < input.Length)
+        {
+            int found = input.IndexOf(search, idx, StringComparison.OrdinalIgnoreCase);
+            if (found < 0)
+            {
+                sb.Append(input, idx, input.Length - idx);
+                break;
+            }
+            sb.Append(input, idx, found - idx);
+            sb.Append(replacement);
+            idx = found + search.Length;
+        }
+        return sb.ToString();
     }
 
     private string GetTemplateNameForScenario(string scenario)
@@ -1296,6 +1453,7 @@ public partial class AIComposeDialog : Window
 
             // Hiển thị kết quả trong RichTextBox
             SetRichTextContent(content);
+            _contentFromAI = true; // nội dung từ AI → CẦN parse tách header/căn cứ/nơi nhận khi lưu
             PreviewExpander.Visibility = Visibility.Visible;
             PreviewExpander.IsExpanded = true;
             
@@ -2036,7 +2194,18 @@ Thư công phải trang trọng, lịch sự, thể hiện tình cảm chân th�
         }
 
         // === PARSE AI content → tách thành các trường cấu trúc ===
-        var parsed = ParseAndCleanContent(rawContent, _selectedTemplate?.Type ?? DocumentType.CongVan);
+        // CHỈ parse khi nội dung được sinh bởi AI. Với nội dung từ "Tải mẫu" hoặc do user tự gõ,
+        // giữ NGUYÊN toàn bộ rawContent — tránh trường hợp parser cắt mất nội dung do mẫu
+        // không có cấu trúc chuẩn (Quốc hiệu, Số, Trích yếu...) khiến file lưu bị trống.
+        ParsedDocumentContent parsed;
+        if (_contentFromAI)
+        {
+            parsed = ParseAndCleanContent(rawContent, _selectedTemplate?.Type ?? DocumentType.CongVan);
+        }
+        else
+        {
+            parsed = new ParsedDocumentContent { CleanedContent = rawContent };
+        }
 
         // === Lấy dữ liệu từ input fields người dùng đã nhập ===
         var subjectText = GetFieldValue("subject");
@@ -2091,8 +2260,174 @@ Thư công phải trang trọng, lịch sự, thể hiện tình cảm chân th�
             Tags = new[] { "AI Generated", (docType.ToString()) }
         };
 
+        // === HIỆN HỘP THOẠI CHỌN THƯ MỤC ===
+        // Mặc định: không thuộc thư mục nào
+        var pickedFolderId = ShowFolderPickerDialog(string.Empty);
+        if (pickedFolderId == null)
+        {
+            // User hủy → KHÔNG đóng dialog, không lưu
+            GeneratedDocument = null;
+            return;
+        }
+        GeneratedDocument.FolderId = pickedFolderId; // có thể là chuỗi rỗng = không thuộc thư mục
+
         DialogResult = true;
         Close();
+    }
+
+    /// <summary>
+    /// Mở hộp thoại chọn thư mục đích trước khi lưu văn bản.
+    /// Trả về:
+    ///  - null = user hủy
+    ///  - "" = không thuộc thư mục nào
+    ///  - "id" = id thư mục đã chọn
+    /// </summary>
+    private string? ShowFolderPickerDialog(string defaultFolderId)
+    {
+        var allFolders = _documentService.GetAllFolders()
+            .OrderBy(f => f.SortOrder)
+            .ThenBy(f => f.Name)
+            .ToList();
+
+        var dialog = new Window
+        {
+            Title = "💾 Chọn thư mục lưu văn bản",
+            Width = 460,
+            Height = 560,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Owner = this,
+            ResizeMode = ResizeMode.CanResize
+        };
+
+        var grid = new Grid { Margin = new Thickness(12) };
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var hint = new TextBlock
+        {
+            Text = "Chọn thư mục đích để lưu văn bản (chọn dòng đầu nếu muốn lưu vào 'Tất cả văn bản'):",
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 8),
+            FontSize = 12,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x55, 0x55, 0x55))
+        };
+        Grid.SetRow(hint, 0);
+        grid.Children.Add(hint);
+
+        var tree = new TreeView { Margin = new Thickness(0, 0, 0, 8) };
+
+        // Node "không thuộc thư mục nào"
+        var rootNoFolder = new TreeViewItem
+        {
+            Header = "📂 (Không thuộc thư mục nào — lưu vào 'Tất cả văn bản')",
+            Tag = string.Empty,
+            IsExpanded = true
+        };
+        tree.Items.Add(rootNoFolder);
+
+        TreeViewItem? toSelect = string.IsNullOrEmpty(defaultFolderId) ? rootNoFolder : null;
+
+        // Build hierarchical tree
+        void AddChildren(TreeViewItem parentNode, string parentId)
+        {
+            var children = allFolders.Where(f => f.ParentId == parentId).ToList();
+            foreach (var child in children)
+            {
+                var node = new TreeViewItem
+                {
+                    Header = $"📁 {child.Name}",
+                    Tag = child.Id,
+                    IsExpanded = true
+                };
+                parentNode.Items.Add(node);
+                if (child.Id == defaultFolderId) toSelect = node;
+                AddChildren(node, child.Id);
+            }
+        }
+
+        var rootFolders = allFolders.Where(f => string.IsNullOrEmpty(f.ParentId)).ToList();
+        foreach (var root in rootFolders)
+        {
+            var node = new TreeViewItem
+            {
+                Header = $"📁 {root.Name}",
+                Tag = root.Id,
+                IsExpanded = true
+            };
+            tree.Items.Add(node);
+            if (root.Id == defaultFolderId) toSelect = node;
+            AddChildren(node, root.Id);
+        }
+
+        Grid.SetRow(tree, 1);
+        grid.Children.Add(tree);
+
+        // Buttons
+        var btnPanel = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right
+        };
+
+        var btnOk = new Button
+        {
+            Content = "💾 Lưu vào thư mục đã chọn",
+            MinWidth = 200,
+            Height = 36,
+            Padding = new Thickness(16, 0, 16, 0),
+            VerticalContentAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 10, 0),
+            IsDefault = true,
+            Background = new SolidColorBrush(Color.FromRgb(0x19, 0x76, 0xD2)),
+            Foreground = Brushes.White,
+            FontWeight = FontWeights.SemiBold
+        };
+        var btnCancel = new Button
+        {
+            Content = "Hủy",
+            MinWidth = 80,
+            Height = 36,
+            Padding = new Thickness(16, 0, 16, 0),
+            VerticalContentAlignment = VerticalAlignment.Center,
+            IsCancel = true
+        };
+
+        string? result = null;
+        btnOk.Click += (s, args) =>
+        {
+            if (tree.SelectedItem is TreeViewItem item && item.Tag is string id)
+            {
+                result = id;
+                dialog.DialogResult = true;
+                dialog.Close();
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn thư mục đích!\n(Có thể chọn dòng đầu nếu không thuộc thư mục cụ thể)",
+                    "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        };
+        btnCancel.Click += (s, args) => dialog.Close();
+
+        btnPanel.Children.Add(btnOk);
+        btnPanel.Children.Add(btnCancel);
+        Grid.SetRow(btnPanel, 2);
+        grid.Children.Add(btnPanel);
+
+        dialog.Content = grid;
+
+        // Set selection sau khi tree đã render
+        dialog.Loaded += (s, args) =>
+        {
+            if (toSelect != null)
+            {
+                toSelect.IsSelected = true;
+                toSelect.BringIntoView();
+            }
+        };
+
+        return dialog.ShowDialog() == true ? result : null;
     }
 
     /// <summary>

@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using AIVanBan.Core.Services;
@@ -14,11 +15,19 @@ public partial class ApiSettingsDialog : Window
     private DateTime _lastHeaderClick = DateTime.MinValue;
     private bool _devModeActive;
     private DispatcherTimer? _countdownTimer;
+    private DocumentService? _documentService;
 
     public ApiSettingsDialog()
     {
         InitializeComponent();
         LoadSettings();
+        LoadOrganizationTab();
+    }
+
+    public ApiSettingsDialog(DocumentService documentService) : this()
+    {
+        _documentService = documentService;
+        LoadOrganizationTab();
     }
 
     /// <summary>
@@ -384,6 +393,7 @@ public partial class ApiSettingsDialog : Window
         }
 
         AppSettingsService.Save(settings);
+        SaveOrganizationTab();
         MessageBox.Show("✅ Đã lưu cài đặt thành công!\n\nCần khởi động lại ứng dụng để áp dụng thay đổi.",
             "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         DialogResult = true;
@@ -395,6 +405,137 @@ public partial class ApiSettingsDialog : Window
         DialogResult = false;
         Close();
     }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // ORGANIZATION TAB — Cấu hình cơ quan (NĐ 30/2020 — Phụ lục III, VI)
+    // ════════════════════════════════════════════════════════════════════════
+
+    private const string KEY_DEFAULT_SIGNER = "Org.DefaultSigner";
+    private const string KEY_DEFAULT_SIGNING_TITLE = "Org.DefaultSigningTitle";
+    private const string KEY_DEFAULT_LOCATION = "Org.DefaultLocation";
+
+    private void LoadOrganizationTab()
+    {
+        try
+        {
+            // Load danh sách loại cơ quan vào combobox
+            if (cboOrgType.Items.Count == 0)
+            {
+                foreach (AIVanBan.Core.Models.OrganizationType t in Enum.GetValues(typeof(AIVanBan.Core.Models.OrganizationType)))
+                {
+                    cboOrgType.Items.Add(new ComboBoxItem
+                    {
+                        Content = OrgTypeDisplay(t),
+                        Tag = t
+                    });
+                }
+            }
+
+            // Load org config từ DB nếu có service, nếu không thì tạo service tạm
+            DocumentService docSvc = _documentService ?? new DocumentService();
+            var org = docSvc.GetOrganizationConfig();
+            txtOrgName.Text = org.Name ?? "";
+            txtOrgAbbreviation.Text = org.Abbreviation ?? "";
+
+            foreach (ComboBoxItem item in cboOrgType.Items)
+            {
+                if (item.Tag is AIVanBan.Core.Models.OrganizationType t && t == org.Type)
+                {
+                    cboOrgType.SelectedItem = item;
+                    break;
+                }
+            }
+            if (cboOrgType.SelectedItem == null && cboOrgType.Items.Count > 0)
+                cboOrgType.SelectedIndex = 0;
+
+            // Load defaults từ ExtraSettings
+            txtOrgLocation.Text = AppSettingsService.GetRawSettingValue(KEY_DEFAULT_LOCATION) ?? "";
+            txtDefaultSigner.Text = AppSettingsService.GetRawSettingValue(KEY_DEFAULT_SIGNER) ?? "";
+            txtDefaultSigningTitle.Text = AppSettingsService.GetRawSettingValue(KEY_DEFAULT_SIGNING_TITLE) ?? "";
+
+            // Wire preview update
+            txtOrgAbbreviation.TextChanged += (_, _) => UpdateOrgPreview();
+            UpdateOrgPreview();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ LoadOrganizationTab error: {ex.Message}");
+        }
+    }
+
+    private void UpdateOrgPreview()
+    {
+        try
+        {
+            var abbr = string.IsNullOrWhiteSpace(txtOrgAbbreviation.Text) ? "UBND" : txtOrgAbbreviation.Text.Trim();
+            txtOrgPreview.Text = $"VD: 15/CV-{abbr}, 8/QĐ-{abbr}, 3/BC-{abbr}, 12/KH-{abbr}";
+        }
+        catch { /* ignore */ }
+    }
+
+    private void SaveOrganizationTab()
+    {
+        try
+        {
+            // Validate
+            if (string.IsNullOrWhiteSpace(txtOrgName.Text) && string.IsNullOrWhiteSpace(txtOrgAbbreviation.Text))
+            {
+                // Người dùng để trống cả 2 → coi như chưa đụng tab này, bỏ qua
+                return;
+            }
+
+            DocumentService docSvc = _documentService ?? new DocumentService();
+            var org = docSvc.GetOrganizationConfig();
+            org.Name = txtOrgName.Text?.Trim() ?? "";
+            org.Abbreviation = (txtOrgAbbreviation.Text?.Trim() ?? "").ToUpperInvariant();
+
+            if (cboOrgType.SelectedItem is ComboBoxItem item && item.Tag is AIVanBan.Core.Models.OrganizationType t)
+                org.Type = t;
+
+            docSvc.SaveOrganizationConfig(org);
+
+            // Defaults via ExtraSettings
+            AppSettingsService.SetRawSettingValue(KEY_DEFAULT_LOCATION, txtOrgLocation.Text?.Trim() ?? "");
+            AppSettingsService.SetRawSettingValue(KEY_DEFAULT_SIGNER, txtDefaultSigner.Text?.Trim() ?? "");
+            AppSettingsService.SetRawSettingValue(KEY_DEFAULT_SIGNING_TITLE, txtDefaultSigningTitle.Text?.Trim() ?? "");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ SaveOrganizationTab error: {ex.Message}");
+            MessageBox.Show($"Lỗi khi lưu cấu hình cơ quan:\n{ex.Message}",
+                "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    /// <summary>Tên hiển thị tiếng Việt cho OrganizationType (rút gọn)</summary>
+    private static string OrgTypeDisplay(AIVanBan.Core.Models.OrganizationType t) => t switch
+    {
+        AIVanBan.Core.Models.OrganizationType.UbndXa => "UBND Xã/Phường/Thị trấn",
+        AIVanBan.Core.Models.OrganizationType.UbndTinh => "UBND Tỉnh/Thành phố",
+        AIVanBan.Core.Models.OrganizationType.HdndXa => "HĐND Xã/Phường/Thị trấn",
+        AIVanBan.Core.Models.OrganizationType.HdndTinh => "HĐND Tỉnh/Thành phố",
+        AIVanBan.Core.Models.OrganizationType.VanPhong => "Văn phòng UBND/HĐND",
+        AIVanBan.Core.Models.OrganizationType.DangUyXa => "Đảng ủy Xã/Phường/Thị trấn",
+        AIVanBan.Core.Models.OrganizationType.DangUyTinh => "Tỉnh ủy/Thành ủy",
+        AIVanBan.Core.Models.OrganizationType.ChiBoDang => "Chi bộ Đảng",
+        AIVanBan.Core.Models.OrganizationType.MatTran => "Mặt trận Tổ quốc",
+        AIVanBan.Core.Models.OrganizationType.HoiNongDan => "Hội Nông dân",
+        AIVanBan.Core.Models.OrganizationType.HoiPhuNu => "Hội Liên hiệp Phụ nữ",
+        AIVanBan.Core.Models.OrganizationType.DoanThanhNien => "Đoàn TNCS Hồ Chí Minh",
+        AIVanBan.Core.Models.OrganizationType.HoiCuuChienBinh => "Hội Cựu chiến binh",
+        AIVanBan.Core.Models.OrganizationType.SoNoiVu => "Sở Nội vụ",
+        AIVanBan.Core.Models.OrganizationType.SoTaiChinh => "Sở Tài chính",
+        AIVanBan.Core.Models.OrganizationType.SoGiaoDuc => "Sở Giáo dục & Đào tạo",
+        AIVanBan.Core.Models.OrganizationType.SoYTe => "Sở Y tế",
+        AIVanBan.Core.Models.OrganizationType.TruongMamNon => "Trường Mầm non",
+        AIVanBan.Core.Models.OrganizationType.TruongTieuHoc => "Trường Tiểu học",
+        AIVanBan.Core.Models.OrganizationType.TruongTHCS => "Trường THCS",
+        AIVanBan.Core.Models.OrganizationType.TruongTHPT => "Trường THPT",
+        AIVanBan.Core.Models.OrganizationType.CongAn => "Công an",
+        AIVanBan.Core.Models.OrganizationType.TramYTe => "Trạm Y tế Xã",
+        AIVanBan.Core.Models.OrganizationType.CoQuanTuyChon => "Cơ quan tùy chọn",
+        _ => t.ToString()
+    };
 
     private void AiToggle_Changed(object sender, RoutedEventArgs e)
     {

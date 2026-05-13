@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using AIVanBan.Core.Models;
 
 namespace AIVanBan.Core.Services;
 
@@ -83,6 +84,29 @@ public class AppSettingsService
             ? s.VanBanPlusApiKey
             : s.GeminiApiKey;
     }
+
+    /// <summary>Alias cho Load()</summary>
+    public static AppSettings GetSettings() => Load();
+
+    /// <summary>
+    /// Đọc giá trị raw setting theo key (dùng cho nested JSON settings như CloudSync).
+    /// Internally đọc từ ExtraSettings dictionary.
+    /// </summary>
+    public static string? GetRawSettingValue(string key)
+    {
+        var settings = Load();
+        return settings.ExtraSettings.TryGetValue(key, out var value) ? value : null;
+    }
+
+    /// <summary>
+    /// Ghi giá trị raw setting theo key.
+    /// </summary>
+    public static void SetRawSettingValue(string key, string value)
+    {
+        var settings = Load();
+        settings.ExtraSettings[key] = value;
+        Save(settings);
+    }
 }
 
 /// <summary>
@@ -162,4 +186,17 @@ public class AppSettings
     public string UserFullName { get; set; } = "";
     public string UserPlan { get; set; } = "";
     public string UserRole { get; set; } = "user";
+
+    // ===== Cloud Sync =====
+    /// <summary>
+    /// Cấu hình Cloud Sync — đồng bộ local ↔ Supabase.
+    /// </summary>
+    public CloudSyncSettings CloudSync { get; set; } = new();
+
+    // ===== Extra Settings (extensible) =====
+    /// <summary>
+    /// Dictionary lưu trữ settings mở rộng (JSON string values).
+    /// Dùng cho các tính năng mới mà không cần thay đổi schema.
+    /// </summary>
+    public Dictionary<string, string> ExtraSettings { get; set; } = new();
 }

@@ -6,8 +6,8 @@
       Title="Trang chủ"
       Background="{DynamicResource MaterialDesignPaper}">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="1200" Margin="24,16,24,24">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0">
+        <StackPanel Margin="32,20,32,28">
 
             <!-- ═══ HEADER: Greeting + Date + Refresh ═══ -->
             <Grid Margin="0,0,0,20">
@@ -492,11 +492,11 @@
             <!-- ═══ ROW 4: Tasks + Quick Actions + Templates ═══ -->
             <Grid Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="*" MinWidth="240"/>
                     <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="*" MinWidth="240"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Nhiệm vụ cần hoàn thành -->

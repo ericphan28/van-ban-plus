@@ -36,6 +36,18 @@ public partial class MainWindow : Window
         {
             InitializeComponent();
             
+            // Test mode: ép kích thước cửa sổ theo --size=WxH
+            if (App.TestSize is { } sz)
+            {
+                WindowState = WindowState.Normal;
+                WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                Width = sz.Width;
+                Height = sz.Height;
+                MinWidth = 0;
+                MinHeight = 0;
+                Title += $" [TEST {sz.Width}x{sz.Height}]";
+            }
+            
             // === PHASE 1: Minimal init — chỉ tạo services cần thiết để hiển thị UI ===
             Console.WriteLine("🔧 Initializing DocumentService...");
             _documentService = new DocumentService();
@@ -898,7 +910,7 @@ public partial class MainWindow : Window
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
-        var settingsDialog = new ApiSettingsDialog
+        var settingsDialog = new ApiSettingsDialog(_documentService)
         {
             Owner = this
         };
@@ -908,6 +920,15 @@ public partial class MainWindow : Window
             LoadApiStatusBar();
             UpdateAiSidebarState();
         }
+    }
+
+    private void CloudSync_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new CloudSyncDialog
+        {
+            Owner = this
+        };
+        dialog.ShowDialog();
     }
 
     private void QuickLogin_Click(object sender, RoutedEventArgs e)

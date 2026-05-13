@@ -303,14 +303,29 @@ public static class EnumDisplayHelper
 
     public static string GetDisplayName(this DocumentStatus status) => status switch
     {
-        DocumentStatus.Draft => "Nháp",
-        DocumentStatus.PendingApproval => "Trình ký",
-        DocumentStatus.Approved => "Đã duyệt",
-        DocumentStatus.Signed => "Đã ký",
-        DocumentStatus.Published => "Đã phát hành",
-        DocumentStatus.Sent => "Đã gửi",
-        DocumentStatus.Archived => "Lưu trữ",
-        _ => "Nháp"
+        DocumentStatus.Draft => "📝 Đang soạn",
+        DocumentStatus.PendingApproval => "📤 Đã trình sếp",
+        DocumentStatus.Approved => "✅ Sếp đã duyệt",
+        DocumentStatus.Signed => "✍️ Đã ký",
+        DocumentStatus.Published => "📢 Đã phát hành",
+        DocumentStatus.Sent => "📨 Đã gửi",
+        DocumentStatus.Archived => "🗄️ Xong — Lưu hồ sơ",
+        _ => "📝 Đang soạn"
+    };
+
+    /// <summary>
+    /// Trạng thái tiếp theo gợi ý cho workflow cá nhân
+    /// </summary>
+    public static DocumentStatus? GetNextStatus(this DocumentStatus status) => status switch
+    {
+        DocumentStatus.Draft => DocumentStatus.PendingApproval,
+        DocumentStatus.PendingApproval => DocumentStatus.Approved,
+        DocumentStatus.Approved => DocumentStatus.Signed,
+        DocumentStatus.Signed => DocumentStatus.Published,
+        DocumentStatus.Published => DocumentStatus.Sent,
+        DocumentStatus.Sent => DocumentStatus.Archived,
+        DocumentStatus.Archived => null,
+        _ => null
     };
 
     public static string GetDisplayName(this PersonalStatus status) => status switch
