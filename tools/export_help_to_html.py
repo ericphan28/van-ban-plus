@@ -17,6 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "AIVanBan.Desktop" / "Views" / "HelpPage.xaml"
 OUT = ROOT / "docs" / "HelpPage_Training.html"
 
+# Danh sách section thu thập được khi duyệt cây để dựng TOC
+SECTIONS: list[dict] = []
+
 NS = {
     "x": "http://schemas.microsoft.com/winfx/2006/xaml",
     "wpf": "http://schemas.microsoft.com/winfx/2006/xaml/presentation",
@@ -30,6 +33,17 @@ def html_escape(s: str) -> str:
     return (s.replace("&", "&amp;")
              .replace("<", "&lt;")
              .replace(">", "&gt;"))
+
+
+def slugify(s: str) -> str:
+    """Tạo id an toàn từ tiêu đề tiếng Việt."""
+    import unicodedata
+    s = unicodedata.normalize("NFD", s)
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    s = s.replace("đ", "d").replace("Đ", "D")
+    s = re.sub(r"[^a-zA-Z0-9\s-]", "", s).strip().lower()
+    s = re.sub(r"[\s-]+", "-", s)
+    return s or "section"
 
 
 def get_style(elem) -> str:
@@ -87,9 +101,29 @@ def walk(elem, parts: list):
         if not text:
             return
         if style == "SectionHeader":
-            parts.append(f'<h2 class="section-header">{text}</h2>')
+            # Strip emoji/leading symbols để slugify gọn hơn
+            plain = re.sub(r"<[^>]+>", "", text)
+            sid = slugify(plain)
+            # Đảm bảo unique
+            base = sid
+            i = 2
+            existing = {s["id"] for s in SECTIONS}
+            while sid in existing:
+                sid = f"{base}-{i}"
+                i += 1
+            SECTIONS.append({"id": sid, "title": plain.strip(), "level": 2})
+            parts.append(f'<h2 id="{sid}" class="section-header">{text}</h2>')
         elif style == "SubSectionHeader":
-            parts.append(f'<h3 class="sub-section-header">{text}</h3>')
+            plain = re.sub(r"<[^>]+>", "", text)
+            sid = slugify(plain)
+            base = sid
+            i = 2
+            existing = {s["id"] for s in SECTIONS}
+            while sid in existing:
+                sid = f"{base}-{i}"
+                i += 1
+            SECTIONS.append({"id": sid, "title": plain.strip(), "level": 3})
+            parts.append(f'<h3 id="{sid}" class="sub-section-header">{text}</h3>')
         elif style == "BodyText":
             parts.append(f'<p class="body-text">{text}</p>')
         else:
@@ -138,117 +172,261 @@ def walk(elem, parts: list):
         walk(child, parts)
 
 
+def build_toc_html() -> str:
+    """Sinh HTML TOC từ SECTIONS."""
+    if not SECTIONS:
+        return ""
+    items = []
+    for s in SECTIONS:
+        cls = "toc-h2" if s["level"] == 2 else "toc-h3"
+        title = html_escape(s["title"])
+        items.append(
+            f'<a href="#{s["id"]}" class="{cls}" data-target="{s["id"]}">{title}</a>'
+        )
+    return "\n".join(items)
+
+
 def build_html(body_html: str) -> str:
     today = datetime.now().strftime("%d/%m/%Y")
+    toc_html = build_toc_html()
     return f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VanBanPlus — Tài liệu hướng dẫn sử dụng</title>
 <style>
-  @page {{ size: A4; margin: 18mm 16mm; }}
-  * {{ box-sizing: border-box; }}
-  body {{
+  /* ============ RESET & BASE ============ */
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  html, body {{
     font-family: 'Segoe UI', 'Calibri', Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.55;
+    font-size: 14px;
+    line-height: 1.6;
     color: #212121;
-    max-width: 900px;
-    margin: 24px auto;
-    padding: 0 24px;
+    background: #FAFAFA;
+    height: 100%;
+  }}
+
+  /* ============ TOP BAR ============ */
+  .topbar {{
+    position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+    color: #fff;
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }}
+  .topbar-title {{ font-size: 18px; font-weight: 600; flex: 1; }}
+  .topbar-meta {{ font-size: 11px; opacity: 0.85; }}
+  .topbar-print {{
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px;
+  }}
+  .topbar-print:hover {{ background: rgba(255,255,255,0.25); }}
+
+  /* ============ LAYOUT 2 CỘT ============ */
+  .layout {{
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+    height: calc(100vh - 56px);
+  }}
+
+  /* ============ SIDEBAR (TOC) ============ */
+  .sidebar {{
     background: #fff;
+    border-right: 1px solid #E0E0E0;
+    overflow-y: auto;
+    padding: 16px 0;
   }}
-  .doc-header {{
-    text-align: center;
-    border-bottom: 3px solid #1976D2;
-    padding-bottom: 16px;
-    margin-bottom: 28px;
+  .sidebar-search {{
+    margin: 0 16px 12px; position: relative;
   }}
-  .doc-header h1 {{
-    color: #0D47A1;
-    margin: 0 0 4px 0;
-    font-size: 26px;
+  .sidebar-search input {{
+    width: 100%; padding: 8px 12px 8px 32px;
+    border: 1px solid #E0E0E0; border-radius: 6px;
+    font-size: 13px; outline: none;
   }}
-  .doc-header .subtitle {{ color: #666; font-size: 14px; }}
-  .doc-header .meta {{ color: #999; font-size: 11px; margin-top: 6px; }}
+  .sidebar-search input:focus {{ border-color: #1976D2; box-shadow: 0 0 0 2px rgba(25,118,210,0.15); }}
+  .sidebar-search::before {{
+    content: "🔍"; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; opacity: 0.6;
+  }}
+  .toc-title {{
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    color: #757575; letter-spacing: 0.5px;
+    padding: 8px 20px 6px;
+  }}
+  .sidebar a {{
+    display: block; padding: 8px 20px;
+    color: #424242; text-decoration: none;
+    font-size: 13px; line-height: 1.4;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }}
+  .sidebar a:hover {{ background: #F5F5F5; color: #1976D2; }}
+  .sidebar a.toc-h3 {{ padding-left: 36px; font-size: 12.5px; opacity: 0.85; }}
+  .sidebar a.active {{
+    background: #E3F2FD; color: #0D47A1;
+    border-left-color: #1976D2; font-weight: 600;
+  }}
+  .sidebar a.hidden {{ display: none; }}
+
+  /* ============ CONTENT ============ */
+  .content {{
+    overflow-y: auto;
+    padding: 32px 48px 80px;
+    background: #FAFAFA;
+  }}
+  .content-inner {{ max-width: 920px; margin: 0 auto; }}
 
   h2.section-header {{
-    color: #1976D2;
-    font-size: 22px;
-    margin: 32px 0 12px;
-    padding-bottom: 6px;
+    color: #1976D2; font-size: 24px; font-weight: 700;
+    margin: 36px 0 14px; padding-bottom: 8px;
     border-bottom: 2px solid #BBDEFB;
-    page-break-after: avoid;
+    scroll-margin-top: 80px;
   }}
+  h2.section-header:first-of-type {{ margin-top: 0; }}
   h3.sub-section-header {{
-    color: #0D47A1;
-    font-size: 17px;
-    margin: 22px 0 8px;
-    page-break-after: avoid;
+    color: #0D47A1; font-size: 18px; font-weight: 600;
+    margin: 24px 0 10px;
+    scroll-margin-top: 80px;
   }}
-  p.body-text {{ margin: 4px 0 6px; }}
+  p.body-text {{ margin: 6px 0 8px; }}
   p.bold {{ font-weight: 600; }}
   p.large {{ font-size: 16px; }}
+  p {{ margin: 4px 0; }}
 
   .tip-card, .warning-card, .changelog-card, .step-card, .generic-card {{
     border-radius: 8px;
-    padding: 12px 16px;
-    margin: 10px 0;
-    page-break-inside: avoid;
+    padding: 14px 18px;
+    margin: 12px 0;
   }}
-  .tip-card     {{ background: #FFF8E1; border: 1px solid #FFE082; }}
-  .warning-card {{ background: #FFF3E0; border: 1px solid #FFCC80; }}
-  .changelog-card {{ background: #E8F5E9; border: 1px solid #A5D6A7; }}
-  .step-card    {{ background: #FAFAFA; border: 1px solid #E0E0E0; }}
-
-  .tip-card p, .warning-card p, .changelog-card p, .step-card p {{ margin: 3px 0; }}
+  .tip-card     {{ background: #FFF8E1; border-left: 4px solid #FFC107; }}
+  .warning-card {{ background: #FFF3E0; border-left: 4px solid #FF9800; }}
+  .changelog-card {{ background: #E8F5E9; border-left: 4px solid #4CAF50; }}
+  .step-card    {{ background: #fff; border: 1px solid #E0E0E0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }}
 
   strong {{ color: #0D47A1; }}
-  em {{ color: #424242; }}
+  em {{ color: #424242; font-style: italic; }}
   a {{ color: #1565C0; text-decoration: none; }}
   a:hover {{ text-decoration: underline; }}
 
-  .toc {{
-    background: #F5F5F5;
-    border: 1px solid #E0E0E0;
-    border-radius: 8px;
-    padding: 16px 24px;
-    margin: 24px 0;
-    page-break-inside: avoid;
+  /* Scroll-to-top button */
+  .scroll-top {{
+    position: fixed; bottom: 24px; right: 32px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #1976D2; color: #fff; border: none;
+    font-size: 20px; cursor: pointer; opacity: 0;
+    transition: opacity 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }}
-  .toc h3 {{ margin-top: 0; color: #1976D2; }}
-  .toc ul {{ columns: 2; column-gap: 24px; padding-left: 18px; }}
-  .toc li {{ margin: 4px 0; font-size: 12.5px; }}
+  .scroll-top.visible {{ opacity: 0.9; }}
+  .scroll-top:hover {{ opacity: 1; }}
 
-  .doc-footer {{
-    margin-top: 48px;
-    padding-top: 16px;
-    border-top: 1px solid #E0E0E0;
-    color: #888;
-    font-size: 11px;
-    text-align: center;
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {{
+    .layout {{ grid-template-columns: 1fr; height: auto; }}
+    .sidebar {{ border-right: none; border-bottom: 1px solid #E0E0E0; max-height: 240px; }}
+    .content {{ padding: 20px; }}
   }}
 
+  /* ============ PRINT ============ */
   @media print {{
-    body {{ font-size: 11.5pt; max-width: none; padding: 0; }}
-    h2.section-header {{ font-size: 18pt; page-break-before: always; }}
+    .topbar, .sidebar, .scroll-top {{ display: none !important; }}
+    .layout {{ display: block; height: auto; }}
+    .content {{ padding: 0; overflow: visible; background: #fff; }}
+    body {{ font-size: 11.5pt; background: #fff; }}
+    h2.section-header {{ page-break-before: always; }}
     h2.section-header:first-of-type {{ page-break-before: auto; }}
-    .doc-header {{ page-break-after: avoid; }}
+    .tip-card, .warning-card, .changelog-card, .step-card {{ page-break-inside: avoid; }}
+    @page {{ size: A4; margin: 18mm 16mm; }}
   }}
 </style>
 </head>
 <body>
-<div class="doc-header">
-  <h1>📘 VanBanPlus — Tài liệu hướng dẫn sử dụng</h1>
-  <div class="subtitle">Phần mềm Quản lý Văn bản hành chính cho cán bộ, công chức</div>
-  <div class="meta">Phiên bản tài liệu: v1.0.16 · Cập nhật: {today} · Tự động xuất từ HelpPage trong ứng dụng</div>
-</div>
 
+<header class="topbar">
+  <div class="topbar-title">📘 VanBanPlus — Hướng dẫn sử dụng</div>
+  <div class="topbar-meta">v1.0.16 · Cập nhật {today}</div>
+  <button class="topbar-print" onclick="window.print()">🖨️ In / Lưu PDF</button>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-search">
+      <input type="text" id="tocSearch" placeholder="Tìm trong mục lục..." />
+    </div>
+    <div class="toc-title">Mục lục</div>
+    <nav id="tocNav">
+{toc_html}
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
 {body_html}
+    </div>
+  </main>
 
-<div class="doc-footer">
-  © Ericphan / VanBanPlus 2026 · Tài liệu này được sinh tự động từ <code>HelpPage.xaml</code> qua <code>tools/export_help_to_html.py</code>.
 </div>
+
+<button class="scroll-top" id="scrollTop" title="Lên đầu trang">↑</button>
+
+<script>
+  // 1. Sidebar TOC: highlight link đang xem (scroll spy)
+  const links = document.querySelectorAll('.sidebar a');
+  const headings = Array.from(document.querySelectorAll('h2.section-header, h3.sub-section-header'));
+  const contentEl = document.querySelector('.content');
+
+  function updateActive() {{
+    let currentId = '';
+    const scrollTop = contentEl.scrollTop + 120;
+    for (const h of headings) {{
+      if (h.offsetTop <= scrollTop) currentId = h.id;
+      else break;
+    }}
+    links.forEach(l => l.classList.toggle('active', l.dataset.target === currentId));
+  }}
+  contentEl.addEventListener('scroll', () => {{
+    updateActive();
+    document.getElementById('scrollTop').classList.toggle('visible', contentEl.scrollTop > 300);
+  }});
+  updateActive();
+
+  // 2. Smooth scroll khi click TOC (override default vì content có scroll riêng)
+  links.forEach(a => {{
+    a.addEventListener('click', (e) => {{
+      e.preventDefault();
+      const id = a.dataset.target;
+      const target = document.getElementById(id);
+      if (target) {{
+        contentEl.scrollTo({{ top: target.offsetTop - 24, behavior: 'smooth' }});
+        history.replaceState(null, '', '#' + id);
+      }}
+    }});
+  }});
+
+  // 3. Search filter trong TOC
+  document.getElementById('tocSearch').addEventListener('input', (e) => {{
+    const q = e.target.value.toLowerCase().trim();
+    links.forEach(a => {{
+      const match = !q || a.textContent.toLowerCase().includes(q);
+      a.classList.toggle('hidden', !match);
+    }});
+  }});
+
+  // 4. Scroll-to-top
+  document.getElementById('scrollTop').addEventListener('click', () => {{
+    contentEl.scrollTo({{ top: 0, behavior: 'smooth' }});
+  }});
+
+  // 5. Mở đúng anchor khi load có hash
+  if (location.hash) {{
+    const target = document.querySelector(location.hash);
+    if (target) setTimeout(() => contentEl.scrollTo({{ top: target.offsetTop - 24 }}), 50);
+  }}
+</script>
+
 </body>
 </html>
 """

@@ -2,107 +2,241 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VanBanPlus — Tài liệu hướng dẫn sử dụng</title>
 <style>
-  @page { size: A4; margin: 18mm 16mm; }
-  * { box-sizing: border-box; }
-  body {
+  /* ============ RESET & BASE ============ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
     font-family: 'Segoe UI', 'Calibri', Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.55;
+    font-size: 14px;
+    line-height: 1.6;
     color: #212121;
-    max-width: 900px;
-    margin: 24px auto;
-    padding: 0 24px;
+    background: #FAFAFA;
+    height: 100%;
+  }
+
+  /* ============ TOP BAR ============ */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+    color: #fff;
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .topbar-title { font-size: 18px; font-weight: 600; flex: 1; }
+  .topbar-meta { font-size: 11px; opacity: 0.85; }
+  .topbar-print {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 12px;
+  }
+  .topbar-print:hover { background: rgba(255,255,255,0.25); }
+
+  /* ============ LAYOUT 2 CỘT ============ */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+    height: calc(100vh - 56px);
+  }
+
+  /* ============ SIDEBAR (TOC) ============ */
+  .sidebar {
     background: #fff;
+    border-right: 1px solid #E0E0E0;
+    overflow-y: auto;
+    padding: 16px 0;
   }
-  .doc-header {
-    text-align: center;
-    border-bottom: 3px solid #1976D2;
-    padding-bottom: 16px;
-    margin-bottom: 28px;
+  .sidebar-search {
+    margin: 0 16px 12px; position: relative;
   }
-  .doc-header h1 {
-    color: #0D47A1;
-    margin: 0 0 4px 0;
-    font-size: 26px;
+  .sidebar-search input {
+    width: 100%; padding: 8px 12px 8px 32px;
+    border: 1px solid #E0E0E0; border-radius: 6px;
+    font-size: 13px; outline: none;
   }
-  .doc-header .subtitle { color: #666; font-size: 14px; }
-  .doc-header .meta { color: #999; font-size: 11px; margin-top: 6px; }
+  .sidebar-search input:focus { border-color: #1976D2; box-shadow: 0 0 0 2px rgba(25,118,210,0.15); }
+  .sidebar-search::before {
+    content: "🔍"; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; opacity: 0.6;
+  }
+  .toc-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    color: #757575; letter-spacing: 0.5px;
+    padding: 8px 20px 6px;
+  }
+  .sidebar a {
+    display: block; padding: 8px 20px;
+    color: #424242; text-decoration: none;
+    font-size: 13px; line-height: 1.4;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar a:hover { background: #F5F5F5; color: #1976D2; }
+  .sidebar a.toc-h3 { padding-left: 36px; font-size: 12.5px; opacity: 0.85; }
+  .sidebar a.active {
+    background: #E3F2FD; color: #0D47A1;
+    border-left-color: #1976D2; font-weight: 600;
+  }
+  .sidebar a.hidden { display: none; }
+
+  /* ============ CONTENT ============ */
+  .content {
+    overflow-y: auto;
+    padding: 32px 48px 80px;
+    background: #FAFAFA;
+  }
+  .content-inner { max-width: 920px; margin: 0 auto; }
 
   h2.section-header {
-    color: #1976D2;
-    font-size: 22px;
-    margin: 32px 0 12px;
-    padding-bottom: 6px;
+    color: #1976D2; font-size: 24px; font-weight: 700;
+    margin: 36px 0 14px; padding-bottom: 8px;
     border-bottom: 2px solid #BBDEFB;
-    page-break-after: avoid;
+    scroll-margin-top: 80px;
   }
+  h2.section-header:first-of-type { margin-top: 0; }
   h3.sub-section-header {
-    color: #0D47A1;
-    font-size: 17px;
-    margin: 22px 0 8px;
-    page-break-after: avoid;
+    color: #0D47A1; font-size: 18px; font-weight: 600;
+    margin: 24px 0 10px;
+    scroll-margin-top: 80px;
   }
-  p.body-text { margin: 4px 0 6px; }
+  p.body-text { margin: 6px 0 8px; }
   p.bold { font-weight: 600; }
   p.large { font-size: 16px; }
+  p { margin: 4px 0; }
 
   .tip-card, .warning-card, .changelog-card, .step-card, .generic-card {
     border-radius: 8px;
-    padding: 12px 16px;
-    margin: 10px 0;
-    page-break-inside: avoid;
+    padding: 14px 18px;
+    margin: 12px 0;
   }
-  .tip-card     { background: #FFF8E1; border: 1px solid #FFE082; }
-  .warning-card { background: #FFF3E0; border: 1px solid #FFCC80; }
-  .changelog-card { background: #E8F5E9; border: 1px solid #A5D6A7; }
-  .step-card    { background: #FAFAFA; border: 1px solid #E0E0E0; }
-
-  .tip-card p, .warning-card p, .changelog-card p, .step-card p { margin: 3px 0; }
+  .tip-card     { background: #FFF8E1; border-left: 4px solid #FFC107; }
+  .warning-card { background: #FFF3E0; border-left: 4px solid #FF9800; }
+  .changelog-card { background: #E8F5E9; border-left: 4px solid #4CAF50; }
+  .step-card    { background: #fff; border: 1px solid #E0E0E0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
 
   strong { color: #0D47A1; }
-  em { color: #424242; }
+  em { color: #424242; font-style: italic; }
   a { color: #1565C0; text-decoration: none; }
   a:hover { text-decoration: underline; }
 
-  .toc {
-    background: #F5F5F5;
-    border: 1px solid #E0E0E0;
-    border-radius: 8px;
-    padding: 16px 24px;
-    margin: 24px 0;
-    page-break-inside: avoid;
+  /* Scroll-to-top button */
+  .scroll-top {
+    position: fixed; bottom: 24px; right: 32px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #1976D2; color: #fff; border: none;
+    font-size: 20px; cursor: pointer; opacity: 0;
+    transition: opacity 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
-  .toc h3 { margin-top: 0; color: #1976D2; }
-  .toc ul { columns: 2; column-gap: 24px; padding-left: 18px; }
-  .toc li { margin: 4px 0; font-size: 12.5px; }
+  .scroll-top.visible { opacity: 0.9; }
+  .scroll-top:hover { opacity: 1; }
 
-  .doc-footer {
-    margin-top: 48px;
-    padding-top: 16px;
-    border-top: 1px solid #E0E0E0;
-    color: #888;
-    font-size: 11px;
-    text-align: center;
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .layout { grid-template-columns: 1fr; height: auto; }
+    .sidebar { border-right: none; border-bottom: 1px solid #E0E0E0; max-height: 240px; }
+    .content { padding: 20px; }
   }
 
+  /* ============ PRINT ============ */
   @media print {
-    body { font-size: 11.5pt; max-width: none; padding: 0; }
-    h2.section-header { font-size: 18pt; page-break-before: always; }
+    .topbar, .sidebar, .scroll-top { display: none !important; }
+    .layout { display: block; height: auto; }
+    .content { padding: 0; overflow: visible; background: #fff; }
+    body { font-size: 11.5pt; background: #fff; }
+    h2.section-header { page-break-before: always; }
     h2.section-header:first-of-type { page-break-before: auto; }
-    .doc-header { page-break-after: avoid; }
+    .tip-card, .warning-card, .changelog-card, .step-card { page-break-inside: avoid; }
+    @page { size: A4; margin: 18mm 16mm; }
   }
 </style>
 </head>
 <body>
-<div class="doc-header">
-  <h1>📘 VanBanPlus — Tài liệu hướng dẫn sử dụng</h1>
-  <div class="subtitle">Phần mềm Quản lý Văn bản hành chính cho cán bộ, công chức</div>
-  <div class="meta">Phiên bản tài liệu: v1.0.16 · Cập nhật: 14/05/2026 · Tự động xuất từ HelpPage trong ứng dụng</div>
-</div>
 
-<h2 class="section-header">📋
+<header class="topbar">
+  <div class="topbar-title">📘 VanBanPlus — Hướng dẫn sử dụng</div>
+  <div class="topbar-meta">v1.0.16 · Cập nhật 14/05/2026</div>
+  <button class="topbar-print" onclick="window.print()">🖨️ In / Lưu PDF</button>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-search">
+      <input type="text" id="tocSearch" placeholder="Tìm trong mục lục..." />
+    </div>
+    <div class="toc-title">Mục lục</div>
+    <nav id="tocNav">
+<a href="#gioi-thieu-vanbanplus" class="toc-h2" data-target="gioi-thieu-vanbanplus">📋
+                         Giới thiệu VanBanPlus</a>
+<a href="#thiet-lap-lan-dau" class="toc-h2" data-target="thiet-lap-lan-dau">🚀
+                         Thiết lập lần đầu</a>
+<a href="#giao-dien-tong-quan" class="toc-h2" data-target="giao-dien-tong-quan">🖥️
+                         Giao diện tổng quan</a>
+<a href="#quan-ly-van-ban" class="toc-h2" data-target="quan-ly-van-ban">📄
+                         Quản lý văn bản</a>
+<a href="#them-van-ban-moi" class="toc-h3" data-target="them-van-ban-moi">▸ Thêm văn bản mới</a>
+<a href="#thu-muc-amp-phan-loai" class="toc-h3" data-target="thu-muc-amp-phan-loai">▸ Thư mục &amp;amp; phân loại</a>
+<a href="#tim-kiem-amp-loc" class="toc-h3" data-target="tim-kiem-amp-loc">▸ Tìm kiếm &amp;amp; lọc</a>
+<a href="#dinh-kem-file" class="toc-h3" data-target="dinh-kem-file">▸ Đính kèm file</a>
+<a href="#xuat-word-excel" class="toc-h3" data-target="xuat-word-excel">▸ Xuất Word / Excel</a>
+<a href="#xuat-excel-moi-v1010" class="toc-h3" data-target="xuat-excel-moi-v1010">▸ Xuất Excel (mới v1.0.10)</a>
+<a href="#so-van-ban" class="toc-h2" data-target="so-van-ban">📘
+                         Sổ văn bản</a>
+<a href="#mau-van-ban" class="toc-h2" data-target="mau-van-ban">📝
+                         Mẫu văn bản</a>
+<a href="#tra-cuu-phap-quy" class="toc-h2" data-target="tra-cuu-phap-quy">⚖️
+                         Tra cứu pháp quy</a>
+<a href="#thong-ke-van-ban" class="toc-h2" data-target="thong-ke-van-ban">📊
+                         Thống kê văn bản</a>
+<a href="#ket-noi-amp-dang-nhap-ai" class="toc-h2" data-target="ket-noi-amp-dang-nhap-ai">☁️
+                         Kết nối &amp;amp; đăng nhập AI</a>
+<a href="#ai-soan-van-ban-tu-dong" class="toc-h2" data-target="ai-soan-van-ban-tu-dong">✨
+                         AI Soạn văn bản tự động</a>
+<a href="#ai-bao-cao-dinh-ky" class="toc-h2" data-target="ai-bao-cao-dinh-ky">📊
+                         AI Báo cáo định kỳ</a>
+<a href="#ai-scan-ocr-nhap-van-ban-tu-anh" class="toc-h2" data-target="ai-scan-ocr-nhap-van-ban-tu-anh">📷
+                         AI Scan OCR — Nhập văn bản từ ảnh</a>
+<a href="#ai-kiem-tra-van-ban" class="toc-h2" data-target="ai-kiem-tra-van-ban">🔍
+                         AI Kiểm tra văn bản</a>
+<a href="#ai-tham-muu-xu-ly" class="toc-h2" data-target="ai-tham-muu-xu-ly">💡
+                         AI Tham mưu xử lý</a>
+<a href="#ai-tom-tat-van-ban" class="toc-h2" data-target="ai-tom-tat-van-ban">📋
+                         AI Tóm tắt văn bản</a>
+<a href="#album-anh" class="toc-h2" data-target="album-anh">📸
+                         Album ảnh</a>
+<a href="#tai-amp-upload-album-tu-vietgov-cms" class="toc-h2" data-target="tai-amp-upload-album-tu-vietgov-cms">☁️
+                         Tải &amp;amp; Upload Album từ VietGov CMS</a>
+<a href="#tai-album-tu-website-ve-may" class="toc-h3" data-target="tai-album-tu-website-ve-may">⬇️
+                         Tải Album từ Website về máy</a>
+<a href="#upload-album-len-website" class="toc-h3" data-target="upload-album-len-website">⬆️
+                         Upload Album lên Website</a>
+<a href="#cau-hinh-server-url" class="toc-h3" data-target="cau-hinh-server-url">⚙️
+                         Cấu hình Server URL</a>
+<a href="#vietgov-cms-la-gi" class="toc-h3" data-target="vietgov-cms-la-gi">🏛️
+                         VietGov CMS là gì?</a>
+<a href="#cuoc-hop" class="toc-h2" data-target="cuoc-hop">🤝
+                         Cuộc họp</a>
+<a href="#lich-tong-hop" class="toc-h2" data-target="lich-tong-hop">📅
+                         Lịch tổng hợp</a>
+<a href="#sao-luu-amp-khoi-phuc" class="toc-h2" data-target="sao-luu-amp-khoi-phuc">💾
+                         Sao lưu &amp;amp; Khôi phục</a>
+<a href="#goi-dich-vu-amp-thanh-toan" class="toc-h2" data-target="goi-dich-vu-amp-thanh-toan">💳
+                         Gói dịch vụ &amp;amp; Thanh toán</a>
+<a href="#cau-hoi-thuong-gap" class="toc-h2" data-target="cau-hoi-thuong-gap">❓
+                         Câu hỏi thường gặp</a>
+<a href="#lien-he-ho-tro" class="toc-h2" data-target="lien-he-ho-tro">📞
+                         Liên hệ hỗ trợ</a>
+<a href="#phim-tat-huu-ich" class="toc-h2" data-target="phim-tat-huu-ich">⌨️
+                         Phím tắt hữu ích</a>
+<a href="#co-gi-moi" class="toc-h2" data-target="co-gi-moi">🆕
+                         Có gì mới?</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+<h2 id="gioi-thieu-vanbanplus" class="section-header">📋
                          Giới thiệu VanBanPlus</h2>
 <p class="body-text"><strong>VanBanPlus</strong> là phần mềm quản lý văn bản hành chính thông minh, 
                         tích hợp trí tuệ nhân tạo (AI), được phát triển bởi <strong>Công ty TNHH Gia Kiệm Số</strong>.</p>
@@ -113,7 +247,7 @@
 <p class="body-text">💡 Lưu ý:
                              Tất cả dữ liệu văn bản được lưu trên máy tính của bạn (không upload lên mạng).  Internet chỉ cần khi sử dụng các tính năng AI.</p>
 </div>
-<h2 class="section-header">🚀
+<h2 id="thiet-lap-lan-dau" class="section-header">🚀
                          Thiết lập lần đầu</h2>
 <p class="body-text">Khi mở phần mềm lần đầu tiên, hệ thống sẽ hướng dẫn bạn qua 3 bước thiết lập:</p>
 <div class="step-card">
@@ -130,7 +264,7 @@
                                 Nhấn nút <strong>🔑 Đăng nhập</strong> ở thanh trạng thái phía dưới.</p>
 <p class="body-text">Gói <strong>Miễn phí</strong> cho phép 20 lượt AI/tháng — đủ để trải nghiệm trước khi nâng cấp.</p>
 </div>
-<h2 class="section-header">🖥️
+<h2 id="giao-dien-tong-quan" class="section-header">🖥️
                          Giao diện tổng quan</h2>
 <p class="body-text">Giao diện VanBanPlus gồm 4 khu vực chính:</p>
 <div class="step-card">
@@ -160,7 +294,7 @@
 <p class="body-text">• Thống kê sử dụng AI trong tháng</p>
 <p class="body-text">• Nút Đăng nhập / Đăng xuất / Cài đặt</p>
 </div>
-<h2 class="section-header">📄
+<h2 id="quan-ly-van-ban" class="section-header">📄
                          Quản lý văn bản</h2>
 <p class="body-text">Đây là tính năng cốt lõi của VanBanPlus. Hỗ trợ <strong>29 loại văn bản hành chính</strong> + 3 loại VBQPPL theo Nghị định 30/2020/NĐ-CP Điều 7: 
                         Nghị quyết, Quyết định, Chỉ thị, Quy chế, Quy định, Thông cáo, Thông báo, Hướng dẫn, Chương trình, 
@@ -171,7 +305,7 @@
 <p class="body-text">Mỗi văn bản có thêm: <strong>Mức độ khẩn</strong> (Thường/Khẩn/Thượng khẩn/Hỏa tốc), 
                         <strong>Độ mật</strong> (Thường/Mật/Tối mật/Tuyệt mật), <strong>Tự động cấp số</strong> (Điều 15), 
                         <strong>Sao văn bản</strong> — 3 hình thức: Sao y, Sao lục, Trích sao (Điều 25-27).</p>
-<h3 class="sub-section-header">▸ Thêm văn bản mới</h3>
+<h3 id="them-van-ban-moi" class="sub-section-header">▸ Thêm văn bản mới</h3>
 <p class="body-text">⚡ Tình huống: Bạn nhận được Công văn từ UBND tỉnh và cần nhập vào hệ thống.</p>
 <div class="step-card">
 <p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>Quản lý văn bản</strong> ở sidebar trái.</p>
@@ -199,7 +333,7 @@
                             <strong>AI Scan OCR</strong>
                              để chụp ảnh văn bản giấy → AI tự động trích xuất tất cả thông tin!</p>
 </div>
-<h3 class="sub-section-header">▸ Thư mục &amp; phân loại</h3>
+<h3 id="thu-muc-amp-phan-loai" class="sub-section-header">▸ Thư mục &amp; phân loại</h3>
 <p class="body-text">Hệ thống tự động tạo <strong>11 thư mục chính</strong> khi bạn thiết lập cơ quan lần đầu, bao gồm:</p>
 <p class="body-text">📁 Văn bản quy phạm pháp luật</p>
 <p class="body-text">📁 Văn bản chỉ đạo điều hành</p>
@@ -209,13 +343,13 @@
 <p class="body-text">📁 ...và các thư mục chuyên ngành khác</p>
 <p class="body-text">Văn bản sẽ tự động được phân vào thư mục phù hợp dựa trên loại và lĩnh vực.
                         Bạn cũng có thể di chuyển văn bản giữa các thư mục bằng tính năng <strong>Hành động hàng loạt</strong>.</p>
-<h3 class="sub-section-header">▸ Tìm kiếm &amp; lọc</h3>
+<h3 id="tim-kiem-amp-loc" class="sub-section-header">▸ Tìm kiếm &amp; lọc</h3>
 <p class="body-text">Thanh công cụ phía trên danh sách văn bản cung cấp các bộ lọc:</p>
 <p class="body-text">🔍 <strong>Từ khóa</strong> — Tìm theo số, trích yếu, nội dung</p>
 <p class="body-text">📋 <strong>Loại văn bản</strong> — Lọc theo Công văn, Quyết định, Báo cáo...</p>
 <p class="body-text">📅 <strong>Năm</strong> — Lọc theo năm ban hành</p>
 <p class="body-text">↔️ <strong>Hướng</strong> — Đi / Đến / Nội bộ / Tất cả</p>
-<h3 class="sub-section-header">▸ Đính kèm file</h3>
+<h3 id="dinh-kem-file" class="sub-section-header">▸ Đính kèm file</h3>
 <p class="body-text">Mỗi văn bản có thể đính kèm nhiều file: Word, PDF, Excel, PowerPoint, ảnh, PDF đã ký số.</p>
 <div class="step-card">
 <p class="body-text"><strong>Bước 1:</strong> Mở chi tiết văn bản (nhấn đúp hoặc nút Xem).</p>
@@ -223,14 +357,14 @@
 <p class="body-text"><strong>Bước 3:</strong> Chọn file từ máy tính → Nhấn <strong>Thêm</strong>.</p>
 <p class="body-text"><strong>Bước 4:</strong> Đánh dấu file chính (file gốc) nếu cần.</p>
 </div>
-<h3 class="sub-section-header">▸ Xuất Word / Excel</h3>
+<h3 id="xuat-word-excel" class="sub-section-header">▸ Xuất Word / Excel</h3>
 <p class="body-text">VanBanPlus xuất văn bản ra Word đúng thể thức theo <strong>Thông tư 01/2011/TT-BNV</strong>:</p>
 <p class="body-text">• Font Times New Roman cỡ 14</p>
 <p class="body-text">• Lề trang đúng quy định (trên 20mm, dưới 20mm, trái 30mm, phải 15mm)</p>
 <p class="body-text">• Quốc hiệu + Tiêu ngữ đầy đủ</p>
 <p class="body-text">• Khối ký tên + chức danh đúng chuẩn</p>
 <p class="body-text">Để xuất Word: Chọn văn bản → Nhấn nút <strong>Xuất Word</strong> trên thanh công cụ.</p>
-<h3 class="sub-section-header">▸ Xuất Excel (mới v1.0.10)</h3>
+<h3 id="xuat-excel-moi-v1010" class="sub-section-header">▸ Xuất Excel (mới v1.0.10)</h3>
 <p class="body-text"><strong>Danh sách VB:</strong> Chọn nhiều văn bản → <strong>Hành động hàng loạt → Xuất Excel</strong>.
                         File Excel gồm 12 cột: STT, Số VB, Tiêu đề, Loại, Hướng, Ngày BH, Cơ quan, Khẩn, Mật, Hạn XL, Trạng thái, Người XL.
                         Văn bản quá hạn được tô đỏ nổi bật.</p>
@@ -240,7 +374,7 @@
 <p class="body-text">3. <strong>Khẩn &amp; Mật</strong> — Phân bổ mức độ khẩn, độ mật</p>
 <p class="body-text">4. <strong>Xu hướng 12 tháng</strong> — Biến động theo từng tháng</p>
 <p class="body-text">5. <strong>DS VB chi tiết</strong> — Toàn bộ văn bản trong kỳ</p>
-<h2 class="section-header">📘
+<h2 id="so-van-ban" class="section-header">📘
                          Sổ văn bản</h2>
 <p class="body-text">Sổ văn bản là hình thức tra cứu truyền thống, hiển thị văn bản theo dạng bảng sổ sách 
                         với 3 tab: <strong>Văn bản đi</strong>, <strong>Văn bản đến</strong>, <strong>Văn bản nội bộ</strong>.</p>
@@ -248,7 +382,7 @@
                         Mức độ khẩn, Độ mật, Số đến, Hạn xử lý. 
                         Có thanh lọc theo năm, loại, từ khóa và hiển thị tổng số lượng.</p>
 <p class="body-text">⚡ Phù hợp khi cần tra cứu nhanh theo sổ đăng ký truyền thống.</p>
-<h2 class="section-header">📝
+<h2 id="mau-van-ban" class="section-header">📝
                          Mẫu văn bản</h2>
 <p class="body-text">Hệ thống cung cấp <strong>65+ mẫu văn bản</strong> theo NĐ 30/2020, mỗi mẫu bao gồm:</p>
 <p class="body-text">• Tên mẫu và loại văn bản tương ứng</p>
@@ -261,7 +395,7 @@
 <p class="body-text">• <strong>UBND xã/phường</strong> (8 mẫu): Giấy XN cư trú, BC KT-XH, KH phòng chống thiên tai, KH xây dựng NTM...</p>
 <p class="body-text">Bạn có thể tạo mẫu mới, chỉnh sửa mẫu có sẵn, hoặc tải thêm mẫu từ 
                         <strong>Kho mẫu trực tuyến</strong> (nút 🌐 Kho mẫu).</p>
-<h2 class="section-header">⚖️
+<h2 id="tra-cuu-phap-quy" class="section-header">⚖️
                          Tra cứu pháp quy</h2>
 <p class="body-text">Trang tra cứu trực tiếp <strong>Nghị định 30/2020/NĐ-CP</strong> — văn bản pháp quy quan trọng nhất về công tác văn thư, 
                         gồm <strong>38 Điều</strong>, <strong>7 Chương</strong> và <strong>6 Phụ lục</strong>.</p>
@@ -276,7 +410,7 @@
 <p class="body-text">💡 Mẹo:
                              Khi soạn văn bản, bạn có thể mở trang Tra cứu pháp quy song song để đối chiếu thể thức đúng quy định.</p>
 </div>
-<h2 class="section-header">📊
+<h2 id="thong-ke-van-ban" class="section-header">📊
                          Thống kê văn bản</h2>
 <p class="body-text">Trang thống kê cung cấp <strong>báo cáo trực quan</strong> về tình hình văn bản theo các kỳ: 
                         Tuần này, Tháng này, Quý này, Năm nay, hoặc Tất cả.</p>
@@ -288,7 +422,7 @@
 <p class="body-text"><strong>Xuất CSV:</strong> Nhấn nút <strong>📥 Xuất CSV</strong> để tải dữ liệu thống kê dạng bảng đơn giản.</p>
 </div>
 <p class="body-text">⚡ Phù hợp cho cán bộ văn phòng cần báo cáo số liệu VB hàng tuần/tháng/quý cho lãnh đạo.</p>
-<h2 class="section-header">☁️
+<h2 id="ket-noi-amp-dang-nhap-ai" class="section-header">☁️
                          Kết nối &amp; đăng nhập AI</h2>
 <p class="body-text">Để sử dụng các tính năng AI, bạn cần:</p>
 <div class="step-card">
@@ -301,7 +435,7 @@
 <p class="body-text">⚠️ Lưu ý:
                              Tính năng AI cần kết nối Internet. Nếu mất mạng, bạn vẫn xem/quản lý văn bản bình thường, chỉ không gọi được AI.</p>
 </div>
-<h2 class="section-header">✨
+<h2 id="ai-soan-van-ban-tu-dong" class="section-header">✨
                          AI Soạn văn bản tự động</h2>
 <p class="body-text">⚡ Tình huống: Bạn cần soạn Quyết định khen thưởng cho nhân viên, nhưng chưa biết viết thế nào cho đúng thể thức.</p>
 <div class="step-card">
@@ -317,7 +451,7 @@
                             <strong>📋 Kịch bản mẫu</strong>
                              để xem ví dụ điền sẵn — giúp bạn hiểu cách sử dụng từng mẫu.</p>
 </div>
-<h2 class="section-header">📊
+<h2 id="ai-bao-cao-dinh-ky" class="section-header">📊
                          AI Báo cáo định kỳ</h2>
 <p class="body-text">⚡ Tình huống: Cuối tháng cần viết báo cáo tình hình kinh tế - xã hội, nhưng chỉ có số liệu thô.</p>
 <div class="step-card">
@@ -328,7 +462,7 @@
 <p class="body-text"><strong>Bước 5 (tùy chọn):</strong> Dán báo cáo kỳ trước để AI so sánh, đánh giá tiến độ.</p>
 <p class="body-text"><strong>Bước 6:</strong> Nhấn <strong>✨ Tạo</strong> → AI viết báo cáo 3 phần: Kết quả đạt được → Đánh giá → Phương hướng tiếp theo.</p>
 </div>
-<h2 class="section-header">📷
+<h2 id="ai-scan-ocr-nhap-van-ban-tu-anh" class="section-header">📷
                          AI Scan OCR — Nhập văn bản từ ảnh</h2>
 <p class="body-text">⚡ Tình huống: Bạn có văn bản giấy đã scan hoặc chụp ảnh, muốn nhập vào hệ thống mà không cần gõ tay.</p>
 <div class="step-card">
@@ -343,7 +477,7 @@
 <p class="body-text">💡 Mẹo:
                              Ảnh rõ nét, không nghiêng, đủ sáng sẽ cho kết quả OCR tốt nhất. Nên scan ở độ phân giải 300 DPI trở lên.</p>
 </div>
-<h2 class="section-header">🔍
+<h2 id="ai-kiem-tra-van-ban" class="section-header">🔍
                          AI Kiểm tra văn bản</h2>
 <p class="body-text">⚡ Tình huống: Bạn vừa soạn xong công văn, muốn kiểm tra lỗi chính tả, văn phong, thể thức trước khi trình ký.</p>
 <div class="step-card">
@@ -356,7 +490,7 @@
 <p class="body-text"><strong>Bước 4:</strong> Xem <strong>điểm chất lượng</strong> tổng thể (thang 1-10).</p>
 <p class="body-text"><strong>Bước 5:</strong> Nhấn <strong>✅ Áp dụng sửa đổi</strong> để AI tự động sửa lỗi → lưu vào văn bản.</p>
 </div>
-<h2 class="section-header">💡
+<h2 id="ai-tham-muu-xu-ly" class="section-header">💡
                          AI Tham mưu xử lý</h2>
 <p class="body-text">⚡ Tình huống: Bạn nhận được công văn chỉ đạo từ cấp trên, cần tham mưu cho lãnh đạo cách xử lý.</p>
 <div class="step-card">
@@ -374,7 +508,7 @@
 <p class="body-text">💡 Mẹo:
                              Đây là tính năng đặc biệt hữu ích cho cán bộ văn phòng — giúp tham mưu nhanh, không bỏ sót yêu cầu.</p>
 </div>
-<h2 class="section-header">📋
+<h2 id="ai-tom-tat-van-ban" class="section-header">📋
                          AI Tóm tắt văn bản</h2>
 <p class="body-text">⚡ Tình huống: Lãnh đạo cần nắm nhanh nội dung văn bản dài, không có thời gian đọc hết.</p>
 <div class="step-card">
@@ -383,7 +517,7 @@
 <p class="body-text"><strong>Bước 3:</strong> AI trả về bản tóm tắt gồm <strong>10 mục có cấu trúc</strong>:</p>
 <p class="body-text">Tóm tắt chung, Nội dung chính, Yêu cầu thực hiện, Thời hạn, Đối tượng áp dụng, Cơ sở pháp lý, Điểm đáng chú ý, Kiến nghị, Mức độ ưu tiên, Ghi chú</p>
 </div>
-<h2 class="section-header">📸
+<h2 id="album-anh" class="section-header">📸
                          Album ảnh</h2>
 <p class="body-text">Quản lý ảnh hoạt động cơ quan theo cấu trúc thư mục nghiệp vụ (12 danh mục, 70+ phân loại).</p>
 <div class="step-card">
@@ -396,12 +530,12 @@
 </div>
 <p class="body-text"><strong>3 chế độ xem:</strong> Lưới (Grid), Thẻ (Cards), Danh sách (List) — 
                         chuyển đổi bằng nút góc phải trên.</p>
-<h2 class="section-header">☁️
+<h2 id="tai-amp-upload-album-tu-vietgov-cms" class="section-header">☁️
                          Tải &amp; Upload Album từ VietGov CMS</h2>
 <p class="body-text">VanBanPlus tích hợp kết nối trực tiếp với <strong>VietGov CMS</strong> — Nền tảng Cổng thông tin điện tử 
                         dành cho chính quyền Việt Nam (xagiakiem.gov.vn). Bạn có thể tải album ảnh từ website 
                         về máy để lưu trữ, hoặc upload album từ máy lên website để công khai.</p>
-<h3 class="sub-section-header">⬇️
+<h3 id="tai-album-tu-website-ve-may" class="sub-section-header">⬇️
                          Tải Album từ Website về máy</h3>
 <div class="step-card">
 <p class="body-text">Các bước thực hiện:</p>
@@ -417,7 +551,7 @@
 <p class="body-text">💡 Mẹo:
                              Sau khi tải xong, album tự động xuất hiện trong danh sách Album ảnh của bạn. Bạn có thể di chuyển album vào thư mục phân loại phù hợp bằng cách kéo-thả hoặc click phải → Di chuyển.</p>
 </div>
-<h3 class="sub-section-header">⬆️
+<h3 id="upload-album-len-website" class="sub-section-header">⬆️
                          Upload Album lên Website</h3>
 <div class="step-card">
 <p class="body-text">Các bước thực hiện:</p>
@@ -432,7 +566,7 @@
 <p class="body-text">⚠️ Lưu ý:
                              Album upload lên web cần được quản trị viên phê duyệt trước khi công khai. Quy trình duyệt bao gồm 5 bước: Nháp → Chờ duyệt → Duyệt sơ bộ → Phê duyệt → Xuất bản.</p>
 </div>
-<h3 class="sub-section-header">⚙️
+<h3 id="cau-hinh-server-url" class="sub-section-header">⚙️
                          Cấu hình Server URL</h3>
 <p class="body-text">Mặc định, ứng dụng kết nối đến <strong>https://xagiakiem.gov.vn</strong>. 
                         Nếu đơn vị bạn sử dụng VietGov CMS với tên miền riêng, bạn có thể thay đổi URL:</p>
@@ -442,7 +576,7 @@
 <p class="body-text">3. Nhấn <strong>Kết nối lại</strong> để kiểm tra kết nối</p>
 <p class="body-text">4. Nếu kết nối thành công, danh sách album sẽ được tải từ server mới</p>
 </div>
-<h3 class="sub-section-header">🏛️
+<h3 id="vietgov-cms-la-gi" class="sub-section-header">🏛️
                          VietGov CMS là gì?</h3>
 <p class="body-text"><strong>VietGov CMS</strong> là Nền tảng quản lý Cổng thông tin điện tử toàn diện 
                         dành cho chính quyền Việt Nam, phát triển bởi <strong>Công ty TNHH Gia Kiệm Số</strong>.</p>
@@ -458,7 +592,7 @@
 </div>
 <p class="body-text">Phù hợp cho mọi cấp: <strong>Xã/Phường</strong>, <strong>Quận/Huyện</strong>, <strong>Tỉnh/Thành phố</strong>.
                         Triển khai nhanh từ 2 tuần. Liên hệ tư vấn: <strong>0907 136 029</strong> (Zalo) | <strong>giakiemso.com</strong></p>
-<h2 class="section-header">🤝
+<h2 id="cuoc-hop" class="section-header">🤝
                          Cuộc họp</h2>
 <p class="body-text">Quản lý cuộc họp từ lúc tạo đến kết luận, phân công nhiệm vụ và xuất biên bản.</p>
 <div class="step-card">
@@ -474,7 +608,7 @@
 <p class="body-text">📄 <strong>Thông báo kết luận</strong> — văn bản phát hành sau họp</p>
 <p class="body-text">📄 <strong>Báo cáo tóm tắt</strong> — tổng hợp ngắn gọn</p>
 <p class="body-text">📄 <strong>Tổng hợp nhiều cuộc họp</strong> — báo cáo gộp nhiều cuộc</p>
-<h2 class="section-header">📅
+<h2 id="lich-tong-hop" class="section-header">📅
                          Lịch tổng hợp</h2>
 <p class="body-text">⚡ Tính năng mới v1.0.10 — Xem tất cả deadline VB, cuộc họp và nhiệm vụ trên 1 lịch tháng.</p>
 <div class="step-card">
@@ -492,7 +626,7 @@
 <p class="body-text">💡 Mẹo:
                              Lịch tự động tải dữ liệu từ Quản lý VB + Cuộc họp. Đảm bảo đã nhập Hạn xử lý cho VB đến và Deadline cho nhiệm vụ họp để hiển thị đầy đủ.</p>
 </div>
-<h2 class="section-header">💾
+<h2 id="sao-luu-amp-khoi-phuc" class="section-header">💾
                          Sao lưu &amp; Khôi phục</h2>
 <div class="warning-card">
 <p class="body-text">⚠️ Quan trọng:
@@ -510,12 +644,12 @@
 <p class="body-text">2. Chọn file .zip backup</p>
 <p class="body-text">3. Xác nhận → Dữ liệu được phục hồi hoàn toàn</p>
 </div>
-<h2 class="section-header">💳
+<h2 id="goi-dich-vu-amp-thanh-toan" class="section-header">💳
                          Gói dịch vụ &amp; Thanh toán</h2>
 <p class="body-text">VanBanPlus cung cấp 4 gói dịch vụ AI:</p>
 <p class="body-text">Để nâng cấp gói, nhấn vào tên tài khoản ở thanh trạng thái → xem thông tin gói hiện tại 
                         → liên hệ Gia Kiệm Số để nâng cấp.</p>
-<h2 class="section-header">❓
+<h2 id="cau-hoi-thuong-gap" class="section-header">❓
                          Câu hỏi thường gặp</h2>
 <div class="step-card">
 <p class="body-text">Hỏi: Dữ liệu của tôi lưu ở đâu? Có bị upload lên mạng không?</p>
@@ -549,7 +683,7 @@
 <p class="body-text"><strong>Trả lời:</strong> Trên máy cũ: vào Sao lưu → Sao lưu ngay → copy file .zip sang máy mới.
                                 Trên máy mới: cài phần mềm → vào Sao lưu → Khôi phục → chọn file .zip → hoàn tất.</p>
 </div>
-<h2 class="section-header">📞
+<h2 id="lien-he-ho-tro" class="section-header">📞
                          Liên hệ hỗ trợ</h2>
 <p>Facebook: 
                                     <a href="https://www.facebook.com/thang.phan.334/" target="_blank">
@@ -560,11 +694,11 @@
 <p>Fanpage: 
                                     <a href="https://www.facebook.com/profile.php?id=61577066581766" target="_blank">
                                         </a></p>
-<h2 class="section-header">⌨️
+<h2 id="phim-tat-huu-ich" class="section-header">⌨️
                          Phím tắt hữu ích</h2>
 <div class="step-card">
 </div>
-<h2 class="section-header">🆕
+<h2 id="co-gi-moi" class="section-header">🆕
                          Có gì mới?</h2>
 <div class="changelog-card">
 <p class="body-text">📥 Cửa sổ tiến trình tải bản cập nhật thân thiện</p>
@@ -642,9 +776,67 @@
 <p class="body-text">✅ <strong>AI Soạn văn bản</strong> — tạo văn bản tự động từ mẫu</p>
 <p class="body-text">✅ Sổ văn bản đi/đến, Sao lưu &amp; Khôi phục</p>
 </div>
+    </div>
+  </main>
 
-<div class="doc-footer">
-  © Ericphan / VanBanPlus 2026 · Tài liệu này được sinh tự động từ <code>HelpPage.xaml</code> qua <code>tools/export_help_to_html.py</code>.
 </div>
+
+<button class="scroll-top" id="scrollTop" title="Lên đầu trang">↑</button>
+
+<script>
+  // 1. Sidebar TOC: highlight link đang xem (scroll spy)
+  const links = document.querySelectorAll('.sidebar a');
+  const headings = Array.from(document.querySelectorAll('h2.section-header, h3.sub-section-header'));
+  const contentEl = document.querySelector('.content');
+
+  function updateActive() {
+    let currentId = '';
+    const scrollTop = contentEl.scrollTop + 120;
+    for (const h of headings) {
+      if (h.offsetTop <= scrollTop) currentId = h.id;
+      else break;
+    }
+    links.forEach(l => l.classList.toggle('active', l.dataset.target === currentId));
+  }
+  contentEl.addEventListener('scroll', () => {
+    updateActive();
+    document.getElementById('scrollTop').classList.toggle('visible', contentEl.scrollTop > 300);
+  });
+  updateActive();
+
+  // 2. Smooth scroll khi click TOC (override default vì content có scroll riêng)
+  links.forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = a.dataset.target;
+      const target = document.getElementById(id);
+      if (target) {
+        contentEl.scrollTo({ top: target.offsetTop - 24, behavior: 'smooth' });
+        history.replaceState(null, '', '#' + id);
+      }
+    });
+  });
+
+  // 3. Search filter trong TOC
+  document.getElementById('tocSearch').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    links.forEach(a => {
+      const match = !q || a.textContent.toLowerCase().includes(q);
+      a.classList.toggle('hidden', !match);
+    });
+  });
+
+  // 4. Scroll-to-top
+  document.getElementById('scrollTop').addEventListener('click', () => {
+    contentEl.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // 5. Mở đúng anchor khi load có hash
+  if (location.hash) {
+    const target = document.querySelector(location.hash);
+    if (target) setTimeout(() => contentEl.scrollTo({ top: target.offsetTop - 24 }), 50);
+  }
+</script>
+
 </body>
 </html>
