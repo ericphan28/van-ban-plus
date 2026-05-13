@@ -27,6 +27,10 @@ public static class AppUpdateService
     // Tên app hiển thị
     private const string AppTitle = "VanBanPlus";
 
+    // Cờ đánh dấu đang trong lượt "kiểm tra thủ công" — để hiện dialog cả khi đã mới nhất.
+    // (Không dùng AutoUpdater.ReportErrors vì event chạy async, finally reset cờ trước khi event firing.)
+    private static bool _isManualCheck = false;
+
     /// <summary>
     /// Khởi tạo và cấu hình AutoUpdater.
     /// Gọi 1 lần trong App.OnStartup hoặc MainWindow constructor.
@@ -71,27 +75,26 @@ public static class AppUpdateService
 
     /// <summary>
     /// Kiểm tra update thủ công (từ menu Help > Check for Updates).
-    /// Luôn hiện dialog kết quả.
+    /// Luôn hiện dialog kết quả — kể cả khi đã là phiên bản mới nhất.
     /// </summary>
     public static void CheckForUpdateManual()
     {
-        AutoUpdater.ReportErrors = true; // Hiện thông báo nếu lỗi
+        _isManualCheck = true; // Cờ sẽ được reset trong OnCheckForUpdateEvent
+        AutoUpdater.ReportErrors = true;
         try
         {
             AutoUpdater.Start(UpdateXmlUrl);
         }
         catch (Exception ex)
         {
+            _isManualCheck = false;
             MessageBox.Show(
                 $"Không thể kiểm tra cập nhật.\n\nLỗi: {ex.Message}",
                 "Kiểm tra cập nhật",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
-        finally
-        {
-            AutoUpdater.ReportErrors = false; // Reset lại
-        }
+        // KHÔNG reset trong finally — để OnCheckForUpdateEvent tự reset sau khi xử lý xong
     }
 
     /// <summary>
@@ -318,11 +321,14 @@ public static class AppUpdateService
                 Console.WriteLine("[UpdateService] App is up to date.");
 
                 // Chỉ hiện thông báo nếu user check thủ công
-                if (AutoUpdater.ReportErrors)
+                if (_isManualCheck)
                 {
                     MessageBox.Show(
-                        $"Bạn đang sử dụng phiên bản mới nhất ({GetCurrentVersion()}).",
-                        $"{AppTitle} - Cập nhật",
+                        $"✅ Bạn đang sử dụng phiên bản mới nhất!\n\n" +
+                        $"Phiên bản hiện tại: v{GetCurrentVersion()}\n" +
+                        $"Không có bản cập nhật nào mới hơn.\n\n" +
+                        $"Được kiểm tra từ: GitHub Releases",
+                        $"{AppTitle} - Kiểm tra cập nhật",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }
@@ -332,14 +338,20 @@ public static class AppUpdateService
         {
             Console.WriteLine($"[UpdateService] Check failed: {args.Error.Message}");
 
-            if (AutoUpdater.ReportErrors)
+            if (_isManualCheck)
             {
                 MessageBox.Show(
-                    $"Không thể kiểm tra cập nhật.\nVui lòng kiểm tra kết nối mạng.\n\nChi tiết: {args.Error.Message}",
-                    $"{AppTitle} - Lỗi",
+                    $"⚠️ Không thể kiểm tra cập nhật.\n\n" +
+                    $"Vui lòng kiểm tra kết nối Internet và thử lại.\n\n" +
+                    $"Chi tiết lỗi: {args.Error.Message}",
+                    $"{AppTitle} - Lỗi kiểm tra cập nhật",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
         }
+
+        // Reset cờ manual check sau khi đã xử lý xong
+        _isManualCheck = false;
+        AutoUpdater.ReportErrors = false;
     }
 }

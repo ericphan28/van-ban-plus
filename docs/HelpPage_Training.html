@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>VanBanPlus — Tài liệu hướng dẫn sử dụng</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Calibri', Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #212121;
+    max-width: 900px;
+    margin: 24px auto;
+    padding: 0 24px;
+    background: #fff;
+  }
+  .doc-header {
+    text-align: center;
+    border-bottom: 3px solid #1976D2;
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+  }
+  .doc-header h1 {
+    color: #0D47A1;
+    margin: 0 0 4px 0;
+    font-size: 26px;
+  }
+  .doc-header .subtitle { color: #666; font-size: 14px; }
+  .doc-header .meta { color: #999; font-size: 11px; margin-top: 6px; }
+
+  h2.section-header {
+    color: #1976D2;
+    font-size: 22px;
+    margin: 32px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #BBDEFB;
+    page-break-after: avoid;
+  }
+  h3.sub-section-header {
+    color: #0D47A1;
+    font-size: 17px;
+    margin: 22px 0 8px;
+    page-break-after: avoid;
+  }
+  p.body-text { margin: 4px 0 6px; }
+  p.bold { font-weight: 600; }
+  p.large { font-size: 16px; }
+
+  .tip-card, .warning-card, .changelog-card, .step-card, .generic-card {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    page-break-inside: avoid;
+  }
+  .tip-card     { background: #FFF8E1; border: 1px solid #FFE082; }
+  .warning-card { background: #FFF3E0; border: 1px solid #FFCC80; }
+  .changelog-card { background: #E8F5E9; border: 1px solid #A5D6A7; }
+  .step-card    { background: #FAFAFA; border: 1px solid #E0E0E0; }
+
+  .tip-card p, .warning-card p, .changelog-card p, .step-card p { margin: 3px 0; }
+
+  strong { color: #0D47A1; }
+  em { color: #424242; }
+  a { color: #1565C0; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .toc {
+    background: #F5F5F5;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin: 24px 0;
+    page-break-inside: avoid;
+  }
+  .toc h3 { margin-top: 0; color: #1976D2; }
+  .toc ul { columns: 2; column-gap: 24px; padding-left: 18px; }
+  .toc li { margin: 4px 0; font-size: 12.5px; }
+
+  .doc-footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid #E0E0E0;
+    color: #888;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  @media print {
+    body { font-size: 11.5pt; max-width: none; padding: 0; }
+    h2.section-header { font-size: 18pt; page-break-before: always; }
+    h2.section-header:first-of-type { page-break-before: auto; }
+    .doc-header { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="doc-header">
+  <h1>📘 VanBanPlus — Tài liệu hướng dẫn sử dụng</h1>
+  <div class="subtitle">Phần mềm Quản lý Văn bản hành chính cho cán bộ, công chức</div>
+  <div class="meta">Phiên bản tài liệu: v1.0.16 · Cập nhật: 14/05/2026 · Tự động xuất từ HelpPage trong ứng dụng</div>
+</div>
+
+<h2 class="section-header">📋
+                         Giới thiệu VanBanPlus</h2>
+<p class="body-text"><strong>VanBanPlus</strong> là phần mềm quản lý văn bản hành chính thông minh, 
+                        tích hợp trí tuệ nhân tạo (AI), được phát triển bởi <strong>Công ty TNHH Gia Kiệm Số</strong>.</p>
+<p class="body-text">Phần mềm giúp cán bộ, công chức tại các cơ quan hành chính (UBND xã/phường, 
+                        cơ quan tỉnh/thành phố, đoàn thể, trường học, bệnh viện...) xử lý công việc văn bản 
+                        nhanh hơn từ <strong>4-6 giờ/ngày xuống chỉ còn 1-2 giờ/ngày</strong>.</p>
+<div class="tip-card">
+<p class="body-text">💡 Lưu ý:
+                             Tất cả dữ liệu văn bản được lưu trên máy tính của bạn (không upload lên mạng).  Internet chỉ cần khi sử dụng các tính năng AI.</p>
+</div>
+<h2 class="section-header">🚀
+                         Thiết lập lần đầu</h2>
+<p class="body-text">Khi mở phần mềm lần đầu tiên, hệ thống sẽ hướng dẫn bạn qua 3 bước thiết lập:</p>
+<div class="step-card">
+<p class="body-text">Chọn đúng loại cơ quan của bạn (UBND xã/phường, Hội Phụ nữ, Đoàn Thanh niên, Trường học, Bệnh viện...). 
+                                Hệ thống hỗ trợ <strong>hơn 70 loại cơ quan</strong> khác nhau.</p>
+<p class="body-text">Hệ thống sẽ tự động tạo cấu trúc thư mục phù hợp với nghiệp vụ cơ quan (11 thư mục chính + thư mục con).</p>
+</div>
+<div class="step-card">
+<p class="body-text">Chọn các danh mục album phù hợp (12 danh mục, 70+ phân loại): 
+                                Hoạt động cơ quan, Hội nghị, Kiểm tra, Xây dựng, Văn hóa...</p>
+</div>
+<div class="step-card">
+<p class="body-text">Để sử dụng các tính năng AI, bạn cần đăng ký tài khoản VanBanPlus. 
+                                Nhấn nút <strong>🔑 Đăng nhập</strong> ở thanh trạng thái phía dưới.</p>
+<p class="body-text">Gói <strong>Miễn phí</strong> cho phép 20 lượt AI/tháng — đủ để trải nghiệm trước khi nâng cấp.</p>
+</div>
+<h2 class="section-header">🖥️
+                         Giao diện tổng quan</h2>
+<p class="body-text">Giao diện VanBanPlus gồm 4 khu vực chính:</p>
+<div class="step-card">
+<p class="bold">① Thanh tiêu đề (trên cùng)</p>
+<p class="body-text">• Tên phần mềm + các nút: Kiểm tra cập nhật, Thiết lập kết nối AI (⚙), Trợ giúp (❓), Giới thiệu (ℹ)</p>
+</div>
+<div class="step-card">
+<p class="bold">② Menu bên trái (sidebar)</p>
+<p class="body-text">• <strong>Trang chủ</strong> — Bảng tổng quan, thống kê, cảnh báo</p>
+<p class="body-text">• <strong>Văn bản</strong> — Quản lý văn bản, Mẫu văn bản, Tra cứu pháp quy, Thống kê</p>
+<p class="body-text">• <strong>Công việc</strong> — Album ảnh, Cuộc họp, Lịch tổng hợp</p>
+<p class="body-text">• <strong>✨ AI Nâng cao</strong> — Soạn VB, Báo cáo, Scan OCR, Kiểm tra, Tham mưu, Tóm tắt</p>
+<p class="body-text">• <strong>Hệ thống</strong> — Cấu hình Album, Sao lưu, Trợ giúp</p>
+<div class="tip-card">
+<p class="body-text">💡
+                                     Nhấn nút ◀ ở góc trên sidebar để thu gọn/mở rộng menu.</p>
+</div>
+</div>
+<div class="step-card">
+<p class="bold">③ Vùng nội dung chính (giữa)</p>
+<p class="body-text">Hiển thị nội dung trang bạn đang xem (Dashboard, Danh sách văn bản, Album ảnh...).</p>
+</div>
+<div class="step-card">
+<p class="bold">④ Thanh trạng thái (dưới cùng)</p>
+<p class="body-text">• Trạng thái kết nối API (☁️ xanh = đã kết nối, ⚠️ đỏ = chưa cấu hình)</p>
+<p class="body-text">• Tên tài khoản + gói dịch vụ đang sử dụng</p>
+<p class="body-text">• Thống kê sử dụng AI trong tháng</p>
+<p class="body-text">• Nút Đăng nhập / Đăng xuất / Cài đặt</p>
+</div>
+<h2 class="section-header">📄
+                         Quản lý văn bản</h2>
+<p class="body-text">Đây là tính năng cốt lõi của VanBanPlus. Hỗ trợ <strong>29 loại văn bản hành chính</strong> + 3 loại VBQPPL theo Nghị định 30/2020/NĐ-CP Điều 7: 
+                        Nghị quyết, Quyết định, Chỉ thị, Quy chế, Quy định, Thông cáo, Thông báo, Hướng dẫn, Chương trình, 
+                        Kế hoạch, Phương án, Đề án, Dự án, Báo cáo, Biên bản, Tờ trình, Hợp đồng, Công văn, Công điện, 
+                        Bản ghi nhớ, Bản thỏa thuận, Giấy ủy quyền, Giấy mời, Giấy giới thiệu, Giấy nghỉ phép, 
+                        Phiếu gửi, Phiếu chuyển, Phiếu báo, Thư công + Luật, Nghị định, Thông tư.</p>
+<p class="body-text">Văn bản được phân theo <strong>3 hướng</strong>: Văn bản đi (ban hành), Văn bản đến (tiếp nhận), Văn bản nội bộ.</p>
+<p class="body-text">Mỗi văn bản có thêm: <strong>Mức độ khẩn</strong> (Thường/Khẩn/Thượng khẩn/Hỏa tốc), 
+                        <strong>Độ mật</strong> (Thường/Mật/Tối mật/Tuyệt mật), <strong>Tự động cấp số</strong> (Điều 15), 
+                        <strong>Sao văn bản</strong> — 3 hình thức: Sao y, Sao lục, Trích sao (Điều 25-27).</p>
+<h3 class="sub-section-header">▸ Thêm văn bản mới</h3>
+<p class="body-text">⚡ Tình huống: Bạn nhận được Công văn từ UBND tỉnh và cần nhập vào hệ thống.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>Quản lý văn bản</strong> ở sidebar trái.</p>
+<p class="body-text"><strong>Bước 2:</strong> Nhấn nút <strong>+ Thêm</strong> trên thanh công cụ.</p>
+<p class="body-text"><strong>Bước 3:</strong> Điền thông tin văn bản:</p>
+<p class="body-text">• <strong>Số văn bản</strong> — VD: 123/QĐ-UBND</p>
+<p class="body-text">• <strong>Trích yếu</strong> — Tóm tắt nội dung chính của văn bản</p>
+<p class="body-text">• <strong>Loại văn bản</strong> — Chọn từ danh sách (Công văn, Quyết định...)</p>
+<p class="body-text">• <strong>Ngày ban hành</strong> — Ngày trên văn bản</p>
+<p class="body-text">• <strong>Cơ quan ban hành</strong> — Nơi phát hành văn bản</p>
+<p class="body-text">• <strong>Hướng</strong> — Đến (nhận) / Đi (gửi) / Nội bộ</p>
+<p class="body-text">• <strong>Mức độ khẩn</strong> — Thường / Khẩn / Thượng khẩn / Hỏa tốc (Điều 8)</p>
+<p class="body-text">• <strong>Độ mật</strong> — Thường / Mật / Tối mật / Tuyệt mật</p>
+<p class="body-text">• <strong>Người ký</strong> — Họ tên người ký + Chức danh ký (Điều 8 khoản 7)</p>
+<p class="body-text">• <strong>Lĩnh vực</strong> — Kinh tế, Văn hóa, Giáo dục, Y tế...</p>
+<p class="body-text">• <strong>Nơi nhận</strong> — Danh sách cơ quan nhận văn bản</p>
+<p class="body-text">• <strong>Căn cứ pháp lý</strong> — Các luật/nghị định làm cơ sở</p>
+<p class="body-text">• <strong>Số đến / Ngày đến</strong> — Dành cho VB đến (Điều 22). Có nút <strong>Cấp số tự động</strong></p>
+<p class="body-text">• <strong>Hạn xử lý / Người xử lý</strong> — Theo dõi deadline (Điều 24)</p>
+<p class="body-text"><strong>Bước 4:</strong> Nhấn <strong>Lưu</strong> để hoàn tất.</p>
+</div>
+<div class="tip-card">
+<p class="body-text">💡 Mẹo:
+                             Thay vì nhập thủ công, bạn có thể dùng 
+                            <strong>AI Scan OCR</strong>
+                             để chụp ảnh văn bản giấy → AI tự động trích xuất tất cả thông tin!</p>
+</div>
+<h3 class="sub-section-header">▸ Thư mục &amp; phân loại</h3>
+<p class="body-text">Hệ thống tự động tạo <strong>11 thư mục chính</strong> khi bạn thiết lập cơ quan lần đầu, bao gồm:</p>
+<p class="body-text">📁 Văn bản quy phạm pháp luật</p>
+<p class="body-text">📁 Văn bản chỉ đạo điều hành</p>
+<p class="body-text">📁 Văn bản hành chính thông thường</p>
+<p class="body-text">📁 Hồ sơ nhân sự</p>
+<p class="body-text">📁 Hồ sơ tài chính - kế toán</p>
+<p class="body-text">📁 ...và các thư mục chuyên ngành khác</p>
+<p class="body-text">Văn bản sẽ tự động được phân vào thư mục phù hợp dựa trên loại và lĩnh vực.
+                        Bạn cũng có thể di chuyển văn bản giữa các thư mục bằng tính năng <strong>Hành động hàng loạt</strong>.</p>
+<h3 class="sub-section-header">▸ Tìm kiếm &amp; lọc</h3>
+<p class="body-text">Thanh công cụ phía trên danh sách văn bản cung cấp các bộ lọc:</p>
+<p class="body-text">🔍 <strong>Từ khóa</strong> — Tìm theo số, trích yếu, nội dung</p>
+<p class="body-text">📋 <strong>Loại văn bản</strong> — Lọc theo Công văn, Quyết định, Báo cáo...</p>
+<p class="body-text">📅 <strong>Năm</strong> — Lọc theo năm ban hành</p>
+<p class="body-text">↔️ <strong>Hướng</strong> — Đi / Đến / Nội bộ / Tất cả</p>
+<h3 class="sub-section-header">▸ Đính kèm file</h3>
+<p class="body-text">Mỗi văn bản có thể đính kèm nhiều file: Word, PDF, Excel, PowerPoint, ảnh, PDF đã ký số.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Mở chi tiết văn bản (nhấn đúp hoặc nút Xem).</p>
+<p class="body-text"><strong>Bước 2:</strong> Nhấn nút <strong>📎 Đính kèm</strong>.</p>
+<p class="body-text"><strong>Bước 3:</strong> Chọn file từ máy tính → Nhấn <strong>Thêm</strong>.</p>
+<p class="body-text"><strong>Bước 4:</strong> Đánh dấu file chính (file gốc) nếu cần.</p>
+</div>
+<h3 class="sub-section-header">▸ Xuất Word / Excel</h3>
+<p class="body-text">VanBanPlus xuất văn bản ra Word đúng thể thức theo <strong>Thông tư 01/2011/TT-BNV</strong>:</p>
+<p class="body-text">• Font Times New Roman cỡ 14</p>
+<p class="body-text">• Lề trang đúng quy định (trên 20mm, dưới 20mm, trái 30mm, phải 15mm)</p>
+<p class="body-text">• Quốc hiệu + Tiêu ngữ đầy đủ</p>
+<p class="body-text">• Khối ký tên + chức danh đúng chuẩn</p>
+<p class="body-text">Để xuất Word: Chọn văn bản → Nhấn nút <strong>Xuất Word</strong> trên thanh công cụ.</p>
+<h3 class="sub-section-header">▸ Xuất Excel (mới v1.0.10)</h3>
+<p class="body-text"><strong>Danh sách VB:</strong> Chọn nhiều văn bản → <strong>Hành động hàng loạt → Xuất Excel</strong>.
+                        File Excel gồm 12 cột: STT, Số VB, Tiêu đề, Loại, Hướng, Ngày BH, Cơ quan, Khẩn, Mật, Hạn XL, Trạng thái, Người XL.
+                        Văn bản quá hạn được tô đỏ nổi bật.</p>
+<p class="body-text"><strong>Báo cáo thống kê:</strong> Vào <strong>Thống kê → Xuất Excel</strong> — file gồm 5 sheet:</p>
+<p class="body-text">1. <strong>Tổng quan</strong> — So sánh kỳ, hiệu suất xử lý</p>
+<p class="body-text">2. <strong>Phân loại VB</strong> — Theo loại văn bản</p>
+<p class="body-text">3. <strong>Khẩn &amp; Mật</strong> — Phân bổ mức độ khẩn, độ mật</p>
+<p class="body-text">4. <strong>Xu hướng 12 tháng</strong> — Biến động theo từng tháng</p>
+<p class="body-text">5. <strong>DS VB chi tiết</strong> — Toàn bộ văn bản trong kỳ</p>
+<h2 class="section-header">📘
+                         Sổ văn bản</h2>
+<p class="body-text">Sổ văn bản là hình thức tra cứu truyền thống, hiển thị văn bản theo dạng bảng sổ sách 
+                        với 3 tab: <strong>Văn bản đi</strong>, <strong>Văn bản đến</strong>, <strong>Văn bản nội bộ</strong>.</p>
+<p class="body-text">Mỗi tab hiển thị: STT, Số/ký hiệu, Ngày tháng, Trích yếu, Cơ quan ban hành, 
+                        Mức độ khẩn, Độ mật, Số đến, Hạn xử lý. 
+                        Có thanh lọc theo năm, loại, từ khóa và hiển thị tổng số lượng.</p>
+<p class="body-text">⚡ Phù hợp khi cần tra cứu nhanh theo sổ đăng ký truyền thống.</p>
+<h2 class="section-header">📝
+                         Mẫu văn bản</h2>
+<p class="body-text">Hệ thống cung cấp <strong>65+ mẫu văn bản</strong> theo NĐ 30/2020, mỗi mẫu bao gồm:</p>
+<p class="body-text">• Tên mẫu và loại văn bản tương ứng</p>
+<p class="body-text">• Prompt AI đã được tối ưu cho từng loại</p>
+<p class="body-text">• Danh sách trường bắt buộc cần điền</p>
+<p class="body-text">• Kịch bản mẫu để thử nghiệm</p>
+<p class="body-text">🏥 Mẫu VB theo chuyên ngành (mới v1.0.10):</p>
+<p class="body-text">• <strong>Y tế</strong> (8 mẫu): BC tình hình dịch, Giấy chuyển viện, KH phòng chống dịch, Biên bản hội chẩn...</p>
+<p class="body-text">• <strong>Giáo dục</strong> (8 mẫu): KH năm học, QĐ khen thưởng HS, BC chất lượng GD, Giấy CN tốt nghiệp...</p>
+<p class="body-text">• <strong>UBND xã/phường</strong> (8 mẫu): Giấy XN cư trú, BC KT-XH, KH phòng chống thiên tai, KH xây dựng NTM...</p>
+<p class="body-text">Bạn có thể tạo mẫu mới, chỉnh sửa mẫu có sẵn, hoặc tải thêm mẫu từ 
+                        <strong>Kho mẫu trực tuyến</strong> (nút 🌐 Kho mẫu).</p>
+<h2 class="section-header">⚖️
+                         Tra cứu pháp quy</h2>
+<p class="body-text">Trang tra cứu trực tiếp <strong>Nghị định 30/2020/NĐ-CP</strong> — văn bản pháp quy quan trọng nhất về công tác văn thư, 
+                        gồm <strong>38 Điều</strong>, <strong>7 Chương</strong> và <strong>6 Phụ lục</strong>.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>Tra cứu pháp quy</strong> ở sidebar (nhóm Văn bản).</p>
+<p class="body-text"><strong>Bước 2:</strong> Duyệt cây mục lục bên trái — chọn Chương, Điều, hoặc Phụ lục cần xem.</p>
+<p class="body-text"><strong>Bước 3:</strong> Nội dung điều khoản hiển thị bên phải với breadcrumb đường dẫn.</p>
+</div>
+<p class="body-text"><strong>Tìm kiếm:</strong> Gõ từ khóa vào ô tìm kiếm (VD: "số đến", "thể thức", "phụ lục") → 
+                        hệ thống hiển thị danh sách kết quả với đoạn văn khớp, nhấn để nhảy đến điều khoản tương ứng.</p>
+<div class="tip-card">
+<p class="body-text">💡 Mẹo:
+                             Khi soạn văn bản, bạn có thể mở trang Tra cứu pháp quy song song để đối chiếu thể thức đúng quy định.</p>
+</div>
+<h2 class="section-header">📊
+                         Thống kê văn bản</h2>
+<p class="body-text">Trang thống kê cung cấp <strong>báo cáo trực quan</strong> về tình hình văn bản theo các kỳ: 
+                        Tuần này, Tháng này, Quý này, Năm nay, hoặc Tất cả.</p>
+<div class="step-card">
+<p class="body-text"><strong>So sánh kỳ trước:</strong> Hiển thị số lượng VB Đến, VB Đi, Nội bộ so với kỳ trước (tăng/giảm %).</p>
+<p class="body-text"><strong>Hiệu suất xử lý:</strong> Theo dõi VB đến có hạn — bao nhiêu đúng hạn, bao nhiêu quá hạn, bao nhiêu đang chờ.</p>
+<p class="body-text"><strong>Biểu đồ:</strong> Phân bổ theo loại VB, theo lĩnh vực, theo hướng (đi/đến/nội bộ).</p>
+<p class="body-text"><strong>Xuất Excel:</strong> Nhấn nút <strong>📊 Xuất Excel</strong> để tải báo cáo chi tiết 5 sheet (Tổng quan, Phân loại, Khẩn &amp; Mật, Xu hướng 12 tháng, DS VB).</p>
+<p class="body-text"><strong>Xuất CSV:</strong> Nhấn nút <strong>📥 Xuất CSV</strong> để tải dữ liệu thống kê dạng bảng đơn giản.</p>
+</div>
+<p class="body-text">⚡ Phù hợp cho cán bộ văn phòng cần báo cáo số liệu VB hàng tuần/tháng/quý cho lãnh đạo.</p>
+<h2 class="section-header">☁️
+                         Kết nối &amp; đăng nhập AI</h2>
+<p class="body-text">Để sử dụng các tính năng AI, bạn cần:</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Nhấn <strong>🔑 Đăng nhập</strong> ở thanh trạng thái phía dưới.</p>
+<p class="body-text"><strong>Bước 2:</strong> Nếu chưa có tài khoản → chuyển sang tab <strong>Đăng ký</strong> → điền Email, Họ tên, Mật khẩu.</p>
+<p class="body-text"><strong>Bước 3:</strong> Đăng nhập bằng email + mật khẩu → Hệ thống tự cấp mã kích hoạt.</p>
+<p class="body-text"><strong>Bước 4:</strong> Trạng thái ở thanh dưới chuyển sang <strong>☁️ VanBanPlus API</strong> xanh = sẵn sàng.</p>
+</div>
+<div class="warning-card">
+<p class="body-text">⚠️ Lưu ý:
+                             Tính năng AI cần kết nối Internet. Nếu mất mạng, bạn vẫn xem/quản lý văn bản bình thường, chỉ không gọi được AI.</p>
+</div>
+<h2 class="section-header">✨
+                         AI Soạn văn bản tự động</h2>
+<p class="body-text">⚡ Tình huống: Bạn cần soạn Quyết định khen thưởng cho nhân viên, nhưng chưa biết viết thế nào cho đúng thể thức.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>✨ Soạn văn bản</strong> ở sidebar.</p>
+<p class="body-text"><strong>Bước 2:</strong> Chọn <strong>Mẫu văn bản</strong> phù hợp (VD: Quyết định khen thưởng).</p>
+<p class="body-text"><strong>Bước 3:</strong> Điền các trường yêu cầu (tên đơn vị, người được khen, lý do, mức thưởng...).</p>
+<p class="body-text"><strong>Bước 4:</strong> Nhấn nút <strong>✨ Tạo</strong> → AI soạn toàn bộ văn bản đúng thể thức.</p>
+<p class="body-text"><strong>Bước 5:</strong> Xem lại, chỉnh sửa nếu cần → Nhấn <strong>Lưu</strong> vào hệ thống hoặc <strong>Xuất Word</strong>.</p>
+</div>
+<div class="tip-card">
+<p class="body-text">💡 Mẹo:
+                             Nhấn nút 
+                            <strong>📋 Kịch bản mẫu</strong>
+                             để xem ví dụ điền sẵn — giúp bạn hiểu cách sử dụng từng mẫu.</p>
+</div>
+<h2 class="section-header">📊
+                         AI Báo cáo định kỳ</h2>
+<p class="body-text">⚡ Tình huống: Cuối tháng cần viết báo cáo tình hình kinh tế - xã hội, nhưng chỉ có số liệu thô.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>✨ Báo cáo</strong> ở sidebar.</p>
+<p class="body-text"><strong>Bước 2:</strong> Chọn kỳ báo cáo: Tuần / Tháng / Quý / Năm.</p>
+<p class="body-text"><strong>Bước 3:</strong> Chọn lĩnh vực: Kinh tế - xã hội, Giáo dục, Y tế...</p>
+<p class="body-text"><strong>Bước 4:</strong> Nhập tên đơn vị và dán số liệu thô (dạng gạch đầu dòng hoặc bảng).</p>
+<p class="body-text"><strong>Bước 5 (tùy chọn):</strong> Dán báo cáo kỳ trước để AI so sánh, đánh giá tiến độ.</p>
+<p class="body-text"><strong>Bước 6:</strong> Nhấn <strong>✨ Tạo</strong> → AI viết báo cáo 3 phần: Kết quả đạt được → Đánh giá → Phương hướng tiếp theo.</p>
+</div>
+<h2 class="section-header">📷
+                         AI Scan OCR — Nhập văn bản từ ảnh</h2>
+<p class="body-text">⚡ Tình huống: Bạn có văn bản giấy đã scan hoặc chụp ảnh, muốn nhập vào hệ thống mà không cần gõ tay.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>✨ Scan OCR</strong> ở sidebar.</p>
+<p class="body-text"><strong>Bước 2:</strong> Chọn file ảnh (JPG, PNG, BMP, TIFF, WebP) hoặc PDF.</p>
+<p class="body-text"><strong>Bước 3:</strong> Xem trước ảnh trong cửa sổ → Nhấn <strong>🔍 AI Trích xuất</strong>.</p>
+<p class="body-text"><strong>Bước 4:</strong> AI tự động nhận diện và điền <strong>16 trường thông tin</strong>:</p>
+<p class="body-text">Số văn bản, Trích yếu, Loại VB (32 loại), Ngày, Cơ quan ban hành, Người ký, Nội dung, Nơi nhận, Căn cứ, Hướng, Mức độ khẩn, Độ mật, Lĩnh vực, Địa danh, Chức danh ký, Thẩm quyền ký</p>
+<p class="body-text"><strong>Bước 5:</strong> Kiểm tra, sửa nếu cần → Nhấn <strong>Lưu</strong> vào hệ thống.</p>
+</div>
+<div class="tip-card">
+<p class="body-text">💡 Mẹo:
+                             Ảnh rõ nét, không nghiêng, đủ sáng sẽ cho kết quả OCR tốt nhất. Nên scan ở độ phân giải 300 DPI trở lên.</p>
+</div>
+<h2 class="section-header">🔍
+                         AI Kiểm tra văn bản</h2>
+<p class="body-text">⚡ Tình huống: Bạn vừa soạn xong công văn, muốn kiểm tra lỗi chính tả, văn phong, thể thức trước khi trình ký.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>✨ Kiểm tra VB</strong> ở sidebar.</p>
+<p class="body-text"><strong>Bước 2:</strong> Chọn văn bản cần kiểm tra từ danh sách.</p>
+<p class="body-text"><strong>Bước 3:</strong> AI phân tích <strong>8 khía cạnh</strong>:</p>
+<p class="body-text">🔴 Lỗi nghiêm trọng — chính tả, ngữ pháp sai</p>
+<p class="body-text">🟡 Cần cải thiện — văn phong chưa phù hợp</p>
+<p class="body-text">🟢 Đạt yêu cầu — đúng thể thức, logic tốt</p>
+<p class="body-text"><strong>Bước 4:</strong> Xem <strong>điểm chất lượng</strong> tổng thể (thang 1-10).</p>
+<p class="body-text"><strong>Bước 5:</strong> Nhấn <strong>✅ Áp dụng sửa đổi</strong> để AI tự động sửa lỗi → lưu vào văn bản.</p>
+</div>
+<h2 class="section-header">💡
+                         AI Tham mưu xử lý</h2>
+<p class="body-text">⚡ Tình huống: Bạn nhận được công văn chỉ đạo từ cấp trên, cần tham mưu cho lãnh đạo cách xử lý.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>✨ Tham mưu</strong> ở sidebar.</p>
+<p class="body-text"><strong>Bước 2:</strong> Chọn văn bản đến cần tham mưu.</p>
+<p class="body-text"><strong>Bước 3:</strong> AI phân tích <strong>15 chiều</strong> bao gồm:</p>
+<p class="body-text">• Mức độ khẩn cấp của văn bản</p>
+<p class="body-text">• Bộ phận/cán bộ nên chuyển xử lý</p>
+<p class="body-text">• Thời hạn cần phải phúc đáp</p>
+<p class="body-text">• Nội dung cần chuẩn bị trả lời</p>
+<p class="body-text">• Rủi ro nếu chậm trễ xử lý</p>
+<p class="body-text">• Các văn bản pháp lý liên quan cần tham khảo</p>
+</div>
+<div class="tip-card">
+<p class="body-text">💡 Mẹo:
+                             Đây là tính năng đặc biệt hữu ích cho cán bộ văn phòng — giúp tham mưu nhanh, không bỏ sót yêu cầu.</p>
+</div>
+<h2 class="section-header">📋
+                         AI Tóm tắt văn bản</h2>
+<p class="body-text">⚡ Tình huống: Lãnh đạo cần nắm nhanh nội dung văn bản dài, không có thời gian đọc hết.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào menu <strong>✨ Tóm tắt</strong> ở sidebar.</p>
+<p class="body-text"><strong>Bước 2:</strong> Chọn văn bản cần tóm tắt.</p>
+<p class="body-text"><strong>Bước 3:</strong> AI trả về bản tóm tắt gồm <strong>10 mục có cấu trúc</strong>:</p>
+<p class="body-text">Tóm tắt chung, Nội dung chính, Yêu cầu thực hiện, Thời hạn, Đối tượng áp dụng, Cơ sở pháp lý, Điểm đáng chú ý, Kiến nghị, Mức độ ưu tiên, Ghi chú</p>
+</div>
+<h2 class="section-header">📸
+                         Album ảnh</h2>
+<p class="body-text">Quản lý ảnh hoạt động cơ quan theo cấu trúc thư mục nghiệp vụ (12 danh mục, 70+ phân loại).</p>
+<div class="step-card">
+<p class="body-text">Tạo album mới:</p>
+<p class="body-text">1. Vào <strong>Album ảnh</strong> ở sidebar</p>
+<p class="body-text">2. Chọn thư mục phân loại ở cây thư mục bên trái</p>
+<p class="body-text">3. Nhấn <strong>+ Tạo album</strong></p>
+<p class="body-text">4. Đặt tên album, chọn ngày, nhập mô tả</p>
+<p class="body-text">5. Import ảnh từ máy tính</p>
+</div>
+<p class="body-text"><strong>3 chế độ xem:</strong> Lưới (Grid), Thẻ (Cards), Danh sách (List) — 
+                        chuyển đổi bằng nút góc phải trên.</p>
+<h2 class="section-header">☁️
+                         Tải &amp; Upload Album từ VietGov CMS</h2>
+<p class="body-text">VanBanPlus tích hợp kết nối trực tiếp với <strong>VietGov CMS</strong> — Nền tảng Cổng thông tin điện tử 
+                        dành cho chính quyền Việt Nam (xagiakiem.gov.vn). Bạn có thể tải album ảnh từ website 
+                        về máy để lưu trữ, hoặc upload album từ máy lên website để công khai.</p>
+<h3 class="sub-section-header">⬇️
+                         Tải Album từ Website về máy</h3>
+<div class="step-card">
+<p class="body-text">Các bước thực hiện:</p>
+<p class="body-text">1. Vào <strong>Album ảnh</strong> ở sidebar</p>
+<p class="body-text">2. Nhấn nút <strong>☁️ Tải từ Website</strong> (nút màu xanh dương trên thanh công cụ)</p>
+<p class="body-text">3. Hệ thống tự động kết nối đến <strong>xagiakiem.gov.vn</strong> và hiển thị danh sách album công khai</p>
+<p class="body-text">4. Duyệt danh sách hoặc <strong>tìm kiếm</strong> theo tên album</p>
+<p class="body-text">5. <strong>Tick chọn</strong> các album muốn tải (tối đa 10 album mỗi lần)</p>
+<p class="body-text">6. Nhấn <strong>Tải album đã chọn</strong></p>
+<p class="body-text">7. Album + ảnh được tải về thư mục <strong>Documents\AIVanBan\Photos\</strong></p>
+</div>
+<div class="tip-card">
+<p class="body-text">💡 Mẹo:
+                             Sau khi tải xong, album tự động xuất hiện trong danh sách Album ảnh của bạn. Bạn có thể di chuyển album vào thư mục phân loại phù hợp bằng cách kéo-thả hoặc click phải → Di chuyển.</p>
+</div>
+<h3 class="sub-section-header">⬆️
+                         Upload Album lên Website</h3>
+<div class="step-card">
+<p class="body-text">Các bước thực hiện:</p>
+<p class="body-text">1. Vào <strong>Album ảnh</strong> ở sidebar</p>
+<p class="body-text">2. Nhấn nút <strong>☁️ Upload lên Web</strong> (nút màu cam trên thanh công cụ)</p>
+<p class="body-text">3. Chọn các album từ máy mà bạn muốn đưa lên website</p>
+<p class="body-text">4. Nhấn <strong>Upload</strong> để bắt đầu tải lên</p>
+<p class="body-text">5. Album sẽ được tạo ở trạng thái <strong>Nháp</strong> trên website</p>
+<p class="body-text">6. Quản trị viên website sẽ duyệt và xuất bản album</p>
+</div>
+<div class="warning-card">
+<p class="body-text">⚠️ Lưu ý:
+                             Album upload lên web cần được quản trị viên phê duyệt trước khi công khai. Quy trình duyệt bao gồm 5 bước: Nháp → Chờ duyệt → Duyệt sơ bộ → Phê duyệt → Xuất bản.</p>
+</div>
+<h3 class="sub-section-header">⚙️
+                         Cấu hình Server URL</h3>
+<p class="body-text">Mặc định, ứng dụng kết nối đến <strong>https://xagiakiem.gov.vn</strong>. 
+                        Nếu đơn vị bạn sử dụng VietGov CMS với tên miền riêng, bạn có thể thay đổi URL:</p>
+<div class="step-card">
+<p class="body-text">1. Trong cửa sổ <strong>Tải Album</strong>, nhấn biểu tượng <strong>⚙️</strong> (bánh răng) ở góc phải trên</p>
+<p class="body-text">2. Nhập URL server mới (VD: https://ten-don-vi.gov.vn)</p>
+<p class="body-text">3. Nhấn <strong>Kết nối lại</strong> để kiểm tra kết nối</p>
+<p class="body-text">4. Nếu kết nối thành công, danh sách album sẽ được tải từ server mới</p>
+</div>
+<h3 class="sub-section-header">🏛️
+                         VietGov CMS là gì?</h3>
+<p class="body-text"><strong>VietGov CMS</strong> là Nền tảng quản lý Cổng thông tin điện tử toàn diện 
+                        dành cho chính quyền Việt Nam, phát triển bởi <strong>Công ty TNHH Gia Kiệm Số</strong>.</p>
+<div class="tip-card">
+<p class="body-text">Tính năng nổi bật của VietGov CMS:</p>
+<p class="body-text">📰 Quản lý Tin tức &amp; Nội dung với AI hỗ trợ</p>
+<p class="body-text">🏛️ Quản lý 9 loại Tổ chức (chính quyền, đảng, đoàn thể, tôn giáo...)</p>
+<p class="body-text">📋 Tra cứu 160+ Thủ tục hành chính &amp; Dịch vụ công</p>
+<p class="body-text">📸 Album ảnh &amp; Sự kiện với quản lý đa album</p>
+<p class="body-text">📄 Hệ thống Văn bản pháp quy (quyết định, công văn, nghị quyết...)</p>
+<p class="body-text">👥 Phân quyền RBAC đa lớp với quy trình phê duyệt 5 bước</p>
+<p class="body-text">🔐 Bảo mật cấp chính phủ (RLS, SSL, Audit Log)</p>
+</div>
+<p class="body-text">Phù hợp cho mọi cấp: <strong>Xã/Phường</strong>, <strong>Quận/Huyện</strong>, <strong>Tỉnh/Thành phố</strong>.
+                        Triển khai nhanh từ 2 tuần. Liên hệ tư vấn: <strong>0907 136 029</strong> (Zalo) | <strong>giakiemso.com</strong></p>
+<h2 class="section-header">🤝
+                         Cuộc họp</h2>
+<p class="body-text">Quản lý cuộc họp từ lúc tạo đến kết luận, phân công nhiệm vụ và xuất biên bản.</p>
+<div class="step-card">
+<p class="body-text">Tạo cuộc họp:</p>
+<p class="body-text">1. Vào <strong>Cuộc họp</strong> ở sidebar</p>
+<p class="body-text">2. Nhấn <strong>+ Tạo cuộc họp</strong></p>
+<p class="body-text">3. Điền: Tiêu đề, Loại (21 loại), Cấp, Hình thức, Thời gian, Địa điểm</p>
+<p class="body-text">4. Thêm người tham dự (có vai trò: Chủ tọa, Thư ký, Thành viên...)</p>
+<p class="body-text">5. Nhập nội dung thảo luận, kết luận, nhiệm vụ phân công</p>
+</div>
+<p class="body-text">Xuất ra Word (4 loại):</p>
+<p class="body-text">📄 <strong>Biên bản cuộc họp</strong> — ghi chép chi tiết</p>
+<p class="body-text">📄 <strong>Thông báo kết luận</strong> — văn bản phát hành sau họp</p>
+<p class="body-text">📄 <strong>Báo cáo tóm tắt</strong> — tổng hợp ngắn gọn</p>
+<p class="body-text">📄 <strong>Tổng hợp nhiều cuộc họp</strong> — báo cáo gộp nhiều cuộc</p>
+<h2 class="section-header">📅
+                         Lịch tổng hợp</h2>
+<p class="body-text">⚡ Tính năng mới v1.0.10 — Xem tất cả deadline VB, cuộc họp và nhiệm vụ trên 1 lịch tháng.</p>
+<div class="step-card">
+<p class="body-text"><strong>Bước 1:</strong> Vào <strong>📅 Lịch</strong> ở sidebar (nhóm Công việc).</p>
+<p class="body-text"><strong>Bước 2:</strong> Xem lưới tháng — mỗi ngày có sự kiện sẽ hiển thị chấm màu.</p>
+<p class="body-text"><strong>Bước 3:</strong> Click vào ngày để xem chi tiết tất cả sự kiện trong panel bên phải.</p>
+<p class="body-text"><strong>Bước 4:</strong> Dùng nút ◀ ▶ để chuyển tháng, nút <strong>Hôm nay</strong> để quay về ngày hiện tại.</p>
+</div>
+<p class="body-text">Mã màu sự kiện:</p>
+<p class="body-text">🔴 <strong>Quá hạn</strong> — Văn bản đã quá hạn xử lý (cần ưu tiên)</p>
+<p class="body-text">🟡 <strong>Sắp hạn</strong> — Văn bản sắp đến hạn (trong 3 ngày)</p>
+<p class="body-text">🔵 <strong>Cuộc họp</strong> — Cuộc họp đã lên lịch</p>
+<p class="body-text">🟢 <strong>Nhiệm vụ</strong> — Task từ cuộc họp (có deadline)</p>
+<div class="tip-card">
+<p class="body-text">💡 Mẹo:
+                             Lịch tự động tải dữ liệu từ Quản lý VB + Cuộc họp. Đảm bảo đã nhập Hạn xử lý cho VB đến và Deadline cho nhiệm vụ họp để hiển thị đầy đủ.</p>
+</div>
+<h2 class="section-header">💾
+                         Sao lưu &amp; Khôi phục</h2>
+<div class="warning-card">
+<p class="body-text">⚠️ Quan trọng:
+                             Hãy sao lưu thường xuyên để tránh mất dữ liệu. Hệ thống tự động sao lưu mỗi lần mở ứng dụng (giữ 10 bản gần nhất).</p>
+</div>
+<div class="step-card">
+<p class="body-text">Sao lưu thủ công:</p>
+<p class="body-text">1. Vào <strong>Sao lưu</strong> ở sidebar</p>
+<p class="body-text">2. Nhấn <strong>💾 Sao lưu ngay</strong></p>
+<p class="body-text">3. Hệ thống tạo file .zip chứa toàn bộ dữ liệu + ảnh</p>
+</div>
+<div class="step-card">
+<p class="body-text">Khôi phục dữ liệu:</p>
+<p class="body-text">1. Nhấn <strong>🔄 Khôi phục</strong></p>
+<p class="body-text">2. Chọn file .zip backup</p>
+<p class="body-text">3. Xác nhận → Dữ liệu được phục hồi hoàn toàn</p>
+</div>
+<h2 class="section-header">💳
+                         Gói dịch vụ &amp; Thanh toán</h2>
+<p class="body-text">VanBanPlus cung cấp 4 gói dịch vụ AI:</p>
+<p class="body-text">Để nâng cấp gói, nhấn vào tên tài khoản ở thanh trạng thái → xem thông tin gói hiện tại 
+                        → liên hệ Gia Kiệm Số để nâng cấp.</p>
+<h2 class="section-header">❓
+                         Câu hỏi thường gặp</h2>
+<div class="step-card">
+<p class="body-text">Hỏi: Dữ liệu của tôi lưu ở đâu? Có bị upload lên mạng không?</p>
+<p class="body-text"><strong>Trả lời:</strong> Toàn bộ dữ liệu lưu trên máy tính cá nhân (thư mục Documents\AIVanBan). 
+                                Không có dữ liệu nào được upload lên server. Khi dùng AI, chỉ nội dung văn bản được gửi đi để xử lý, không lưu trữ trên server.</p>
+</div>
+<div class="step-card">
+<p class="body-text">Hỏi: Không có Internet thì phần mềm có chạy được không?</p>
+<p class="body-text"><strong>Trả lời:</strong> Có. Tất cả tính năng quản lý văn bản, album ảnh, cuộc họp, sổ văn bản đều hoạt động offline. 
+                                Chỉ 7 tính năng AI cần Internet.</p>
+</div>
+<div class="step-card">
+<p class="body-text">Hỏi: AI có chính xác 100% không?</p>
+<p class="body-text"><strong>Trả lời:</strong> AI đạt độ chính xác cao nhưng không phải 100%. 
+                                Luôn kiểm tra lại nội dung AI tạo ra trước khi sử dụng chính thức. 
+                                Đặc biệt với văn bản pháp lý, cần đối chiếu căn cứ pháp luật.</p>
+</div>
+<div class="step-card">
+<p class="body-text">Hỏi: Hết lượt AI miễn phí thì sao?</p>
+<p class="body-text"><strong>Trả lời:</strong> Bạn có thể nâng cấp lên gói Khởi đầu (79.000đ — 150 lượt), Chuyên nghiệp (199.000đ — 500 lượt), 
+                                hoặc Doanh nghiệp (499.000đ — 2.000 lượt). Lượt AI được reset vào đầu mỗi tháng.</p>
+</div>
+<div class="step-card">
+<p class="body-text">Hỏi: Cài trên nhiều máy tính được không?</p>
+<p class="body-text"><strong>Trả lời:</strong> Được. Mỗi máy sẽ có dữ liệu riêng (lưu cục bộ). 
+                                Tài khoản AI có thể đăng nhập trên nhiều máy nhưng dùng chung quota.
+                                Dùng tính năng Sao lưu/Khôi phục để chuyển dữ liệu giữa các máy.</p>
+</div>
+<div class="step-card">
+<p class="body-text">Hỏi: Làm sao để chuyển dữ liệu sang máy mới?</p>
+<p class="body-text"><strong>Trả lời:</strong> Trên máy cũ: vào Sao lưu → Sao lưu ngay → copy file .zip sang máy mới.
+                                Trên máy mới: cài phần mềm → vào Sao lưu → Khôi phục → chọn file .zip → hoàn tất.</p>
+</div>
+<h2 class="section-header">📞
+                         Liên hệ hỗ trợ</h2>
+<p>Facebook: 
+                                    <a href="https://www.facebook.com/thang.phan.334/" target="_blank">
+                                        </a></p>
+<p>Website: 
+                                    <a href="#" target="_blank">
+                                        </a></p>
+<p>Fanpage: 
+                                    <a href="https://www.facebook.com/profile.php?id=61577066581766" target="_blank">
+                                        </a></p>
+<h2 class="section-header">⌨️
+                         Phím tắt hữu ích</h2>
+<div class="step-card">
+</div>
+<h2 class="section-header">🆕
+                         Có gì mới?</h2>
+<div class="changelog-card">
+<p class="body-text">📥 Cửa sổ tiến trình tải bản cập nhật thân thiện</p>
+<p class="body-text">✅ <strong>Thanh tiến trình (ProgressBar)</strong> hiển thị % tải về thực tế, không còn "im lặng" như trước.</p>
+<p class="body-text">✅ <strong>Tốc độ tải</strong> theo thời gian thực (KB/s hoặc MB/s) + <strong>thời gian còn lại</strong> ước tính.</p>
+<p class="body-text">✅ <strong>Nút "Hủy"</strong> cho phép dừng tải bất cứ lúc nào.</p>
+<p class="body-text">✅ <strong>Hiển thị dung lượng</strong> đã tải / tổng (VD: <em>33.55 MB / 53.87 MB</em>) và trạng thái rõ ràng.</p>
+<p class="body-text">✅ <strong>Xử lý lỗi tốt hơn</strong> — hiện thông báo đỏ trong cửa sổ + đề nghị mở trình duyệt tải thủ công khi mạng có vấn đề.</p>
+<p class="body-text">🔢 <strong>Hiển thị version động</strong> trên status bar — luôn khớp version thực của ứng dụng (đọc từ Assembly).</p>
+</div>
+<div class="changelog-card">
+<p class="body-text">✨ Cải tiến lớn cho AI Soạn thảo &amp; Quản lý văn bản</p>
+<p class="body-text">✅ <strong>Lưu văn bản từ mẫu đúng nội dung</strong> — Sửa lỗi khi bấm "Tải mẫu" rồi "Lưu" thì văn bản chỉ có khung trống. Nay tự thay placeholder <em>[TÊN ĐƠN VỊ], [Vấn đề công văn], [Nội dung công văn]…</em> bằng dữ liệu thực.</p>
+<p class="body-text">✅ <strong>Hộp thoại chọn thư mục khi lưu</strong> — Bấm <strong>💾 Lưu văn bản</strong> trong AI Soạn thảo → hiện cây thư mục để chọn nơi lưu (không còn tự động lưu vào mặc định).</p>
+<p class="body-text">✅ <strong>Nút "💾 Lưu văn bản" tự sáng sau khi Tải mẫu</strong> — Không cần dùng AI vẫn có thể lưu trực tiếp từ mẫu mặc định.</p>
+<p class="body-text">✅ <strong>3 cách di chuyển văn bản vào thư mục</strong>: (A) Ngay lúc lưu trong AI Soạn thảo · (B) Icon 📁 trên cột Thao tác từng dòng · (C) Bulk move khi tích chọn nhiều dòng.</p>
+<p class="body-text">✅ <strong>ComboBox Thư mục</strong> trong dialog Sửa văn bản — đổi thư mục văn bản trực tiếp khi sửa thông tin.</p>
+<p class="body-text">⚡ <strong>Tăng tốc nạp mẫu mặc định</strong> — Nạp lại 70+ mẫu chỉ <strong>1–3 giây</strong> (trước đây 30–60 giây). Bật virtualization cho danh sách mẫu.</p>
+<p class="body-text">📋 <strong>Trang Trợ giúp cập nhật</strong> — Bổ sung mục "Có gì mới (v1.0.15)" này. Xem chi tiết tại <em>docs/HUONG_DAN_CAP_NHAT_THANG_5_2026.html</em>.</p>
+<p class="body-text">💡 <strong>Lưu ý quy trình duyệt văn bản:</strong> Văn bản đi qua 7 trạng thái tuần tự —
+                                    📝 Nháp → 📤 Trình ký → ✅ Đã duyệt → ✍️ Đã ký → 📢 Đã phát hành → 📨 Đã gửi → 🗄️ Lưu trữ.
+                                    Văn bản từ <strong>📢 Đã phát hành</strong> trở đi KHÔNG được sửa nội dung — phải đính chính/thu hồi bằng VB mới.</p>
+</div>
+<div class="changelog-card">
+<p class="body-text">✅ <strong>Cập nhật trang Trợ giúp</strong> — nội dung chính xác, bỏ link video chưa có</p>
+<p class="body-text">✅ <strong>Sửa lỗi UI dialog</strong> — 15 nút bấm bị cắt chữ trên 5 dialog</p>
+<p class="body-text">✅ <strong>Website vanbanplus.giakiemso.com</strong> — trang giới thiệu sản phẩm hoàn chỉnh</p>
+<p class="body-text">✅ Sửa lỗi navigation TOC: Tra cứu pháp quy, Thống kê, Lịch tổng hợp</p>
+<p class="body-text">✅ Cập nhật thông tin nhà phát triển: Công ty TNHH Gia Kiệm Số</p>
+</div>
+<div class="step-card">
+<p class="body-text">✅ <strong>Lịch tổng hợp</strong> — Xem deadline VB + cuộc họp + tasks trên 1 lịch tháng</p>
+<p class="body-text">✅ <strong>Xuất Excel báo cáo</strong> — 5 sheet chi tiết: Tổng quan, Phân loại, Khẩn &amp; Mật, Xu hướng, DS VB</p>
+<p class="body-text">✅ <strong>24 mẫu VB chuyên ngành</strong> — Y tế (8), Giáo dục (8), UBND xã (8)</p>
+<p class="body-text">✅ <strong>Mã màu sự kiện</strong> — 🔴 Quá hạn, 🟡 Sắp hạn, 🔵 Cuộc họp, 🟢 Task</p>
+<p class="body-text">✅ <strong>Nút Xuất Excel</strong> trên Thống kê + Danh sách VB (hành động hàng loạt)</p>
+<p class="body-text">✅ Dọn dẹp dead code, tối ưu hiệu năng</p>
+</div>
+<div class="step-card">
+<p class="body-text">✅ <strong>29 loại VB hành chính</strong> đầy đủ theo Điều 7 NĐ 30/2020 (thêm 9 loại mới)</p>
+<p class="body-text">✅ <strong>Mức độ khẩn</strong> (Thường/Khẩn/Thượng khẩn/Hỏa tốc) + <strong>Độ mật</strong> (Mật/Tối mật/Tuyệt mật)</p>
+<p class="body-text">✅ <strong>Tự động cấp số</strong> văn bản đi/đến theo Điều 15, 22</p>
+<p class="body-text">✅ <strong>Sao văn bản</strong> — Sao y, Sao lục, Trích sao (Điều 25-27)</p>
+<p class="body-text">✅ <strong>22 mẫu VB mới</strong> (tổng 41 mẫu) + 17 prompt AI chuyên biệt</p>
+<p class="body-text">✅ <strong>AI Scan OCR nâng cấp</strong> — nhận diện 32 loại VB + độ khẩn/mật</p>
+<p class="body-text">✅ <strong>40+ tooltip pháp lý</strong> NĐ 30/2020 trên toàn giao diện</p>
+<p class="body-text">✅ Thêm 8 trường mới: người ký, chức vụ, số đến, hạn xử lý...</p>
+</div>
+<div class="step-card">
+<p class="body-text">✅ Thêm trang <strong>Trợ giúp</strong> tích hợp trong ứng dụng (F1)</p>
+<p class="body-text">✅ Help theo ngữ cảnh — nhấn F1 tại trang nào sẽ mở hướng dẫn tương ứng</p>
+<p class="body-text">✅ Tìm kiếm trong trang trợ giúp</p>
+<p class="body-text">✅ Mục "Có gì mới" theo dõi lịch sử cập nhật</p>
+</div>
+<div class="step-card">
+<p class="body-text">✅ <strong>AI Báo cáo định kỳ</strong> — tự động tạo báo cáo tuần/tháng/quý/năm</p>
+<p class="body-text">✅ <strong>AI Tham mưu</strong> — phân tích văn bản đến, đề xuất xử lý</p>
+<p class="body-text">✅ <strong>AI Tóm tắt</strong> — rút gọn văn bản dài thành 10 mục cấu trúc</p>
+<p class="body-text">✅ Xuất Word chuẩn Thông tư 01/2011/TT-BNV</p>
+</div>
+<div class="step-card">
+<p class="body-text">✅ <strong>Cuộc họp</strong> — quản lý, phân công nhiệm vụ, xuất biên bản Word</p>
+<p class="body-text">✅ <strong>Album ảnh</strong> — cấu trúc thư mục theo nghiệp vụ cơ quan</p>
+<p class="body-text">✅ Hỗ trợ 70+ loại cơ quan hành chính</p>
+</div>
+<div class="step-card">
+<p class="body-text">✅ <strong>AI Scan OCR</strong> — nhập văn bản từ ảnh/PDF bằng AI</p>
+<p class="body-text">✅ <strong>AI Kiểm tra văn bản</strong> — soát lỗi chính tả, văn phong, thể thức</p>
+<p class="body-text">✅ Hệ thống tài khoản + gói dịch vụ AI</p>
+</div>
+<div class="step-card">
+<p class="body-text">🎉 Phiên bản đầu tiên — Quản lý văn bản cơ bản</p>
+<p class="body-text">✅ Thêm/sửa/xóa văn bản với 29 loại theo NĐ 30/2020</p>
+<p class="body-text">✅ Cấu trúc thư mục tự động theo cơ quan</p>
+<p class="body-text">✅ <strong>AI Soạn văn bản</strong> — tạo văn bản tự động từ mẫu</p>
+<p class="body-text">✅ Sổ văn bản đi/đến, Sao lưu &amp; Khôi phục</p>
+</div>
+
+<div class="doc-footer">
+  © Ericphan / VanBanPlus 2026 · Tài liệu này được sinh tự động từ <code>HelpPage.xaml</code> qua <code>tools/export_help_to_html.py</code>.
+</div>
+</body>
+</html>
