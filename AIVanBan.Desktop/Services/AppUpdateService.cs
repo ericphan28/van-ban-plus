@@ -104,7 +104,7 @@ public static class AppUpdateService
     }
 
     /// <summary>
-    /// Tự download installer bằng HttpClient (tránh lỗi WinForms ScaleHelper).
+    /// Tự download installer bằng HttpClient + hiển thị cửa sổ tiến trình thân thiện.
     /// </summary>
     private static async Task DownloadAndRunInstallerAsync(UpdateInfoEventArgs args)
     {
@@ -113,29 +113,22 @@ public static class AppUpdateService
         var tempPath = Path.Combine(Path.GetTempPath(), fileName);
         long totalRead = 0;
 
+        // Mở cửa sổ tiến trình
+        var progressWindow = new UpdateProgressWindow(fileName);
+        progressWindow.Owner = Application.Current.MainWindow;
+        progressWindow.Show();
+
         try
         {
-            // Xóa file cũ nếu tồn tại (tránh lock từ lần download trước)
+            // Xóa file cũ nếu tồn tại
             if (File.Exists(tempPath))
             {
-                try { File.Delete(tempPath); }
-                catch { /* Bỏ qua nếu không xóa được */ }
+                try { File.Delete(tempPath); } catch { }
             }
-
-            MessageBox.Show(
-                $"Bắt đầu tải bản cập nhật...\n\n" +
-                $"File: {fileName}\n" +
-                $"Vui lòng đợi trong giây lát.\n\n" +
-                $"Nhấn OK để bắt đầu tải.",
-                $"{AppTitle} - Đang tải cập nhật",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
 
             Console.WriteLine($"[UpdateService] Downloading: {downloadUrl}");
             Console.WriteLine($"[UpdateService] Save to: {tempPath}");
 
-            // Download file — dùng using BLOCK (không phải using var)
-            // để đảm bảo TẤT CẢ streams được đóng TRƯỚC khi chạy installer
             using (var httpClient = new HttpClient())
             {
                 httpClient.Timeout = TimeSpan.FromMinutes(10);
@@ -152,29 +145,48 @@ public static class AppUpdateService
                     {
                         var buffer = new byte[81920];
                         int bytesRead;
+                        var lastUiUpdate = DateTime.UtcNow;
 
                         while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                         {
+                            // Kiểm tra hủy
+                            if (progressWindow.IsCancelled)
+                            {
+                                throw new OperationCanceledException("Người dùng đã hủy tải.");
+                            }
+
                             await fileStream.WriteAsync(buffer, 0, bytesRead);
                             totalRead += bytesRead;
 
-                            if (totalBytes > 0)
+                            // Cập nhật UI tối đa 10 lần/giây để mượt mà mà không lag
+                            var now = DateTime.UtcNow;
+                            if ((now - lastUiUpdate).TotalMilliseconds >= 100)
                             {
-                                var percent = (int)(totalRead * 100 / totalBytes);
-                                if (percent % 10 == 0)
-                                    Console.WriteLine($"[UpdateService] Download progress: {percent}%");
+                                lastUiUpdate = now;
+                                var captured = totalRead;
+                                progressWindow.Dispatcher.Invoke(() =>
+                                    progressWindow.ReportProgress(captured, totalBytes));
                             }
                         }
-                    } // fileStream + contentStream ĐÓNG ở đây
-                } // response ĐÓNG ở đây
-            } // httpClient ĐÓNG ở đây
+                    }
+                }
+            }
+
+            // Update UI lần cuối
+            progressWindow.Dispatcher.Invoke(() =>
+            {
+                progressWindow.ReportProgress(totalRead, totalRead);
+                progressWindow.SetCompleted();
+            });
 
             Console.WriteLine($"[UpdateService] Download completed: {totalRead / 1024.0 / 1024.0:F1} MB");
 
-            // Đợi 1 giây để OS release file lock hoàn toàn
+            // Đợi OS release file lock
             await Task.Delay(1000);
 
-            // Chạy installer — file đã được giải phóng hoàn toàn
+            // Đóng cửa sổ tiến trình trước khi hỏi cài đặt
+            progressWindow.Dispatcher.Invoke(() => progressWindow.Close());
+
             var result = MessageBox.Show(
                 $"Đã tải bản cập nhật thành công!\n\n" +
                 $"File: {fileName}\n" +
@@ -197,11 +209,29 @@ public static class AppUpdateService
                 Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
             }
         }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("[UpdateService] Download cancelled by user.");
+            progressWindow.Dispatcher.Invoke(() => progressWindow.Close());
+            try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+            MessageBox.Show(
+                "Đã hủy tải bản cập nhật.\n\nBạn có thể cập nhật lại bất cứ lúc nào từ menu Trợ giúp → Kiểm tra cập nhật.",
+                $"{AppTitle} - Đã hủy",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"[UpdateService] Download/Install failed: {ex.Message}");
 
-            // Fallback: mở trình duyệt để download
+            try
+            {
+                progressWindow.Dispatcher.Invoke(() => progressWindow.SetError(ex.Message));
+                await Task.Delay(1500);
+                progressWindow.Dispatcher.Invoke(() => progressWindow.Close());
+            }
+            catch { }
+
             var fallbackResult = MessageBox.Show(
                 $"Không thể tải tự động.\n\nLỗi: {ex.Message}\n\n" +
                 $"Bạn có muốn mở trình duyệt để tải thủ công không?",
