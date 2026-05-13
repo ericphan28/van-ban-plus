@@ -4,7 +4,7 @@
 > Copilot/AI agent: **Luôn đọc file này đầu tiên** trước khi làm bất kỳ tính năng nào.
 > Sau khi hoàn thành tính năng: **Cập nhật file này** ngay lập tức.
 >
-> **Phiên bản hiện tại:** v1.0.14 (UI/UX improvements — 2026-06-14)
+> **Phiên bản hiện tại:** v1.0.16 (Cửa sổ tiến trình tải bản cập nhật — 2026-05-14)
 > **Cập nhật lần cuối:** 2026-06-14
 > **Kiến trúc:** WPF .NET 9 + LiteDB + MaterialDesign-in-XAML
 

@@ -57,6 +57,17 @@ public partial class MainWindow : Window
             
             // Initialize SnackbarHelper
             SnackbarHelper.Initialize(MainSnackbar);
+
+            // Hiển thị version động (lấy từ Assembly thay vì hardcode trong XAML)
+            try
+            {
+                var ver = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
+                if (ver != null && txtAppVersion != null)
+                {
+                    txtAppVersion.Text = $"v{ver.Major}.{ver.Minor}.{ver.Build}";
+                }
+            }
+            catch { /* ignore */ }
             
             // Cập nhật trạng thái sidebar AI buttons (lightweight, UI only)
             Console.WriteLine("🔧 Updating AI sidebar state...");

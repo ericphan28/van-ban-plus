@@ -70,11 +70,6 @@ tr:nth-child(even) td { background: #f1f5f9; }
 
 <div class="sheet">
 
-  <div class="doc-header">
-    <div class="quoc-hieu">Cộng hòa Xã hội Chủ nghĩa Việt Nam</div>
-    <div class="tieu-ngu">Độc lập - Tự do - Hạnh phúc</div>
-  </div>
-
   <h1>📘 HƯỚNG DẪN CẬP NHẬT VANBANPLUS</h1>
   <p class="subtitle">Giải đáp 5 vấn đề người dùng phản ánh — Bản cập nhật tháng 5/2026</p>
   <p class="meta">Tài liệu dành cho cán bộ, công chức sử dụng phần mềm VanBanPlus</p>
@@ -86,7 +81,7 @@ tr:nth-child(even) td { background: #f1f5f9; }
       <li><a href="#sec2">Mẫu văn bản</a> — Tăng tốc tải mẫu, Di chuyển vào thư mục</li>
       <li><a href="#sec3">Lịch tổng hợp</a> — Hiển thị ngày tháng tối ưu</li>
       <li><a href="#sec4">Kiểm tra văn bản</a> — Soạn tiếp văn bản hoạt động ra sao</li>
-      <li><a href="#sec5">Quy trình duyệt văn bản</a> — Chi tiết 7 trạng thái</li>
+      <li><a href="#sec5">Trạng thái văn bản &amp; Xóa văn bản</a> — Cách dùng trong app cá nhân</li>
     </ol>
   </div>
 
@@ -100,11 +95,9 @@ tr:nth-child(even) td { background: #f1f5f9; }
     <div class="tip">Xuất Word: vào văn bản → bấm <b>Xuất Word</b>. File mở được bằng MS Word/LibreOffice/Google Docs, sẵn sàng in giấy A4.</div>
 
     <h3>1.2. Trạng thái văn bản — Cập nhật như thế nào?</h3>
-    <p>Hệ thống áp dụng quy trình <b>7 trạng thái</b>. Chi tiết xem <a href="#sec5">mục 5</a>. Tóm tắt:</p>
+    <p>VanBanPlus là <b>app cá nhân chạy trên máy của bạn</b>, nên trạng thái văn bản chỉ dùng để <b>tự đánh dấu tiến độ công việc</b> — không có chuyện trình sếp / chờ duyệt qua hệ thống. Chi tiết xem <a href="#sec5">mục 5</a>. Tóm tắt các trạng thái thường dùng:</p>
     <div class="workflow-flow">
       <span class="step">📝 Nháp</span><span class="arrow">→</span>
-      <span class="step">📤 Trình ký</span><span class="arrow">→</span>
-      <span class="step">✅ Đã duyệt</span><span class="arrow">→</span>
       <span class="step">✍️ Đã ký</span><span class="arrow">→</span>
       <span class="step">📢 Đã phát hành</span><span class="arrow">→</span>
       <span class="step">📨 Đã gửi</span><span class="arrow">→</span>
@@ -114,9 +107,9 @@ tr:nth-child(even) td { background: #f1f5f9; }
       <b>Cách đổi trạng thái:</b>
       <ol>
         <li>Mở văn bản trong <b>Quản lý văn bản</b> → bấm <b>Sửa</b>.</li>
-        <li>Tại mục <b>Trạng thái xử lý</b> → chọn trạng thái kế tiếp.</li>
-        <li>Nhập <b>ý kiến / ghi chú</b> (nếu có) → bấm <b>Lưu</b>.</li>
-        <li>Hệ thống tự ghi <b>nhật ký</b> (ai đổi, đổi từ trạng thái nào, lúc nào).</li>
+        <li>Tại mục <b>Trạng thái xử lý</b> → chọn trạng thái phù hợp với thực tế.</li>
+        <li>Nhập <b>ghi chú</b> (nếu cần nhớ lại sau này) → bấm <b>Lưu</b>.</li>
+        <li>Bạn có thể <b>nhảy thẳng</b> từ Nháp → Đã phát hành nếu thực tế công việc đã xong, không bị bắt đi tuần tự.</li>
       </ol>
     </div>
 
@@ -228,62 +221,58 @@ tr:nth-child(even) td { background: #f1f5f9; }
 
   <!-- ============ SECTION 5 ============ -->
   <div class="section" id="sec5">
-    <h2><span class="badge">5</span> Quy trình duyệt văn bản — Chi tiết 7 trạng thái</h2>
+    <h2><span class="badge">5</span> Trạng thái văn bản &amp; Xóa văn bản</h2>
 
-    <p>Đây là phần quan trọng nhất. Mọi văn bản đi đều phải đi qua các trạng thái sau theo thứ tự:</p>
+    <div class="tip">VanBanPlus là <b>phần mềm cá nhân chạy ngay trên máy tính của bạn</b> (LiteDB nội bộ, không có server, không nhiều người dùng). Vì vậy <b>không có quy trình "trình sếp duyệt"</b> trong app — trạng thái chỉ là <b>nhãn để bạn tự theo dõi</b> tiến độ công việc thực tế ngoài đời.</div>
 
+    <h3>5.1. Ý nghĩa các trạng thái (chỉ là nhãn để bạn đánh dấu)</h3>
     <table>
       <thead>
         <tr>
           <th style="width:5%">#</th>
-          <th style="width:18%">Trạng thái</th>
-          <th>Ý nghĩa</th>
-          <th style="width:22%">Người thực hiện</th>
+          <th style="width:22%">Trạng thái</th>
+          <th>Khi nào bạn nên đặt nhãn này</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>1</td><td><b>📝 Nháp</b><br>(Draft)</td><td>Đang soạn thảo, chưa ai duyệt. <b>Có thể sửa/xóa thoải mái.</b> Văn bản chưa có số, chưa có chữ ký.</td><td><span class="role-tag">Cán bộ soạn thảo</span></td></tr>
-        <tr><td>2</td><td><b>📤 Trình ký</b><br>(PendingApproval)</td><td>Đã gửi cho lãnh đạo xem xét. Đang <b>chờ phản hồi</b> (duyệt/từ chối). Nội dung được khóa, không sửa được.</td><td><span class="role-tag">Cán bộ soạn thảo gửi</span></td></tr>
-        <tr><td>3</td><td><b>✅ Đã duyệt</b><br>(Approved)</td><td>Lãnh đạo <b>đồng ý nội dung</b>. Chờ người có thẩm quyền ký chính thức. Có lưu ý kiến phê duyệt.</td><td><span class="role-tag">Lãnh đạo phòng/đơn vị</span></td></tr>
-        <tr><td>4</td><td><b>✍️ Đã ký</b><br>(Signed)</td><td>Đã có <b>chữ ký</b> (tay hoặc số) của người có thẩm quyền. Chờ Văn thư cấp số &amp; đóng dấu.</td><td><span class="role-tag">Người ký (CT/PCT…)</span></td></tr>
-        <tr><td>5</td><td><b>📢 Đã phát hành</b><br>(Published)</td><td>Văn thư <b>cấp số văn bản</b>, đóng dấu → văn bản chính thức <b>có hiệu lực pháp lý</b>.</td><td><span class="role-tag">Văn thư cơ quan</span></td></tr>
-        <tr><td>6</td><td><b>📨 Đã gửi</b><br>(Sent)</td><td>Đã <b>chuyển đi</b> cho cơ quan/đơn vị nhận (qua bưu điện, eOffice, email…). Có ngày gửi, danh sách nơi nhận.</td><td><span class="role-tag">Văn thư</span></td></tr>
-        <tr><td>7</td><td><b>🗄️ Lưu trữ</b><br>(Archived)</td><td>Văn bản kết thúc vòng đời nghiệp vụ → chuyển vào kho lưu trữ. <b>Đóng hồ sơ, không sửa.</b></td><td><span class="role-tag">Lưu trữ viên</span></td></tr>
+        <tr><td>1</td><td><b>📝 Nháp</b></td><td>Đang soạn dở, chưa hoàn thành.</td></tr>
+        <tr><td>2</td><td><b>📤 Trình ký</b></td><td>Đã in/gửi bản giấy/PDF cho lãnh đạo ký, đang chờ ký ngoài đời.</td></tr>
+        <tr><td>3</td><td><b>✅ Đã duyệt</b></td><td>Lãnh đạo đã đồng ý nội dung (qua trao đổi miệng/giấy), chờ ký chính thức.</td></tr>
+        <tr><td>4</td><td><b>✍️ Đã ký</b></td><td>Văn bản đã có chữ ký của người có thẩm quyền.</td></tr>
+        <tr><td>5</td><td><b>📢 Đã phát hành</b></td><td>Đã được Văn thư cơ quan cấp số, đóng dấu.</td></tr>
+        <tr><td>6</td><td><b>📨 Đã gửi</b></td><td>Đã chuyển đi cho nơi nhận (bưu điện, eOffice, email…).</td></tr>
+        <tr><td>7</td><td><b>🗄️ Lưu trữ</b></td><td>Việc đã xong, đưa vào lưu để tra cứu sau này.</td></tr>
       </tbody>
     </table>
 
-    <h3>5.1. Quyền hạn theo trạng thái</h3>
-    <table>
-      <thead><tr><th>Trạng thái</th><th>Sửa nội dung?</th><th>Xóa?</th><th>Xuất Word?</th><th>Đính chính?</th></tr></thead>
-      <tbody>
-        <tr><td>📝 Nháp</td><td>✅ Được</td><td>✅ Được</td><td>✅ Được</td><td>—</td></tr>
-        <tr><td>📤 Trình ký</td><td>❌ Khóa</td><td>⚠️ Cần thu hồi trước</td><td>✅ Được</td><td>—</td></tr>
-        <tr><td>✅ Đã duyệt</td><td>❌ Khóa</td><td>❌ Không</td><td>✅ Được</td><td>—</td></tr>
-        <tr><td>✍️ Đã ký</td><td>❌ Khóa</td><td>❌ Không</td><td>✅ Được</td><td>—</td></tr>
-        <tr><td>📢 Đã phát hành</td><td>❌ Khóa hoàn toàn</td><td>❌ Không</td><td>✅ Được</td><td>✅ Tạo VB đính chính mới</td></tr>
-        <tr><td>📨 Đã gửi</td><td>❌ Khóa hoàn toàn</td><td>❌ Không</td><td>✅ Được</td><td>✅ Tạo VB đính chính / thu hồi</td></tr>
-        <tr><td>🗄️ Lưu trữ</td><td>❌ Khóa hoàn toàn</td><td>❌ Không</td><td>✅ Chỉ đọc</td><td>—</td></tr>
-      </tbody>
-    </table>
+    <div class="tip">Bạn có thể <b>chuyển thẳng</b> từ trạng thái bất kỳ sang trạng thái bất kỳ — không bắt buộc đi tuần tự. VD: tạo xong văn bản nội bộ in ra ký luôn → chuyển thẳng <b>📝 Nháp → 🗄️ Lưu trữ</b> nếu muốn.</div>
 
-    <h3>5.2. Trường hợp đặc biệt — Trả lại văn bản</h3>
-    <p>Nếu lãnh đạo <b>không đồng ý</b> nội dung khi nhận trình ký:</p>
+    <h3>5.2. Xóa văn bản — Mọi trạng thái đều xóa được</h3>
+    <p>Khác với hệ thống nhiều người dùng, ở đây <b>bạn là chủ duy nhất</b> dữ liệu trên máy mình, nên:</p>
+    <ul>
+      <li>✅ <b>Xóa được ở mọi trạng thái</b> — kể cả Đã ký, Đã phát hành, Lưu trữ.</li>
+      <li>🗑️ Văn bản xóa sẽ vào <b>Thùng rác</b> (không mất ngay), có thể <b>khôi phục lại</b> trong vòng <b>30 ngày</b>.</li>
+      <li>🧹 Sau 30 ngày (hoặc bấm <b>"Xóa vĩnh viễn"</b> trong Thùng rác) → file mới bị xóa hẳn.</li>
+    </ul>
     <div class="step-by-step">
+      <b>Cách xóa:</b>
       <ol>
-        <li>Lãnh đạo bấm <b>"↩️ Trả lại"</b> trong văn bản (trạng thái Trình ký).</li>
-        <li>Nhập <b>lý do trả lại</b> / yêu cầu sửa.</li>
-        <li>Văn bản chuyển về trạng thái <b>📝 Nháp</b> + ghi chú của lãnh đạo.</li>
-        <li>Cán bộ soạn thảo <b>sửa lại</b> theo yêu cầu → <b>Trình ký lại</b>.</li>
+        <li>Trong <b>Quản lý văn bản</b> → cột <b>Thao tác</b> → bấm icon <b>🗑️ Xóa</b>.</li>
+        <li>Hoặc tích chọn nhiều dòng → bấm <b>"Xóa N văn bản"</b> ở thanh hành động.</li>
+        <li>Xác nhận → văn bản chuyển vào <b>Thùng rác</b>.</li>
+      </ol>
+      <b>Khôi phục:</b>
+      <ol>
+        <li>Vào menu <b>Thùng rác</b> ở sidebar.</li>
+        <li>Chọn văn bản → bấm <b>♻️ Khôi phục</b> để đưa lại danh sách chính.</li>
       </ol>
     </div>
 
-    <h3>5.3. Nguyên tắc bất biến</h3>
+    <h3>5.3. Sửa văn bản</h3>
     <ul>
-      <li>🚫 <b>Không thể "nhảy cóc"</b> trạng thái — phải đi tuần tự (trừ Trả lại).</li>
-      <li>📝 Mọi thay đổi trạng thái đều được <b>ghi vào nhật ký</b> (ai, khi nào, từ đâu sang đâu).</li>
-      <li>🔒 Văn bản từ <b>Đã phát hành</b> trở đi <b>không được sửa nội dung</b>.</li>
-      <li>📑 Muốn chỉnh sửa văn bản đã phát hành → phải tạo <b>văn bản đính chính</b> hoặc <b>văn bản thu hồi</b>.</li>
-      <li>👁️ <b>Tất cả</b> người dùng đều xem được lịch sử trạng thái → minh bạch, dễ truy vết.</li>
+      <li>✏️ <b>Sửa được ở mọi trạng thái</b> — phần mềm không khóa nội dung.</li>
+      <li>📜 Tuy nhiên, với văn bản đã <b>Phát hành / Gửi</b> ngoài đời thực, bạn nên cân nhắc: nếu cần đính chính chính thức thì tạo <b>văn bản đính chính riêng</b> theo đúng nghiệp vụ NĐ 30/2020. Còn việc sửa file lưu trên máy là quyền của bạn.</li>
+      <li>🕓 Mỗi lần Lưu, hệ thống tự ghi <b>thời điểm sửa cuối</b> để bạn dễ truy lại.</li>
     </ul>
 
     <div class="tip">Có thể <b>lọc danh sách văn bản theo trạng thái</b> tại trang <b>Quản lý văn bản</b> → bộ lọc <b>"Trạng thái"</b> ở thanh trên cùng.</div>
@@ -292,8 +281,8 @@ tr:nth-child(even) td { background: #f1f5f9; }
   <!-- ============ FOOTER ============ -->
   <div class="footer">
     <p>
-      <b>VanBanPlus</b> — Phần mềm quản lý văn bản hành chính theo Nghị định 30/2020/NĐ-CP<br>
-      Tài liệu cập nhật: tháng 5/2026 — Liên hệ hỗ trợ: <i>(điền email/SĐT của đội phát triển)</i>
+      <b>VanBanPlus</b> — Phần mềm quản lý văn bản hành chính cá nhân, tham chiếu theo Nghị định 30/2020/NĐ-CP<br>
+      Tài liệu cập nhật: tháng 5/2026 — Hỗ trợ kỹ thuật (Zalo lập trình viên): <b>0907.136.029</b>
     </p>
   </div>
 

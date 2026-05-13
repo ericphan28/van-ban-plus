@@ -347,7 +347,7 @@
                                 <materialDesign:PackIcon Kind="NewBox" Width="18" Height="18" 
                                                         VerticalAlignment="Center" Margin="0,0,8,0"
                                                         Foreground="#E53935"/>
-                                <TextBlock Text="Có gì mới? (v1.0.15)" Foreground="#E53935" FontWeight="SemiBold"/>
+                                <TextBlock Text="Có gì mới? (v1.0.16)" Foreground="#E53935" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource TocButton}" Tag="secBackup" Click="TocItem_Click">
@@ -1613,15 +1613,47 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- ════ Version 1.0.15 — Tháng 5/2026 (MỚI NHẤT) ════ -->
+                    <!-- ════ Version 1.0.16 — Tháng 5/2026 (MỚI NHẤT) ════ -->
+                    <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock Text="v1.0.16 — Tháng 5/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                </Border>
+                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
+                                📥 Cửa sổ tiến trình tải bản cập nhật thân thiện
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Thanh tiến trình (ProgressBar)</Bold> hiển thị % tải về thực tế, không còn "im lặng" như trước.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Tốc độ tải</Bold> theo thời gian thực (KB/s hoặc MB/s) + <Bold>thời gian còn lại</Bold> ước tính.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Nút "Hủy"</Bold> cho phép dừng tải bất cứ lúc nào.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Hiển thị dung lượng</Bold> đã tải / tổng (VD: <Italic>33.55 MB / 53.87 MB</Italic>) và trạng thái rõ ràng.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Xử lý lỗi tốt hơn</Bold> — hiện thông báo đỏ trong cửa sổ + đề nghị mở trình duyệt tải thủ công khi mạng có vấn đề.
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                🔢 <Bold>Hiển thị version động</Bold> trên status bar — luôn khớp version thực của ứng dụng (đọc từ Assembly).
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ════ Version 1.0.15 — Tháng 5/2026 ════ -->
                     <Border Style="{StaticResource ChangelogCard}" BorderBrush="#E53935" BorderThickness="2">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#E53935" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
                                     <TextBlock Text="v1.0.15 — Tháng 5/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                </Border>
-                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#BF360C" Margin="4,4,0,4">
