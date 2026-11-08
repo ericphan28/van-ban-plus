@@ -1,0 +1,9 @@
+# tạm của bộ dựng: đệm giọng, ảnh thử, khung hình (có thể vài trăm MB)
+.tam/
+
+# MP4 thành phẩm (~10–15 MB/clip, mỗi lần dựng lại thêm một bản vào lịch sử git) — giữ trên máy + bản đã đăng trên R2
+# (GIKIDI Clip); git giữ kich-ban.md, phu-de.srt, anh-bia.jpg
+*/ra/**/*.mp4
+
+# bản giao riêng cho khách
+gui/

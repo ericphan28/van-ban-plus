@@ -1,0 +1,17 @@
+@font-face{font-family:"BVP";font-weight:600;src:url("file:///D:/Thang/clip-kit/phong/BeVietnamPro-SemiBold.ttf")}
+@font-face{font-family:"BVP";font-weight:700;src:url("file:///D:/Thang/clip-kit/phong/BeVietnamPro-Bold.ttf")}
+@font-face{font-family:"BVP";font-weight:800;src:url("file:///D:/Thang/clip-kit/phong/BeVietnamPro-ExtraBold.ttf")}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow:hidden}
+body{font-family:"BVP",sans-serif;color:#fff;
+  background:radial-gradient(ellipse at 50% 38%,#2b5bd7 0%,#1d4ed8 45%,#1e3a8a 100%)}
+/* tờ văn bản: góc gấp phải trên, dòng chữ giả */
+.to{position:relative;background:#fff;border-radius:calc(var(--s)*.07);width:var(--s);height:calc(var(--s)*1.25);
+  clip-path:polygon(0 0,74% 0,100% 20.8%,100% 100%,0 100%);box-shadow:0 12px 30px rgba(8,20,60,.35)}
+.to::after{content:"";position:absolute;right:0;top:0;width:26%;height:20.8%;background:#bfdbfe;border-bottom-left-radius:calc(var(--s)*.05)}
+.to .ai{position:absolute;left:12%;top:24%;font-weight:800;font-size:calc(var(--s)*.42);line-height:1;letter-spacing:-.03em;color:#1d4ed8}
+.to .d{position:absolute;left:12%;height:calc(var(--s)*.055);border-radius:99px;background:#bfdbfe}
+.sao{position:absolute;color:#fbbf24;filter:drop-shadow(0 6px 14px rgba(8,20,60,.35))}
+.luoi{position:absolute;inset:0;background-image:linear-gradient(rgba(219,234,254,.05) 2px,transparent 2px);background-size:100% 96px}
+/* tờ giấy mờ trang trí (chỉ ngoài vùng an toàn) */
+.mo{position:absolute;border-radius:18px;background:rgba(219,234,254,.09)}
