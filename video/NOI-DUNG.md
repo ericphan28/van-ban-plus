@@ -1,54 +1,49 @@
-# Nội dung clip — <tên sản phẩm>
+# Nội dung clip — VanBanPlus («AI Tạo Văn Bản Hành Chính [GIKIDI]»)
 
-> Phần RIÊNG của dự án cho skill `tao-clip-quang-ba`. Claude đọc hết tệp này trước khi viết lời một clip.
-> Mọi dòng dưới phải đến từ chủ dự án hoặc từ tài liệu / mã đã soát — không đoán. Soát lại khi sản phẩm đổi.
+> Phần RIÊNG của dự án cho skill `tao-clip-quang-ba`. Đọc hết tệp này trước khi viết lời một clip.
+> Chốt với chủ dự án 08/11/2026.
 
 ## 1. Sản phẩm và người xem
 
-- **Sản phẩm:** <một câu: là gì, cho ai, giải quyết việc gì>
-- **Người xem:** <ai lướt tới clip — nghề, tuổi, quen video ngắn không>
-- **Xưng hô cả loạt:** <«bạn» / «thầy cô» / «bà con»…> — trùng `xungHo` trong `du-an.mjs`
-- **Thế mạnh đi trước:** <2–3 mảng nên làm clip trước>
-- **Nơi đăng:** <Reels trang …, TikTok …, Shorts …>
+- **Sản phẩm:** VanBanPlus — phần mềm Windows soạn văn bản hành chính bằng AI cho cá nhân cán bộ, công chức (sổ tay công
+  việc: soạn nháp, kiểm tra, tóm tắt, quản lý văn bản đến/đi, xuất Word thể thức NĐ 30/2020). Tải miễn phí:
+  vanbanplus.giakiemso.com (thanh toán gói chưa mở — không nói giá).
+- **Người xem:** cán bộ, công chức, viên chức, văn thư ở xã, phường, trường học, bệnh viện, cơ quan.
+- **Xưng hô cả loạt:** «anh chị».
+- **Giọng:** Minh Quân PRO (Vbee `hn_male_minhquan_yt_24k-pre`) tốc độ 0.95.
+- **Nơi đăng:** YouTube @gikidi.vanban, Trang Facebook «AI Tạo Văn Bản Hành Chính Gikidi», TikTok @gikidi.vanban.
+  Lịch 2 clip/ngày 05:00 + 18:00 (`clip-dang`, khoá `AIVanBanCaNhan`).
 
 ## 2. Luật riêng của dự án
 
-1. <vd. chỉ dùng dữ liệu tài khoản demo …, không quay khách thật>
-2. <vd. tên sản phẩm đọc thế nào, câu có tên đứng đầu cảnh thứ hai>
+1. Kênh của Công ty Gia Kiệm Số, KHÔNG phải kênh cơ quan nhà nước — câu này có trong mô tả mọi bài đăng.
+2. Không dùng hình Quốc huy (có trong `AIVanBan.Desktop/Assets/app.ico`) trên clip / kênh. Không tên cơ quan thật.
+3. Quy định pháp luật: chỉ nói điều có trong nguyên văn `docs/van-ban-phap-quy/`, chép nguyên văn vào khối SOÁT đầu tệp clip.
+4. Không đọc tên «VanBanPlus» (chỉ trên hình) — tránh phải duyệt cách đọc tên riêng.
 
 ## 3. Tên riêng và chữ viết phòng thủ
 
-| Trên hình | Lời đọc viết | Đã nghe duyệt |
+| Trên hình | Lời đọc viết | Ghi chú |
 |---|---|---|
-| <TÊN> | <cách viết cho máy đọc> | <ngày> |
+| NĐ 30/2020/NĐ-CP | «Nghị định ba mươi» | |
+| mm, cm | «mi li mét», «xen ti mét» | |
+| A4 | «A bốn» | đã nghe ổn 08/11/2026 (clip 02) |
+| Times New Roman, Word | không đọc — chỉ trên hình | |
 
-Chữ Latin (Word, PDF, Excel, Zalo…) chỉ để trên hình; lời đọc dùng từ thuần Việt. Số dễ đọc sai viết bằng chữ.
+## 4. Được nói (sự thật đã soát — PROJECT_STATUS.md mục A, 08/11/2026)
 
-## 4. Được nói (sự thật đã soát)
+- AI soạn bản nháp văn bản hành chính · AI kiểm tra lỗi chính tả, thể thức (`DocumentReviewService`) · AI tóm tắt văn bản
+- Scan ảnh / PDF lấy chữ (OCR) · 41 mẫu văn bản · xuất Word thể thức NĐ 30/2020 · tải miễn phí cho Windows
 
-- <tính năng — nguồn soát: tệp tài liệu / màn hình / mã>
+## 5. Không được nói
 
-## 5. KHÔNG được nói / không được hứa
+- Giá, gói trả phí, «hỗ trợ 24/7», «sao lưu tự động», «chia sẻ nhóm» (chưa kiểm chứng) · «tiết kiệm 3–5 giờ/ngày»
+- Phần mềm tự làm đúng một quy định cụ thể (tự ghi ngày 05, tự căn lề…) khi chưa soát mã · «tốt nhất», «chuẩn 100%»
 
-- Không hứa tuyệt đối: «tốt nhất», «duy nhất», «100%».
-- <tính năng chưa chạy, chứng nhận chưa có, con số chưa đo…>
+## 6. Chữ cần che trên ảnh
 
-## 6. Chữ nhạy cảm trên ảnh — phải che hoặc né
+- Chưa có ảnh chụp màn hình app. Khi chụp: chỉ dữ liệu demo (`SeedDataService`), che khoá API, tên người thật.
 
-| Thấy trên ảnh | Xử lý |
-|---|---|
-| <giờ lệch múi, dòng «DEMO», mã lỗi thô, dữ liệu thật…> | `cheKhai` đúng màu nền / không phóng vùng đó |
+## 8. Loạt
 
-Màu nền đã đo: <trang #…, thẻ #…>
-
-## 7. Ảnh chụp và tài khoản demo
-
-- Ảnh: `video/anh/<đợt>/` — điện thoại 1170×2532 (390×844 @3), máy tính 2360×1760 (1180×880 @2).
-- Cách chụp: <công cụ / lệnh riêng của dự án, hoặc «chủ dự án gửi ảnh»>
-- Tài khoản demo: <tài khoản — vai> (mật khẩu KHÔNG ghi ở đây)
-- Dữ liệu demo đã ghi qua giao diện để chụp: <ngày — việc>
-
-## 8. Clip đã dựng
-
-| Clip | Câu móc | Thời lượng | Ghi chú |
-|---|---|---|---|
+- `the-thuc/` — mẹo thể thức NĐ 30 (kế hoạch: `the-thuc/KE-HOACH.md`).
