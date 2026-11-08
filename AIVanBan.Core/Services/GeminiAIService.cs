@@ -20,6 +20,11 @@ public class GeminiAIService
     private readonly string _fallbackGeminiKey; // Fallback khi VanBanPlus lỗi
     private const string GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
+    // Model dùng khi gọi Gemini TRỰC TIẾP (không qua VanBanPlus API).
+    // Ghi đích danh, không dùng alias "gemini-flash-latest": alias đổi theo Google và ngày 09/11/2026
+    // trỏ tới bản 3.8 đang quá tải (treo, lỗi 503). "gemini-2.5-flash" trả 404 với khóa mới.
+    private const string GEMINI_MODEL = "gemini-3.5-flash";
+
     /// <summary>
     /// Khởi tạo từ AppSettings (khuyến nghị)
     /// </summary>
@@ -84,6 +89,24 @@ public class GeminiAIService
     }
 
     /// <summary>
+    /// Khởi tạo với HttpMessageHandler riêng, không đọc settings.json của máy.
+    /// </summary>
+    internal GeminiAIService(
+        HttpMessageHandler handler,
+        bool useVanBanPlusApi,
+        int[] retryWaitSeconds,
+        TimeSpan textRequestTimeout)
+    {
+        _useVanBanPlusApi = useVanBanPlusApi;
+        _vanBanPlusApiUrl = "https://vanbanplus.invalid";
+        _apiKey = "khoa-thu";
+        _fallbackGeminiKey = "khoa-thu";
+        _retryWaitSeconds = retryWaitSeconds;
+        _textRequestTimeout = textRequestTimeout;
+        _httpClient = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(300) };
+    }
+
+    /// <summary>
     /// Đang dùng VanBanPlus API hay Gemini trực tiếp?
     /// </summary>
     public bool IsUsingVanBanPlusApi => _useVanBanPlusApi;
@@ -93,31 +116,91 @@ public class GeminiAIService
     /// </summary>
     private string GeminiDirectKey => _useVanBanPlusApi ? _fallbackGeminiKey : _apiKey;
 
-    // ===== RETRY HELPER — tự động retry khi 429 (Too Many Requests) =====
+    // ===== RETRY HELPER — tự động retry khi 429 và khi máy chủ AI quá tải tạm thời (502, 503, 504) =====
     private const int MAX_RETRIES = 3;
     private static readonly int[] RETRY_WAIT_SECONDS = { 5, 10, 15 };
+    private readonly int[] _retryWaitSeconds = RETRY_WAIT_SECONDS;
+
+    // Hạn chờ cho gọi AI dạng văn bản. Văn bản đọc từ file vẫn theo HttpClient.Timeout 300 giây.
+    private static readonly TimeSpan TEXT_REQUEST_TIMEOUT = TimeSpan.FromSeconds(150);
+    private readonly TimeSpan _textRequestTimeout = TEXT_REQUEST_TIMEOUT;
 
     /// <summary>
-    /// Gửi HTTP request với retry cho 429 (Rate Limit).
+    /// Gửi HTTP request với retry cho lỗi tạm thời (xem IsTransient).
     /// Dùng chung cho cả VanBanPlus API và Gemini trực tiếp.
+    /// sendFunc được gọi lại mỗi lần thử nên phải tạo request mới mỗi lần.
     /// </summary>
-    private async Task<HttpResponseMessage> SendWithRetryAsync(Func<Task<HttpResponseMessage>> sendFunc)
+    private async Task<HttpResponseMessage> SendWithRetryAsync(
+        Func<Task<HttpResponseMessage>> sendFunc,
+        CancellationToken cancellationToken = default)
     {
         HttpResponseMessage? response = null;
         for (int attempt = 0; attempt < MAX_RETRIES; attempt++)
         {
             response = await sendFunc();
 
-            if ((int)response.StatusCode == 429 && attempt < MAX_RETRIES - 1)
+            if (IsTransient(response) && attempt < MAX_RETRIES - 1)
             {
-                var waitSec = RETRY_WAIT_SECONDS[attempt];
-                Console.WriteLine($"⚠️ 429 Rate Limit — retry {attempt + 1}/{MAX_RETRIES} sau {waitSec}s...");
-                await Task.Delay(waitSec * 1000);
+                var waitSec = _retryWaitSeconds[attempt];
+                Console.WriteLine($"⚠️ HTTP {(int)response.StatusCode} — retry {attempt + 1}/{MAX_RETRIES} sau {waitSec}s...");
+                response.Dispose();
+                await Task.Delay(waitSec * 1000, cancellationToken);
                 continue;
             }
             break;
         }
         return response!;
+    }
+
+    private static bool IsTransient(HttpResponseMessage response) =>
+        (int)response.StatusCode is 429 or 502 or 503 or 504;
+
+    /// <summary>
+    /// Gửi request dạng văn bản: hạn chờ tính chung cho mọi lần thử, hết hạn thì báo lỗi dễ hiểu.
+    /// </summary>
+    private async Task<HttpResponseMessage> SendTextWithRetryAsync(
+        Func<CancellationToken, Task<HttpResponseMessage>> sendFunc)
+    {
+        using var cts = new CancellationTokenSource(_textRequestTimeout);
+        try
+        {
+            return await SendWithRetryAsync(() => sendFunc(cts.Token), cts.Token);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            throw new TimeoutException(
+                $"AI phản hồi quá lâu (hơn {_textRequestTimeout.TotalSeconds:0} giây). Vui lòng thử lại sau ít phút.");
+        }
+    }
+
+    /// <summary>
+    /// Như EnsureSuccessStatusCode, nhưng lỗi quá tải có thông báo dễ hiểu.
+    /// </summary>
+    private static void EnsureAiSuccess(HttpResponseMessage response)
+    {
+        if ((int)response.StatusCode is 502 or 503 or 504)
+        {
+            throw new HttpRequestException(
+                $"Máy chủ AI đang quá tải (mã {(int)response.StatusCode}). Vui lòng thử lại sau ít phút.",
+                null,
+                response.StatusCode);
+        }
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>
+    /// Kiểm tra phản hồi của VanBanPlus API; khóa bị từ chối thì hướng dẫn đăng nhập lại.
+    /// </summary>
+    private static void EnsureVanBanPlusSuccess(HttpResponseMessage response)
+    {
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            throw new HttpRequestException(
+                "Tài khoản VanBanPlus trên máy này không còn hợp lệ (mã 401). Cần bấm «Đăng nhập» để đăng nhập lại.",
+                null,
+                response.StatusCode);
+        }
+        EnsureAiSuccess(response);
     }
 
     /// <summary>
@@ -136,9 +219,9 @@ public class GeminiAIService
                     systemInstruction = systemInstruction
                 };
 
-                var vbpResponse = await SendWithRetryAsync(() =>
-                    _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/generate", body));
-                vbpResponse.EnsureSuccessStatusCode();
+                var vbpResponse = await SendTextWithRetryAsync(ct =>
+                    _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/generate", body, ct));
+                EnsureVanBanPlusSuccess(vbpResponse);
                 var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
                 return vbpResult?.Data?.Content ?? "Không thể tạo nội dung";
             }
@@ -165,14 +248,14 @@ public class GeminiAIService
                 };
             }
 
-            var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
+            var url = $"{GEMINI_API_BASE_URL}/{GEMINI_MODEL}:generateContent?key={GeminiDirectKey}";
 
-            var response = await SendWithRetryAsync(() =>
-                _httpClient.PostAsJsonAsync(url, requestBody));
-            response.EnsureSuccessStatusCode();
+            var response = await SendTextWithRetryAsync(ct =>
+                _httpClient.PostAsJsonAsync(url, requestBody, ct));
+            EnsureAiSuccess(response);
 
             var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
-            
+
             if (result?.Candidates != null && result.Candidates.Length > 0)
             {
                 // Gemini 2.5 trả nhiều parts (thinking + answer) → lấy part cuối
@@ -224,17 +307,18 @@ public class GeminiAIService
             };
         }
 
-        var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:streamGenerateContent?key={GeminiDirectKey}&alt=sse";
+        var url = $"{GEMINI_API_BASE_URL}/{GEMINI_MODEL}:streamGenerateContent?key={GeminiDirectKey}&alt=sse";
         
-        var jsonContent = JsonContent.Create(requestBody);
-        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        // Mỗi lần thử tạo request mới: HttpClient không cho gửi lại một HttpRequestMessage đã gửi.
+        var response = await SendTextWithRetryAsync(ct =>
         {
-            Content = jsonContent
-        };
-
-        var response = await SendWithRetryAsync(() =>
-            _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead));
-        response.EnsureSuccessStatusCode();
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = JsonContent.Create(requestBody)
+            };
+            return _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        });
+        EnsureAiSuccess(response);
 
         var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
@@ -413,7 +497,7 @@ QUY TẮC BẮT BUỘC:
             }
         };
 
-        var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
+        var url = $"{GEMINI_API_BASE_URL}/{GEMINI_MODEL}:generateContent?key={GeminiDirectKey}";
 
         var jsonOptions = new JsonSerializerOptions 
         { 
@@ -426,7 +510,7 @@ QUY TẮC BẮT BUỘC:
 
         var response = await SendWithRetryAsync(() =>
             _httpClient.PostAsync(url, content));
-        response.EnsureSuccessStatusCode();
+        EnsureAiSuccess(response);
 
         var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
 
@@ -498,7 +582,7 @@ QUY TẮC BẮT BUỘC:
                         $"Hãy giảm dung lượng file hoặc chụp ảnh từng trang.");
                 }
                 
-                vbpResponse.EnsureSuccessStatusCode();
+                EnsureVanBanPlusSuccess(vbpResponse);
                 var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
                 var text = vbpResult?.Data?.Content ?? "";
                 return ParseExtractedDocument(text);
@@ -631,7 +715,7 @@ QUY TẮC BẮT BUỘC:
             }
         };
 
-        var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
+        var url = $"{GEMINI_API_BASE_URL}/{GEMINI_MODEL}:generateContent?key={GeminiDirectKey}";
 
         var jsonOptions = new JsonSerializerOptions 
         { 
@@ -642,7 +726,7 @@ QUY TẮC BẮT BUỘC:
 
         var response = await SendWithRetryAsync(() =>
             _httpClient.PostAsync(url, content));
-        response.EnsureSuccessStatusCode();
+        EnsureAiSuccess(response);
 
         var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
 
@@ -694,7 +778,7 @@ QUY TẮC BẮT BUỘC:
             var body = new { base64Data = base64, mimeType };
             var vbpResponse = await SendWithRetryAsync(() =>
                 _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/read-text", body));
-            vbpResponse.EnsureSuccessStatusCode();
+            EnsureVanBanPlusSuccess(vbpResponse);
             var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
             return vbpResult?.Data?.Content ?? "";
         }
@@ -720,14 +804,14 @@ CHỈ trả về nội dung text, KHÔNG thêm giải thích hay markdown.";
             GenerationConfig = new GenerationConfig { Temperature = 0.1, MaxOutputTokens = 16384 }
         };
 
-        var url = $"{GEMINI_API_BASE_URL}/gemini-2.5-flash:generateContent?key={GeminiDirectKey}";
+        var url = $"{GEMINI_API_BASE_URL}/{GEMINI_MODEL}:generateContent?key={GeminiDirectKey}";
         var jsonOptions = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
         var json = JsonSerializer.Serialize(requestBody, jsonOptions);
         var httpContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
         var response = await SendWithRetryAsync(() =>
             _httpClient.PostAsync(url, httpContent));
-        response.EnsureSuccessStatusCode();
+        EnsureAiSuccess(response);
 
         var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
         // Gemini 2.5 trả nhiều parts (thinking + answer) → lấy part cuối
