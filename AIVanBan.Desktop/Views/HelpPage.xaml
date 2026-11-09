@@ -347,7 +347,7 @@
                                 <materialDesign:PackIcon Kind="NewBox" Width="18" Height="18" 
                                                         VerticalAlignment="Center" Margin="0,0,8,0"
                                                         Foreground="#E53935"/>
-                                <TextBlock Text="Có gì mới? (v1.0.16)" Foreground="#E53935" FontWeight="SemiBold"/>
+                                <TextBlock Text="Có gì mới? (v1.0.17)" Foreground="#E53935" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource TocButton}" Tag="secBackup" Click="TocItem_Click">
@@ -1613,15 +1613,38 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- ════ Version 1.0.16 — Tháng 5/2026 (MỚI NHẤT) ════ -->
+                    <!-- ════ Version 1.0.17 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock Text="v1.0.17 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                </Border>
+                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
+                                🤖 Tính năng AI ổn định hơn
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Chuyển sang model AI mới</Bold>, khắc phục lỗi soạn thảo và trích xuất bị treo hoặc không phản hồi
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Tự thử lại</Bold> khi máy chủ AI quá tải tạm thời
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Thông báo lỗi rõ ràng hơn</Bold>: quá tải, chờ quá lâu, hoặc tài khoản cần đăng nhập lại
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ════ Version 1.0.16 — Tháng 5/2026 ════ -->
                     <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
                                     <TextBlock Text="v1.0.16 — Tháng 5/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                </Border>
-                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
