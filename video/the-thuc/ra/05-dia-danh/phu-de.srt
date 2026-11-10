@@ -1,0 +1,39 @@
+1
+00:00:01,100 --> 00:00:04,283
+Địa danh, ngày tháng — trình bày thế nào?
+
+2
+00:00:04,333 --> 00:00:07,365
+Chữ đứng · quên dấu phẩy — chưa đúng
+
+3
+00:00:07,415 --> 00:00:11,573
+Chữ cái đầu của địa danh — viết hoa
+
+4
+00:00:11,623 --> 00:00:15,521
+Sau địa danh — dấu phẩy — rồi đến ngày tháng
+
+5
+00:00:15,571 --> 00:00:19,830
+Chữ thường · nghiêng · cỡ 13–14
+
+6
+00:00:19,880 --> 00:00:24,007
+Đặt dưới · canh giữa so với Quốc hiệu, Tiêu ngữ
+
+7
+00:00:24,057 --> 00:00:30,310
+Phần mềm AI soạn văn bản · tải miễn phí
+
+8
+00:00:30,360 --> 00:00:36,783
+Tóm lại: Chữ đầu địa danh: HOA · Sau địa danh: dấu phẩy · Thường · nghiêng · 13–14
+
+9
+00:00:36,833 --> 00:00:41,745
+…kiểu chữ nghiêng; các chữ cái đầu của địa danh phải viết hoa; sau địa danh có dấu phẩy (,)
+
+10
+00:00:41,795 --> 00:00:47,259
+Nghị định 30/2020/NĐ-CP · Phụ lục I · mục II.4 · điểm c
