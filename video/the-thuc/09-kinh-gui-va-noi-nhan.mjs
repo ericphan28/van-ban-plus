@@ -28,8 +28,8 @@
 //   ✘ KHÔNG giải nghĩa «VT» (Nghị định không giải nghĩa); tên «Sở A», «Sở B», «Sở C», «VP» chỉ là ví dụ minh họa, không tên cơ quan thật.
 //   ✘ KHÔNG nói phần mềm tự trình bày nơi nhận (chưa soát mã).
 // ============================================================================
-import { canhKet, lucNode, chipKhai, goiKhai, mocKhai } from "../kit.mjs";
-import { CSS_CC, NGU_CANH, nguonCau, theNguon, dau, the, veCC } from "./loat.mjs";
+import { canhKet, canhTomTat, lucNode, chipKhai, goiKhai, mocKhai } from "../kit.mjs";
+import { CSS_CC, NGU_CANH, nguonCau, theNguon, dau, the, veCC, theApp } from "./loat.mjs";
 
 /** dòng của bảng «loại văn bản có gì»: ten, kg (Kính gửi: true/false), nn (Nơi nhận: true/false), hien = mốc hiện */
 const dong = (ten, phu, kg, nn, hien, tren) =>
@@ -37,7 +37,7 @@ const dong = (ten, phu, kg, nn, hien, tren) =>
     { tren, hien, lop: "c09-the" });
 
 export default {
-  ten: "09-kinh-gui-noi-nhan",
+  ten: "09-kinh-gui-va-noi-nhan",
   tieuDe: "Thể thức 09 · «Kính gửi» và «Nơi nhận»: loại văn bản nào có cả hai? Cách ghi theo NĐ 30/2020",
   bia: { dong: ["Kính gửi, Nơi nhận:", "loại nào có cả hai?"], vai: "Nghị định 30 · Phụ lục I" },
   ket: {
@@ -64,6 +64,9 @@ export default {
       { loi: "Có Kính gửi, thì Nơi nhận mở đầu bằng, Như trên.", chu: "Có «Kính gửi» → «Nơi nhận» mở đầu bằng *«Như trên»*" },
       { loi: "Rồi các nơi khác, dòng cuối là Lưu.", chu: "Rồi *các nơi khác* · dòng cuối *«Lưu: VT, …»*" },
       { loi: "Quyết định không có Kính gửi, nên Nơi nhận không có Như trên.", chu: "Quyết định: không có «Kính gửi» → *bỏ «Như trên»*", nghiSau: 0.3 },
+    ]},
+    { canh: "app", cau: [
+      { loi: "Soạn văn bản nhanh hơn, có phần mềm dùng trí tuệ nhân tạo của Công ty Gia Kiệm Số, tải miễn phí, đường dẫn trên màn hình.", chu: "Phần mềm AI soạn văn bản · *Công ty Gia Kiệm Số* · *tải miễn phí*", nghiSau: 0.4 },
     ]},
     canhKet([
       { loi: "Phần thứ hai bao gồm từ Nơi nhận, phía dưới là từ Như trên.", chu: "…từ “Nơi nhận”, phía dưới là từ “Như trên”…" },
@@ -143,6 +146,12 @@ export default {
   ${goiKhai("<span><b>«Như trên»</b> = các nơi đã ghi ở «Kính gửi»</span>", { trai: 60, tren: 840, hien: "c0k2", tu: "duoi", rong: 960, lop: "cc-nhan-lon" })}
   ${goiKhai("<span>Dòng cuối: <b>Lưu</b> · VT · đơn vị soạn · số bản · <b>( . )</b></span>", { trai: 60, tren: 960, hien: "c1k1", tu: "duoi", rong: 960, lop: "cc-nhan-lon" })}
   ${goiKhai("<span>Quyết định: <b>bỏ «Như trên»</b> — chỉ liệt kê nơi nhận</span>", { trai: 60, tren: 1080, hien: "c2k1", tu: "duoi", rong: 960, lop: "cc-nhan-lon" })}`,
+    },
+    "app": {
+      khai: true,
+      html: () => `
+  ${chipKhai("🤖 Phần mềm soạn văn bản")}
+  ${theApp("c0k0", true)}`,
     },
   },
 

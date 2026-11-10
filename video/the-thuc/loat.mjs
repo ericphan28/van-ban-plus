@@ -27,8 +27,8 @@ export const so = (khoa, { le = 0, truoc = "", sau = "", dai = 0.8, lop = "", st
   `<span class="${lop}" style="${style}" data-cc="so" data-khoa="${khoa}" data-le="${le}" data-truoc="${truoc}" data-sau="${sau}" data-dai="${dai}">${truoc}${Number(khoa.split("@")[1].split(">")[0])}${sau}</span>`;
 
 /** CẢNH GIỚI THIỆU PHẦN MỀM (cuối mỗi clip, trước Tóm lại): thẻ VanBanPlus + 3 dòng tính năng đã soát */
-export const theApp = (hien) => `<div class="tt-app" data-k="lop" data-hien="${hien}" style="opacity:0">
-  <div class="dau"><i>AI</i><span>VanBanPlus</span></div>
+export const theApp = (hien, cty = false) => `<div class="tt-app" data-k="lop" data-hien="${hien}" style="opacity:0">
+  <div class="dau"><i>AI</i><span>VanBanPlus</span></div>${cty ? `<div class="cty">Sản phẩm của Công ty Gia Kiệm Số</div>` : ""}
   <ul><li>✍️ AI soạn bản nháp văn bản hành chính</li><li>🔎 AI kiểm tra lỗi chính tả, thể thức</li><li>📄 Xuất Word theo thể thức NĐ 30/2020</li></ul>
   <div class="tai">Tải miễn phí cho Windows<br><b>vanbanplus.giakiemso.com</b></div></div>`;
 
@@ -116,6 +116,7 @@ export const CSS_CC = `
 .tt-app{position:absolute;left:70px;top:330px;width:940px;box-sizing:border-box;background:#fff;border-radius:34px;padding:40px 46px;box-shadow:0 18px 34px rgba(15,23,42,.16)}
 .tt-app .dau{display:flex;align-items:center;gap:22px;font-size:64px;font-weight:900;color:#0f172a}
 .tt-app .dau i{font-style:normal;display:flex;align-items:center;justify-content:center;width:96px;height:118px;border-radius:14px;background:var(--mau-chinh);color:#fff;font-size:44px}
+.tt-app .cty{margin-top:14px;font-size:34px;font-weight:800;color:#475569}
 .tt-app ul{list-style:none;margin:30px 0 0;padding:0}
 .tt-app li{font-size:40px;font-weight:700;line-height:1.25;padding:14px 0;border-top:2px solid #eef2ff;color:#1e293b}
 .tt-app .tai{margin-top:26px;padding:22px;border-radius:22px;background:var(--mau-chinh-nhat, #dbeafe);text-align:center;font-size:36px;font-weight:800;color:#334155}
