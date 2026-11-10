@@ -26,9 +26,9 @@ demo phần mềm khi đã chụp màn hình app.
 | 04 | Tên loại IN HOA, trích yếu, đường kẻ 1/3–1/2 dòng | II.5b | hẹn 09/11 18:00 |
 | 05 | Địa danh: chữ cái đầu viết hoa, sau địa danh có dấu phẩy, in nghiêng | II.4c | đăng 10/11 09:00 |
 | 06 | Quốc hiệu cỡ 12–13 in hoa đậm; Tiêu ngữ 13–14, gạch nối có cách chữ | II.1a–b | hẹn 10/11 18:00 |
-| 07 | Từ «Số» chữ thường, sau có dấu hai chấm; số dưới 10 ghi 0 | II.3a, c | chưa làm (11/11 05:00) |
-| 08 | Tên cơ quan ban hành in hoa đậm, đường kẻ 1/3–1/2 | II.2b | chưa làm (11/11 18:00) |
-| 09 | Nơi nhận: chữ nghiêng đậm cỡ 12, danh sách cỡ 11 | II.9d | chưa làm — đọc nguyên văn trước |
-| 10 | Viện dẫn lần đầu phải ghi đủ tên loại, số, ngày, cơ quan, trích yếu | II.6b | chưa làm |
+| 07 | Từ «Số» chữ thường, sau có dấu hai chấm; số dưới 10 ghi 0 | II.3a, c | hẹn 11/11 05:00 |
+| 08 | Tên cơ quan ban hành in hoa đậm, đường kẻ 1/3–1/2 | II.2b | hẹn 11/11 18:00 |
+| 09 | Nơi nhận: chữ nghiêng đậm cỡ 12, danh sách cỡ 11 | II.9d | hẹn 12/11 05:00 (ô 9b; ô 9a «Kính gửi» để clip khác) |
+| 10 | Viện dẫn lần đầu phải ghi đủ tên loại, số, ngày, cơ quan, trích yếu | II.6b | hẹn 12/11 18:00 |
 | 11 | Phụ lục kèm văn bản: «Phụ lục» cỡ 14 đậm, đánh số La Mã | III.1 | chưa làm — đọc nguyên văn trước |
 | 12 | Dấu mức độ khẩn: HỎA TỐC, THƯỢNG KHẨN, KHẨN | III.2b | chưa làm |
