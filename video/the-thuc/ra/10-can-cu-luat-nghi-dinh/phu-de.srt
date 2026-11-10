@@ -1,0 +1,35 @@
+1
+00:00:01,100 --> 00:00:05,432
+Phần «Căn cứ» — viện dẫn Luật, có ghi số, ký hiệu không?
+
+2
+00:00:05,482 --> 00:00:08,155
+Còn viện dẫn Nghị định thì sao?
+
+3
+00:00:08,205 --> 00:00:12,954
+Luật · Pháp lệnh: không ghi số · ký hiệu · cơ quan ban hành
+
+4
+00:00:13,004 --> 00:00:19,527
+Nghị định: ghi đầy đủ — loại · số · ký hiệu · ngày · cơ quan · trích yếu
+
+5
+00:00:19,577 --> 00:00:24,101
+Lần sau: chỉ ghi tên loại · số, ký hiệu
+
+6
+00:00:24,151 --> 00:00:31,690
+Phần mềm AI soạn văn bản · Công ty Gia Kiệm Số · tải miễn phí
+
+7
+00:00:31,740 --> 00:00:38,316
+Tóm lại: Luật: không số, ký hiệu · Nghị định: ghi đủ 6 mục · Lần sau: loại + số, ký hiệu
+
+8
+00:00:38,366 --> 00:00:45,567
+Căn cứ: chữ nghiêng · cuối dòng ( ; ) · dòng cuối ( . )
+
+9
+00:00:45,617 --> 00:00:51,081
+Nghị định 30/2020/NĐ-CP · Phụ lục I · mục II.6 · điểm a, b

@@ -21,8 +21,9 @@ demo phần mềm khi đã chụp màn hình app.
 - Mỗi clip phải có **kiến thức ít người biết hoặc dễ làm sai** (lấy từ chính Nghị định), kèm **ví dụ minh họa trên hình** và **lỗi điển hình**;
   không chỉ đọc lại một điểm của Phụ lục I («cỡ 12–13, in hoa, đậm»).
 - Khuôn: móc là câu hỏi / nghịch lý có đáp án đáng biết → minh họa biến đổi trực tiếp (sai → đúng) → thẻ nguyên văn mang một ý MỚI
-  (đừng đọc lại điều vừa nói). Bỏ cảnh phần mềm + «Tóm lại» khi cần thời lượng (tên VanBanPlus vẫn ở màn kết). Mục tiêu 40–50 s.
+  (đừng đọc lại điều vừa nói). Giữ cảnh phần mềm; «Tóm lại» tuỳ thời lượng. Mục tiêu 47–52 s.
 - Ví dụ giữ chỗ («Sở A», «XÃ A», «VĂN PHÒNG») ghi «ví dụ minh họa» trên hình; không tên cơ quan thật.
+- **BẮT BUỘC mỗi clip (chủ dự án 10/11/2026, «vô cùng quan trọng»): giữ cảnh giới thiệu phần mềm (thẻ VanBanPlus, `theApp("c0k0", true)` có dòng «Sản phẩm của Công ty Gia Kiệm Số», câu đọc nhắc Công ty Gia Kiệm Số + tải miễn phí). KHÔNG được bỏ.** Thời lượng 47–52 s như 01–06, không ngắn hơn.
 - Bảng chữ viết tắt (Phụ lục III) và quy tắc viết hoa (Phụ lục II) còn nhiều chất liệu chưa dùng.
 
 ## Bảng clip
