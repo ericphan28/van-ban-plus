@@ -16,6 +16,15 @@ demo phần mềm khi đã chụp màn hình app.
 - Dựng ở PC (`chay.mjs the-thuc/NN --thu` → MP4), commit `video/` riêng (đừng gộp tệp app đang sửa), đẩy `main` (repo không
   tự triển khai), máy chủ `git pull`, `scp` MP4 vào `ra/NN-…/`, rồi `clip-dang` (chạy `--thu` trước).
 
+## Tiêu chuẩn nội dung (chủ dự án chốt 10/11/2026 sau khi chê clip 07–10 bản đầu «nhàm, ít kiến thức»)
+
+- Mỗi clip phải có **kiến thức ít người biết hoặc dễ làm sai** (lấy từ chính Nghị định), kèm **ví dụ minh họa trên hình** và **lỗi điển hình**;
+  không chỉ đọc lại một điểm của Phụ lục I («cỡ 12–13, in hoa, đậm»).
+- Khuôn: móc là câu hỏi / nghịch lý có đáp án đáng biết → minh họa biến đổi trực tiếp (sai → đúng) → thẻ nguyên văn mang một ý MỚI
+  (đừng đọc lại điều vừa nói). Bỏ cảnh phần mềm + «Tóm lại» khi cần thời lượng (tên VanBanPlus vẫn ở màn kết). Mục tiêu 40–50 s.
+- Ví dụ giữ chỗ («Sở A», «XÃ A», «VĂN PHÒNG») ghi «ví dụ minh họa» trên hình; không tên cơ quan thật.
+- Bảng chữ viết tắt (Phụ lục III) và quy tắc viết hoa (Phụ lục II) còn nhiều chất liệu chưa dùng.
+
 ## Bảng clip
 
 | NN | Đề tài | Nguồn | Trạng thái |
@@ -26,9 +35,9 @@ demo phần mềm khi đã chụp màn hình app.
 | 04 | Tên loại IN HOA, trích yếu, đường kẻ 1/3–1/2 dòng | II.5b | hẹn 09/11 18:00 |
 | 05 | Địa danh: chữ cái đầu viết hoa, sau địa danh có dấu phẩy, in nghiêng | II.4c | đăng 10/11 09:00 |
 | 06 | Quốc hiệu cỡ 12–13 in hoa đậm; Tiêu ngữ 13–14, gạch nối có cách chữ | II.1a–b | hẹn 10/11 18:00 |
-| 07 | Từ «Số» chữ thường, sau có dấu hai chấm; số dưới 10 ghi 0 | II.3a, c | hẹn 11/11 05:00 |
-| 08 | Tên cơ quan ban hành in hoa đậm, đường kẻ 1/3–1/2 | II.2b | hẹn 11/11 18:00 |
-| 09 | Nơi nhận: chữ nghiêng đậm cỡ 12, danh sách cỡ 11 | II.9d | hẹn 12/11 05:00 (ô 9b; ô 9a «Kính gửi» để clip khác) |
-| 10 | Viện dẫn lần đầu phải ghi đủ tên loại, số, ngày, cơ quan, trích yếu | II.6b | hẹn 12/11 18:00 |
+| 07 | Chữ viết tắt TTr · CTr · QyĐ (QĐ ≠ QyĐ) + dòng «Số:» đúng + số chạy theo năm (làm lại 10/11: bản cũ «5 hay 05?» nhàm) | Phụ lục III, II.3c, Điều 15 | hẹn 11/11 05:00 |
+| 08 | Hai dòng tên cơ quan: dòng nào được viết tắt, dòng nào phải đầy đủ (làm lại 10/11) | II.2a, b | hẹn 11/11 18:00 |
+| 09 | «Kính gửi» và «Nơi nhận»: loại nào có cả hai, cách ghi một nơi / nhiều nơi, «Như trên» (làm lại 10/11) | II.9b, c, d | hẹn 12/11 05:00 |
+| 10 | Căn cứ và viện dẫn: Luật không ghi số, ký hiệu; Nghị định ghi đủ; lần sau ghi gọn; ; và . (làm lại 10/11) | II.6a, b | hẹn 12/11 18:00 |
 | 11 | Phụ lục kèm văn bản: «Phụ lục» cỡ 14 đậm, đánh số La Mã | III.1 | chưa làm — đọc nguyên văn trước |
 | 12 | Dấu mức độ khẩn: HỎA TỐC, THƯỢNG KHẨN, KHẨN | III.2b | chưa làm |
