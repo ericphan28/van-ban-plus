@@ -1,0 +1,35 @@
+1
+00:00:01,100 --> 00:00:05,115
+Ký văn bản — trước họ tên ghi «TS.», «ThS.»?
+
+2
+00:00:05,165 --> 00:00:08,152
+Còn giáo viên, bác sĩ thì sao?
+
+3
+00:00:08,202 --> 00:00:13,161
+Trước họ tên: không ghi học hàm · học vị · danh hiệu
+
+4
+00:00:13,211 --> 00:00:16,353
+Họ tên = họ + tên đệm (nếu có) + tên
+
+5
+00:00:16,403 --> 00:00:23,121
+Riêng 4 loại đơn vị: do cơ quan quản lý ngành quy định
+
+6
+00:00:23,171 --> 00:00:28,705
+Chức vụ: lãnh đạo chính thức · không ghi chức vụ Nhà nước không quy định
+
+7
+00:00:28,755 --> 00:00:36,294
+Phần mềm AI soạn văn bản · Công ty Gia Kiệm Số · tải miễn phí
+
+8
+00:00:36,344 --> 00:00:41,613
+Tổ chức tư vấn không dùng con dấu cơ quan → chỉ ghi chức danh trong tổ chức tư vấn
+
+9
+00:00:41,663 --> 00:00:47,127
+Nghị định 30/2020/NĐ-CP · Phụ lục I · mục II.7 · điểm c

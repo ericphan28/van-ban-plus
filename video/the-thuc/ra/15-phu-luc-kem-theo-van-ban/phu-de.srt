@@ -1,0 +1,39 @@
+1
+00:00:01,100 --> 00:00:05,397
+2 phụ lục — đánh số 1, 2 hay I, II?
+
+2
+00:00:05,447 --> 00:00:09,025
+Số trang phụ lục — đánh tiếp hay đánh riêng?
+
+3
+00:00:09,075 --> 00:00:13,152
+Từ 2 phụ lục trở lên → số thứ tự bằng chữ số La Mã
+
+4
+00:00:13,202 --> 00:00:16,295
+Trong văn bản phải có chỉ dẫn về phụ lục
+
+5
+00:00:16,345 --> 00:00:20,571
+Số trang phụ lục: đánh riêng theo từng phụ lục
+
+6
+00:00:20,621 --> 00:00:26,817
+Dưới tên phụ lục: dòng «Kèm theo…» — số · ngày · cơ quan · chữ nghiêng
+
+7
+00:00:26,867 --> 00:00:31,368
+Văn bản giấy: điền đủ · văn bản điện tử: không phải điền
+
+8
+00:00:31,418 --> 00:00:38,957
+Phần mềm AI soạn văn bản · Công ty Gia Kiệm Số · tải miễn phí
+
+9
+00:00:39,007 --> 00:00:44,899
+«Phụ lục» + số thứ tự: một dòng riêng · canh giữa · đậm · tên phụ lục IN HOA
+
+10
+00:00:44,949 --> 00:00:50,413
+Nghị định 30/2020/NĐ-CP · Phụ lục I · mục III.1 · điểm b

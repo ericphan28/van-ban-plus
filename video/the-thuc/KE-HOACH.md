@@ -40,5 +40,9 @@ demo phần mềm khi đã chụp màn hình app.
 | 08 | Hai dòng tên cơ quan: dòng nào được viết tắt, dòng nào phải đầy đủ (làm lại 10/11) | II.2a, b | hẹn 11/11 10:00 |
 | 09 | «Kính gửi» và «Nơi nhận»: loại nào có cả hai, cách ghi một nơi / nhiều nơi, «Như trên» (làm lại 10/11) | II.9b, c, d | hẹn 11/11 17:00 |
 | 10 | Căn cứ và viện dẫn: Luật không ghi số, ký hiệu; Nghị định ghi đủ; lần sau ghi gọn; ; và . (làm lại 10/11) | II.6a, b | hẹn 12/11 05:00 |
-| 11 | Phụ lục kèm văn bản: «Phụ lục» cỡ 14 đậm, đánh số La Mã | III.1 | chưa làm — đọc nguyên văn trước |
-| 12 | Dấu mức độ khẩn: HỎA TỐC, THƯỢNG KHẨN, KHẨN | III.2b | chưa làm |
+| 11 | Ký thay: TM., Q., KT., TL., TUQ. khác nhau thế nào | II.7b, đ | hẹn 12/11 10:00 |
+| 12 | Ký tên có được ghi «TS.», «ThS.» trước họ tên không (ngoại lệ giáo dục, y tế); chức vụ chính thức; tổ chức tư vấn | II.7c | hẹn 12/11 17:00 |
+| 13 | Viết hoa: tháng Năm, thứ Hai, tết Nguyên đán / Tết, Nhân dân, Nhà nước, chức vụ đi liền tên; Quận 1 | Phụ lục II mục V, III.1b | hẹn 13/11 05:00 |
+| 14 | Văn bản khẩn: ai quyết định, ba con dấu 30:40:20 × 8 mm, mực đỏ tươi, phạm vi lưu hành, độ mật | III.2 | hẹn 13/11 10:00 |
+| 15 | Phụ lục kèm theo: số La Mã, số trang riêng, dòng «Kèm theo…», giấy / điện tử | III.1 | hẹn 13/11 17:00 |
+| 16 | Chữ ký số: chữ ký xanh, dấu đỏ trùm 1/3 về bên trái, văn bản kèm theo không cùng tệp | II.7d, II.8 | hẹn 14/11 05:00 |
