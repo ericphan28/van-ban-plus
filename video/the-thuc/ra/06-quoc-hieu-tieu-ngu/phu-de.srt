@@ -1,0 +1,39 @@
+1
+00:00:01,100 --> 00:00:04,401
+Tiêu ngữ — gạch nối viết liền hay có cách?
+
+2
+00:00:04,451 --> 00:00:07,032
+Viết liền — chưa đúng
+
+3
+00:00:07,082 --> 00:00:11,078
+Giữa các cụm từ: gạch nối — có cách chữ
+
+4
+00:00:11,128 --> 00:00:16,293
+Chữ đầu cụm viết hoa · kẻ dưới dài bằng dòng chữ
+
+5
+00:00:16,343 --> 00:00:20,859
+Quốc hiệu: IN HOA · đứng · đậm · cỡ 12–13
+
+6
+00:00:20,909 --> 00:00:25,582
+Tiêu ngữ: chữ thường · đứng · đậm · cỡ 13–14
+
+7
+00:00:25,632 --> 00:00:31,885
+Phần mềm AI soạn văn bản · tải miễn phí
+
+8
+00:00:31,935 --> 00:00:39,019
+Tóm lại: Quốc hiệu: HOA · 12–13 · Tiêu ngữ: đậm · 13–14 · Gạch nối có cách chữ
+
+9
+00:00:39,069 --> 00:00:44,223
+…chữ cái đầu của các cụm từ được viết hoa, giữa các cụm từ có gạch nối (-), có cách chữ
+
+10
+00:00:44,273 --> 00:00:49,737
+Nghị định 30/2020/NĐ-CP · Phụ lục I · mục II.1 · điểm a, b

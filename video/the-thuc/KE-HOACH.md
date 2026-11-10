@@ -24,8 +24,8 @@ demo phần mềm khi đã chụp màn hình app.
 | 02 | Căn lề A4: trái 30–35, phải 15–20, trên dưới 20–25 mm | I.1–I.4 | hẹn 08/11 18:00 |
 | 03 | Số trang: giữa lề trên, trang 1 không hiện số | I.7 | hẹn 09/11 05:00 |
 | 04 | Tên loại IN HOA, trích yếu, đường kẻ 1/3–1/2 dòng | II.5b | hẹn 09/11 18:00 |
-| 05 | Địa danh: chữ cái đầu viết hoa, sau địa danh có dấu phẩy, in nghiêng | II.4c | hẹn 10/11 09:00 |
-| 06 | Quốc hiệu cỡ 12–13 in hoa đậm; Tiêu ngữ 13–14, gạch nối có cách chữ | II.1a–b | chưa làm (10/11 18:00) |
+| 05 | Địa danh: chữ cái đầu viết hoa, sau địa danh có dấu phẩy, in nghiêng | II.4c | đăng 10/11 09:00 |
+| 06 | Quốc hiệu cỡ 12–13 in hoa đậm; Tiêu ngữ 13–14, gạch nối có cách chữ | II.1a–b | hẹn 10/11 18:00 |
 | 07 | Từ «Số» chữ thường, sau có dấu hai chấm; số dưới 10 ghi 0 | II.3a, c | chưa làm (11/11 05:00) |
 | 08 | Tên cơ quan ban hành in hoa đậm, đường kẻ 1/3–1/2 | II.2b | chưa làm (11/11 18:00) |
 | 09 | Nơi nhận: chữ nghiêng đậm cỡ 12, danh sách cỡ 11 | II.9d | chưa làm — đọc nguyên văn trước |
