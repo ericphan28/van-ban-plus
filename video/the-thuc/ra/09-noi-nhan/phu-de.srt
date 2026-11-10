@@ -1,0 +1,39 @@
+1
+00:00:01,100 --> 00:00:04,333
+«Nơi nhận» — in nghiêng hay in đậm?
+
+2
+00:00:04,383 --> 00:00:07,387
+Cả hai — nghiêng và đậm
+
+3
+00:00:07,437 --> 00:00:13,142
+«Nơi nhận» một dòng riêng · sát lề trái · sau có dấu hai chấm
+
+4
+00:00:13,192 --> 00:00:17,288
+Chữ in thường · cỡ 12 · nghiêng, đậm
+
+5
+00:00:17,338 --> 00:00:21,258
+Danh sách: chữ đứng · cỡ 11 · mỗi nơi một dòng
+
+6
+00:00:21,308 --> 00:00:26,383
+Đầu dòng ( - ) · cuối dòng ( ; ) · dòng cuối «Lưu»
+
+7
+00:00:26,433 --> 00:00:32,686
+Phần mềm AI soạn văn bản · tải miễn phí
+
+8
+00:00:32,736 --> 00:00:38,637
+Tóm lại: Nơi nhận: 12 · nghiêng đậm · Danh sách: đứng · cỡ 11 · Dòng cuối: «Lưu: VT, …»
+
+9
+00:00:38,687 --> 00:00:45,975
+Từ “Nơi nhận” được trình bày trên một dòng riêng (…), sau có dấu hai chấm (:), bằng chữ in thường, cỡ chữ 12, kiểu chữ nghiêng, đậm
+
+10
+00:00:46,025 --> 00:00:51,489
+Nghị định 30/2020/NĐ-CP · Phụ lục I · mục II.9 · điểm d
