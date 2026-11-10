@@ -1,6 +1,6 @@
 # Loạt «Thể thức văn bản — Nghị định 30/2020» (video/the-thuc/)
 
-Chủ dự án chốt 08/11/2026: kênh riêng «AI Tạo Văn Bản Hành Chính [GIKIDI]», **2 clip/ngày lúc 05:00 và 18:00** (riêng 08/11:
+Chủ dự án chốt 08/11/2026: kênh riêng «AI Tạo Văn Bản Hành Chính [GIKIDI]», **từ 11/11/2026: 3 clip/ngày lúc 05:00, 10:00, 17:00** (trước đó 2 clip/ngày 05:00 + 18:00) (riêng 08/11:
 12:00 + 18:00), đăng YouTube + Trang Facebook + TikTok bằng `clip-dang AIVanBanCaNhan the-thuc/NN --luc "YYYY-MM-DD HH:MM" …`.
 Hướng nội dung: mẹo thể thức NĐ 30 (mỗi clip MỘT quy định, đối chiếu nguyên văn) + cảnh giới thiệu VanBanPlus; xen clip
 demo phần mềm khi đã chụp màn hình app.
@@ -37,8 +37,8 @@ demo phần mềm khi đã chụp màn hình app.
 | 05 | Địa danh: chữ cái đầu viết hoa, sau địa danh có dấu phẩy, in nghiêng | II.4c | đăng 10/11 09:00 |
 | 06 | Quốc hiệu cỡ 12–13 in hoa đậm; Tiêu ngữ 13–14, gạch nối có cách chữ | II.1a–b | hẹn 10/11 18:00 |
 | 07 | Chữ viết tắt TTr · CTr · QyĐ (QĐ ≠ QyĐ) + dòng «Số:» đúng + số chạy theo năm (làm lại 10/11: bản cũ «5 hay 05?» nhàm) | Phụ lục III, II.3c, Điều 15 | hẹn 11/11 05:00 |
-| 08 | Hai dòng tên cơ quan: dòng nào được viết tắt, dòng nào phải đầy đủ (làm lại 10/11) | II.2a, b | hẹn 11/11 18:00 |
-| 09 | «Kính gửi» và «Nơi nhận»: loại nào có cả hai, cách ghi một nơi / nhiều nơi, «Như trên» (làm lại 10/11) | II.9b, c, d | hẹn 12/11 05:00 |
-| 10 | Căn cứ và viện dẫn: Luật không ghi số, ký hiệu; Nghị định ghi đủ; lần sau ghi gọn; ; và . (làm lại 10/11) | II.6a, b | hẹn 12/11 18:00 |
+| 08 | Hai dòng tên cơ quan: dòng nào được viết tắt, dòng nào phải đầy đủ (làm lại 10/11) | II.2a, b | hẹn 11/11 10:00 |
+| 09 | «Kính gửi» và «Nơi nhận»: loại nào có cả hai, cách ghi một nơi / nhiều nơi, «Như trên» (làm lại 10/11) | II.9b, c, d | hẹn 11/11 17:00 |
+| 10 | Căn cứ và viện dẫn: Luật không ghi số, ký hiệu; Nghị định ghi đủ; lần sau ghi gọn; ; và . (làm lại 10/11) | II.6a, b | hẹn 12/11 05:00 |
 | 11 | Phụ lục kèm văn bản: «Phụ lục» cỡ 14 đậm, đánh số La Mã | III.1 | chưa làm — đọc nguyên văn trước |
 | 12 | Dấu mức độ khẩn: HỎA TỐC, THƯỢNG KHẨN, KHẨN | III.2b | chưa làm |
