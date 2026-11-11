@@ -1,0 +1,39 @@
+1
+00:00:01,100 --> 00:00:05,273
+Hồ sơ công việc — bao lâu phải nộp lưu? — nghỉ hưu bàn giao gì?
+
+2
+00:00:05,323 --> 00:00:08,362
+Nghị định 30 có thời hạn cụ thể
+
+3
+00:00:08,412 --> 00:00:13,268
+Xây dựng cơ bản: 3 tháng từ ngày quyết toán
+
+4
+00:00:13,318 --> 00:00:17,849
+Hồ sơ khác: 1 năm từ ngày công việc kết thúc
+
+5
+00:00:17,899 --> 00:00:22,045
+Bảo quản từ 5 năm → phải nộp lưu
+
+6
+00:00:22,095 --> 00:00:26,472
+Hồ sơ giấy: 2 bản mục lục · 2 bản biên bản giao nhận
+
+7
+00:00:26,522 --> 00:00:32,380
+Giữ lại hồ sơ đến hạn: văn bản đồng ý · không quá 2 năm
+
+8
+00:00:32,430 --> 00:00:39,969
+Phần mềm AI soạn văn bản · Công ty Gia Kiệm Số · tải miễn phí
+
+9
+00:00:40,019 --> 00:00:46,170
+Nghỉ hưu · thôi việc · chuyển công tác · đi học dài ngày → bàn giao toàn bộ hồ sơ
+
+10
+00:00:46,220 --> 00:00:51,967
+Nghị định 30/2020/NĐ-CP · Điều 31 · khoản 3 · điểm đ

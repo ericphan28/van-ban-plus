@@ -52,3 +52,9 @@ demo phần mềm khi đã chụp màn hình app.
 | 20 | Sao y, sao lục, trích sao khác nhau; giá trị pháp lý như bản chính; thẩm quyền sao | Điều 3, 25, 26, 27 | hẹn 15/11 10:00 |
 | 21 | Thụt đầu dòng 1 / 1,27 cm, giãn đoạn ≥ 6pt, giãn dòng đơn → 1,5 lines, điểm a) b) c) d) đ) | Phụ lục I II.6 | hẹn 15/11 17:00 |
 | 22 | Viết hoa tên cơ quan, địa danh (Sở Tài chính, thành phố Thái Nguyên, sông Vàm Cỏ…), tên nước ngoài viết tắt | Phụ lục II III, IV | hẹn 16/11 05:00 |
+| 23 | Soạn, duyệt, kiểm tra bản thảo: ai chịu trách nhiệm nội dung, ai thể thức | Điều 10–12 | hẹn 16/11 10:00 |
+| 24 | Con dấu: Văn thư giữ, giao dấu phải có phép + biên bản, không đóng dấu trước ký sau, tự bảo quản khóa bí mật | Điều 32 | hẹn 16/11 17:00 |
+| 25 | Dấu giáp lai giữa mép phải, tối đa 5 tờ/dấu; dấu lên phụ lục; dấu treo/nổi do người đứng đầu quy định | Điều 33 | hẹn 17/11 05:00 |
+| 26 | Kết thúc hồ sơ: loại bản trùng, bản nháp; đánh số tờ (từ 5 năm); mục lục (vĩnh viễn); biên mục điện tử | Điều 29 khoản 4 | hẹn 17/11 10:00 |
+| 27 | Nộp lưu: 3 tháng (XDCB) / 1 năm; giữ lại không quá 2 năm; nghỉ hưu, chuyển công tác phải bàn giao hồ sơ | Điều 30, 31 | hẹn 17/11 17:00 |
+| 28 | Danh mục hồ sơ: hồ sơ ngoài Danh mục tự xác định 5 thông tin; mở hồ sơ; cập nhật phim, ảnh, ghi âm | Điều 28, 29 | hẹn 18/11 05:00 |
