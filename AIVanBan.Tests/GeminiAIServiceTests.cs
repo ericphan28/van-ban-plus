@@ -18,6 +18,7 @@ public class GeminiAIServiceTests
         private readonly Queue<(HttpStatusCode Ma, string Noi)> _phanHoi;
         private readonly bool _treo;
         public List<string> Urls { get; } = new();
+        public List<string> Bodies { get; } = new();
 
         public HandlerGia(params (HttpStatusCode, string)[] phanHoi)
         {
@@ -36,6 +37,7 @@ public class GeminiAIServiceTests
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Urls.Add(request.RequestUri!.ToString());
+            Bodies.Add(request.Content == null ? "" : await request.Content.ReadAsStringAsync(cancellationToken));
             if (_treo)
                 await Task.Delay(Timeout.Infinite, cancellationToken);
 
@@ -186,6 +188,38 @@ public class GeminiAIServiceTests
         {
             File.Delete(tep);
         }
+    }
+
+    [Fact]
+    public async Task VanBanPlus_GhepTrang_GuiMotYeuCauQuaApiVoiDuCacTrang()
+    {
+        var noiDung = System.Text.Json.JsonSerializer.Serialize(
+            """{"so_van_ban":"15/GM-UBND","loai_van_ban":"GiayMoi","noi_dung":"trang 1\ntrang 2"}""");
+        var handler = new HandlerGia((HttpStatusCode.OK, "{\"success\":true,\"data\":{\"content\":" + noiDung + "}}"));
+        var trang = new List<(string, string)> { ("AQID", "image/png"), ("BAUG", "image/jpeg") };
+
+        var ketQua = await TaoService(handler, quaVanBanPlus: true).ExtractDocumentFromMultipleFilesAsync(trang);
+
+        Assert.Equal("15/GM-UBND", ketQua.SoVanBan);
+        Assert.Single(handler.Urls);
+        Assert.EndsWith("/api/ai/extract", handler.Urls[0]);
+        using var body = System.Text.Json.JsonDocument.Parse(handler.Bodies[0]);
+        var files = body.RootElement.GetProperty("files");
+        Assert.Equal(2, files.GetArrayLength());
+        Assert.Equal("BAUG", files[1].GetProperty("base64Data").GetString());
+        Assert.Equal("image/jpeg", files[1].GetProperty("mimeType").GetString());
+    }
+
+    [Fact]
+    public async Task VanBanPlus_GhepTrang_QuaLon_BaoGioiHan20MB()
+    {
+        var handler = new HandlerGia((HttpStatusCode.RequestEntityTooLarge, """{"success":false}"""));
+        var trang = new List<(string, string)> { ("AQID", "image/png"), ("BAUG", "image/png") };
+
+        var loi = await Assert.ThrowsAsync<Exception>(
+            () => TaoService(handler, quaVanBanPlus: true).ExtractDocumentFromMultipleFilesAsync(trang));
+
+        Assert.Contains("20 MB", loi.Message);
     }
 
     [Fact]

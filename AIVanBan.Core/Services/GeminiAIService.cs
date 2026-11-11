@@ -395,9 +395,16 @@ public class GeminiAIService
         
         try
         {
-            // ===== VanBanPlus API mode — gửi từng file qua API rồi merge =====
-            // (API hiện tại chỉ hỗ trợ 1 file/request, nên ta ưu tiên Gemini direct cho multi-file)
-            
+            // ===== VanBanPlus API mode — gửi mọi trang trong 1 yêu cầu (files[]) =====
+            if (_useVanBanPlusApi)
+            {
+                var body = new
+                {
+                    files = files.Select(f => new { base64Data = f.Base64, mimeType = f.MimeType }).ToArray()
+                };
+                return await PostVanBanPlusExtractAsync(body, files.Sum(f => (long)f.Base64.Length));
+            }
+
             // ===== Gemini trực tiếp — gửi nhiều inline_data trong 1 request =====
             return await CallGeminiDirectMultiExtractAsync(files);
         }
@@ -405,6 +412,28 @@ public class GeminiAIService
         {
             throw new Exception($"Lỗi khi trích xuất nhiều file bằng AI: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Gửi yêu cầu trích xuất (một tệp hoặc files[]) tới VanBanPlus API.
+    /// </summary>
+    private async Task<ExtractedDocumentData> PostVanBanPlusExtractAsync(object body, long base64Length)
+    {
+        var vbpResponse = await SendWithRetryAsync(() =>
+            _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body));
+
+        // 413: tổng dung lượng vượt giới hạn máy chủ (20 MB)
+        if (vbpResponse.StatusCode == System.Net.HttpStatusCode.RequestEntityTooLarge)
+        {
+            var sizeMB = base64Length * 3.0 / 4.0 / 1024.0 / 1024.0;
+            throw new Exception(
+                $"File quá lớn (~{sizeMB:F1} MB). Máy chủ chỉ nhận tối đa 20 MB mỗi lần gửi. " +
+                "Cần giảm dung lượng ảnh hoặc chia ít trang hơn.");
+        }
+
+        EnsureVanBanPlusSuccess(vbpResponse);
+        var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
+        return ParseExtractedDocument(vbpResult?.Data?.Content ?? "");
     }
 
     /// <summary>
@@ -569,23 +598,7 @@ QUY TẮC BẮT BUỘC:
             // ===== VanBanPlus API mode =====
             if (_useVanBanPlusApi)
             {
-                var body = new { base64Data, mimeType };
-                var vbpResponse = await SendWithRetryAsync(() =>
-                    _httpClient.PostAsJsonAsync($"{_vanBanPlusApiUrl}/api/ai/extract", body));
-                
-                // Xử lý lỗi 413 (file quá lớn cho server)
-                if (vbpResponse.StatusCode == System.Net.HttpStatusCode.RequestEntityTooLarge)
-                {
-                    var sizeMB = base64Data.Length * 3.0 / 4.0 / 1024.0 / 1024.0;
-                    throw new Exception(
-                        $"File quá lớn (~{sizeMB:F1} MB). Máy chủ chỉ hỗ trợ tối đa 4.5MB mỗi lần gửi. " +
-                        $"Hãy giảm dung lượng file hoặc chụp ảnh từng trang.");
-                }
-                
-                EnsureVanBanPlusSuccess(vbpResponse);
-                var vbpResult = await vbpResponse.Content.ReadFromJsonAsync<VanBanPlusAIResponse>();
-                var text = vbpResult?.Data?.Content ?? "";
-                return ParseExtractedDocument(text);
+                return await PostVanBanPlusExtractAsync(new { base64Data, mimeType }, base64Data.Length);
             }
 
             // ===== Gemini trực tiếp (với retry) =====
