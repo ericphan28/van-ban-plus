@@ -1,0 +1,39 @@
+1
+00:00:01,100 --> 00:00:06,321
+Soạn văn bản — thụt đầu dòng · giãn dòng · giãn đoạn bao nhiêu?
+
+2
+00:00:06,371 --> 00:00:09,370
+Nghị định 30 có số cụ thể
+
+3
+00:00:09,420 --> 00:00:14,224
+Nội dung: chữ thường · canh đều hai lề · cỡ 13–14
+
+4
+00:00:14,274 --> 00:00:19,534
+Xuống dòng: lùi vào 1 cm hoặc 1,27 cm
+
+5
+00:00:19,584 --> 00:00:22,908
+Giữa các đoạn văn: tối thiểu 6 pt
+
+6
+00:00:22,958 --> 00:00:27,346
+Giữa các dòng: tối thiểu dòng đơn · tối đa 1,5 lines
+
+7
+00:00:27,396 --> 00:00:33,331
+Điểm: chữ cái tiếng Việt + dấu ) — sau d là đ
+
+8
+00:00:33,381 --> 00:00:40,620
+Phần mềm AI soạn văn bản · Công ty Gia Kiệm Số · tải miễn phí
+
+9
+00:00:40,670 --> 00:00:46,942
+«Điều»: lùi đầu dòng · số Ả Rập + dấu chấm · đứng · đậm
+
+10
+00:00:46,992 --> 00:00:52,456
+Nghị định 30/2020/NĐ-CP · Phụ lục I · mục II.6 · điểm đ

@@ -1,0 +1,39 @@
+1
+00:00:01,100 --> 00:00:05,510
+Tên cơ quan · tên địa danh — chữ nào hoa, chữ nào thường?
+
+2
+00:00:05,560 --> 00:00:08,597
+Nghị định 30 có ví dụ rất rõ
+
+3
+00:00:08,647 --> 00:00:13,137
+Tên cơ quan: hoa chữ đầu của loại hình · chức năng · lĩnh vực
+
+4
+00:00:13,187 --> 00:00:17,970
+Hội đồng nhân dân tỉnh Sơn La — chỉ hoa Hội và tên riêng
+
+5
+00:00:18,020 --> 00:00:22,590
+thành phố, tỉnh viết thường · hoa tên riêng · không gạch nối
+
+6
+00:00:22,640 --> 00:00:26,948
+Thủ đô Hà Nội · Thành phố Hồ Chí Minh — viết hoa đặc biệt
+
+7
+00:00:26,998 --> 00:00:33,503
+sông · vịnh · chợ đi liền tên riêng → không viết hoa
+
+8
+00:00:33,553 --> 00:00:41,092
+Phần mềm AI soạn văn bản · Công ty Gia Kiệm Số · tải miễn phí
+
+9
+00:00:41,142 --> 00:00:44,838
+Tên cơ quan nước ngoài viết tắt → chữ in hoa như nguyên ngữ
+
+10
+00:00:44,888 --> 00:00:50,455
+Nghị định 30/2020/NĐ-CP · Phụ lục II · mục IV.2 · điểm b

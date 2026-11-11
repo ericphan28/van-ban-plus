@@ -46,3 +46,9 @@ demo phần mềm khi đã chụp màn hình app.
 | 14 | Văn bản khẩn: ai quyết định, ba con dấu 30:40:20 × 8 mm, mực đỏ tươi, phạm vi lưu hành, độ mật | III.2 | hẹn 13/11 10:00 |
 | 15 | Phụ lục kèm theo: số La Mã, số trang riêng, dòng «Kèm theo…», giấy / điện tử | III.1 | hẹn 13/11 17:00 |
 | 16 | Chữ ký số: chữ ký xanh, dấu đỏ trùm 1/3 về bên trái, văn bản kèm theo không cùng tệp | II.7d, II.8 | hẹn 14/11 05:00 |
+| 17 | Ký thừa ủy quyền: không được ủy quyền lại; thừa lệnh giao lại cho cấp phó; mực xanh | Điều 13 khoản 3, 4, 6 | hẹn 14/11 10:00 |
+| 18 | Văn bản đã phát hành mà sai sót: sửa đổi / thay thế (nội dung) và đính chính bằng công văn (thể thức); phát hành trong ngày | Điều 18, Điều 15 | hẹn 14/11 17:00 |
+| 19 | Văn bản đến: chưa đăng ký tại Văn thư thì không phải giải quyết; trình trong ngày; Hệ thống phải in giấy, ký nhận, đóng sổ | Điều 4, 22, 23 | hẹn 15/11 05:00 |
+| 20 | Sao y, sao lục, trích sao khác nhau; giá trị pháp lý như bản chính; thẩm quyền sao | Điều 3, 25, 26, 27 | hẹn 15/11 10:00 |
+| 21 | Thụt đầu dòng 1 / 1,27 cm, giãn đoạn ≥ 6pt, giãn dòng đơn → 1,5 lines, điểm a) b) c) d) đ) | Phụ lục I II.6 | hẹn 15/11 17:00 |
+| 22 | Viết hoa tên cơ quan, địa danh (Sở Tài chính, thành phố Thái Nguyên, sông Vàm Cỏ…), tên nước ngoài viết tắt | Phụ lục II III, IV | hẹn 16/11 05:00 |

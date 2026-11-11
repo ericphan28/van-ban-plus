@@ -1,0 +1,39 @@
+1
+00:00:01,100 --> 00:00:04,766
+Văn bản đã phát hành — mới thấy sai sót — sửa thế nào?
+
+2
+00:00:04,816 --> 00:00:08,466
+Sai nội dung và sai thể thức — sửa khác nhau
+
+3
+00:00:08,516 --> 00:00:13,298
+Sai nội dung → sửa đổi hoặc thay thế bằng văn bản hình thức tương đương
+
+4
+00:00:13,348 --> 00:00:18,352
+Sai thể thức · kỹ thuật trình bày · thủ tục ban hành → đính chính bằng công văn
+
+5
+00:00:18,402 --> 00:00:23,017
+Văn bản đi: phát hành trong ngày ký · chậm nhất ngày làm việc tiếp theo
+
+6
+00:00:23,067 --> 00:00:26,199
+Văn bản khẩn: phát hành, gửi ngay sau khi ký
+
+7
+00:00:26,249 --> 00:00:29,660
+Văn bản mật: cấp hệ thống số riêng
+
+8
+00:00:29,710 --> 00:00:37,249
+Phần mềm AI soạn văn bản · Công ty Gia Kiệm Số · tải miễn phí
+
+9
+00:00:37,299 --> 00:00:41,988
+Văn bản giấy: cấp số sau khi có chữ ký · chậm nhất ngày làm việc tiếp theo
+
+10
+00:00:42,038 --> 00:00:47,430
+Nghị định 30/2020/NĐ-CP · Điều 15 · khoản 2
