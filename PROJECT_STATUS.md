@@ -202,6 +202,8 @@
 | ✅ | Bảng giá mới (4 gói + cloud) | `vanbanplus-api/src/app/bang-gia/page.tsx` | Free/Starter 99K/Pro 249K/Business 599K — hiển thị tính năng cloud |
 | ✅ | Desktop Cloud Sync Dialog | `AIVanBan.Desktop/Views/CloudSyncDialog.xaml` | Bật/tắt sync, cấu hình, sync now, backup, restore |
 | ✅ | Cloud button on MainWindow | `AIVanBan.Desktop/MainWindow.xaml` | Nút ☁ Cloud trên toolbar |
+| ✅ | Đường mua gói (07/11/2026) | `vanbanplus-api`: `/dang-ky`, `/thanh-toan`, `/admin/orders`, `/api/orders`, `/api/webhooks/sepay`, migration 002 | VietQR + webhook SePay + admin xác nhận tay. Chỉ mở khi đặt đủ biến `BANK_*`. CSDL từ 07/11/2026 ở Megacore (`api-vanbanplus.giakiemso.com`), bản trống |
+| ✅ | Credit + API tác vụ v2 (đợt 1, 12/11/2026) | `vanbanplus-api`: migration 004, `/api/v2/tac-vu/tom-tat`, `/api/v2/credit`, `/admin/credit` | `/api/ai/*` trừ credit theo token khi dùng khóa hệ thống (Free 30 · Starter 400 · Pro 1.100 · Business 3.000 credit/tháng). Còn 5 tác vụ + lưu hỗ trợ + gói nạp (đợt 2), bản cài máy gọi v2 (đợt 3); điều kiện trước khi mở bán ở spec §13 |
 
 ---
 
