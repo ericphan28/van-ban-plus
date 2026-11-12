@@ -11,20 +11,38 @@ namespace AIVanBan.Tests;
 /// </summary>
 public class MauPromptTests
 {
-    private static readonly string ThuMucMau = Path.GetFullPath(Path.Combine(
-        AppContext.BaseDirectory, "..", "..", "..", "..", "vanbanplus-api", "tests", "mau-prompt"));
+    /// <summary>Đi ngược từ thư mục build lên tới gốc repo (nơi có vanbanplus-api/package.json); không thấy thì báo lỗi.</summary>
+    private static string TimThuMucMau()
+    {
+        for (var d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent)
+        {
+            if (File.Exists(Path.Combine(d.FullName, "vanbanplus-api", "package.json")))
+                return Path.Combine(d.FullName, "vanbanplus-api", "tests", "mau-prompt");
+        }
+        throw new DirectoryNotFoundException(
+            $"Không tìm thấy vanbanplus-api/package.json khi đi ngược từ {AppContext.BaseDirectory}");
+    }
 
     private static string ChuanHoa(string s) => s.Replace("\r\n", "\n");
 
+    /// <summary>
+    /// Ghi tệp mẫu. Nội dung khác bản đang có thì vẫn ghi bản mới nhưng làm hỏng bài kiểm,
+    /// để nhớ commit tệp mẫu mới bên vanbanplus-api (bộ kiểm TypeScript đọc tệp đã commit).
+    /// </summary>
     private static void Ghi(string ten, object duLieu)
     {
-        Directory.CreateDirectory(ThuMucMau);
+        var thuMuc = TimThuMucMau();
+        Directory.CreateDirectory(thuMuc);
+        var duongDan = Path.Combine(thuMuc, ten);
         var json = JsonSerializer.Serialize(duLieu, new JsonSerializerOptions
         {
             WriteIndented = true,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        });
-        File.WriteAllText(Path.Combine(ThuMucMau, ten), json.Replace("\r\n", "\n") + "\n");
+        }).Replace("\r\n", "\n") + "\n";
+        var cu = File.Exists(duongDan) ? File.ReadAllText(duongDan).Replace("\r\n", "\n") : null;
+        if (cu == json) return;
+        File.WriteAllText(duongDan, json);
+        Assert.Fail($"Tệp mẫu {duongDan} vừa được sinh lại vì prompt C# đổi: commit tệp này bên vanbanplus-api.");
     }
 
     [Fact]
@@ -45,6 +63,5 @@ public class MauPromptTests
         }).ToList();
 
         Ghi("tom-tat.json", mau);
-        Assert.True(File.Exists(Path.Combine(ThuMucMau, "tom-tat.json")));
     }
 }
