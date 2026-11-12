@@ -40,7 +40,7 @@ public class DocumentSummaryService
         return ParseResult(responseText);
     }
 
-    private string BuildSystemPrompt()
+    internal static string BuildSystemPrompt()
     {
         return @"Bạn là CHUYÊN GIA PHÂN TÍCH VĂN BẢN NHÀ NƯỚC Việt Nam, có kinh nghiệm 20 năm trong lĩnh vực pháp chế và hành chính công.
 
@@ -103,7 +103,7 @@ QUY TẮC QUAN TRỌNG:
 - KHÔNG dùng markdown ```json``` bao quanh kết quả";
     }
 
-    private string BuildUserPrompt(string content, string documentType, string title, string issuer)
+    internal static string BuildUserPrompt(string content, string documentType, string title, string issuer)
     {
         var prompt = "HÃY TÓM TẮT VĂN BẢN SAU:\n\n";
 
