@@ -133,7 +133,7 @@ public static class AiPromoHelper
         var priceStack = new StackPanel();
         priceStack.Children.Add(new TextBlock
         {
-            Text = "💰 Chỉ từ 79.000đ/tháng",
+            Text = "💰 Chỉ từ 99.000đ/tháng",
             FontSize = 16,
             FontWeight = FontWeights.Bold,
             Foreground = new SolidColorBrush(Color.FromRgb(230, 81, 0)),

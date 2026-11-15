@@ -617,8 +617,8 @@ public partial class ScanImportDialog : Window
         }
         else if (msg.Contains("429") || msg.Contains("quota") || msg.Contains("rate"))
         {
-            errorTitle = "Hết lượt sử dụng";
-            errorDetail = "📊 Bạn đã hết lượt AI trong tháng này.\nNâng cấp gói dịch vụ để có thêm lượt sử dụng.";
+            errorTitle = "Hết credit AI";
+            errorDetail = "📊 Đã hết credit AI của tháng này.\nNâng cấp gói tại vanbanplus.giakiemso.com/bang-gia để có thêm credit.";
         }
         else if (msg.Contains("No such host") || msg.Contains("network") || msg.Contains("SocketException"))
         {

@@ -376,7 +376,7 @@ public partial class ApiSettingsDialog : Window
         {
             if (string.IsNullOrEmpty(settings.VanBanPlusApiKey))
             {
-                MessageBox.Show("Vui lòng nhập mã kích hoạt!\n\n📞 Liên hệ Zalo: Thắng Phan — 0907136029\n💰 Chỉ từ 79.000đ/tháng",
+                MessageBox.Show("Vui lòng nhập mã kích hoạt!\n\n📞 Liên hệ Zalo: Thắng Phan — 0907136029\n💰 Chỉ từ 99.000đ/tháng",
                     "Thiếu thông tin", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }

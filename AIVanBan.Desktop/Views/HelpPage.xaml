@@ -347,7 +347,7 @@
                                 <materialDesign:PackIcon Kind="NewBox" Width="18" Height="18" 
                                                         VerticalAlignment="Center" Margin="0,0,8,0"
                                                         Foreground="#E53935"/>
-                                <TextBlock Text="Có gì mới? (v1.0.18)" Foreground="#E53935" FontWeight="SemiBold"/>
+                                <TextBlock Text="Có gì mới? (v1.0.19)" Foreground="#E53935" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource TocButton}" Tag="secBackup" Click="TocItem_Click">
@@ -526,11 +526,11 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                                           VerticalAlignment="Center"/>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" Margin="34,0,0,0">
-                                Để sử dụng các tính năng AI, bạn cần đăng ký tài khoản VanBanPlus. 
+                                Để sử dụng các tính năng AI, cần đăng ký tài khoản VanBanPlus.
                                 Nhấn nút <Bold>🔑 Đăng nhập</Bold> ở thanh trạng thái phía dưới.
                             </TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="34,0,0,0">
-                                Gói <Bold>Miễn phí</Bold> cho phép 20 lượt AI/tháng — đủ để trải nghiệm trước khi nâng cấp.
+                                Gói <Bold>Miễn phí</Bold> có 30 credit AI mỗi tháng — đủ để trải nghiệm trước khi nâng cấp.
                             </TextBlock>
                         </StackPanel>
                     </Border>
@@ -1352,7 +1352,7 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                                 <TextBlock Text="Miễn phí" FontWeight="Bold" FontSize="14" 
                                           HorizontalAlignment="Center" Margin="0,4,0,2"/>
                                 <TextBlock Text="0 đ/tháng" FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
-                                <TextBlock Text="20 lượt AI" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"
+                                <TextBlock Text="30 credit/tháng" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"
                                           Foreground="{DynamicResource PrimaryHueMidBrush}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </materialDesign:Card>
@@ -1362,8 +1362,8 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                                 <TextBlock Text="⭐" FontSize="24" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Khởi đầu" FontWeight="Bold" FontSize="14" 
                                           HorizontalAlignment="Center" Margin="0,4,0,2"/>
-                                <TextBlock Text="79.000 đ/tháng" FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
-                                <TextBlock Text="150 lượt AI" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"
+                                <TextBlock Text="99.000 đ/tháng" FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
+                                <TextBlock Text="400 credit/tháng" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"
                                           Foreground="{DynamicResource PrimaryHueMidBrush}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </materialDesign:Card>
@@ -1374,8 +1374,8 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                                 <TextBlock Text="🚀" FontSize="24" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Chuyên nghiệp" FontWeight="Bold" FontSize="14" Foreground="White"
                                           HorizontalAlignment="Center" Margin="0,4,0,2"/>
-                                <TextBlock Text="199.000 đ/tháng" FontSize="12" Foreground="White" Opacity="0.9" HorizontalAlignment="Center"/>
-                                <TextBlock Text="500 lượt AI" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"
+                                <TextBlock Text="249.000 đ/tháng" FontSize="12" Foreground="White" Opacity="0.9" HorizontalAlignment="Center"/>
+                                <TextBlock Text="1.100 credit/tháng" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"
                                           Foreground="White" FontWeight="SemiBold"/>
                             </StackPanel>
                         </materialDesign:Card>
@@ -1385,16 +1385,16 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                                 <TextBlock Text="🏢" FontSize="24" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Doanh nghiệp" FontWeight="Bold" FontSize="14" 
                                           HorizontalAlignment="Center" Margin="0,4,0,2"/>
-                                <TextBlock Text="499.000 đ/tháng" FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
-                                <TextBlock Text="2.000 lượt AI" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"
+                                <TextBlock Text="599.000 đ/tháng" FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
+                                <TextBlock Text="3.000 credit/tháng" FontSize="12" HorizontalAlignment="Center" Margin="0,6,0,0"
                                           Foreground="{DynamicResource PrimaryHueMidBrush}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </materialDesign:Card>
                     </UniformGrid>
 
                     <TextBlock Style="{StaticResource BodyText}">
-                        Để nâng cấp gói, nhấn vào tên tài khoản ở thanh trạng thái → xem thông tin gói hiện tại 
-                        → liên hệ Gia Kiệm Số để nâng cấp.
+                        Mua gói tại <Bold>vanbanplus.giakiemso.com/bang-gia</Bold>: chọn gói, đăng nhập, quét mã VietQR bằng app ngân hàng.
+                        Gói tự kích hoạt khi tiền về, phần mềm dùng được ngay, không cần cài lại. Trả theo năm chỉ bằng giá 10 tháng.
                     </TextBlock>
                 </StackPanel>
 
@@ -1452,11 +1452,12 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                     <Border Style="{StaticResource StepCard}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryHueMidBrush}">
-                                Hỏi: Hết lượt AI miễn phí thì sao?
+                                Hỏi: Hết credit AI miễn phí thì sao?
                             </TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="0,4,0,0">
-                                <Bold>Trả lời:</Bold> Bạn có thể nâng cấp lên gói Khởi đầu (79.000đ — 150 lượt), Chuyên nghiệp (199.000đ — 500 lượt), 
-                                hoặc Doanh nghiệp (499.000đ — 2.000 lượt). Lượt AI được reset vào đầu mỗi tháng.
+                                <Bold>Trả lời:</Bold> Nâng cấp lên gói Khởi đầu (99.000đ/tháng — 400 credit), Chuyên nghiệp (249.000đ — 1.100 credit)
+                                hoặc Doanh nghiệp (599.000đ — 3.000 credit) tại vanbanplus.giakiemso.com/bang-gia. Credit được cấp mới mỗi tháng;
+                                credit chưa dùng không cộng dồn sang tháng sau. Tác vụ AI bị lỗi không trừ credit.
                             </TextBlock>
                         </StackPanel>
                     </Border>
@@ -1613,15 +1614,35 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- ════ Version 1.0.18 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <!-- ════ Version 1.0.19 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock Text="v1.0.19 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                </Border>
+                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
+                                💳 Cập nhật bảng giá và cách mua gói
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Giá mới</Bold>: Khởi đầu 99.000đ, Chuyên nghiệp 249.000đ, Doanh nghiệp 599.000đ mỗi tháng; tính bằng credit AI thay cho lượt
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Tự mua trên web</Bold>: quét mã VietQR, gói tự kích hoạt khi tiền về
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ════ Version 1.0.18 — Tháng 11/2026 ════ -->
                     <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
                                     <TextBlock Text="v1.0.18 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                </Border>
-                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
