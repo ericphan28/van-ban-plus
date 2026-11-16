@@ -1,6 +1,6 @@
 # API tác vụ AI và credit — thiết kế (bước 1 lộ trình đa nền tảng)
 
-Ngày: 09/11/2026. Trạng thái: đã duyệt 12/11/2026; đợt 1 (lớp credit + tom-tat) lên production 12/11/2026 — kế hoạch `docs/superpowers/plans/2026-11-12-lop-credit-va-khung-tac-vu.md`; đợt 2a (kiem-tra, tham-muu, bao-cao-dinh-ky) lên production 16/11/2026.
+Ngày: 09/11/2026. Trạng thái: đã duyệt 12/11/2026; đợt 1 (lớp credit + tom-tat) lên production 12/11/2026 — kế hoạch `docs/superpowers/plans/2026-11-12-lop-credit-va-khung-tac-vu.md`; đợt 2a (kiem-tra, tham-muu, bao-cao-dinh-ky) lên production 16/11/2026; đợt 2b (trich-xuat, soan-thao) lên production 16/11/2026.
 
 ## 1. Mục tiêu
 
