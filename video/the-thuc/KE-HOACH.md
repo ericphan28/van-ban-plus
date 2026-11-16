@@ -58,3 +58,9 @@ demo phần mềm khi đã chụp màn hình app.
 | 26 | Kết thúc hồ sơ: loại bản trùng, bản nháp; đánh số tờ (từ 5 năm); mục lục (vĩnh viễn); biên mục điện tử | Điều 29 khoản 4 | hẹn 17/11 10:00 |
 | 27 | Nộp lưu: 3 tháng (XDCB) / 1 năm; giữ lại không quá 2 năm; nghỉ hưu, chuyển công tác phải bàn giao hồ sơ | Điều 30, 31 | hẹn 17/11 17:00 |
 | 28 | Danh mục hồ sơ: hồ sơ ngoài Danh mục tự xác định 5 thông tin; mở hồ sơ; cập nhật phim, ảnh, ghi âm | Điều 28, 29 | hẹn 18/11 05:00 |
+| 29 | Văn bản hành chính có 29 loại (chia khúc 5·6·7·6·5 theo thứ tự liệt kê); công văn chỉ là 1 loại; giấy nghỉ phép, thư công cũng nằm trong danh sách | Điều 7 | hẹn 18/11 10:00 |
+| 30 | Thể thức: 9 thành phần chính (a–i) + 4 nhóm bổ sung | Điều 8 | hẹn 18/11 17:00 |
+| 31 | Văn bản đi: 5 bước cấp số → đăng ký → nhân bản/đóng dấu/ký số → phát hành → lưu; số duy nhất trong năm | Điều 14–19 | hẹn 19/11 05:00 |
+| 32 | Bản gốc ≠ bản chính; lưu giấy (Văn thư / hồ sơ), lưu điện tử trên Hệ thống; Hệ thống chưa đáp ứng thì in ký số ra giấy đóng dấu | Điều 3, 18, 19 | hẹn 19/11 10:00 |
+| 33 | Nhận văn bản đến: kiểm tra bì, bóc bì đóng dấu ĐẾN, gửi đích danh không bóc, việc chung chuyển lại Văn thư; điện tử: xác thực toàn vẹn, báo nhận trong ngày | Điều 21 | hẹn 19/11 17:00 |
+| 34 | Chỉ đạo giải quyết văn bản đến: trình trong ngày, ý kiến ghi mục «Chuyển», chủ trì / phối hợp / thời hạn, ký nhận, khẩn giải quyết ngay | Điều 23, 24 | hẹn 20/11 05:00 |
