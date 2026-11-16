@@ -15,6 +15,7 @@ public partial class DocumentSummaryDialog : Window
     private DocumentSummary? _result;
     private DispatcherTimer? _timer;
     private int _elapsedSeconds;
+    private readonly DocumentSummaryService _service = new();
 
     public DocumentSummaryDialog(string content, string documentType = "", string title = "", string issuer = "")
     {
@@ -90,6 +91,8 @@ public partial class DocumentSummaryDialog : Window
         if (cboQuickDocType.SelectedValue is string selectedType)
             _documentType = selectedType;
 
+        if (!await XacNhanCreditAsync()) return;
+
         // Ẩn input panel, hiện loading
         pnlQuickInput.Visibility = Visibility.Collapsed;
 
@@ -103,13 +106,14 @@ public partial class DocumentSummaryDialog : Window
 
         try
         {
-            var service = new DocumentSummaryService();
-            _result = await service.SummarizeAsync(_content, _documentType, _title, _issuer);
+            _result = await _service.SummarizeAsync(_content, _documentType, _title, _issuer);
             DisplayResults(_result);
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _service.LuotCuoi);
         }
         catch (Exception ex)
         {
-            ShowError($"Lỗi khi tóm tắt: {ex.Message}");
+            ShowError(TacVuGiaoDien.MoTaLoi(ex));
+            TacVuGiaoDien.MoiMuaCreditNeuThieu(this, ex);
         }
         finally
         {
@@ -305,9 +309,14 @@ public partial class DocumentSummaryDialog : Window
 
     private async void Retry_Click(object sender, RoutedEventArgs e)
     {
+        if (!await XacNhanCreditAsync()) return;
         btnCopy.Visibility = Visibility.Collapsed;
         await StartSummary();
     }
+
+    private Task<bool> XacNhanCreditAsync() =>
+        TacVuGiaoDien.XacNhanCreditAsync(this, "Tóm tắt văn bản",
+            () => _service.UocTinhAsync(_content, _documentType, _title, _issuer));
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
