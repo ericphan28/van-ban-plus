@@ -30,8 +30,8 @@ Mọi kế hoạch đợt 2/3 PHẢI dùng đúng tên dưới đây; đổi tê
 | `kiem-tra` | `noi_dung`*, `loai_van_ban`, `tieu_de`, `co_quan`, `van_ban_doi_chieu` | JSON `DocumentReviewResult` | `DocumentReviewService` |
 | `tham-muu` | `noi_dung`*, `loai_van_ban`, `tieu_de`, `co_quan`, `ngu_canh` (đối tượng, dưới) | JSON `DocumentAdvisory` | `DocumentAdvisoryService` |
 | `bao-cao-dinh-ky` | `loai_ky`*, `ky`*, `linh_vuc`*, `don_vi`*, `so_lieu`*, `bao_cao_ky_truoc`, `nguoi_ky`, `chuc_danh` | chuỗi | `PeriodicReportService` |
-| `trich-xuat` | `tep`* = mảng `{ base64, mime }` (1..20), `che_do` = `cau-truc` (mặc định) \| `chi-chu` | `cau-truc`: JSON `ExtractedDocumentData`; `chi-chu`: chuỗi | `/api/ai/extract` + `/api/ai/read-text` của máy chủ, `GeminiAIService` |
-| `soan-thao` | `loai_van_ban`* (tên enum `DocumentType` C#, vd `CongVan`), `truong`* (đối tượng khóa → chuỗi), `dia_phuong` (đối tượng, dưới) | chuỗi | `AIComposeDialog` (tách sang `AIVanBan.Core`) |
+| `trich-xuat` | `tep`* = mảng `{ base64, mime }` (1..20; mime ∈ `application/pdf`, `image/png`, `image/jpeg`, `image/webp`, `image/heic`, `image/heif`), `che_do` = `cau-truc` (mặc định) \| `chi-chu` (đúng 1 tệp) | `cau-truc`: JSON `ExtractedDocumentData` (tên trường snake_case của lược đồ máy chủ: `so_van_ban`, `trich_yeu`, …); `chi-chu`: chuỗi | `/api/ai/extract` + `/api/ai/read-text` của máy chủ (nguồn chuẩn); `GeminiAIService` chỉ để đối chiếu |
+| `soan-thao` | `loai_van_ban`* (tên enum `DocumentType` C#, vd `CongVan`), `truong`* (đối tượng khóa → chuỗi, giữ thứ tự), `ten_mau` (tên mẫu văn bản đang chọn), `dia_phuong` (đối tượng, dưới) | chuỗi | `AIComposeDialog` (tách sang `AIVanBan.Core` `ComposePromptBuilder`) |
 
 `*` = bắt buộc.
 
@@ -41,12 +41,17 @@ Mọi kế hoạch đợt 2/3 PHẢI dùng đúng tên dưới đây; đổi tê
 `chuc_danh_ky` (SignerTitle), `noi_nhan` (Recipients, mảng chuỗi), `giao_cho` (AssignedTo),
 `ghi_chu_xu_ly` (ProcessingNotes), `can_cu` (BasedOn, mảng chuỗi), `van_ban_lien_quan` (RelatedDocumentsSummary).
 
-**`dia_phuong` của `soan-thao`**: `{ xa, co_quan_cap_tren, tinh }` (chuỗi). Không gửi thì prompt không có bối cảnh địa phương
+**`dia_phuong` của `soan-thao`**: `{ xa*, co_quan_cap_tren, tinh*, dac_diem }` (`xa`, `tinh` bắt buộc khi có `dia_phuong`;
+`co_quan_cap_tren` bỏ trống thì cấp trên là tỉnh, theo chính quyền hai cấp; `dac_diem` là mảng chuỗi tối đa 10 phần tử,
+mỗi phần tử thành một dòng «- …» trong khối BỐI CẢNH ĐỊA PHƯƠNG). Không gửi thì prompt không có bối cảnh địa phương
 (spec §10). Bộ kiểm so khớp dùng giá trị Gia Kiệm (`xa` = «xã Gia Kiệm», `co_quan_cap_tren` = «thành phố Thống Nhất»,
-`tinh` = «tỉnh Đồng Nai») để so được từng ký tự với prompt cũ.
+`tinh` = «tỉnh Đồng Nai», `dac_diem` = [«Dân số: 79.274 nhân khẩu, 19.818 hộ», «17 ấp, 5 giáo xứ Công giáo (96% dân theo đạo)»,
+«Xã loại I, đang xây dựng nông thôn mới nâng cao»]) để so được từng ký tự với prompt cũ.
+`ten_mau` thiếu thì nhánh soạn chung ghi «Công văn» làm tên loại (như hộp thoại khi chưa chọn mẫu).
 
-**`trich-xuat`**: tổng dung lượng tệp (sau giải base64) vượt `max_file_size_mb` của gói hiện hành → `QUA_DAI` 413.
-Ước tính theo số tệp và dung lượng (spec §7).
+**`trich-xuat`**: tổng dung lượng tệp (sau giải base64) vượt `min(max_file_size_mb` của gói hiện hành, 20 MB) → `QUA_DAI` 413.
+Quá 20 tệp, mime khác danh sách, base64 hỏng, `chi-chu` khác 1 tệp → `DAU_VAO_SAI` 400. Ảnh GIF/BMP/TIFF: bản cài máy đổi
+sang PNG/JPEG trước khi gửi. Ước tính theo số tệp, số trang PDF và dung lượng (spec §7).
 
 ## Tệp mẫu prompt
 
