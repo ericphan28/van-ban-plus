@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -21,7 +22,11 @@ public sealed record ThongTinLuot(int CreditDaTru, int SoDu, string MaLuot, bool
 /// </summary>
 /// <param name="KetQuaTho">data.ket_qua nguyên dạng JSON (chưa đọc vào T).</param>
 /// <param name="ChuoiTho">Khác null chỉ khi T không phải string mà máy chủ trả chuỗi thô (kết quả bị cắt).</param>
-public sealed record TacVuKetQua<T>(T KetQua, ThongTinLuot Luot, JsonElement KetQuaTho = default, string? ChuoiTho = null);
+public sealed record TacVuKetQua<T>(T KetQua, ThongTinLuot Luot, JsonElement KetQuaTho = default, string? ChuoiTho = null)
+{
+    /// <summary>true khi kết quả bị cắt và máy chủ trả chuỗi thô: <see cref="KetQua"/> không dùng được, xem <see cref="ChuoiTho"/>.</summary>
+    public bool BiCatChuoiTho => ChuoiTho is not null;
+}
 
 /// <summary>
 /// Gọi API tác vụ v2 của VanBanPlus: POST /api/v2/tac-vu/&lt;ten&gt; và /uoc-tinh.
@@ -44,6 +49,8 @@ public sealed class TacVuClient
     private static readonly JsonSerializerOptions TuyChonGui = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        // Gửi tiếng Việt là UTF-8 nguyên chữ, không phải \uXXXX.
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
     internal static readonly JsonSerializerOptions TuyChonDoc = new()
@@ -57,21 +64,26 @@ public sealed class TacVuClient
     private readonly Func<(string DiaChi, string Khoa)> _ketNoi;
     private readonly string _phienBan;
     private readonly Func<string, TimeSpan> _hanChay;
+    private readonly TimeProvider _dongHo;
 
     /// <summary>Đọc địa chỉ máy chủ và khóa từ settings.json ở MỖI lần gọi (đăng nhập lại có hiệu lực ngay).</summary>
     public TacVuClient() : this(HttpDungChung, DocKetNoiTuThietLap, PhienBanUngDung(), HanChayTheoTacVu) { }
 
     /// <summary>Cho bộ kiểm: handler giả, địa chỉ và khóa cố định, không đọc settings.json.</summary>
-    internal TacVuClient(HttpMessageHandler handler, string diaChi, string khoa, string phienBan, TimeSpan? hanChay = null)
+    internal TacVuClient(HttpMessageHandler handler, string diaChi, string khoa, string phienBan, TimeSpan? hanChay = null,
+        TimeProvider? dongHo = null)
         : this(new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan },
                () => (diaChi.TrimEnd('/'), khoa),
                phienBan,
-               hanChay is { } h ? _ => h : HanChayTheoTacVu)
+               hanChay is { } h ? _ => h : HanChayTheoTacVu,
+               dongHo)
     {
     }
 
-    private TacVuClient(HttpClient http, Func<(string DiaChi, string Khoa)> ketNoi, string phienBan, Func<string, TimeSpan> hanChay)
+    private TacVuClient(HttpClient http, Func<(string DiaChi, string Khoa)> ketNoi, string phienBan, Func<string, TimeSpan> hanChay,
+        TimeProvider? dongHo = null)
     {
+        _dongHo = dongHo ?? TimeProvider.System;
         _http = http;
         _ketNoi = ketNoi;
         _phienBan = phienBan;
@@ -144,8 +156,9 @@ public sealed class TacVuClient
         if (string.IsNullOrWhiteSpace(khoa))
             throw TaoLoi(MaLoiTacVu.ChuaDangNhap, null, ten, null, null, han);
 
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        cts.CancelAfter(han);
+        // Hạn chờ đo bằng _dongHo (bộ kiểm thay được); ct của bên gọi hủy thì ném OperationCanceledException, không phải HetThoiGian.
+        using var hetHan = new CancellationTokenSource(han, _dongHo);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct, hetHan.Token);
 
         using var yeuCau = new HttpRequestMessage(HttpMethod.Post, diaChi + duongDan)
         {
@@ -155,24 +168,37 @@ public sealed class TacVuClient
         yeuCau.Headers.TryAddWithoutValidation("X-VBP-Nguon", "desktop");
         yeuCau.Headers.TryAddWithoutValidation("X-VBP-Phien-Ban", _phienBan);
 
-        HttpResponseMessage phanHoi;
-        string than;
+        HttpResponseMessage? phanHoi = null;
         try
         {
-            phanHoi = await _http.SendAsync(yeuCau, cts.Token);
-            than = await phanHoi.Content.ReadAsStringAsync(cts.Token);
-        }
-        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
-        {
-            throw TaoLoi(MaLoiTacVu.HetThoiGian, null, ten, null, null, han);
-        }
-        catch (HttpRequestException ex)
-        {
-            throw TaoLoi(MaLoiTacVu.MatKetNoi, null, ten, ex.Message, null, han, ex);
-        }
+            // Hai pha tách riêng: lỗi ở pha gửi (chưa tới máy chủ) khác lỗi ở pha đọc thân (yêu cầu đã gửi, có thể đã giữ credit).
+            try
+            {
+                phanHoi = await _http.SendAsync(yeuCau, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                throw TaoLoi(MaLoiTacVu.HetThoiGian, null, ten, null, null, han);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw TaoLoi(MaLoiTacVu.MatKetNoi, null, ten, ex.Message, null, han, ex);
+            }
 
-        using (phanHoi)
-        {
+            string than;
+            try
+            {
+                than = await phanHoi.Content.ReadAsStringAsync(cts.Token);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                throw TaoLoi(MaLoiTacVu.HetThoiGian, null, ten, null, null, han);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or IOException)
+            {
+                throw TaoLoi(MaLoiTacVu.MatKetNoi, null, ten, ex.Message, null, han, ex, daGuiYeuCau: true);
+            }
+
             JsonElement? goc = null;
             try
             {
@@ -181,7 +207,7 @@ public sealed class TacVuClient
             }
             catch (JsonException)
             {
-                // Thân không phải JSON (vd trang lỗi của proxy): phân loại theo mã HTTP.
+                // Thân không phải JSON (vd trang HTML lỗi của proxy): phân loại theo mã HTTP.
             }
 
             if (phanHoi.IsSuccessStatusCode
@@ -205,6 +231,10 @@ public sealed class TacVuClient
 
             var maHttp = (int)phanHoi.StatusCode;
             throw TaoLoi(PhanLoai(maHttp, code), maHttp, ten, message, thuLaiSau, han);
+        }
+        finally
+        {
+            phanHoi?.Dispose();
         }
     }
 
@@ -236,23 +266,35 @@ public sealed class TacVuClient
             413 => MaLoiTacVu.QuaDai,
             429 => MaLoiTacVu.QuaNhieuLuot,
             499 => MaLoiTacVu.NgatKetNoi,
-            504 => MaLoiTacVu.HetThoiGian,
+            // 504 và 522/523/524 (Cloudflare cắt ở 100 giây, thân thường là trang HTML không có code).
+            504 or 522 or 523 or 524 => MaLoiTacVu.HetThoiGian,
             _ => MaLoiTacVu.LoiMayChu,
         },
     };
 
-    /// <summary>Dựng lỗi kèm lời hiện cho khách (tiếng Việt có dấu, không đại từ nhân xưng).</summary>
+    /// <summary>Câu báo tình trạng credit khi chưa rõ lượt đã hoàn tất hay chưa.</summary>
+    internal const string CauTrangThaiCredit =
+        "Credit giữ tạm (nếu có) được hoàn tự động trong vòng 15 phút nếu lượt không hoàn tất; xem số dư ở trang Tài khoản.";
+
+    /// <summary>
+    /// Dựng lỗi kèm lời hiện cho khách (tiếng Việt có dấu, không đại từ nhân xưng).
+    /// <paramref name="daGuiYeuCau"/>: yêu cầu đã tới máy chủ (chỉ phân biệt khi mất kết nối lúc đọc thân phản hồi).
+    /// </summary>
     internal static TacVuException TaoLoi(MaLoiTacVu ma, int? maHttp, string ten, string? chiTiet,
-        TimeSpan? thuLaiSau, TimeSpan han, Exception? goc = null)
+        TimeSpan? thuLaiSau, TimeSpan han, Exception? goc = null, bool daGuiYeuCau = false)
     {
         static string KemChiTiet(string? s) => string.IsNullOrWhiteSpace(s) ? "" : $"\nChi tiết: {s}";
 
         var thongDiep = ma switch
         {
             MaLoiTacVu.KhongDuCredit =>
-                "Số dư credit không đủ cho tác vụ này. Credit chưa bị trừ. Có thể mua thêm credit trên trang Bảng giá của VanBanPlus.",
+                "Số dư credit không đủ cho tác vụ này. Credit chưa bị trừ. Có thể mua thêm credit trên trang Bảng giá của VanBanPlus."
+                + KemChiTiet(chiTiet),
             MaLoiTacVu.QuaNhieuLuot =>
-                "Tài khoản đang có 3 tác vụ AI chạy cùng lúc. Chờ một tác vụ xong rồi thử lại. Credit chưa bị trừ.",
+                (string.IsNullOrWhiteSpace(chiTiet)
+                    ? "Tài khoản đang có 3 tác vụ AI chạy cùng lúc."
+                    : "Tài khoản đang có nhiều tác vụ AI chạy cùng lúc.")
+                + " Chờ một tác vụ xong rồi thử lại. Credit chưa bị trừ." + KemChiTiet(chiTiet),
             MaLoiTacVu.QuaDai =>
                 "Nội dung hoặc tệp gửi lên vượt giới hạn của gói hiện tại. Cần rút ngắn nội dung, giảm dung lượng tệp, bớt số trang hoặc nâng cấp gói. Credit chưa bị trừ."
                 + KemChiTiet(chiTiet),
@@ -272,14 +314,15 @@ public sealed class TacVuClient
                 : "Tài khoản VanBanPlus trên máy này không còn hợp lệ (mã 401). Cần bấm «Đăng nhập» để đăng nhập lại.",
             MaLoiTacVu.KhongCoTacVu =>
                 $"Máy chủ VanBanPlus chưa có tác vụ «{ten}» (mã 404). Cần cập nhật phần mềm lên bản mới nhất hoặc liên hệ hỗ trợ.",
-            MaLoiTacVu.HetThoiGian => maHttp == 504
-                ? "Máy chủ phản hồi quá lâu (mã 504). Thử lại sau ít phút. Số dư credit xem ở trang Tài khoản trên web VanBanPlus."
-                : $"Máy chủ phản hồi quá lâu (hơn {han.TotalSeconds:0} giây). Thử lại sau ít phút. Số dư credit xem ở trang Tài khoản trên web VanBanPlus.",
-            MaLoiTacVu.MatKetNoi =>
-                "Không kết nối được máy chủ VanBanPlus. Kiểm tra kết nối Internet rồi thử lại.",
+            MaLoiTacVu.HetThoiGian => maHttp is not null
+                ? $"Máy chủ phản hồi quá lâu (mã {maHttp}). Thử lại sau ít phút. {CauTrangThaiCredit}"
+                : $"Máy chủ phản hồi quá lâu (hơn {han.TotalSeconds:0} giây). Thử lại sau ít phút. {CauTrangThaiCredit}",
+            MaLoiTacVu.MatKetNoi => daGuiYeuCau
+                ? $"Kết nối bị gián đoạn khi nhận kết quả từ máy chủ VanBanPlus. Kiểm tra kết nối Internet rồi thử lại. {CauTrangThaiCredit}"
+                : "Không kết nối được máy chủ VanBanPlus. Kiểm tra kết nối Internet rồi thử lại.",
             _ => maHttp is null or (>= 200 and < 300)
-                ? "Máy chủ VanBanPlus trả kết quả không đúng định dạng. Thử lại sau ít phút."
-                : $"Máy chủ VanBanPlus gặp lỗi (mã {maHttp}). Thử lại sau ít phút.",
+                ? $"Máy chủ VanBanPlus trả kết quả không đúng định dạng. Thử lại sau ít phút. {CauTrangThaiCredit}"
+                : $"Máy chủ VanBanPlus gặp lỗi (mã {maHttp}). Thử lại sau ít phút. {CauTrangThaiCredit}",
         };
 
         return new TacVuException(ma, thongDiep, maHttp, thuLaiSau, chiTiet, goc);

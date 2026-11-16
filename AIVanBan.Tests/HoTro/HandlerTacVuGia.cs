@@ -10,7 +10,7 @@ namespace AIVanBan.Tests.HoTro;
 /// </summary>
 internal sealed class HandlerTacVuGia : HttpMessageHandler
 {
-    public sealed record YeuCau(HttpMethod Method, string Url, Dictionary<string, string> Header, string Body);
+    public sealed record YeuCau(HttpMethod Method, string Url, Dictionary<string, string> Header, string Body, byte[]? Bytes = null);
 
     private readonly Queue<Func<HttpResponseMessage>> _phanHoi = new();
 
@@ -43,8 +43,9 @@ internal sealed class HandlerTacVuGia : HttpMessageHandler
         if (request.Content != null)
             foreach (var h in request.Content.Headers)
                 header[h.Key] = string.Join(",", h.Value);
-        var body = request.Content == null ? "" : await request.Content.ReadAsStringAsync(ct);
-        DaNhan.Add(new YeuCau(request.Method, request.RequestUri!.ToString(), header, body));
+        var bytes = request.Content == null ? Array.Empty<byte>() : await request.Content.ReadAsByteArrayAsync(ct);
+        var body = Encoding.UTF8.GetString(bytes);
+        DaNhan.Add(new YeuCau(request.Method, request.RequestUri!.ToString(), header, body, bytes));
 
         if (NemLoi != null) throw NemLoi;
         if (Treo) await Task.Delay(Timeout.Infinite, ct);
