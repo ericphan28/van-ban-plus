@@ -307,16 +307,20 @@ public class TacVuClientDoTinCayTests
         Assert.Equal(TimeSpan.FromSeconds(giayMong), Assert.Single(dongHo.Han));
     }
 
-    [Fact]
-    public async Task UocTinhAsync_AppDungHan30Giay()
+    [Theory]
+    [InlineData("trich-xuat", 300)]
+    [InlineData("tom-tat", 180)]
+    [InlineData("kiem-tra", 180)]
+    public async Task UocTinhAsync_AppDungCungHanVoiLuotChayCuaTacVu(string ten, int giayMong)
     {
+        // /uoc-tinh tải lên đúng thân của lượt chạy (trich-xuat tới 20 MB) nên không được có hạn 30 giây riêng.
         var dongHo = new DongHoGhiHan();
         var h = new HandlerTacVuGia().TraVe(HttpStatusCode.OK,
             """{"success":true,"data":{"credit_min":1,"credit_max":2,"so_du":3,"du_credit":true}}""");
 
-        await TaoClient(h, dongHo: dongHo).UocTinhAsync("trich-xuat", new { tep = Array.Empty<object>() });
+        await TaoClient(h, dongHo: dongHo).UocTinhAsync(ten, new { tep = Array.Empty<object>() });
 
-        Assert.Equal(TimeSpan.FromSeconds(30), Assert.Single(dongHo.Han));
+        Assert.Equal(TimeSpan.FromSeconds(giayMong), Assert.Single(dongHo.Han));
     }
 
     // --- Giữ chi tiết của máy chủ ---

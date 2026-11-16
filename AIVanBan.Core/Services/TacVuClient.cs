@@ -35,9 +35,6 @@ public sealed record TacVuKetQua<T>(T KetQua, ThongTinLuot Luot, JsonElement Ket
 /// </summary>
 public sealed class TacVuClient
 {
-    /// <summary>Hạn chờ /uoc-tinh (không gọi AI).</summary>
-    public static readonly TimeSpan HanUocTinh = TimeSpan.FromSeconds(30);
-
     /// <summary>Hạn chờ một lượt chạy. Lượt dài nhất đo được 47 giây (spec §7), để rộng gần 4 lần.</summary>
     public static readonly TimeSpan HanChay = TimeSpan.FromSeconds(180);
 
@@ -102,10 +99,13 @@ public sealed class TacVuClient
 
     internal static TimeSpan HanChayTheoTacVu(string ten) => ten == "trich-xuat" ? HanTrichXuat : HanChay;
 
-    /// <summary>POST /api/v2/tac-vu/&lt;ten&gt;/uoc-tinh — không gọi AI, không giữ credit.</summary>
+    /// <summary>
+    /// POST /api/v2/tac-vu/&lt;ten&gt;/uoc-tinh — không gọi AI, không giữ credit. Tải lên đúng thân của lượt chạy
+    /// (trich-xuat tới 20 MB) nên dùng cùng hạn chờ với lượt chạy của tác vụ đó.
+    /// </summary>
     public async Task<UocTinhKetQua> UocTinhAsync(string ten, object input, CancellationToken ct = default)
     {
-        var data = await GoiAsync(ten, $"/api/v2/tac-vu/{ten}/uoc-tinh", input, HanUocTinh, ct, uocTinh: true);
+        var data = await GoiAsync(ten, $"/api/v2/tac-vu/{ten}/uoc-tinh", input, _hanChay(ten), ct, uocTinh: true);
         return new UocTinhKetQua(
             DocSo(data, "credit_min"),
             DocSo(data, "credit_max"),

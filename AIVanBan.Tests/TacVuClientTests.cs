@@ -224,7 +224,6 @@ public class TacVuClientTests
         Assert.Equal(TimeSpan.FromSeconds(180), TacVuClient.HanChayTheoTacVu("tom-tat"));
         Assert.Equal(TimeSpan.FromSeconds(180), TacVuClient.HanChayTheoTacVu("soan-thao"));
         Assert.Equal(TimeSpan.FromSeconds(300), TacVuClient.HanChayTheoTacVu("trich-xuat"));
-        Assert.Equal(TimeSpan.FromSeconds(30), TacVuClient.HanUocTinh);
     }
 
     [Fact]
