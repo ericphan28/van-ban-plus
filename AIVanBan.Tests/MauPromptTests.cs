@@ -64,4 +64,26 @@ public class MauPromptTests
 
         Ghi("tom-tat.json", mau);
     }
+
+    [Fact]
+    public void GhiMauKiemTra()
+    {
+        var cacMau = new (string NoiDung, string Loai, string TieuDe, string CoQuan, string? DoiChieu)[]
+        {
+            ("ỦY BAN NHÂN DÂN XÃ MINH AN\nSố: 15/QĐ-UBND\nQUYẾT ĐỊNH\nVề việc thành lập Tổ công tác chuyển đổi số\nĐiều 1. Thành lập Tổ công tác.\nĐiều 2. Giao Văn phòng theo dõi, xử lý nghiêm.",
+             "Quyết định", "Về việc thành lập Tổ công tác chuyển đổi số", "UBND xã Minh An",
+             "QUYẾT ĐỊNH\nVề việc thành lập Tổ công tác\nĐiều 1. Thành lập Tổ công tác gồm các ông (bà) có tên sau.\nĐiều 2. Nhiệm vụ của Tổ công tác.\nĐiều 3. Chánh Văn phòng và các cá nhân có tên tại Điều 1 chịu trách nhiệm thi hành Quyết định này.\nNơi nhận:\n- Như Điều 3;\n- Lưu: VT, VP."),
+            ("Kính gửi: Các phòng chuyên môn.\nĐề nghị báo cáo trước ngày 20/11/2026.", "", "", "", null),
+            ("Nội dung có \"ngoặc kép\", dấu \\ , ký tự ``` và ${bien}.", "  ", "Tiêu đề `lạ`", "Sở Nội vụ", "   "),
+        };
+
+        var mau = cacMau.Select(m => new
+        {
+            dau_vao = new { noi_dung = m.NoiDung, loai_van_ban = m.Loai, tieu_de = m.TieuDe, co_quan = m.CoQuan, van_ban_doi_chieu = m.DoiChieu },
+            he_thong = ChuanHoa(DocumentReviewService.BuildSystemPrompt()),
+            nguoi_dung = ChuanHoa(DocumentReviewService.BuildUserPrompt(m.NoiDung, m.Loai, m.TieuDe, m.CoQuan, m.DoiChieu)),
+        }).ToList();
+
+        Ghi("kiem-tra.json", mau);
+    }
 }

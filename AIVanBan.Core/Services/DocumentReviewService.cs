@@ -47,7 +47,7 @@ public class DocumentReviewService
         return ParseReviewResult(responseText);
     }
 
-    private string BuildSystemPrompt()
+    internal static string BuildSystemPrompt()
     {
         return @"Bạn là CHUYÊN GIA SOÁT LỖI VĂN BẢN HÀNH CHÍNH NHÀ NƯỚC VIỆT NAM với kinh nghiệm 20 năm.
 Thông thạo Nghị định 30/2020/NĐ-CP ngày 05/3/2020 về công tác văn thư.
@@ -166,7 +166,7 @@ QUY TẮC:
 - Chỉ trả JSON thuần, KHÔNG wrap trong ```json``` code block";
     }
 
-    private string BuildUserPrompt(string content, string documentType, string title, string issuer, string? referenceContent = null)
+    internal static string BuildUserPrompt(string content, string documentType, string title, string issuer, string? referenceContent = null)
     {
         var prompt = "KIỂM TRA VĂN BẢN SAU:\n\n";
 
