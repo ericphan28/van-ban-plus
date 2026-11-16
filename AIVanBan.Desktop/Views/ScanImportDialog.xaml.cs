@@ -40,12 +40,13 @@ public class ScanFileItem : INotifyPropertyChanged
 public partial class ScanImportDialog : Window
 {
     private readonly DocumentService _documentService;
-    private readonly GeminiAIService _aiService;
+    private readonly TrichXuatService _trichXuat = new();
+    private bool _dangChay; // chặn bấm lặp: cờ đặt trước mọi await của Analyze_Click
     private readonly ObservableCollection<ScanFileItem> _files = new();
-    private GeminiAIService.ExtractedDocumentData? _extractedData;
+    private TrichXuatService.ExtractedDocumentData? _extractedData;
     
     // Cho chế độ "Tách riêng" — mỗi file → 1 Document
-    private List<(GeminiAIService.ExtractedDocumentData Data, string FilePath)> _separateResults = new();
+    private List<(TrichXuatService.ExtractedDocumentData Data, string FilePath)> _separateResults = new();
     
     /// <summary>
     /// Văn bản đã được tạo từ scan — dùng cho chế độ "Ghép trang" (1 VB)
@@ -65,11 +66,10 @@ public partial class ScanImportDialog : Window
     private static readonly string[] SupportedExtensions = 
         { ".pdf", ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif", ".webp", ".gif" };
 
-    public ScanImportDialog(DocumentService documentService, string? geminiApiKey = null)
+    public ScanImportDialog(DocumentService documentService)
     {
         InitializeComponent();
         _documentService = documentService;
-        _aiService = string.IsNullOrEmpty(geminiApiKey) ? new GeminiAIService() : new GeminiAIService(geminiApiKey);
         
         lstFiles.ItemsSource = _files;
         InitializeComboBoxes();
@@ -386,7 +386,20 @@ public partial class ScanImportDialog : Window
 
     private async void Analyze_Click(object sender, RoutedEventArgs e)
     {
-        if (_files.Count == 0) return;
+        if (_files.Count == 0 || _dangChay) return;
+        _dangChay = true;
+        try
+        {
+            await Analyze_ClickAsync();
+        }
+        finally
+        {
+            _dangChay = false;
+        }
+    }
+
+    private async Task Analyze_ClickAsync()
+    {
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
         
         // Validate file sizes
@@ -415,12 +428,42 @@ public partial class ScanImportDialog : Window
                     "Chế độ \"Ghép trang\" gửi tất cả file cùng lúc.\n" +
                     "File quá lớn có thể bị từ chối hoặc timeout.\n\n" +
                     "💡 Gợi ý: Chuyển sang chế độ \"Tách riêng\" để xử lý từng file.\n\n" +
-                    "Bạn vẫn muốn tiếp tục?",
+                    "Vẫn tiếp tục?",
                     "Cảnh báo dung lượng", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (result == MessageBoxResult.No) return;
             }
         }
         
+        if (!IsSeparateMode && _files.Count > TrichXuatService.SoTepToiDa)
+        {
+            MessageBox.Show(
+                $"Chế độ «Ghép trang» nhận tối đa {TrichXuatService.SoTepToiDa} tệp mỗi lần. Cần bớt tệp hoặc chuyển sang «Tách riêng».",
+                "Quá nhiều tệp", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // Đọc tệp; GIF/BMP/TIFF đổi sang PNG vì máy chủ không nhận các định dạng này.
+        var tep = new List<(string Base64, string MimeType)>();
+        try
+        {
+            foreach (var f in _files.ToList())
+            {
+                var duongDan = f.FilePath;
+                var mime = f.MimeType;
+                tep.Add(await Task.Run(() => TrichXuatService.ChuanBiTep(File.ReadAllBytes(duongDan), mime)));
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Không đọc được tệp: {ex.Message}", "Lỗi đọc tệp", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        var duocChay = IsSeparateMode
+            ? await TacVuGiaoDien.XacNhanCreditAsync(this, $"Trích xuất {tep.Count} tệp (tách riêng)", () => UocTinhTachRiengAsync(tep))
+            : await TacVuGiaoDien.XacNhanCreditAsync(this, $"Trích xuất {tep.Count} tệp (ghép trang)", () => _trichXuat.UocTinhAsync(tep));
+        if (!duocChay) return;
+
         // Disable UI
         btnAnalyze.IsEnabled = false;
         btnChooseFile.IsEnabled = false;
@@ -430,9 +473,9 @@ public partial class ScanImportDialog : Window
         try
         {
             if (IsSeparateMode)
-                await AnalyzeSeparateAsync();
+                await AnalyzeSeparateAsync(tep);
             else
-                await AnalyzeMergeAsync();
+                await AnalyzeMergeAsync(tep);
         }
         catch (Exception ex)
         {
@@ -449,10 +492,24 @@ public partial class ScanImportDialog : Window
         }
     }
 
+    /// <summary>Tách riêng = mỗi tệp một lượt: cộng khoảng credit của từng tệp.</summary>
+    private async Task<UocTinhKetQua> UocTinhTachRiengAsync(List<(string Base64, string MimeType)> tep)
+    {
+        int min = 0, max = 0, soDu = 0;
+        foreach (var t in tep)
+        {
+            var u = await _trichXuat.UocTinhAsync(new[] { t });
+            min += u.CreditMin;
+            max += u.CreditMax;
+            soDu = u.SoDu;
+        }
+        return new UocTinhKetQua(min, max, soDu, soDu >= max);
+    }
+
     /// <summary>
     /// Chế độ "Ghép trang" — gửi nhiều ảnh trong 1 request AI → 1 văn bản
     /// </summary>
-    private async Task AnalyzeMergeAsync()
+    private async Task AnalyzeMergeAsync(List<(string Base64, string MimeType)> tep)
     {
         loadingPanel.Visibility = Visibility.Visible;
         batchPanel.Visibility = Visibility.Collapsed;
@@ -467,20 +524,9 @@ public partial class ScanImportDialog : Window
             txtLoadingStatus.Text = $"🤖 Đang gửi {_files.Count} file lên AI...";
             txtLoadingDetail.Text = $"Chế độ ghép trang — {_files.Count} ảnh → 1 văn bản";
             
-            // Đọc tất cả file → base64
-            var fileDataList = new List<(string Base64, string MimeType)>();
-            for (int i = 0; i < _files.Count; i++)
-            {
-                txtLoadingStatus.Text = $"📂 Đang đọc file {i + 1}/{_files.Count}: {_files[i].FileName}";
-                var bytes = await File.ReadAllBytesAsync(_files[i].FilePath);
-                var base64 = Convert.ToBase64String(bytes);
-                fileDataList.Add((base64, _files[i].MimeType));
-            }
-            
-            txtLoadingStatus.Text = $"🤖 Đang gửi {_files.Count} file lên AI...";
-            
             // Gọi AI với nhiều ảnh cùng lúc
-            _extractedData = await _aiService.ExtractDocumentFromMultipleFilesAsync(fileDataList);
+            _extractedData = await _trichXuat.ExtractDocumentFromMultipleFilesAsync(tep);
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _trichXuat.LuotCuoi);
             
             progressTimer.Stop();
             txtLoadingStatus.Text = $"✅ Phân tích hoàn tất sau {elapsed}s!";
@@ -502,7 +548,7 @@ public partial class ScanImportDialog : Window
     /// <summary>
     /// Chế độ "Tách riêng" — xử lý từng file → nhiều văn bản
     /// </summary>
-    private async Task AnalyzeSeparateAsync()
+    private async Task AnalyzeSeparateAsync(List<(string Base64, string MimeType)> tep)
     {
         loadingPanel.Visibility = Visibility.Collapsed;
         batchPanel.Visibility = Visibility.Visible;
@@ -510,6 +556,8 @@ public partial class ScanImportDialog : Window
         
         _separateResults.Clear();
         var errors = new List<string>();
+        Exception? loiDung = null;
+        var biCat = new List<string>();
         
         for (int i = 0; i < _files.Count; i++)
         {
@@ -522,16 +570,30 @@ public partial class ScanImportDialog : Window
             
             try
             {
-                var data = await _aiService.ExtractDocumentFromFileAsync(file.FilePath);
+                var data = await _trichXuat.ExtractDocumentFromBytesAsync(tep[i].Base64, tep[i].MimeType);
                 _separateResults.Add((data, file.FilePath));
+                if (_trichXuat.LuotCuoi?.BiCat == true) biCat.Add(file.FileName);
             }
             catch (Exception ex)
             {
-                errors.Add($"❌ {file.FileName}: {ex.Message}");
+                errors.Add($"❌ {file.FileName}: {TacVuGiaoDien.MoTaLoi(ex)}");
+                if (ex is TacVuException { Ma: MaLoiTacVu.KhongDuCredit or MaLoiTacVu.ChuaDangNhap })
+                {
+                    loiDung = ex; // các tệp sau cũng sẽ hỏng y như vậy
+                    break;
+                }
             }
         }
         
         pbBatch.Value = 100;
+        if (loiDung != null) TacVuGiaoDien.MoiMuaCreditNeuThieu(this, loiDung);
+        if (biCat.Count > 0)
+        {
+            MessageBox.Show(
+                $"Kết quả của {biCat.Count} tệp dài vượt giới hạn nên bị cắt bớt ở cuối:\n\n" + string.Join("\n", biCat) +
+                "\n\nNên kiểm tra phần cuối trước khi lưu.",
+                "Kết quả bị cắt", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
         
         if (_separateResults.Count > 0)
         {
@@ -587,6 +649,12 @@ public partial class ScanImportDialog : Window
     
     private void ShowAnalysisError(Exception ex)
     {
+        if (ex is TacVuException)
+        {
+            TacVuGiaoDien.HienLoi(this, ex, "Lỗi phân tích");
+            return;
+        }
+
         var msg = ex.Message + (ex.InnerException?.Message ?? "");
         string errorTitle;
         string errorDetail;
@@ -638,7 +706,7 @@ public partial class ScanImportDialog : Window
 
     #region Form Population
     
-    private void PopulateForm(GeminiAIService.ExtractedDocumentData data)
+    private void PopulateForm(TrichXuatService.ExtractedDocumentData data)
     {
         txtSoVanBan.Text = data.SoVanBan;
         txtTrichYeu.Text = data.TrichYeu;
@@ -818,7 +886,7 @@ public partial class ScanImportDialog : Window
     /// <summary>
     /// Tạo Document từ ExtractedDocumentData (dùng cho chế độ Tách riêng)
     /// </summary>
-    private Document BuildDocumentFromData(GeminiAIService.ExtractedDocumentData data)
+    private Document BuildDocumentFromData(TrichXuatService.ExtractedDocumentData data)
     {
         var doc = new Document
         {

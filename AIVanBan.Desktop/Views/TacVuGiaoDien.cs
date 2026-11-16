@@ -120,4 +120,48 @@ public static class TacVuGiaoDien
                 "Kết quả bị cắt", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
+
+    /// <summary>
+    /// Đọc chữ từ tệp PDF qua trich-xuat (chi-chu): báo trước credit, báo lỗi, báo khi kết quả bị cắt.
+    /// Trả null khi người dùng hủy hoặc đã báo lỗi.
+    /// </summary>
+    public static async Task<string?> DocChuTuPdfAsync(Window owner, string filePath)
+    {
+        (string Base64, string MimeType) tep;
+        try
+        {
+            tep = await Task.Run(() => TrichXuatService.DocTep(filePath));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(owner, $"Không đọc được tệp: {ex.Message}", "Lỗi đọc tệp",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            return null;
+        }
+
+        var dichVu = new TrichXuatService();
+        var motTep = new[] { tep };
+        if (!await XacNhanCreditAsync(owner, "Đọc chữ từ tệp PDF", () => dichVu.UocTinhAsync(motTep, chiChu: true)))
+            return null;
+
+        string chu;
+        Mouse.OverrideCursor = Cursors.Wait;
+        try
+        {
+            chu = await dichVu.ReadTextAsync(tep.Base64, tep.MimeType);
+        }
+        catch (Exception ex)
+        {
+            Mouse.OverrideCursor = null;
+            HienLoi(owner, ex, "Lỗi đọc tệp PDF");
+            return null;
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
+
+        CanhBaoNeuBiCat(owner, dichVu.LuotCuoi);
+        return chu;
+    }
 }

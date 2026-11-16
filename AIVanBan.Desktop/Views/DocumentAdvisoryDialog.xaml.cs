@@ -431,8 +431,9 @@ public partial class DocumentAdvisoryDialog : Window
                         break;
 
                     case ".pdf":
-                        var aiService = new GeminiAIService();
-                        extractedText = await aiService.ReadTextFromFileAsync(filePath);
+                        var docDuoc = await TacVuGiaoDien.DocChuTuPdfAsync(this, filePath);
+                        if (docDuoc == null) return; // đã hủy hoặc đã báo lỗi
+                        extractedText = docDuoc;
                         if (string.IsNullOrWhiteSpace(extractedText))
                         {
                             MessageBox.Show("❌ Không trích xuất được nội dung từ PDF.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
