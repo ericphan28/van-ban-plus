@@ -63,7 +63,7 @@ public class TrichXuatService
 
     /// <summary>
     /// Đọc tệp thành base64 + mime theo đuôi tệp. GIF/BMP/TIFF đổi sang PNG (máy chủ không nhận);
-    /// TIFF/GIF nhiều khung chỉ lấy khung đầu (dùng <see cref="DocTepKemSoTrang"/> để biết có bị bỏ trang không,
+    /// TIFF nhiều khung chỉ lấy khung đầu (dùng <see cref="DocTepKemSoTrang"/> để biết có bị bỏ trang không,
     /// hoặc <see cref="DocTepTungTrang"/> để lấy từng trang); đuôi lạ ném <see cref="ArgumentException"/>.
     /// </summary>
     public static (string Base64, string MimeType) DocTep(string filePath)
@@ -73,7 +73,7 @@ public class TrichXuatService
     }
 
     /// <summary>
-    /// Như <see cref="DocTep"/> nhưng trả thêm số trang (khung) của tệp: TIFF/GIF nhiều khung &gt; 1, loại khác = 1.
+    /// Như <see cref="DocTep"/> nhưng trả thêm số trang (khung) của tệp: TIFF nhiều khung &gt; 1, loại khác = 1.
     /// Chỉ trang đầu được đưa vào kết quả.
     /// </summary>
     public static (string Base64, string MimeType, int SoTrang) DocTepKemSoTrang(string filePath)
@@ -127,8 +127,9 @@ public class TrichXuatService
     }
 
     /// <summary>
-    /// Như <see cref="ChuanBiTep"/> nhưng TIFF/GIF nhiều khung được tách MỖI KHUNG thành một trang PNG riêng
-    /// (dùng cho «Ghép trang»: mỗi trang tính vào giới hạn số tệp và dung lượng). Loại khác trả đúng một mục.
+    /// Như <see cref="ChuanBiTep"/> nhưng TIFF nhiều khung được tách MỖI KHUNG thành một trang PNG riêng
+    /// (dùng cho «Ghép trang»: mỗi trang tính vào giới hạn số tệp và dung lượng). Loại khác, kể cả GIF
+    /// (khung của GIF là hoạt ảnh, không phải trang), trả đúng một mục (khung đầu).
     /// </summary>
     public static List<(string Base64, string MimeType)> ChuanBiTrang(byte[] bytes, string mimeType)
     {
@@ -142,11 +143,11 @@ public class TrichXuatService
         return ds;
     }
 
-    /// <summary>Số trang (khung) của ảnh: chỉ TIFF/GIF mới có thể &gt; 1; ảnh hỏng hoặc loại khác trả 1.</summary>
+    /// <summary>Số trang của ảnh: chỉ TIFF mới có thể &gt; 1 (GIF là hoạt ảnh, luôn tính 1); ảnh hỏng hoặc loại khác trả 1.</summary>
     public static int DemSoTrang(byte[] bytes, string mimeType)
     {
         var mime = (mimeType ?? "").ToLowerInvariant();
-        if (mime is not ("image/tiff" or "image/gif")) return 1;
+        if (mime != "image/tiff") return 1;
         try
         {
             using var vao = new MemoryStream(bytes);

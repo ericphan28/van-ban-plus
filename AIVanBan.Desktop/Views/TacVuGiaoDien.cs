@@ -21,6 +21,7 @@ public static class TacVuGiaoDien
         UocTinhKetQua? uoc = null;
         Exception? loi = null;
         Mouse.OverrideCursor = Cursors.Wait;
+        _dangUocTinh.Add(owner);
         try
         {
             uoc = await uocTinh();
@@ -31,8 +32,12 @@ public static class TacVuGiaoDien
         }
         finally
         {
+            _dangUocTinh.Remove(owner);
             Mouse.OverrideCursor = null;
         }
+
+        // Cửa sổ đã đóng trong lúc ước tính (người dùng đồng ý đóng): không hiện hộp xác nhận, không chạy lượt tính credit.
+        if (DaDong(owner)) return false;
 
         if (loi != null || uoc == null)
         {
@@ -50,11 +55,17 @@ public static class TacVuGiaoDien
         var noiDung = (string.IsNullOrWhiteSpace(moTaThem) ? "" : moTaThem.TrimEnd() + "\n\n")
             + $"💳 {tenViec} dự kiến dùng {KhoangCredit(uoc)}.\n"
             + $"Số dư hiện có: {uoc.SoDu} credit.\n\n"
-            + "Credit trừ theo mức dùng thật, không vượt mức trên; tác vụ lỗi được hoàn credit.\n\n"
+            + "Credit trừ theo mức dùng thật, không vượt mức trên; tác vụ lỗi trước khi có kết quả được hoàn credit.\n\n"
             + "Tiếp tục?";
         return MessageBox.Show(owner, noiDung, "Xác nhận dùng credit",
             MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
     }
+
+    /// <summary>Các cửa sổ đang ước tính credit trong <see cref="XacNhanCreditAsync"/>; chỉ dùng trên luồng giao diện.</summary>
+    private static readonly HashSet<Window> _dangUocTinh = new();
+
+    /// <summary>Cửa sổ đã đóng (không còn nguồn trình bày): không được hiện hộp thoại hay bắt đầu lượt mới.</summary>
+    private static bool DaDong(Window w) => PresentationSource.FromVisual(w) == null;
 
     /// <summary>Các cửa sổ đang chạy đọc chữ (chi-chu) qua <see cref="DocChuTuPdfAsync"/>; chỉ dùng trên luồng giao diện.</summary>
     private static readonly HashSet<Window> _dangDocChu = new();
@@ -65,8 +76,10 @@ public static class TacVuGiaoDien
     /// </summary>
     public static bool HoiTruocKhiDong(Window owner, bool dangChay, System.ComponentModel.CancelEventArgs e)
     {
-        if (!(dangChay || _dangDocChu.Contains(owner)) || e.Cancel) return false;
-        var chon = MessageBox.Show(owner, TacVuThongBao.CauHoiDongKhiDangChay, TacVuThongBao.TieuDeDongKhiDangChay,
+        var uocTinh = _dangUocTinh.Contains(owner);
+        if (!(dangChay || uocTinh || _dangDocChu.Contains(owner)) || e.Cancel) return false;
+        // Đang ước tính thì chưa trừ credit; hộp thoại đặt cờ chạy từ trước ước tính nên pha ước tính xét trước.
+        var chon = MessageBox.Show(owner, TacVuThongBao.CauHoiDong(uocTinh), TacVuThongBao.TieuDeDongKhiDangChay,
             MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
         if (chon != MessageBoxResult.Yes)
         {
@@ -171,7 +184,7 @@ public static class TacVuGiaoDien
             return null;
         }
 
-        // Đọc chữ chỉ nhận một tệp mỗi lượt: TIFF/GIF nhiều trang chỉ đọc trang 1, báo một lần để khỏi hiểu nhầm là đã đọc hết.
+        // Đọc chữ chỉ nhận một tệp mỗi lượt: TIFF nhiều trang chỉ đọc trang 1, báo một lần để khỏi hiểu nhầm là đã đọc hết.
         if (tepDoc.SoTrang > 1)
         {
             var tiepTuc = MessageBox.Show(owner,

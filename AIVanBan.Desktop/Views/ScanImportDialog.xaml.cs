@@ -459,7 +459,7 @@ public partial class ScanImportDialog : Window
         }
 
         // Đọc tệp; GIF/BMP/TIFF đổi sang PNG vì máy chủ không nhận các định dạng này.
-        // «Ghép trang»: TIFF/GIF nhiều khung tách MỖI KHUNG thành một trang (tính vào giới hạn 20 tệp / 20 MB).
+        // «Ghép trang»: TIFF nhiều khung tách MỖI KHUNG thành một trang (tính vào giới hạn 20 tệp / 20 MB).
         // «Tách riêng»: mỗi tệp một lượt nên chỉ lấy khung đầu; tệp nhiều khung được báo một lần bên dưới.
         var tep = new List<(string Base64, string MimeType)>();
         var nhieuTrang = new List<string>();
@@ -495,7 +495,7 @@ public partial class ScanImportDialog : Window
         if (!tachRieng && tep.Count > TrichXuatService.SoTepToiDa)
         {
             MessageBox.Show(
-                $"Sau khi tách các trang của tệp TIFF/GIF nhiều trang, có {tep.Count} trang, vượt tối đa {TrichXuatService.SoTepToiDa} trang mỗi lần ở chế độ «Ghép trang». Cần bớt tệp hoặc chuyển sang «Tách riêng».",
+                $"Sau khi tách các trang của tệp TIFF nhiều trang, có {tep.Count} trang, vượt tối đa {TrichXuatService.SoTepToiDa} trang mỗi lần ở chế độ «Ghép trang». Cần bớt tệp hoặc chuyển sang «Tách riêng».",
                 "Quá nhiều trang", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }

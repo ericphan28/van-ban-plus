@@ -273,17 +273,28 @@ public class TacVuClientTests
         Assert.Equal(TimeSpan.FromSeconds(300), TacVuClient.HanChayTheoTacVu("trich-xuat"));
     }
 
+    private static readonly Regex CamDaiTu = new(@"\b(tôi|chúng tôi|ta|chúng ta|anh|chị|em|bạn|mình|dạ|vâng)\b|(^|\s)ạ([\s.,!?]|$)",
+        RegexOptions.IgnoreCase);
+
     [Fact]
     public void CauHoiDongKhiDangChay_DungLoiVaKhongCoDaiTuNhanXung()
     {
-        var cam = new Regex(@"\b(tôi|chúng tôi|ta|chúng ta|anh|chị|em|bạn|mình|dạ|vâng)\b|(^|\s)ạ([\s.,!?]|$)",
-            RegexOptions.IgnoreCase);
-
         Assert.Equal(
             "Đang chạy tác vụ AI. Đóng cửa sổ thì lượt đang chạy vẫn bị trừ credit và kết quả sẽ mất. Vẫn đóng?",
             TacVuThongBao.CauHoiDongKhiDangChay);
-        Assert.DoesNotMatch(cam, TacVuThongBao.CauHoiDongKhiDangChay);
-        Assert.DoesNotMatch(cam, TacVuThongBao.TieuDeDongKhiDangChay);
+        Assert.DoesNotMatch(CamDaiTu, TacVuThongBao.CauHoiDongKhiDangChay);
+        Assert.DoesNotMatch(CamDaiTu, TacVuThongBao.TieuDeDongKhiDangChay);
+    }
+
+    [Fact]
+    public void CauHoiDongKhiUocTinh_ChuaTruCreditVaTheoDungPha()
+    {
+        Assert.Equal(
+            "Đang ước tính credit. Đóng cửa sổ thì tác vụ sẽ không chạy và không bị trừ credit. Vẫn đóng?",
+            TacVuThongBao.CauHoiDongKhiUocTinh);
+        Assert.DoesNotMatch(CamDaiTu, TacVuThongBao.CauHoiDongKhiUocTinh);
+        Assert.Equal(TacVuThongBao.CauHoiDongKhiUocTinh, TacVuThongBao.CauHoiDong(dangUocTinh: true));
+        Assert.Equal(TacVuThongBao.CauHoiDongKhiDangChay, TacVuThongBao.CauHoiDong(dangUocTinh: false));
     }
 
     [Fact]

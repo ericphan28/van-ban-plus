@@ -327,14 +327,16 @@ public class TrichXuatServiceTests
     }
 
     [Fact]
-    public void ChuanBiTrang_GifHaiKhung_TachThanhHaiTrangPng()
+    public void ChuanBiTrang_GifHaiKhung_ChiLayKhungDau_VaTinhLaMotTrang()
     {
+        // Khung của GIF là hoạt ảnh, không phải trang: không tách.
         var gif = TaoGifHaiKhung();
 
         var trang = TrichXuatService.ChuanBiTrang(gif, "image/gif");
 
-        Assert.Equal(2, trang.Count);
-        Assert.All(trang, t => Assert.Equal("image/png", t.MimeType));
+        Assert.Equal(1, TrichXuatService.DemSoTrang(gif, "image/gif"));
+        Assert.Single(trang);
+        Assert.Equal("image/png", trang[0].MimeType);
     }
 
     [Fact]

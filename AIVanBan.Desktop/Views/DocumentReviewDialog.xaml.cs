@@ -362,7 +362,8 @@ public partial class DocumentReviewDialog : Window
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
-        DialogResult = false;
+        // Chỉ Close(): gán DialogResult cũng đóng cửa sổ nên hộp hỏi ở OnClosing sẽ hiện hai lần khi chọn «No».
+        // Nơi gọi chỉ kiểm ShowDialog() == true, đóng bằng Close() cho kết quả null (= không áp dụng).
         Close();
     }
 
