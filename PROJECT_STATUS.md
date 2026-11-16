@@ -4,7 +4,7 @@
 > Copilot/AI agent: **Luôn đọc file này đầu tiên** trước khi làm bất kỳ tính năng nào.
 > Sau khi hoàn thành tính năng: **Cập nhật file này** ngay lập tức.
 >
-> **Phiên bản hiện tại:** v1.0.20 (AI chạy qua API tác vụ v2, báo trước credit, bỏ gọi thẳng Gemini — chuẩn bị phát hành 2026-11-16)
+> **Phiên bản hiện tại:** v1.0.20 (AI chạy qua API tác vụ v2, báo trước credit, bỏ gọi thẳng Gemini — phát hành 2026-11-17, cập nhật bắt buộc)
 > **Cập nhật lần cuối:** 2026-11-16
 > **Kiến trúc:** WPF .NET 9 + LiteDB + MaterialDesign-in-XAML
 
@@ -204,7 +204,7 @@
 | ✅ | Desktop Cloud Sync Dialog | `AIVanBan.Desktop/Views/CloudSyncDialog.xaml` | Bật/tắt sync, cấu hình, sync now, backup, restore |
 | ✅ | Cloud button on MainWindow | `AIVanBan.Desktop/MainWindow.xaml` | Nút ☁ Cloud trên toolbar |
 | ✅ | Đường mua gói (07/11/2026) | `vanbanplus-api`: `/dang-ky`, `/thanh-toan`, `/admin/orders`, `/api/orders`, `/api/webhooks/sepay`, migration 002 | VietQR + webhook SePay + admin xác nhận tay. Chỉ mở khi đặt đủ biến `BANK_*`. CSDL từ 07/11/2026 ở Megacore (`api-vanbanplus.giakiemso.com`), bản trống |
-| ✅ | Credit + API tác vụ v2 (đợt 1, 12/11/2026) | `vanbanplus-api`: migration 004, `/api/v2/tac-vu/tom-tat`, `/api/v2/credit`, `/admin/credit` | `/api/ai/*` trừ credit theo token khi dùng khóa hệ thống (Free 30 · Starter 400 · Pro 1.100 · Business 3.000 credit/tháng). Còn 5 tác vụ + lưu hỗ trợ + gói nạp (đợt 2), bản cài máy gọi v2 (đợt 3); điều kiện trước khi mở bán ở spec §13 Đợt 3: bản cài máy v1.0.20 gọi đủ 6 tác vụ v2, không còn prompt C# (chờ phát hành). |
+| ✅ | Credit + API tác vụ v2 (đợt 1, 12/11/2026) | `vanbanplus-api`: migration 004, `/api/v2/tac-vu/tom-tat`, `/api/v2/credit`, `/admin/credit` | `/api/ai/*` trừ credit theo token khi dùng khóa hệ thống (Free 30 · Starter 400 · Pro 1.100 · Business 3.000 credit/tháng). Còn 5 tác vụ + lưu hỗ trợ + gói nạp (đợt 2), bản cài máy gọi v2 (đợt 3); điều kiện trước khi mở bán ở spec §13 Đợt 3: bản cài máy v1.0.20 gọi đủ 6 tác vụ v2, không còn prompt C# (phát hành 17/11/2026, cập nhật bắt buộc). |
 | ✅ | API tác vụ v2 đợt 2a (16/11/2026) | `vanbanplus-api`: migration 007 (bảng giá), `/api/v2/tac-vu/kiem-tra`, `/tham-muu`, `/bao-cao-dinh-ky` | Prompt chép nguyên văn từ C#, so khớp tệp mẫu. Trần token ra kiem-tra tăng theo độ dài. Đo proxy: 30.292 ký tự chạy 49 giây, không bị cắt (Cloudflare cắt ở 100 giây — rủi ro với văn bản rất dài). Còn trich-xuat, soan-thao (2b), gói nạp + lưu hỗ trợ (2c), bản cài máy gọi v2 (đợt 3) |
 | ✅ | API tác vụ v2 đợt 2b (16/11/2026) | `vanbanplus-api`: migration 008, `/api/v2/tac-vu/trich-xuat` (cau-truc / chi-chu, PDF·PNG·JPEG·WEBP·HEIC·HEIF, tối đa 20 tệp), `/soan-thao` | Prompt trích xuất dùng chung với route cũ; soan-thao chép từ `ComposePromptBuilder` (C#), địa phương là đầu vào `dia_phuong`, năm theo giờ VN. Đếm trang PDF kể cả luồng nén (chặn bom nén, chạy tuyến tính). Đủ 6 tác vụ v2. Còn gói nạp + lưu hỗ trợ (2c), bản cài máy gọi v2 (đợt 3) |
 | ✅ | Gói nạp + lưu hỗ trợ + v2 chỉ Vertex (đợt 2c, 16/11/2026) | `vanbanplus-api`: migration 005 (đơn nạp, `pay_order` cấp lô 90 ngày), 006 (`tac_vu_luu` mã hóa AES-256-GCM, nhật ký mở xem, dọn bằng pg_cron `vbp-don-luu-ho-tro`), `/api/goi-nap`, công tắc ở `/tai-khoan`, mở bản lưu ở `/admin/credit` | Gói nạp 49k/99k/199k = 160/350/750 credit, 90 ngày. Lưu hỗ trợ mặc định tắt, 7 ngày, tắt là xóa ngay; khóa `TAC_VU_LUU_KHOA` ở Coolify (chỉ lúc chạy) + `~/.gikidi`. Tác vụ v2 không bao giờ tự chuyển sang AI Studio miễn phí (spec §13.1). Còn bản cài máy gọi v2 (đợt 3) |
