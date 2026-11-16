@@ -1,4 +1,4 @@
-using System.Text.Json;
+using System.Globalization;
 using AIVanBan.Core.Models;
 
 namespace AIVanBan.Core.Services;
@@ -9,21 +9,26 @@ namespace AIVanBan.Core.Services;
 /// </summary>
 public class DocumentAdvisoryService
 {
-    private readonly GeminiAIService _aiService;
+    private readonly TacVuClient _tacVu;
 
-    public DocumentAdvisoryService()
+    public DocumentAdvisoryService() : this(new TacVuClient()) { }
+
+    public DocumentAdvisoryService(TacVuClient tacVu)
     {
-        _aiService = new GeminiAIService();
+        _tacVu = tacVu;
     }
 
-    public DocumentAdvisoryService(GeminiAIService aiService)
-    {
-        _aiService = aiService;
-    }
+    /// <summary>Credit đã trừ, số dư, cờ bị cắt của lượt chạy gần nhất.</summary>
+    public ThongTinLuot? LuotCuoi { get; private set; }
+
+    /// <summary>Khoảng credit dự kiến cho đúng đầu vào sẽ gửi (không gọi AI, không giữ credit).</summary>
+    public Task<UocTinhKetQua> UocTinhAsync(string content, string documentType = "", string title = "",
+        string issuer = "", DocumentAdvisoryContext? context = null)
+        => _tacVu.UocTinhAsync("tham-muu", DauVao(content, documentType, title, issuer, context));
 
     /// <summary>
-    /// Phân tích văn bản đến và đưa ra tham mưu xử lý.
-    /// Overload mới nhận đầy đủ metadata từ Document model.
+    /// Phân tích văn bản đến và tham mưu xử lý qua tác vụ v2 tham-muu. Kết quả bị cắt mà máy chủ trả chuỗi thô:
+    /// ném <see cref="KetQuaBiCatException"/> (credit đã trừ, <see cref="LuotCuoi"/> vẫn được ghi).
     /// </summary>
     public async Task<DocumentAdvisory> AdviseAsync(
         string content,
@@ -32,15 +37,58 @@ public class DocumentAdvisoryService
         string issuer = "",
         DocumentAdvisoryContext? context = null)
     {
+        var kq = await _tacVu.ChayAsync<DocumentAdvisory>("tham-muu", DauVao(content, documentType, title, issuer, context));
+        LuotCuoi = kq.Luot;
+        if (kq.ChuoiTho != null || kq.KetQua is null)
+            throw new KetQuaBiCatException("tham mưu", kq.Luot);
+        return kq.KetQua;
+    }
+
+    private static object DauVao(string content, string documentType, string title, string issuer, DocumentAdvisoryContext? context)
+    {
         if (string.IsNullOrWhiteSpace(content))
             throw new ArgumentException("Nội dung văn bản không được để trống.");
+        return new
+        {
+            noi_dung = content,
+            loai_van_ban = documentType,
+            tieu_de = title,
+            co_quan = issuer,
+            ngu_canh = TaoNguCanh(context),
+        };
+    }
 
-        var systemPrompt = BuildSystemPrompt();
-        var userPrompt = BuildUserPrompt(content, documentType, title, issuer, context, DateTime.Now);
+    /// <summary>
+    /// DocumentAdvisoryContext → ngu_canh theo hợp đồng v2. Ngày gửi dạng ISO yyyy-MM-dd.
+    /// Chỉ gửi trường có giá trị (chuỗi không trắng, mảng có ít nhất một phần tử không trắng).
+    /// </summary>
+    internal static Dictionary<string, object>? TaoNguCanh(DocumentAdvisoryContext? c)
+    {
+        if (c == null) return null;
+        var d = new Dictionary<string, object>();
+        void Chuoi(string khoa, string? v) { if (!string.IsNullOrWhiteSpace(v)) d[khoa] = v; }
+        void Ngay(string khoa, DateTime? v) { if (v.HasValue) d[khoa] = v.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture); }
+        void Mang(string khoa, string[]? v)
+        {
+            var co = v?.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            if (co is { Length: > 0 }) d[khoa] = co;
+        }
 
-        var responseText = await _aiService.GenerateContentAsync(userPrompt, systemPrompt);
-
-        return ParseResult(responseText);
+        Chuoi("huong", c.Direction);
+        Chuoi("nhom", c.Category);
+        Chuoi("so_van_ban", c.DocumentNumber);
+        Ngay("ngay_ban_hanh", c.IssuedDate);
+        Chuoi("do_khan", c.UrgencyLevel);
+        Chuoi("do_mat", c.SecurityLevel);
+        Ngay("han_xu_ly", c.DueDate);
+        Chuoi("nguoi_ky", c.SignerName);
+        Chuoi("chuc_danh_ky", c.SignerTitle);
+        Mang("noi_nhan", c.Recipients);
+        Chuoi("giao_cho", c.AssignedTo);
+        Chuoi("ghi_chu_xu_ly", c.ProcessingNotes);
+        Mang("can_cu", c.BasedOn);
+        Chuoi("van_ban_lien_quan", c.RelatedDocumentsSummary);
+        return d;
     }
 
     internal static string BuildSystemPrompt()
@@ -238,63 +286,6 @@ QUY TẮC QUAN TRỌNG:
         parts.Add($"NỘI DUNG VĂN BẢN:\n\n{content}");
 
         return string.Join("\n\n", parts);
-    }
-
-    private DocumentAdvisory ParseResult(string responseText)
-    {
-        try
-        {
-            // Strip markdown code fences (```json ... ``` hoặc ``` ... ```)
-            var cleaned = responseText.Trim();
-            if (cleaned.StartsWith("```"))
-            {
-                // Remove opening fence: ```json or ```
-                var firstNewline = cleaned.IndexOf('\n');
-                if (firstNewline > 0)
-                    cleaned = cleaned.Substring(firstNewline + 1);
-            }
-            if (cleaned.EndsWith("```"))
-            {
-                cleaned = cleaned.Substring(0, cleaned.Length - 3).Trim();
-            }
-
-            // Tìm JSON object trong text
-            var jsonStart = cleaned.IndexOf('{');
-            var jsonEnd = cleaned.LastIndexOf('}');
-
-            if (jsonStart >= 0 && jsonEnd > jsonStart)
-            {
-                var jsonStr = cleaned.Substring(jsonStart, jsonEnd - jsonStart + 1);
-                
-                // JsonSerializer options: cho phép trailing commas, comments
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    AllowTrailingCommas = true,
-                    ReadCommentHandling = JsonCommentHandling.Skip
-                };
-                
-                var result = JsonSerializer.Deserialize<DocumentAdvisory>(jsonStr, options);
-                if (result != null && !string.IsNullOrWhiteSpace(result.Summary))
-                    return result;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"⚠️ Parse advisory JSON failed: {ex.Message}");
-        }
-
-        // Fallback: trả về tóm tắt dạng text thuần (strip markdown fences)
-        var fallbackText = responseText
-            .Replace("```json", "").Replace("```", "")
-            .Trim();
-        
-        return new DocumentAdvisory
-        {
-            Summary = fallbackText.Length > 800 ? fallbackText[..800] + "..." : fallbackText,
-            Priority = "medium",
-            IncomingType = "Khác"
-        };
     }
 }
 
