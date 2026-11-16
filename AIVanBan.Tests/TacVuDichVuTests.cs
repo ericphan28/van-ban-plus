@@ -98,4 +98,70 @@ public class TacVuDichVuTests
         Assert.Equal("Tóm tắt đủ đọc", kq.Brief);
         Assert.True(dv.LuotCuoi!.BiCat);
     }
+
+    [Fact]
+    public async Task KiemTra_GuiVanBanDoiChieu_VaBoMarkdownTrongBanDeXuat()
+    {
+        var h = new HandlerTacVuGia()
+            .ThanhCong("""{"overall_score":7,"summary":"Còn lỗi thể thức","issues":[{"severity":"critical","category":"format","description":"Thiếu nơi nhận"}],"suggested_content":"**Điều 1.** Nội dung"}""")
+            .ThanhCong("""{"overall_score":9,"summary":"Tốt","issues":[]}""");
+        var dv = new DocumentReviewService(TaoClient(h));
+
+        var kq = await dv.ReviewDocumentAsync("Nội dung cần soát", "Công văn", "V/v báo cáo", "UBND xã Minh An", "Văn bản mẫu");
+
+        Assert.Equal(7, kq.OverallScore);
+        Assert.Equal(1, kq.CriticalCount);
+        Assert.Equal("Điều 1. Nội dung", kq.SuggestedContent);
+        Assert.Equal("https://vbp.thu/api/v2/tac-vu/kiem-tra", h.DaNhan[0].Url);
+        var b = Than(h, 0);
+        Assert.Equal("Nội dung cần soát", b.GetProperty("noi_dung").GetString());
+        Assert.Equal("Công văn", b.GetProperty("loai_van_ban").GetString());
+        Assert.Equal("Văn bản mẫu", b.GetProperty("van_ban_doi_chieu").GetString());
+
+        await dv.ReviewDocumentAsync("Nội dung cần soát");
+        Assert.False(Than(h, 1).TryGetProperty("van_ban_doi_chieu", out _));
+    }
+
+    [Fact]
+    public async Task KiemTra_UocTinhCungDauVao_NoiDungRongKhongGoiMayChu()
+    {
+        var h = new HandlerTacVuGia().TraVe(System.Net.HttpStatusCode.OK,
+            """{"success":true,"data":{"credit_min":5,"credit_max":20,"so_du":50,"du_credit":true}}""");
+        var dv = new DocumentReviewService(TaoClient(h));
+
+        var u = await dv.UocTinhAsync("Nội dung", "Công văn", referenceContent: "Mẫu");
+
+        Assert.Equal(20, u.CreditMax);
+        Assert.Equal("https://vbp.thu/api/v2/tac-vu/kiem-tra/uoc-tinh", h.DaNhan[0].Url);
+        Assert.Equal("Mẫu", Than(h).GetProperty("van_ban_doi_chieu").GetString());
+
+        await Assert.ThrowsAsync<ArgumentException>(() => dv.ReviewDocumentAsync("  "));
+        Assert.Single(h.DaNhan);
+    }
+
+    [Fact]
+    public async Task KiemTra_BiCatKetQuaLaChuoiTho_NemKetQuaBiCatGiuLuot()
+    {
+        var h = new HandlerTacVuGia().ThanhCong("\"{\\\"overall_score\\\":7,\\\"issues\\\":[{\\\"sever\"", creditDaTru: 12, soDu: 18, biCat: true);
+        var dv = new DocumentReviewService(TaoClient(h));
+
+        var loi = await Assert.ThrowsAsync<KetQuaBiCatException>(() => dv.ReviewDocumentAsync("Văn bản rất dài"));
+
+        Assert.Equal(12, loi.Luot.CreditDaTru);
+        Assert.Contains("kiểm tra", loi.Message);
+        Assert.Equal(12, dv.LuotCuoi!.CreditDaTru);
+        Assert.True(dv.LuotCuoi.BiCat);
+    }
+
+    [Fact]
+    public async Task KiemTra_BiCatNhungVanLaDoiTuong_TraKetQuaVaGiuCoBiCat()
+    {
+        var h = new HandlerTacVuGia().ThanhCong("""{"overall_score":6,"summary":"Đủ đọc","suggested_content":"__Nội dung__"}""", biCat: true);
+        var dv = new DocumentReviewService(TaoClient(h));
+
+        var kq = await dv.ReviewDocumentAsync("Văn bản");
+
+        Assert.Equal("Nội dung", kq.SuggestedContent);
+        Assert.True(dv.LuotCuoi!.BiCat);
+    }
 }

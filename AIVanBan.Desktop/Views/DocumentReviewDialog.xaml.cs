@@ -18,6 +18,7 @@ public partial class DocumentReviewDialog : Window
     private int _elapsedSeconds;
     private string? _referenceContent;
     private string? _uploadedFilePath;
+    private readonly DocumentReviewService _service = new();
 
     /// <summary>
     /// Nội dung đã sửa (nếu user chọn "Áp dụng")
@@ -103,13 +104,14 @@ public partial class DocumentReviewDialog : Window
 
         try
         {
-            var reviewService = new DocumentReviewService();
-            _result = await reviewService.ReviewDocumentAsync(_content, _documentType, _title, _issuer, _referenceContent);
+            _result = await _service.ReviewDocumentAsync(_content, _documentType, _title, _issuer, _referenceContent);
             DisplayResults(_result);
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _service.LuotCuoi);
         }
         catch (Exception ex)
         {
-            ShowError($"Lỗi khi phân tích: {ex.Message}");
+            ShowError(TacVuGiaoDien.MoTaLoi(ex));
+            TacVuGiaoDien.MoiMuaCreditNeuThieu(this, ex);
         }
         finally
         {
@@ -328,6 +330,10 @@ public partial class DocumentReviewDialog : Window
         _content = inputText;
         if (cboQuickDocType.SelectedValue is string selectedType)
             _documentType = selectedType;
+
+        if (!await TacVuGiaoDien.XacNhanCreditAsync(this, "Kiểm tra văn bản",
+                () => _service.UocTinhAsync(_content, _documentType, _title, _issuer, _referenceContent)))
+            return;
 
         // Ẩn input panel, hiện loading
         pnlQuickInput.Visibility = Visibility.Collapsed;

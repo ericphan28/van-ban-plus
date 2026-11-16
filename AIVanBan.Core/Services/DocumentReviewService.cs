@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AIVanBan.Core.Models;
 
 namespace AIVanBan.Core.Services;
@@ -9,42 +8,60 @@ namespace AIVanBan.Core.Services;
 /// </summary>
 public class DocumentReviewService
 {
-    private readonly GeminiAIService _aiService;
+    private readonly TacVuClient _tacVu;
 
-    public DocumentReviewService()
+    public DocumentReviewService() : this(new TacVuClient()) { }
+
+    public DocumentReviewService(TacVuClient tacVu)
     {
-        _aiService = new GeminiAIService();
+        _tacVu = tacVu;
     }
 
-    public DocumentReviewService(GeminiAIService aiService)
-    {
-        _aiService = aiService;
-    }
+    /// <summary>Credit đã trừ, số dư, cờ bị cắt của lượt chạy gần nhất.</summary>
+    public ThongTinLuot? LuotCuoi { get; private set; }
+
+    /// <summary>Khoảng credit dự kiến cho đúng đầu vào sẽ gửi (không gọi AI, không giữ credit).</summary>
+    public Task<UocTinhKetQua> UocTinhAsync(string content, string documentType = "", string title = "",
+        string issuer = "", string? referenceContent = null)
+        => _tacVu.UocTinhAsync("kiem-tra", DauVao(content, documentType, title, issuer, referenceContent));
 
     /// <summary>
-    /// Kiểm tra nội dung văn bản bằng AI
+    /// Kiểm tra nội dung văn bản qua tác vụ v2 kiem-tra. Kết quả bị cắt mà máy chủ trả chuỗi thô:
+    /// ném <see cref="KetQuaBiCatException"/> (credit đã trừ, <see cref="LuotCuoi"/> vẫn được ghi).
     /// </summary>
-    /// <param name="content">Nội dung văn bản cần kiểm tra</param>
-    /// <param name="documentType">Loại văn bản (Quyết định, Công văn...)</param>
-    /// <param name="title">Tiêu đề/trích yếu</param>
-    /// <param name="issuer">Cơ quan ban hành</param>
-    /// <param name="referenceContent">Nội dung file mẫu để đối chiếu (tùy chọn)</param>
+    /// <param name="referenceContent">Nội dung văn bản mẫu để đối chiếu (tùy chọn).</param>
     public async Task<DocumentReviewResult> ReviewDocumentAsync(
-        string content, 
+        string content,
         string documentType = "",
         string title = "",
         string issuer = "",
         string? referenceContent = null)
     {
+        var kq = await _tacVu.ChayAsync<DocumentReviewResult>("kiem-tra",
+            DauVao(content, documentType, title, issuer, referenceContent));
+        LuotCuoi = kq.Luot;
+        if (kq.ChuoiTho != null || kq.KetQua is null)
+            throw new KetQuaBiCatException("kiểm tra", kq.Luot);
+
+        var result = kq.KetQua;
+        // Hậu xử lý hiển thị (không phải prompt): văn bản hành chính là chữ thuần, bỏ ký hiệu markdown.
+        if (!string.IsNullOrWhiteSpace(result.SuggestedContent))
+            result.SuggestedContent = StripMarkdown(result.SuggestedContent);
+        return result;
+    }
+
+    private static object DauVao(string content, string documentType, string title, string issuer, string? referenceContent)
+    {
         if (string.IsNullOrWhiteSpace(content))
             throw new ArgumentException("Nội dung văn bản không được để trống.");
-
-        var systemPrompt = BuildSystemPrompt();
-        var userPrompt = BuildUserPrompt(content, documentType, title, issuer, referenceContent);
-
-        var responseText = await _aiService.GenerateContentAsync(userPrompt, systemPrompt);
-
-        return ParseReviewResult(responseText);
+        return new
+        {
+            noi_dung = content,
+            loai_van_ban = documentType,
+            tieu_de = title,
+            co_quan = issuer,
+            van_ban_doi_chieu = string.IsNullOrWhiteSpace(referenceContent) ? null : referenceContent,
+        };
     }
 
     internal static string BuildSystemPrompt()
@@ -196,58 +213,6 @@ QUY TẮC:
         }
 
         return prompt;
-    }
-
-    private DocumentReviewResult ParseReviewResult(string responseText)
-    {
-        try
-        {
-            // Loại bỏ markdown code block nếu AI wrap trong ```json...```
-            var json = responseText.Trim();
-            if (json.StartsWith("```"))
-            {
-                var firstNewLine = json.IndexOf('\n');
-                if (firstNewLine > 0)
-                    json = json[(firstNewLine + 1)..];
-                if (json.EndsWith("```"))
-                    json = json[..^3];
-                json = json.Trim();
-            }
-
-            var result = JsonSerializer.Deserialize<DocumentReviewResult>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            if (result == null)
-            {
-                return new DocumentReviewResult
-                {
-                    OverallScore = 0,
-                    Summary = "Không thể phân tích kết quả từ AI."
-                };
-            }
-
-            // Loại bỏ markdown artifacts khỏi suggested_content
-            if (!string.IsNullOrWhiteSpace(result.SuggestedContent))
-            {
-                result.SuggestedContent = StripMarkdown(result.SuggestedContent);
-            }
-
-            return result;
-        }
-        catch (JsonException ex)
-        {
-            Console.WriteLine($"⚠️ Lỗi parse JSON review: {ex.Message}");
-            Console.WriteLine($"Response: {responseText}");
-
-            // Trả về kết quả lỗi
-            return new DocumentReviewResult
-            {
-                OverallScore = 0,
-                Summary = $"AI đã phân tích nhưng không thể đọc kết quả. Vui lòng thử lại.\n\nChi tiết: {responseText}"
-            };
-        }
     }
 
     /// <summary>
