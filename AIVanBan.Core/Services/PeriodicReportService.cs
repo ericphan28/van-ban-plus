@@ -8,16 +8,23 @@ namespace AIVanBan.Core.Services;
 /// </summary>
 public class PeriodicReportService
 {
-    private readonly GeminiAIService _aiService;
+    private readonly TacVuClient _tacVu;
 
-    public PeriodicReportService(GeminiAIService? aiService = null)
+    public PeriodicReportService(TacVuClient? tacVu = null)
     {
-        _aiService = aiService ?? new GeminiAIService();
+        _tacVu = tacVu ?? new TacVuClient();
     }
 
-    /// <summary>
-    /// Tạo báo cáo định kỳ từ số liệu
-    /// </summary>
+    /// <summary>Credit đã trừ, số dư, cờ bị cắt của lượt chạy gần nhất.</summary>
+    public ThongTinLuot? LuotCuoi { get; private set; }
+
+    /// <summary>Khoảng credit dự kiến cho đúng đầu vào sẽ gửi (không gọi AI, không giữ credit).</summary>
+    public Task<UocTinhKetQua> UocTinhAsync(string reportPeriodType, string reportPeriod, string field, string orgName,
+        string rawData, string? previousReport, string signerName, string signerTitle)
+        => _tacVu.UocTinhAsync("bao-cao-dinh-ky",
+            DauVao(reportPeriodType, reportPeriod, field, orgName, rawData, previousReport, signerName, signerTitle));
+
+    /// <summary>Tạo báo cáo định kỳ từ số liệu qua tác vụ v2 bao-cao-dinh-ky.</summary>
     public async Task<string> GenerateReportAsync(
         string reportPeriodType,   // Tuần / Tháng / Quý / Năm
         string reportPeriod,       // VD: "Tháng 02/2026", "Quý I/2026"
@@ -28,12 +35,24 @@ public class PeriodicReportService
         string signerName,         // Người ký
         string signerTitle)        // Chức danh
     {
-        var systemInstruction = BuildSystemPrompt();
-        var prompt = BuildUserPrompt(reportPeriodType, reportPeriod, field, orgName,
-                                      rawData, previousReport, signerName, signerTitle);
-
-        return await _aiService.GenerateContentAsync(prompt, systemInstruction);
+        var kq = await _tacVu.ChayAsync<string>("bao-cao-dinh-ky",
+            DauVao(reportPeriodType, reportPeriod, field, orgName, rawData, previousReport, signerName, signerTitle));
+        LuotCuoi = kq.Luot;
+        return kq.KetQua;
     }
+
+    private static object DauVao(string reportPeriodType, string reportPeriod, string field, string orgName,
+        string rawData, string? previousReport, string signerName, string signerTitle) => new
+    {
+        loai_ky = reportPeriodType,
+        ky = reportPeriod,
+        linh_vuc = field,
+        don_vi = orgName,
+        so_lieu = rawData,
+        bao_cao_ky_truoc = string.IsNullOrWhiteSpace(previousReport) ? null : previousReport,
+        nguoi_ky = signerName,
+        chuc_danh = signerTitle,
+    };
 
     internal static string BuildSystemPrompt()
     {

@@ -301,4 +301,52 @@ public class TacVuDichVuTests
         Assert.Equal(6, dv.LuotCuoi!.CreditDaTru);
         Assert.True(dv.LuotCuoi.BiCat);
     }
+
+    [Fact]
+    public async Task BaoCaoDinhKy_GuiDuTruongVaTraChuoi()
+    {
+        var h = new HandlerTacVuGia()
+            .ThanhCong("\"Thực hiện chỉ đạo của UBND tỉnh...\\nI. KẾT QUẢ ĐẠT ĐƯỢC\"")
+            .ThanhCong("\"Nội dung\"");
+        var dv = new PeriodicReportService(TaoClient(h));
+
+        var kq = await dv.GenerateReportAsync("Tháng", "Tháng 10/2026", "Kinh tế - Xã hội", "UBND xã Minh An",
+            "Thu ngân sách 1,2 tỷ đồng", "Kỳ trước 1,0 tỷ đồng", "Nguyễn Văn An", "CHỦ TỊCH");
+
+        Assert.StartsWith("Thực hiện chỉ đạo", kq);
+        Assert.Contains("\nI. KẾT QUẢ", kq);
+        Assert.Equal("https://vbp.thu/api/v2/tac-vu/bao-cao-dinh-ky", h.DaNhan[0].Url);
+        var b = Than(h, 0);
+        Assert.Equal("Tháng", b.GetProperty("loai_ky").GetString());
+        Assert.Equal("Tháng 10/2026", b.GetProperty("ky").GetString());
+        Assert.Equal("Kinh tế - Xã hội", b.GetProperty("linh_vuc").GetString());
+        Assert.Equal("UBND xã Minh An", b.GetProperty("don_vi").GetString());
+        Assert.Equal("Thu ngân sách 1,2 tỷ đồng", b.GetProperty("so_lieu").GetString());
+        Assert.Equal("Kỳ trước 1,0 tỷ đồng", b.GetProperty("bao_cao_ky_truoc").GetString());
+        Assert.Equal("Nguyễn Văn An", b.GetProperty("nguoi_ky").GetString());
+        Assert.Equal("CHỦ TỊCH", b.GetProperty("chuc_danh").GetString());
+
+        await dv.GenerateReportAsync("Quý", "Quý IV/2026", "CCHC", "UBND xã Minh An", "Số liệu", null, "", "");
+        Assert.False(Than(h, 1).TryGetProperty("bao_cao_ky_truoc", out _));
+    }
+
+    [Fact]
+    public async Task BaoCaoDinhKy_UocTinhCungDauVao_GhiLuotKhiBiCat()
+    {
+        var h = new HandlerTacVuGia()
+            .TraVe(System.Net.HttpStatusCode.OK,
+                """{"success":true,"data":{"credit_min":6,"credit_max":18,"so_du":60,"du_credit":true}}""")
+            .ThanhCong("\"Báo cáo dài bị cắt\"", creditDaTru: 15, soDu: 45, biCat: true);
+        var dv = new PeriodicReportService(TaoClient(h));
+
+        var u = await dv.UocTinhAsync("Tháng", "Tháng 10/2026", "CCHC", "UBND xã Minh An", "Số liệu", "  ", "", "");
+        Assert.Equal(18, u.CreditMax);
+        Assert.Equal("https://vbp.thu/api/v2/tac-vu/bao-cao-dinh-ky/uoc-tinh", h.DaNhan[0].Url);
+        Assert.False(Than(h, 0).TryGetProperty("bao_cao_ky_truoc", out _));
+
+        var kq = await dv.GenerateReportAsync("Tháng", "Tháng 10/2026", "CCHC", "UBND xã Minh An", "Số liệu", null, "", "");
+        Assert.Equal("Báo cáo dài bị cắt", kq);
+        Assert.True(dv.LuotCuoi!.BiCat);
+        Assert.Equal(15, dv.LuotCuoi.CreditDaTru);
+    }
 }

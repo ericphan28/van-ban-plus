@@ -13,6 +13,8 @@ public partial class PeriodicReportDialog : Window
     private readonly PeriodicReportService _reportService;
     private readonly WordReaderService _wordReader = new();
     private string _generatedContent = string.Empty;
+    // Chặn bấm lặp: một lượt (ước tính + xác nhận + chạy) tại một thời điểm, tránh trừ credit hai lần.
+    private bool _dangChay;
 
     public Document? GeneratedDocument { get; private set; }
 
@@ -799,6 +801,20 @@ TUYÊN TRUYỀN PCTN:
 
     private async void Generate_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
+        _dangChay = true;
+        try
+        {
+            await GenerateAsync();
+        }
+        finally
+        {
+            _dangChay = false;
+        }
+    }
+
+    private async Task GenerateAsync()
+    {
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
 
         // Validate
@@ -822,14 +838,16 @@ TUYÊN TRUYỀN PCTN:
         var field = cboField.Text;
         var hasPrevious = !string.IsNullOrWhiteSpace(txtPreviousReport.Text);
 
-        var confirmMsg = $"📊 Tạo báo cáo {periodType.ToLower()} — {field}\n" +
-                         $"📅 Kỳ: {period}\n" +
-                         $"🏛️ Đơn vị: {txtOrgName.Text}\n" +
-                         $"📋 So sánh kỳ trước: {(hasPrevious ? "Có" : "Không")}\n\n" +
-                         "Bấm OK để gọi AI tạo báo cáo.";
+        var moTa = $"📊 Tạo báo cáo {periodType.ToLower()} — {field}\n" +
+                   $"📅 Kỳ: {period}\n" +
+                   $"🏛️ Đơn vị: {txtOrgName.Text}\n" +
+                   $"📋 So sánh kỳ trước: {(hasPrevious ? "Có" : "Không")}";
+        var kyTruoc = hasPrevious ? txtPreviousReport.Text : null;
 
-        if (MessageBox.Show(confirmMsg, "Xác nhận tạo báo cáo", 
-            MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+        if (!await TacVuGiaoDien.XacNhanCreditAsync(this, "Báo cáo định kỳ",
+                () => _reportService.UocTinhAsync(periodType, period, field, txtOrgName.Text, txtRawData.Text,
+                    kyTruoc, txtSignerName.Text, txtSignerTitle.Text),
+                moTa))
             return;
 
         // Show loading
@@ -847,7 +865,7 @@ TUYÊN TRUYỀN PCTN:
                 field,
                 txtOrgName.Text,
                 txtRawData.Text,
-                string.IsNullOrWhiteSpace(txtPreviousReport.Text) ? null : txtPreviousReport.Text,
+                kyTruoc,
                 txtSignerName.Text,
                 txtSignerTitle.Text
             );
@@ -861,14 +879,14 @@ TUYÊN TRUYỀN PCTN:
             LoadingPanel.Visibility = Visibility.Collapsed;
             ResultCard.Visibility = Visibility.Visible;
             ActionButtons.Visibility = Visibility.Visible;
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _reportService.LuotCuoi);
         }
         catch (Exception ex)
         {
             LoadingPanel.Visibility = Visibility.Collapsed;
             PlaceholderPanel.Visibility = Visibility.Visible;
 
-            MessageBox.Show($"Lỗi khi gọi AI:\n\n{ex.Message}", "Lỗi AI",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            TacVuGiaoDien.HienLoi(this, ex, "Lỗi AI");
         }
         finally
         {
