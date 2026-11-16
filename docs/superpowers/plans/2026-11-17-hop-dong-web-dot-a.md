@@ -66,6 +66,12 @@ cổng; không sửa script dùng chung).
 | `XUNG_DOT_PHIEN_BAN` | 409 | `phien_ban` gửi lên khác bản trong CSDL; `data.ban_moi` |
 | `HET_DUNG_LUONG` | 403 | Đang chỉ đọc vì vượt hạn mức |
 | `TEP_KHONG_HOP_LE` | 400 | Mime không cho phép, quá 50 MB, kích thước thật khác khai báo |
+| `CAN_MA_2_LOP` | 400 | Đặt lại mật khẩu trên tài khoản bật 2 lớp: thiếu / sai `ma_2_lop`; mã email đã dùng → lấy mã mới |
+| `CHUA_CO_MAT_KHAU` | 409 | Đổi mật khẩu trên tài khoản chưa có mật khẩu → đặt qua OTP `dat-lai-mat-khau` |
+| L1 thêm | | `DAU_VAO_SAI` 400 · `EMAIL_DA_CO` 409 · `TAI_KHOAN_NGUNG` 403 · `GOOGLE_SAI` 401 · `GOOGLE_LOI` 502 · `EMAIL_LOI` 502 · `CHUA_CAU_HINH` 503 · `SAI_MAT_KHAU` 400 · `DA_BAT` / `CHUA_BAT` 409 · `NGUON_LA` 403 · `LOI_MAY_CHU` 500 |
+
+- **Route v2 có sẵn** (`/api/v2/credit`, `/api/v2/tac-vu/*`) trả 401 **không có `code`** khi Bearer hết hạn / bị thu hồi → web: mọi
+  401 khi đang gửi Bearer thì gọi `lam-moi` một lần rồi thử lại; `lam-moi` hỏng thì về màn đăng nhập.
 
 - Ngày giờ: ISO 8601 có múi giờ. Tên trường JSON: snake_case tiếng Việt không dấu như các route v2 hiện có.
 
@@ -84,15 +90,15 @@ cookie. `NguoiDung = { id, email, ho_ten, goi, goi_het_han, co_mat_khau, hai_lop
 | `POST /api/v2/phien/dang-nhap` | `{ email, mat_khau }` | phiên · `CAN_2_LOP` · `SAI_DANG_NHAP` · `TAI_KHOAN_KHOA` |
 | `POST /api/v2/phien/google` | `{ id_token }` | phiên · `CAN_2_LOP` (email mới → tạo tài khoản Free) |
 | `POST /api/v2/phien/otp/gui` | `{ email, muc_dich: "dang-nhap" \| "dang-ky" \| "dat-lai-mat-khau" }` | luôn `200` (không lộ email có tồn tại) · `QUA_NHIEU_YEU_CAU` |
-| `POST /api/v2/phien/otp/xac-nhan` | `{ email, ma, muc_dich, mat_khau?, ho_ten? }` | phiên · `CAN_2_LOP` · `OTP_SAI` · `OTP_HET_HAN`. `dang-ky` cần `mat_khau` + `ho_ten`, tạo tài khoản Free; `dat-lai-mat-khau` cần `mat_khau`, thu hồi mọi phiên cũ |
+| `POST /api/v2/phien/otp/xac-nhan` | `{ email, ma, muc_dich, mat_khau?, ho_ten? }` | phiên · `CAN_2_LOP` · `OTP_SAI` · `OTP_HET_HAN` · `CAN_MA_2_LOP`. `dang-ky` cần `mat_khau` + `ho_ten`, tạo tài khoản Free; `dang-nhap` với email chưa có tài khoản → tạo tài khoản Free không mật khẩu; `dat-lai-mat-khau` cần `mat_khau` (+ `ma_2_lop` khi tài khoản bật 2 lớp), thu hồi mọi phiên cũ |
 | `POST /api/v2/phien/2-lop` | `{ ma_tam, ma }` (6 số TOTP hoặc mã dự phòng) | phiên · `OTP_SAI` |
 | `POST /api/v2/phien/lam-moi` | cookie, hoặc `{ token_lam_moi }` | phiên mới + cookie mới · `LAM_MOI_TRUNG` · `PHIEN_THU_HOI` |
 | `POST /api/v2/phien/dang-xuat` | — | `200`, xóa cookie, thu hồi chuỗi hiện tại |
 | `GET /api/v2/phien/thiet-bi` | — | `[{ id, thiet_bi, ip, tao_luc, dung_luc, la_phien_nay }]` |
-| `DELETE /api/v2/phien/thiet-bi/[id]` · `POST /api/v2/phien/thiet-bi/thu-hoi-tat-ca` | — | `200` |
+| `DELETE /api/v2/phien/thiet-bi/[id]` · `POST /api/v2/phien/thiet-bi/thu-hoi-tat-ca` | — | `200` (`thu-hoi-tat-ca` giữ phiên đang dùng) |
 | `GET /api/v2/toi` | — | `NguoiDung` |
 | `PATCH /api/v2/toi` | `{ ho_ten }` | `NguoiDung` |
-| `POST /api/v2/toi/mat-khau` | `{ mat_khau_cu?, mat_khau_moi }` (bỏ `mat_khau_cu` khi tài khoản chưa có mật khẩu) | `200` |
+| `POST /api/v2/toi/mat-khau` | `{ mat_khau_cu, mat_khau_moi }` | `200` (thu hồi mọi phiên khác) · `SAI_MAT_KHAU` · `CHUA_CO_MAT_KHAU` |
 | `POST /api/v2/toi/2-lop/bat-dau` | — | `{ otpauth_url, bi_mat }` |
 | `POST /api/v2/toi/2-lop/xac-nhan` | `{ ma }` | `{ ma_du_phong: string[10] }` |
 | `POST /api/v2/toi/2-lop/tat` | `{ ma }` | `200` |
@@ -176,3 +182,4 @@ Hàm dùng chung cho L5, L6 (L3 xuất ra): `src/lib/kho/chu-so-huu.ts` → `chu
 | 17/11/2026 | — | Bản đầu |
 | 17/11/2026 | L1 | Thêm `LAM_MOI_TRUNG` (409): token làm mới bị dùng lại trong 30 giây sau khi xoay thì không thu hồi phiên — nhiều tab cùng làm mới khi mở trang. Quá 30 giây vẫn thu hồi cả phiên (`PHIEN_THU_HOI`). L2: `src/api/khach.ts` gặp mã này thì chờ ~1 giây, gọi `lam-moi` lại một lần; nên khóa làm mới giữa các tab bằng `navigator.locks` |
 | 17/11/2026 | L1 | 009 không thêm `users.khoa_den` / `users.so_lan_sai`: khóa sai mật khẩu đếm trong `dem_tan_suat` theo băm email, đếm trước khi so mật khẩu (chống gửi song song), email không tồn tại cũng nhận `TAI_KHOAN_KHOA` như email có (không dò được email) |
+| 17/11/2026 | L1 | Đặt lại mật khẩu bằng OTP trên tài khoản bật 2 lớp cần thêm `ma_2_lop` (`CAN_MA_2_LOP`); `toi/mat-khau` bắt buộc `mat_khau_cu`, tài khoản chưa có mật khẩu → `CHUA_CO_MAT_KHAU` (đặt mật khẩu đầu chỉ qua OTP). Thêm danh sách mã lỗi L1 và luật «401 khi có Bearer → `lam-moi` một lần» ở mục 3. Bảng thực tế: `phien` + `phien_token` (xoay token) thay cột `chuoi_id` / `bam_token` của spec. App di động (sau) cần `token_lam_moi` trong thân trả về — bổ sung khi bắt đầu app |
