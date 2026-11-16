@@ -171,9 +171,10 @@
                                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                          Margin="0,0,0,12"/>
 
-                                <TextBlock Text="Cơ quan cấp trên" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                                <TextBox x:Name="txtDpCapTren"
-                                         materialDesign:HintAssist.Hint="VD: thành phố Thống Nhất, tỉnh Đồng Nai"
+                                <!-- Chính quyền hai cấp từ 01/7/2025: không còn cơ quan cấp trung gian, máy chủ bỏ qua trường này. -->
+                                <TextBlock Text="Cơ quan cấp trên" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"
+                                           Visibility="Collapsed"/>
+                                <TextBox x:Name="txtDpCapTren" Visibility="Collapsed"
                                          Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                          Margin="0,0,0,12"/>
 

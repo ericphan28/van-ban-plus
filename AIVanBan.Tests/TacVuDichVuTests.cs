@@ -358,16 +358,59 @@ public class TacVuDichVuTests
         "Xã loại I, đang xây dựng nông thôn mới nâng cao",
     };
 
-    [Fact]
-    public void DiaPhuong_ChuaTungLuu_MacDinhGiaKiemKemBaDongDacDiem()
+    [Theory]
+    [InlineData("Gia Kiệm")]
+    [InlineData("xã gia kiệm")]
+    public void DiaPhuong_ChuaTungLuu_MayGiaKiem_MacDinhGiaKiemKhongCapTrungGian(string diaDanh)
     {
-        var dp = ThietLapDiaPhuong.Doc(new Dictionary<string, string>());
+        var dp = ThietLapDiaPhuong.Doc(new Dictionary<string, string> { [ThietLapDiaPhuong.KhoaDiaDanh] = diaDanh });
 
         Assert.NotNull(dp);
         Assert.Equal("xã Gia Kiệm", dp!.Xa);
-        Assert.Equal("thành phố Thống Nhất", dp.CoQuanCapTren);
+        Assert.Equal("", dp.CoQuanCapTren);   // chính quyền hai cấp: không còn «thành phố Thống Nhất»
         Assert.Equal("tỉnh Đồng Nai", dp.Tinh);
         Assert.Equal(DacDiemGiaKiem, dp.DacDiem);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("Tân Lập")]
+    public void DiaPhuong_ChuaTungLuu_MayKhac_KhongGui(string? diaDanh)
+    {
+        // Lỗi v1.0.20: mọi máy chưa lưu đều gửi Gia Kiệm → khách gõ «UBND xã A» vẫn ra «UBND XÃ GIA KIỆM».
+        var extra = new Dictionary<string, string>();
+        if (diaDanh != null) extra[ThietLapDiaPhuong.KhoaDiaDanh] = diaDanh;
+
+        Assert.Null(ThietLapDiaPhuong.Doc(extra));
+    }
+
+    [Fact]
+    public void DiaDanh_UuTienDiaDanhMacDinh_RoiTenXaDaLuu_KhongCoThiRong()
+    {
+        Assert.Equal("Tân Lập", ThietLapDiaPhuong.DiaDanh(new Dictionary<string, string>
+        {
+            [ThietLapDiaPhuong.KhoaDiaDanh] = " Tân Lập ",
+            [ThietLapDiaPhuong.KhoaXa] = "xã Minh An",
+            [ThietLapDiaPhuong.KhoaTinh] = "tỉnh Lâm Đồng",
+        }));
+        Assert.Equal("Minh An", ThietLapDiaPhuong.DiaDanh(new Dictionary<string, string>
+        {
+            [ThietLapDiaPhuong.KhoaXa] = "xã Minh An",
+            [ThietLapDiaPhuong.KhoaTinh] = "tỉnh Lâm Đồng",
+        }));
+        Assert.Equal("", ThietLapDiaPhuong.DiaDanh(new Dictionary<string, string>()));
+    }
+
+    [Fact]
+    public void NgayVietNam_DocNgayTruocThang_GiuDinhDangSoCuaMay()
+    {
+        var c = DinhDangNgayVietNam.TaoCulture(System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+
+        // Lỗi 16/11/2026: máy en-US gõ «05/02/2026» vào ô Ngày ban hành bị lưu thành 02/05/2026.
+        Assert.Equal(new DateTime(2026, 2, 5), DateTime.Parse("05/02/2026", c));
+        Assert.Equal("05/02/2026", new DateTime(2026, 2, 5).ToString("d", c));
+        Assert.Equal(8.5, double.Parse("8.5", c));   // phần số giữ kiểu máy (không đổi cách đọc số)
     }
 
     [Fact]

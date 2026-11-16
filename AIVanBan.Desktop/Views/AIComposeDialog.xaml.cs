@@ -318,7 +318,10 @@ public partial class AIComposeDialog : Window
 
         // Bước 3: điền địa danh + ngày tháng năm hiện tại (nếu có)
         var today = DateTime.Now;
-        content = ReplaceCaseInsensitive(content, "[Địa danh]", "Gia Kiệm");
+        // Địa danh từ Cài đặt → Cơ quan; chưa đặt thì giữ «[Địa danh]» để người soạn tự điền.
+        var diaDanh = ThietLapDiaPhuong.DiaDanh();
+        if (diaDanh.Length > 0)
+            content = ReplaceCaseInsensitive(content, "[Địa danh]", diaDanh);
         // [Địa danh], ngày [  ] tháng [  ] năm 202[  ]
         content = content.Replace("ngày [  ] tháng [  ] năm 202[  ]",
             $"ngày {today.Day:00} tháng {today.Month:00} năm {today.Year}");
@@ -445,7 +448,7 @@ public partial class AIComposeDialog : Window
             "cv_kinhi" => new Dictionary<string, string>
             {
                 {"from_org", "UBND xã Tân Thành"},
-                {"to_org", "UBND thành phố Bình Chánh"},
+                {"to_org", "UBND Thành phố Hồ Chí Minh"},
                 {"to_department", "Sở Tài chính TP.HCM"},
                 {"subject", "Đề nghị hỗ trợ kinh phí xây dựng đường giao thông nông thôn"},
                 {"content", "Hiện nay, tuyến đường liên xã Tân Thành - Long Phước dài 2,5km đang trong tình trạng xuống cấp nghiêm trọng, gây khó khăn cho việc đi lại của nhân dân. UBND xã Tân Thành kính đề nghị UBND thành phố xem xét hỗ trợ kinh phí xây dựng, cải tạo tuyến đường theo dự toán đính kèm."},
@@ -457,7 +460,7 @@ public partial class AIComposeDialog : Window
             "cv_baocao" => new Dictionary<string, string>
             {
                 {"from_org", "UBND xã Tân Thành"},
-                {"to_org", "UBND thành phố Bình Chánh"},
+                {"to_org", "UBND Thành phố Hồ Chí Minh"},
                 {"subject", "Báo cáo tiến độ thực hiện Chương trình xây dựng nông thôn mới quý I/2026"},
                 {"content", "Thực hiện Chương trình xây dựng nông thôn mới năm 2026, trong quý I, UBND xã Tân Thành đã hoàn thành 8/10 tiêu chí đề ra. Cụ thể: hoàn thành 100% công trình hạ tầng giao thông, 95% hộ dân có nhà tiêu hợp vệ sinh, 100% trẻ em được tiêm chủng đầy đủ. Hiện còn 2 tiêu chí về kinh tế hộ và môi trường đang trong quá trình triển khai."},
                 {"proposal", "Đề nghị UBND thành phố tiếp tục hỗ trợ về kinh phí và chuyên môn để xã hoàn thành các tiêu chí còn lại"},
@@ -516,7 +519,7 @@ public partial class AIComposeDialog : Window
                 {"project_name", "Dự án xây dựng trường mầm non Tân Thành B"},
                 {"objectives", "Xây dựng trường mầm non 3 tầng, quy mô 6 phòng học, đáp ứng nhu cầu học tập cho 180 trẻ em trên địa bàn"},
                 {"budget", "8 tỷ đồng từ nguồn ngân sách thành phố và xã hội hóa"},
-                {"implementing_unit", "Phòng Giáo dục và Đào tạo thành phố Bình Chánh"},
+                {"implementing_unit", "Sở Giáo dục và Đào tạo Thành phố Hồ Chí Minh"},
                 {"signer_name", "Nguyễn Văn Minh"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -549,7 +552,7 @@ public partial class AIComposeDialog : Window
             "tt_yikien" => new Dictionary<string, string>
             {
                 {"org_name", "UBND xã Tân Thành"},
-                {"recipient", "UBND thành phố Bình Chánh"},
+                {"recipient", "UBND Thành phố Hồ Chí Minh"},
                 {"subject", "Xin ý kiến về phương án di dời chợ xã"},
                 {"reason", "Chợ xã Tân Thành hiện đặt tại trung tâm, gây ùn tắc giao thông và mất vệ sinh môi trường. Nhân dân kiến nghị di dời để cải thiện diện mạo khu vực."},
                 {"content", "UBND xã đề xuất 2 phương án:\n\nPhương án 1: Di dời chợ về khu đất 2.000m² tại thôn 3, cách trung tâm xã 500m. Ưu điểm: gần khu dân cư, thuận lợi giao thông. Nhược điểm: cần bồi thường giải phóng mặt bằng.\n\nPhương án 2: Nâng cấp chợ hiện tại, mở rộng thêm 500m². Ưu điểm: không phải di dời, tiết kiệm chi phí. Nhược điểm: vẫn còn tình trạng ùn tắc."},
@@ -561,7 +564,7 @@ public partial class AIComposeDialog : Window
             "tt_dexuat" => new Dictionary<string, string>
             {
                 {"org_name", "UBND xã Tân Thành"},
-                {"recipient", "UBND thành phố Bình Chánh"},
+                {"recipient", "UBND Thành phố Hồ Chí Minh"},
                 {"proposal", "Đề xuất dự án xây dựng nhà văn hóa đa năng xã Tân Thành"},
                 {"reason", "Nhà văn hóa xã hiện nay xuống cấp nghiêm trọng, không đáp ứng nhu cầu sinh hoạt văn hóa của nhân dân. Xã cần xây dựng nhà văn hóa mới quy mô 500m², 2 tầng để phục vụ các hoạt động văn hóa, thể thao, họp dân."},
                 {"budget", "6 tỷ đồng (trong đó: ngân sách thành phố 4 tỷ, ngân sách xã 1 tỷ, xã hội hóa 1 tỷ)"},
@@ -647,7 +650,7 @@ public partial class AIComposeDialog : Window
                 {"from_org", "UBND xã Gia Kiệm"},
                 {"to_org", "Các ban ngành, đoàn thể xã; Trưởng 17 ấp"},
                 {"subject", "Mời dự Hội nghị triển khai công tác phòng chống lụt bão năm 2026"},
-                {"content", "Thực hiện Chỉ thị số 05/CT-UBND ngày 20/01/2026 của UBND thành phố Thống Nhất về tăng cường công tác phòng chống thiên tai năm 2026, UBND xã Gia Kiệm tổ chức Hội nghị triển khai công tác phòng chống lụt bão với nội dung:\n\n1. Thời gian: 8h00, thứ Ba ngày 25/02/2026\n2. Địa điểm: Hội trường UBND xã Gia Kiệm\n3. Nội dung: Triển khai phương án 4 tại chỗ, phân công nhiệm vụ các ban ngành, thống nhất kịch bản ứng phó\n4. Thành phần: Trưởng các ban ngành, đoàn thể, Trưởng 17 ấp, đại diện 5 giáo xứ\n\nĐề nghị các đồng chí sắp xếp tham dự đầy đủ, đúng giờ."},
+                {"content", "Thực hiện Chỉ thị số 05/CT-UBND ngày 20/01/2026 của UBND tỉnh Đồng Nai về tăng cường công tác phòng chống thiên tai năm 2026, UBND xã Gia Kiệm tổ chức Hội nghị triển khai công tác phòng chống lụt bão với nội dung:\n\n1. Thời gian: 8h00, thứ Ba ngày 25/02/2026\n2. Địa điểm: Hội trường UBND xã Gia Kiệm\n3. Nội dung: Triển khai phương án 4 tại chỗ, phân công nhiệm vụ các ban ngành, thống nhất kịch bản ứng phó\n4. Thành phần: Trưởng các ban ngành, đoàn thể, Trưởng 17 ấp, đại diện 5 giáo xứ\n\nĐề nghị các đồng chí sắp xếp tham dự đầy đủ, đúng giờ."},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -656,7 +659,7 @@ public partial class AIComposeDialog : Window
             "cv_dondoc" => new Dictionary<string, string>
             {
                 {"from_org", "UBND xã Gia Kiệm"},
-                {"to_org", "Chi cục Thuế thành phố Thống Nhất"},
+                {"to_org", "Thuế tỉnh Đồng Nai"},
                 {"subject", "Đôn đốc thu nộp thuế sử dụng đất phi nông nghiệp năm 2026"},
                 {"content", "Thực hiện kế hoạch thu ngân sách năm 2026, đến ngày 15/02/2026, tình hình thu thuế sử dụng đất phi nông nghiệp trên địa bàn xã như sau:\n\n- Tổng số hộ phải nộp: 4.850 hộ\n- Số hộ đã nộp: 2.120 hộ (đạt 43,7%)\n- Số tiền đã thu: 1,85 tỷ đồng / 4,2 tỷ đồng kế hoạch (đạt 44%)\n- Số hộ chưa nộp: 2.730 hộ\n\nUBND xã đã triển khai nhiều biện pháp: phát thông báo đến từng hộ, đôn đốc qua Trưởng ấp, niêm yết công khai tại trụ sở. Tuy nhiên tỷ lệ thu vẫn thấp do nhiều hộ vắng nhà, đi làm xa.\n\nKính đề nghị Chi cục Thuế hỗ trợ xã trong việc đôn đốc, xử lý các trường hợp cố tình chây ì."},
                 {"signer_name", "Trần Văn Hải"},
@@ -667,9 +670,9 @@ public partial class AIComposeDialog : Window
             "cv_chutruong" => new Dictionary<string, string>
             {
                 {"from_org", "UBND xã Gia Kiệm"},
-                {"to_org", "UBND thành phố Thống Nhất"},
+                {"to_org", "UBND tỉnh Đồng Nai"},
                 {"subject", "Xin chủ trương đầu tư xây dựng hệ thống chiếu sáng công cộng tuyến đường liên ấp"},
-                {"content", "Hiện nay, tuyến đường liên ấp 5 - ấp 7 dài 3,2km phục vụ đi lại cho khoảng 2.500 hộ dân chưa có hệ thống chiếu sáng công cộng, gây mất an toàn giao thông và an ninh trật tự vào ban đêm. Năm 2025, đã xảy ra 3 vụ tai nạn giao thông và 2 vụ trộm cắp trên tuyến đường này.\n\nUBND xã kính đề nghị UBND thành phố cho chủ trương đầu tư xây dựng hệ thống chiếu sáng với dự kiến:\n- Quy mô: 65 trụ đèn LED năng lượng mặt trời\n- Kinh phí dự kiến: 1,95 tỷ đồng\n- Nguồn vốn: Ngân sách thành phố 1,2 tỷ, ngân sách xã 0,5 tỷ, nhân dân đóng góp 0,25 tỷ\n- Thời gian thực hiện: Quý II-III/2026"},
+                {"content", "Hiện nay, tuyến đường liên ấp 5 - ấp 7 dài 3,2km phục vụ đi lại cho khoảng 2.500 hộ dân chưa có hệ thống chiếu sáng công cộng, gây mất an toàn giao thông và an ninh trật tự vào ban đêm. Năm 2025, đã xảy ra 3 vụ tai nạn giao thông và 2 vụ trộm cắp trên tuyến đường này.\n\nUBND xã kính đề nghị UBND tỉnh cho chủ trương đầu tư xây dựng hệ thống chiếu sáng với dự kiến:\n- Quy mô: 65 trụ đèn LED năng lượng mặt trời\n- Kinh phí dự kiến: 1,95 tỷ đồng\n- Nguồn vốn: Ngân sách tỉnh 1,2 tỷ, ngân sách xã 0,5 tỷ, nhân dân đóng góp 0,25 tỷ\n- Thời gian thực hiện: Quý II-III/2026"},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -680,7 +683,7 @@ public partial class AIComposeDialog : Window
                 {"from_org", "UBND xã Gia Kiệm"},
                 {"to_org", "Sở Tư pháp tỉnh Đồng Nai"},
                 {"subject", "Giới thiệu công dân liên hệ làm thủ tục cấp phiếu lý lịch tư pháp"},
-                {"content", "UBND xã Gia Kiệm giới thiệu:\n\nHọ và tên: LÊ THỊ HỒNG NHUNG\nSinh ngày: 15/03/1990\nCMND/CCCD: 274195001234\nĐịa chỉ: Ấp 3, xã Gia Kiệm, thành phố Thống Nhất, tỉnh Đồng Nai\n\nNội dung: Đề nghị Sở Tư pháp tỉnh Đồng Nai xem xét cấp Phiếu lý lịch tư pháp cho công dân nêu trên để phục vụ mục đích xin việc làm.\n\nUBND xã xác nhận: Bà Lê Thị Hồng Nhung có hộ khẩu thường trú tại địa phương, chấp hành tốt pháp luật, không vi phạm gì trong thời gian cư trú."},
+                {"content", "UBND xã Gia Kiệm giới thiệu:\n\nHọ và tên: LÊ THỊ HỒNG NHUNG\nSinh ngày: 15/03/1990\nCMND/CCCD: 274195001234\nĐịa chỉ: Ấp 3, xã Gia Kiệm, tỉnh Đồng Nai\n\nNội dung: Đề nghị Sở Tư pháp tỉnh Đồng Nai xem xét cấp Phiếu lý lịch tư pháp cho công dân nêu trên để phục vụ mục đích xin việc làm.\n\nUBND xã xác nhận: Bà Lê Thị Hồng Nhung có hộ khẩu thường trú tại địa phương, chấp hành tốt pháp luật, không vi phạm gì trong thời gian cư trú."},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -689,9 +692,9 @@ public partial class AIComposeDialog : Window
             "cv_phoihop" => new Dictionary<string, string>
             {
                 {"from_org", "UBND xã Gia Kiệm"},
-                {"to_org", "Phòng TN&MT thành phố Thống Nhất; Công an thành phố Thống Nhất"},
+                {"to_org", "Sở Nông nghiệp và Môi trường tỉnh Đồng Nai; Công an tỉnh Đồng Nai"},
                 {"subject", "Đề nghị phối hợp xử lý vi phạm xây dựng trái phép trên đất nông nghiệp"},
-                {"content", "Ngày 10/02/2026, qua kiểm tra thực tế, UBND xã phát hiện hộ ông Trần Văn Bảy (CCCD: 274190005678, ấp 11) đang tự ý xây dựng nhà xưởng diện tích khoảng 500m² trên đất nông nghiệp (thửa đất số 125, tờ bản đồ số 8) mà không có giấy phép xây dựng và không được cơ quan có thẩm quyền cho phép chuyển mục đích sử dụng đất.\n\nUBND xã đã lập biên bản vi phạm và yêu cầu ngừng thi công, tuy nhiên hộ ông Bảy không chấp hành.\n\nKính đề nghị:\n1. Phòng TN&MT thành phố cử cán bộ xuống xác minh, xử lý theo thẩm quyền\n2. Công an thành phố hỗ trợ đảm bảo an ninh trật tự trong quá trình cưỡng chế (nếu có)"},
+                {"content", "Ngày 10/02/2026, qua kiểm tra thực tế, UBND xã phát hiện hộ ông Trần Văn Bảy (CCCD: 274190005678, ấp 11) đang tự ý xây dựng nhà xưởng diện tích khoảng 500m² trên đất nông nghiệp (thửa đất số 125, tờ bản đồ số 8) mà không có giấy phép xây dựng và không được cơ quan có thẩm quyền cho phép chuyển mục đích sử dụng đất.\n\nUBND xã đã lập biên bản vi phạm và yêu cầu ngừng thi công, tuy nhiên hộ ông Bảy không chấp hành.\n\nKính đề nghị:\n1. Sở Nông nghiệp và Môi trường cử cán bộ xuống xác minh, xử lý theo thẩm quyền\n2. Công an tỉnh hỗ trợ đảm bảo an ninh trật tự trong quá trình cưỡng chế (nếu có)"},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -715,7 +718,7 @@ public partial class AIComposeDialog : Window
                 {"project_name", "Giao 200m² đất ở cho bà Nguyễn Thị Lan - Hộ nghèo diện chính sách vợ liệt sĩ"},
                 {"objectives", "Giao đất ở tại thửa số 45, tờ bản đồ số 3, ấp 6, xã Gia Kiệm cho bà Nguyễn Thị Lan (SN 1965, CCCD: 274190003456).\nMục đích: Xây dựng nhà ở. Thời hạn: Lâu dài.\nNguồn gốc đất: Quỹ đất công ích 5% của xã"},
                 {"budget", "Miễn tiền sử dụng đất theo Nghị định 45/2014/NĐ-CP (hộ nghèo, gia đình chính sách liệt sĩ)"},
-                {"implementing_unit", "Ban Địa chính xã Gia Kiệm, VP Đăng ký đất đai thành phố Thống Nhất"},
+                {"implementing_unit", "Ban Địa chính xã Gia Kiệm, Văn phòng Đăng ký đất đai tỉnh Đồng Nai"},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -750,7 +753,7 @@ public partial class AIComposeDialog : Window
                 {"field", "Phòng chống thiên tai và tìm kiếm cứu nạn tháng 1/2026"},
                 {"situation", "Trong tháng 1/2026, trên địa bàn xã xảy ra 2 đợt mưa lớn (ngày 12/01 và 22/01), lượng mưa đo được 85mm và 120mm, gây ngập cục bộ tại ấp 3, ấp 7 và khu vực chợ Gia Kiệm."},
                 {"results", "- Huy động 45 dân quân, 30 thanh niên tình nguyện ứng cứu\n- Di dời 12 hộ dân (52 nhân khẩu) tại vùng ngập đến nơi an toàn\n- Thiệt hại: 3 căn nhà tốc mái, 2ha hoa màu bị ngập, 500m đường bị sạt lở\n- Ước thiệt hại: 450 triệu đồng\n- Đã hỗ trợ khẩn cấp 15 triệu đồng cho 3 hộ bị tốc mái\n- Khơi thông 1.200m kênh mương thoát nước"},
-                {"proposals", "- Đề nghị thành phố hỗ trợ 200 triệu đồng khắc phục hậu quả\n- Nạo vét suối Gia Kiệm đoạn qua ấp 3 (đã bồi lắng 50cm)\n- Xây dựng cống thoát nước tại ngã ba chợ\n- Cấp 100 bao cát dự phòng cho 5 điểm xung yếu"},
+                {"proposals", "- Đề nghị UBND tỉnh hỗ trợ 200 triệu đồng khắc phục hậu quả\n- Nạo vét suối Gia Kiệm đoạn qua ấp 3 (đã bồi lắng 50cm)\n- Xây dựng cống thoát nước tại ngã ba chợ\n- Cấp 100 bao cát dự phòng cho 5 điểm xung yếu"},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Trưởng Ban Chỉ huy PCTT&TKCN xã"}
             },
@@ -762,7 +765,7 @@ public partial class AIComposeDialog : Window
                 {"field", "Công tác Dân số - Kế hoạch hóa gia đình quý IV/2025"},
                 {"situation", "Xã Gia Kiệm có 79.274 nhân khẩu, 19.818 hộ, phân bố trên 17 ấp. Cơ cấu dân số: 96% theo đạo Công giáo (thuộc 5 giáo xứ), đặc thù sinh đẻ nhiều con."},
                 {"results", "- Trẻ sinh trong quý: 285 trẻ (nam 148, nữ 137), tỷ số giới tính: 108/100\n- Trẻ sinh là con thứ 3 trở lên: 42 trường hợp (14,7%) - giảm 2,1% so cùng kỳ\n- Phụ nữ 15-49 tuổi sử dụng BPTT: 8.450/12.200 (69,3%)\n- Tổ chức 8 buổi truyền thông tại 8 ấp, 2.400 lượt người tham dự\n- Khám sức khỏe tiền hôn nhân: 45 cặp (đạt 78% kế hoạch)\n- Tầm soát sơ sinh: 280/285 trẻ (98,2%)"},
-                {"proposals", "- Tăng cường truyền thông tại 5 giáo xứ phối hợp với Linh mục chánh xứ\n- Mở thêm 2 điểm tư vấn SKSS tại ấp 9 và ấp 15\n- Đề nghị thành phố cấp thêm phương tiện tránh thai miễn phí cho 500 cặp vợ chồng"},
+                {"proposals", "- Tăng cường truyền thông tại 5 giáo xứ phối hợp với Linh mục chánh xứ\n- Mở thêm 2 điểm tư vấn SKSS tại ấp 9 và ấp 15\n- Đề nghị UBND tỉnh cấp thêm phương tiện tránh thai miễn phí cho 500 cặp vợ chồng"},
                 {"signer_name", "Trần Văn Hải"},
                 {"signer_title", "Phó Chủ tịch UBND xã"}
             },
@@ -773,10 +776,10 @@ public partial class AIComposeDialog : Window
             "tt_bienche" => new Dictionary<string, string>
             {
                 {"org_name", "UBND xã Gia Kiệm"},
-                {"recipient", "UBND thành phố Thống Nhất; Phòng Nội vụ thành phố"},
+                {"recipient", "UBND tỉnh Đồng Nai; Sở Nội vụ tỉnh Đồng Nai"},
                 {"subject", "Đề nghị bổ sung biên chế công chức xã năm 2026"},
                 {"reason", "Xã Gia Kiệm là xã loại I với dân số 79.274 người, 17 ấp, khối lượng công việc rất lớn. Hiện tại, xã có 22/24 biên chế theo quy định, thiếu 2 biên chế:\n- 01 công chức Địa chính - Xây dựng (vị trí 2): Do đồng chí Lê Văn Nam chuyển công tác từ 01/01/2026\n- 01 công chức Văn hóa - Xã hội (vị trí 2): Chưa được bố trí từ đầu nhiệm kỳ\n\nViệc thiếu biên chế gây quá tải cho cán bộ hiện có, ảnh hưởng đến chất lượng phục vụ nhân dân."},
-                {"content", "Kính đề nghị UBND thành phố xem xét bổ sung 2 biên chế cho UBND xã Gia Kiệm:\n1. 01 công chức Địa chính - Xây dựng: Tốt nghiệp ĐH chuyên ngành Quản lý đất đai hoặc Xây dựng\n2. 01 công chức Văn hóa - Xã hội: Tốt nghiệp ĐH chuyên ngành CTXH hoặc Văn hóa\n\nĐiều kiện: Nam/Nữ, dưới 35 tuổi, có CCCD, lý lịch rõ ràng, sức khỏe tốt."},
+                {"content", "Kính đề nghị UBND tỉnh xem xét bổ sung 2 biên chế cho UBND xã Gia Kiệm:\n1. 01 công chức Địa chính - Xây dựng: Tốt nghiệp ĐH chuyên ngành Quản lý đất đai hoặc Xây dựng\n2. 01 công chức Văn hóa - Xã hội: Tốt nghiệp ĐH chuyên ngành CTXH hoặc Văn hóa\n\nĐiều kiện: Nam/Nữ, dưới 35 tuổi, có CCCD, lý lịch rõ ràng, sức khỏe tốt."},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -785,7 +788,7 @@ public partial class AIComposeDialog : Window
             "tt_kinhphi" => new Dictionary<string, string>
             {
                 {"org_name", "UBND xã Gia Kiệm"},
-                {"recipient", "UBND thành phố Thống Nhất; Phòng GD&ĐT thành phố"},
+                {"recipient", "UBND tỉnh Đồng Nai; Sở Giáo dục và Đào tạo tỉnh Đồng Nai"},
                 {"proposal", "Đề nghị cấp kinh phí sửa chữa Trường TH Gia Kiệm A"},
                 {"reason", "Trường Tiểu học Gia Kiệm A (ấp 1) được xây dựng từ năm 2005, sau 21 năm sử dụng, nhiều hạng mục đã xuống cấp nghiêm trọng:\n- Mái ngói dãy phòng học A (8 phòng) bị dột, thấm nước mỗi khi mưa\n- Trần nhà 3 phòng học bị bong tróc, có nguy cơ sập\n- Hệ thống điện cũ, chập chờn, nguy cơ cháy nổ\n- Sân trường nứt vỡ, 2 cây phượng mục gốc nguy hiểm\n- Nhà vệ sinh hư hỏng 60%\n\nTrường đang phục vụ 856 học sinh, 32 giáo viên. Tình trạng xuống cấp gây mất an toàn và ảnh hưởng chất lượng giảng dạy."},
                 {"budget", "Tổng dự toán sửa chữa: 2,8 tỷ đồng, gồm:\n- Lợp lại mái + sửa trần: 1,2 tỷ\n- Thay hệ thống điện: 350 triệu\n- Sửa sân trường + chặt cây nguy hiểm: 450 triệu\n- Xây mới nhà vệ sinh: 500 triệu\n- Chi phí khác (thiết kế, giám sát): 300 triệu"},
@@ -797,10 +800,10 @@ public partial class AIComposeDialog : Window
             "tt_quyhoach" => new Dictionary<string, string>
             {
                 {"org_name", "UBND xã Gia Kiệm"},
-                {"recipient", "UBND thành phố Thống Nhất"},
+                {"recipient", "UBND tỉnh Đồng Nai"},
                 {"proposal", "Phê duyệt đồ án quy hoạch chi tiết khu dân cư ấp 12"},
                 {"reason", "Khu dân cư ấp 12 hiện có 380 hộ dân sinh sống tự phát, chưa có quy hoạch, thiếu hạ tầng kỹ thuật đồng bộ. Đường nội bộ nhỏ hẹp (2-3m), không có hệ thống thoát nước, điện chiếu sáng thiếu.\n\nQuy mô quy hoạch: 15ha, 450 lô đất ở, dân số 2.000 người.\nCơ cấu: Đất ở 8ha (53%), Giao thông 3ha (20%), Công cộng 1,5ha (10%), Hạ tầng KT 2,5ha (17%)"},
-                {"budget", "350 triệu đồng lập quy hoạch (ngân sách thành phố). Tổng mức đầu tư hạ tầng dự kiến 25 tỷ đồng (giai đoạn 2026-2030)"},
+                {"budget", "350 triệu đồng lập quy hoạch (ngân sách tỉnh). Tổng mức đầu tư hạ tầng dự kiến 25 tỷ đồng (giai đoạn 2026-2030)"},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -814,7 +817,7 @@ public partial class AIComposeDialog : Window
                 {"period", "Năm 2026"},
                 {"objectives", "Không để xảy ra cháy lớn gây thiệt hại nghiêm trọng. 100% cơ sở kinh doanh có phương án PCCC. 100% khu dân cư có tổ PCCC tại chỗ."},
                 {"tasks", "I. CÔNG TÁC TUYÊN TRUYỀN:\n- Tổ chức 17 buổi tuyên truyền tại 17 ấp (mỗi ấp 1 buổi/quý)\n- Phát 5.000 tờ rơi hướng dẫn PCCC tại nhà\n- Lắp 10 bảng tuyên truyền tại khu vực đông dân cư\n\nII. KIỂM TRA, XỬ LÝ:\n- Kiểm tra 100% cơ sở kinh doanh (85 cơ sở), nhà hàng, quán karaoke (12 cơ sở)\n- Kiểm tra hệ thống điện tại chợ Gia Kiệm, chợ ấp 6\n- Xử phạt nghiêm các trường hợp vi phạm\n\nIII. TỔ CHỨC LỰC LƯỢNG:\n- Thành lập/kiện toàn 17 tổ PCCC tại 17 ấp (mỗi tổ 10-15 người)\n- Tập huấn nghiệp vụ PCCC cho 250 người (2 đợt: tháng 3 và tháng 9)\n- Diễn tập PCCC tại chợ Gia Kiệm (tháng 5/2026)\n\nIV. PHƯƠNG TIỆN:\n- Mua sắm 34 bình chữa cháy (2 bình/ấp)\n- Lắp 5 trụ nước chữa cháy tại khu vực trọng điểm"},
-                {"budget", "120 triệu đồng (ngân sách xã 80 triệu, hỗ trợ thành phố 40 triệu)"},
+                {"budget", "120 triệu đồng (ngân sách xã 80 triệu, hỗ trợ của tỉnh 40 triệu)"},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -838,7 +841,7 @@ public partial class AIComposeDialog : Window
                 {"period", "Năm 2026"},
                 {"objectives", "1. Chính quyền số: 100% văn bản điện tử, 80% TTHC trực tuyến mức 3-4\n2. Kinh tế số: 50% hộ kinh doanh có tài khoản thanh toán điện tử\n3. Xã hội số: 70% người dân trưởng thành cài đặt app VNeID, 100% ấp có Zalo group"},
                 {"tasks", "I. CHÍNH QUYỀN SỐ:\n- Triển khai phần mềm quản lý văn bản (VanBanPlus) cho 22 CC-VC\n- Số hóa 100% hồ sơ lưu trữ (ước tính 15.000 hồ sơ)\n- Lắp đặt wifi miễn phí tại bộ phận một cửa\n- Triển khai chữ ký số cho Chủ tịch, Phó CT, Văn phòng\n\nII. KINH TẾ SỐ:\n- Hỗ trợ 200 hộ kinh doanh tạo tài khoản QR thanh toán\n- Tập huấn bán hàng online cho 100 hộ nông dân (sản phẩm OCOP)\n- Thí điểm chợ không tiền mặt tại chợ Gia Kiệm\n\nIII. XÃ HỘI SỐ:\n- 17 buổi hướng dẫn cài VNeID tại 17 ấp\n- Tạo fanpage \"UBND xã Gia Kiệm\" trên Facebook/Zalo\n- Tập huấn an toàn thông tin, phòng chống lừa đảo online cho 1.000 người"},
-                {"budget", "250 triệu đồng (ngân sách xã 100tr, thành phố hỗ trợ 100tr, xã hội hóa 50tr)"},
+                {"budget", "250 triệu đồng (ngân sách xã 100tr, tỉnh hỗ trợ 100tr, xã hội hóa 50tr)"},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -864,7 +867,7 @@ public partial class AIComposeDialog : Window
                 {"participants", "Công dân Việt Nam, đủ 18 tuổi trở lên, có đủ sức khỏe, phẩm chất đạo đức tốt, không trong thời gian bị truy cứu trách nhiệm hình sự"},
                 {"content", "UBND xã Gia Kiệm thông báo tuyển dụng 02 công chức:\n\n1. VỊ TRÍ 1: Công chức Địa chính - Xây dựng\n- Số lượng: 01\n- Yêu cầu: Tốt nghiệp ĐH trở lên ngành Quản lý đất đai, Xây dựng, Kiến trúc\n- Ưu tiên: Có chứng chỉ tin học, ngoại ngữ, có kinh nghiệm\n\n2. VỊ TRÍ 2: Công chức Văn hóa - Xã hội\n- Số lượng: 01\n- Yêu cầu: Tốt nghiệp ĐH trở lên ngành CTXH, Văn hóa, Xã hội học\n- Ưu tiên: Người địa phương, có kinh nghiệm công tác đoàn thể"},
                 {"conclusion", "Hồ sơ gồm: Đơn xin việc, Sơ yếu lý lịch, Bản sao bằng cấp, CCCD, Giấy khám sức khỏe.\nThời gian nhận hồ sơ: Từ 01/03/2026 đến 31/03/2026\nĐịa điểm: Văn phòng UBND xã Gia Kiệm\nHình thức tuyển: Thi tuyển (viết + phỏng vấn)\nDự kiến thi: Tháng 4/2026"},
-                {"tasks", "- Văn phòng UBND xã tiếp nhận hồ sơ và trả giấy hẹn\n- Phòng Nội vụ thành phố tổ chức thi tuyển theo quy định\n- Kết quả được công bố trên website xã và niêm yết tại trụ sở"},
+                {"tasks", "- Văn phòng UBND xã tiếp nhận hồ sơ và trả giấy hẹn\n- Sở Nội vụ tỉnh Đồng Nai tổ chức thi tuyển theo quy định\n- Kết quả được công bố trên website xã và niêm yết tại trụ sở"},
                 {"signer_name", "Nguyễn Thanh Tùng"},
                 {"signer_title", "Chủ tịch UBND xã"}
             },
@@ -934,9 +937,9 @@ public partial class AIComposeDialog : Window
             "to_org" => "Ví dụ: Sở Nội vụ tỉnh Bình Dương",
             "to_department" => "Ví dụ: Sở Giáo dục và Đào tạo",
             "org_name" => "Ví dụ: UBND xã Tân Phú",
-            "copy_org" => "Ví dụ: Văn phòng UBND huyện",
+            "copy_org" => "Ví dụ: Văn phòng HĐND và UBND xã",
             "implementing_unit" => "Ví dụ: Phòng Tài chính - Kế hoạch",
-            "from_unit" => "Ví dụ: Phòng Nội vụ huyện ABC",
+            "from_unit" => "Ví dụ: Sở Nội vụ tỉnh ABC",
             "to_unit" => "Ví dụ: UBND xã XYZ",
             
             // Nội dung
@@ -978,7 +981,7 @@ public partial class AIComposeDialog : Window
             // Chức vụ
             "current_position" => "Ví dụ: Trưởng phòng Nội vụ",
             "new_position" => "Ví dụ: Phó Chủ tịch UBND",
-            "level" => "Ví dụ: Tỉnh, Huyện, hoặc Xã",
+            "level" => "Ví dụ: Tỉnh hoặc Xã",
             "ranking" => "Ví dụ: Giỏi, Khá, Trung bình",
             
             // Thời gian
@@ -1042,7 +1045,7 @@ public partial class AIComposeDialog : Window
             // Y tế
             "medical_unit" => "Ví dụ: Trạm Y tế xã Tân Phú",
             "hospital" => "Ví dụ: Bệnh viện Đa khoa tỉnh",
-            "from_hospital" => "Ví dụ: BV Đa khoa huyện ABC",
+            "from_hospital" => "Ví dụ: BV Đa khoa tỉnh ABC",
             "to_hospital" => "Ví dụ: BV Chợ Rẫy TP.HCM",
             "disease_name" => "Ví dụ: Sốt xuất huyết, COVID-19",
             "diagnosis" => "Chẩn đoán bệnh...",
@@ -1055,7 +1058,7 @@ public partial class AIComposeDialog : Window
             "procedure_name" => "Ví dụ: Quy trình khám sức khỏe",
             "test_type" => "Ví dụ: Xét nghiệm máu, PCR",
             "test_result" => "Kết quả xét nghiệm...",
-            "area" => "Ví dụ: Xã Tân Phú, huyện ABC",
+            "area" => "Ví dụ: Xã Tân Phú, tỉnh ABC",
             
             // Hành chính xã/phường
             "ward_name" => "Ví dụ: Xã Tân Thành",
@@ -1348,7 +1351,7 @@ public partial class AIComposeDialog : Window
             SigningAuthority = signingAuthority,
             
             // Địa danh ban hành
-            Location = "Gia Kiệm",
+            Location = ThietLapDiaPhuong.DiaDanh(),
             
             // Ngày tháng & trạng thái
             IssueDate = DateTime.Now,

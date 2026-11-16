@@ -58,7 +58,7 @@ public static class NhanTruongSoanThao
             // === Chức vụ / Vị trí ===
             "current_position" => "💼 Chức vụ hiện tại",
             "new_position" => "⭐ Chức vụ mới",
-            "level" => "🏛️ Cấp (Tỉnh/Huyện/Xã)",
+            "level" => "🏛️ Cấp (Tỉnh/Xã)",
             "ranking" => "🏅 Xếp loại",
             
             // === Thời gian / Địa điểm ===

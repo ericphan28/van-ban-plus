@@ -22,6 +22,8 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        // Ngày gõ tay trong DatePicker đọc theo dd/MM/yyyy dù máy để vùng en-US.
+        AIVanBan.Core.Services.DinhDangNgayVietNam.ApDung();
         base.OnStartup(e);
         
         // Parse --size=WxH để test ở các độ phân giải khác nhau

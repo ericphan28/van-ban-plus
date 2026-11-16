@@ -140,7 +140,8 @@ public partial class ApiSettingsDialog : Window
         AppSettingsService.Save(settings);
         SaveOrganizationTab();
         // Ngoài SaveOrganizationTab vì hàm đó return sớm khi tên và viết tắt cơ quan đều trống.
-        ThietLapDiaPhuong.Luu(txtDpXa.Text, txtDpCapTren.Text, txtDpTinh.Text, txtDpDacDiem.Text);
+        // Cấp trên luôn để trống: chính quyền hai cấp (ô đã ẩn, xóa giá trị cũ như «thành phố Thống Nhất»).
+        ThietLapDiaPhuong.Luu(txtDpXa.Text, "", txtDpTinh.Text, txtDpDacDiem.Text);
         MessageBox.Show("✅ Đã lưu cài đặt thành công!\n\nCần khởi động lại ứng dụng để áp dụng thay đổi.",
             "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         DialogResult = true;

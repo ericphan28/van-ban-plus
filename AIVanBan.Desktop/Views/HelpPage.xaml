@@ -1220,7 +1220,7 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                     </Border>
 
                     <TextBlock Style="{StaticResource BodyText}">
-                        Phù hợp cho mọi cấp: <Bold>Xã/Phường</Bold>, <Bold>Quận/Huyện</Bold>, <Bold>Tỉnh/Thành phố</Bold>.
+                        Phù hợp cho mọi cấp: <Bold>Xã/Phường/Đặc khu</Bold>, <Bold>Tỉnh/Thành phố</Bold>.
                         Triển khai nhanh từ 2 tuần. Liên hệ tư vấn: <Bold>0907 136 029</Bold> (Zalo) | <Bold>giakiemso.com</Bold>
                     </TextBlock>
                 </StackPanel>

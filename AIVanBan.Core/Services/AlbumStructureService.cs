@@ -1038,7 +1038,7 @@ public class AlbumStructureService : IDisposable
             Name = "Sở / Phòng / Ban ngành",
             OrganizationType = "SoBanNganh",
             Version = "1.0",
-            Description = "Cấu trúc album cho Sở, Phòng, Ban ngành cấp tỉnh/huyện",
+            Description = "Cấu trúc album cho Sở, Ban, ngành cấp tỉnh",
             Source = "local",
             IsActive = false,
             Categories = new List<AlbumCategory>

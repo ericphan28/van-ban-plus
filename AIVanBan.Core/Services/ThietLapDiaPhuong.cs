@@ -18,8 +18,9 @@ public sealed record DiaPhuongCoQuan(string Xa, string CoQuanCapTren, string Tin
 
 /// <summary>
 /// Đọc/ghi địa phương ở ExtraSettings của settings.json (tab «🏛️ Cơ quan» trong Cài đặt).
-/// Chưa từng lưu → mặc định Gia Kiệm (giữ hành vi các bản trước). Đã lưu mà thiếu xã hoặc thiếu tỉnh → null
-/// (không gửi dia_phuong; hợp đồng đòi cả hai khi có dia_phuong).
+/// Chưa từng lưu → chỉ máy đã đặt địa danh mặc định «Gia Kiệm» mới dùng mặc định Gia Kiệm; máy khác → null
+/// (v1.0.20 trả Gia Kiệm cho MỌI máy chưa lưu, nên khách gõ «UBND xã A» vẫn ra «UBND XÃ GIA KIỆM» — sửa ở v1.0.21).
+/// Đã lưu mà thiếu xã hoặc thiếu tỉnh → null (không gửi dia_phuong; hợp đồng đòi cả hai khi có dia_phuong).
 /// </summary>
 public static class ThietLapDiaPhuong
 {
@@ -33,8 +34,12 @@ public static class ThietLapDiaPhuong
     public const int DacDiemToiDa = 10;
     public const int DoDaiToiDa = 300;
 
+    /// <summary>Địa danh ban hành mặc định (tab Cơ quan), ví dụ «Gia Kiệm».</summary>
+    public const string KhoaDiaDanh = "Org.DefaultLocation";
+
+    // Chính quyền hai cấp từ 01/7/2025: không còn cấp trung gian giữa xã và tỉnh.
     public static readonly DiaPhuongCoQuan MacDinhGiaKiem = new(
-        "xã Gia Kiệm", "thành phố Thống Nhất", "tỉnh Đồng Nai",
+        "xã Gia Kiệm", "", "tỉnh Đồng Nai",
         new[]
         {
             "Dân số: 79.274 nhân khẩu, 19.818 hộ",
@@ -46,7 +51,11 @@ public static class ThietLapDiaPhuong
     {
         var daLuu = extra.ContainsKey(KhoaXa) || extra.ContainsKey(KhoaCoQuanCapTren)
             || extra.ContainsKey(KhoaTinh) || extra.ContainsKey(KhoaDacDiem);
-        if (!daLuu) return MacDinhGiaKiem;
+        if (!daLuu)
+        {
+            var diaDanh = extra.TryGetValue(KhoaDiaDanh, out var d) ? (d ?? "").Normalize() : "";
+            return diaDanh.Contains("Gia Kiệm".Normalize(), StringComparison.OrdinalIgnoreCase) ? MacDinhGiaKiem : null;
+        }
 
         string Lay(string khoa) => Cat(extra.TryGetValue(khoa, out var v) ? v : null);
         var xa = Lay(KhoaXa);
@@ -58,6 +67,28 @@ public static class ThietLapDiaPhuong
     }
 
     public static DiaPhuongCoQuan? Doc() => Doc(AppSettingsService.Load().ExtraSettings);
+
+    /// <summary>
+    /// Địa danh ghi ở dòng «…, ngày … tháng … năm …» và ở trường Location khi lưu văn bản:
+    /// địa danh mặc định của tab Cơ quan; không có thì tên xã/phường đã lưu (bỏ chữ «xã», «phường»…); không có nữa → "".
+    /// </summary>
+    public static string DiaDanh(IReadOnlyDictionary<string, string> extra)
+    {
+        var d = Cat(extra.TryGetValue(KhoaDiaDanh, out var v) ? v : null);
+        if (d.Length > 0) return d;
+        var dp = Doc(extra);
+        return dp is null ? "" : BoTienToXa(dp.Xa);
+    }
+
+    public static string DiaDanh() => DiaDanh(AppSettingsService.Load().ExtraSettings);
+
+    /// <summary>«xã Gia Kiệm» → «Gia Kiệm» (bỏ tiền tố xã, phường, thị trấn, đặc khu).</summary>
+    public static string BoTienToXa(string xa)
+    {
+        foreach (var p in new[] { "xã ", "phường ", "thị trấn ", "đặc khu " })
+            if (xa.StartsWith(p, StringComparison.OrdinalIgnoreCase)) return xa[p.Length..].Trim();
+        return xa.Trim();
+    }
 
     /// <summary>Ghi vào từ điển (tách riêng để kiểm thử mà không đụng settings.json thật). Luôn ghi đủ bốn khóa.</summary>
     public static void GhiVao(IDictionary<string, string> extra, string? xa, string? coQuanCapTren, string? tinh, string? dacDiem)

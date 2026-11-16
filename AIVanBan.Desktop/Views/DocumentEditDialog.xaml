@@ -168,8 +168,7 @@
                                     <TextBlock TextWrapping="Wrap" Margin="0,5,0,0" FontWeight="SemiBold">Ví dụ:</TextBlock>
                                     <TextBlock TextWrapping="Wrap">  • Hà Nội (cơ quan TW tại Hà Nội)</TextBlock>
                                     <TextBlock TextWrapping="Wrap">  • TP. Hồ Chí Minh</TextBlock>
-                                    <TextBlock TextWrapping="Wrap">  • Gia Kiệm (thị trấn)</TextBlock>
-                                    <TextBlock TextWrapping="Wrap">  • Thống Nhất (huyện)</TextBlock>
+                                    <TextBlock TextWrapping="Wrap">  • Gia Kiệm (cơ quan cấp xã: ghi tên xã, phường, đặc khu)</TextBlock>
                                 </StackPanel>
                             </ToolTip>
                         </TextBox.ToolTip>
