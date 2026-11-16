@@ -832,21 +832,26 @@ TUYÊN TRUYỀN PCTN:
             return;
         }
 
-        // Confirm before calling AI
+        // Chụp MỌI đầu vào vào biến cục bộ TRƯỚC await đầu tiên: ước tính, hộp xác nhận và lượt chạy dùng đúng cùng
+        // một bộ dữ liệu, dù người dùng sửa ô nhập trong lúc chờ ước tính.
         var periodType = cboPeriodType.SelectedItem as string ?? "Tháng";
         var period = cboPeriod.Text;
         var field = cboField.Text;
+        var orgName = txtOrgName.Text;
+        var rawData = txtRawData.Text;
+        var signerName = txtSignerName.Text;
+        var signerTitle = txtSignerTitle.Text;
         var hasPrevious = !string.IsNullOrWhiteSpace(txtPreviousReport.Text);
+        var kyTruoc = hasPrevious ? txtPreviousReport.Text : null;
 
         var moTa = $"📊 Tạo báo cáo {periodType.ToLower()} — {field}\n" +
                    $"📅 Kỳ: {period}\n" +
-                   $"🏛️ Đơn vị: {txtOrgName.Text}\n" +
+                   $"🏛️ Đơn vị: {orgName}\n" +
                    $"📋 So sánh kỳ trước: {(hasPrevious ? "Có" : "Không")}";
-        var kyTruoc = hasPrevious ? txtPreviousReport.Text : null;
 
         if (!await TacVuGiaoDien.XacNhanCreditAsync(this, "Báo cáo định kỳ",
-                () => _reportService.UocTinhAsync(periodType, period, field, txtOrgName.Text, txtRawData.Text,
-                    kyTruoc, txtSignerName.Text, txtSignerTitle.Text),
+                () => _reportService.UocTinhAsync(periodType, period, field, orgName, rawData,
+                    kyTruoc, signerName, signerTitle),
                 moTa))
             return;
 
@@ -863,11 +868,11 @@ TUYÊN TRUYỀN PCTN:
                 periodType,
                 period,
                 field,
-                txtOrgName.Text,
-                txtRawData.Text,
+                orgName,
+                rawData,
                 kyTruoc,
-                txtSignerName.Text,
-                txtSignerTitle.Text
+                signerName,
+                signerTitle
             );
 
             // Clean AI output: xóa header/footer nếu AI vẫn tạo, xử lý literal \n
