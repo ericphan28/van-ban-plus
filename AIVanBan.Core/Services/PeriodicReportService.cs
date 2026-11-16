@@ -35,7 +35,7 @@ public class PeriodicReportService
         return await _aiService.GenerateContentAsync(prompt, systemInstruction);
     }
 
-    private string BuildSystemPrompt()
+    internal static string BuildSystemPrompt()
     {
         return @"Bạn là CHUYÊN GIA SOẠN BÁO CÁO HÀNH CHÍNH tại UBND cấp xã/phường Việt Nam, 20 năm kinh nghiệm.
 
@@ -87,7 +87,7 @@ QUY TẮC VIẾT:
 - Gạch đầu dòng dùng dấu ""-""";
     }
 
-    private string BuildUserPrompt(
+    internal static string BuildUserPrompt(
         string reportPeriodType, string reportPeriod, string field, string orgName,
         string rawData, string? previousReport, string signerName, string signerTitle)
     {

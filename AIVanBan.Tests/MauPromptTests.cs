@@ -187,4 +187,57 @@ public class MauPromptTests
             System.Globalization.CultureInfo.CurrentCulture = vanHoaCu;
         }
     }
+
+    [Fact]
+    public void GhiMauBaoCaoDinhKy()
+    {
+        // Ép văn hóa vi-VN: BuildUserPrompt dùng reportPeriodType.ToLower() theo CurrentCulture.
+        var vanHoaCu = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("vi-VN");
+        try
+        {
+            var cacMau = new (string LoaiKy, string Ky, string LinhVuc, string DonVi, string SoLieu, string? KyTruoc, string NguoiKy, string ChucDanh)[]
+            {
+                // Số liệu thường + có báo cáo kỳ trước.
+                ("Tháng", "Tháng 10/2026", "Cải cách hành chính", "UBND xã Minh An",
+                 "- Hồ sơ TTHC tiếp nhận: 412\n- Giải quyết đúng hạn: 398\n- Trễ hạn: 14",
+                 "- Hồ sơ TTHC tiếp nhận: 380\n- Giải quyết đúng hạn: 361", "Nguyễn Văn A", "Chủ tịch"),
+                // Gộp nhiều tệp + có bảng, không có kỳ trước, không người ký.
+                ("Quý", "Quý III/2026", "Kinh tế - Xã hội", "UBND xã Minh An",
+                 "===== FILE 1: BC thang 7.docx =====\nThu ngân sách: 1,2 tỷ đồng\n===== FILE 2: BC thang 8.docx =====\nThu ngân sách: 1,5 tỷ đồng\n[BẢNG]\nChỉ tiêu | Tháng 7 | Tháng 8\nHộ nghèo | 52 | 50\n[/BẢNG]",
+                 null, "", ""),
+                // Chỉ có bảng; kỳ trước chỉ khoảng trắng (coi là không có); ký tự đặc biệt cho template literal.
+                ("Năm", "Năm 2026", "Chuyển đổi số", "Văn phòng HĐND và UBND",
+                 "[BẢNG]\nChỉ tiêu | Kết quả\nHồ sơ trực tuyến | 85%\n[/BẢNG]\nGhi chú: dấu \\ , ký tự ``` và ${bien}.",
+                 "   ", "Trần Thị B", "Phó Chủ tịch"),
+                // Loại kỳ có số và chữ thường sẵn.
+                ("6 tháng", "6 tháng đầu năm 2026", "Tư pháp - Hộ tịch", "UBND phường Bình Đa",
+                 "Đăng ký khai sinh: 230 trường hợp\nChứng thực: 1.120 việc", null, "Lê Văn C", "Chủ tịch"),
+            };
+
+            var mau = cacMau.Select(m => new
+            {
+                dau_vao = new
+                {
+                    loai_ky = m.LoaiKy,
+                    ky = m.Ky,
+                    linh_vuc = m.LinhVuc,
+                    don_vi = m.DonVi,
+                    so_lieu = m.SoLieu,
+                    bao_cao_ky_truoc = m.KyTruoc,
+                    nguoi_ky = m.NguoiKy,
+                    chuc_danh = m.ChucDanh,
+                },
+                he_thong = ChuanHoa(PeriodicReportService.BuildSystemPrompt()),
+                nguoi_dung = ChuanHoa(PeriodicReportService.BuildUserPrompt(
+                    m.LoaiKy, m.Ky, m.LinhVuc, m.DonVi, m.SoLieu, m.KyTruoc, m.NguoiKy, m.ChucDanh)),
+            }).ToList();
+
+            Ghi("bao-cao-dinh-ky.json", mau);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = vanHoaCu;
+        }
+    }
 }
