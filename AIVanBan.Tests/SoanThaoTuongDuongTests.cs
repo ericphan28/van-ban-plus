@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using AIVanBan.Core.Models;
+using AIVanBan.Core.Services;
 using AIVanBan.Desktop.Views;
 
 namespace AIVanBan.Tests;
@@ -94,6 +95,20 @@ public class SoanThaoTuongDuongTests
         {
             Assert.True(chup[i].he_thong == hienTai[i].he_thong, $"{chup[i].ten}: he_thong lệch bản chụp");
             Assert.True(chup[i].nguoi_dung == hienTai[i].nguoi_dung, $"{chup[i].ten}: nguoi_dung lệch bản chụp");
+        }
+    }
+
+    [Fact]
+    public void LopMoiKhopBanChup()
+    {
+        var chup = DocChup();
+        Assert.Equal(chup.Select(c => c.ten), MauSoanThao.GiaKiem.Select(c => c.Ten));
+        foreach (var (ca, c) in MauSoanThao.GiaKiem.Zip(chup))
+        {
+            var h = ChuanHoa(ComposePromptBuilder.BuildSystemInstruction(ca.Loai, ca.DiaPhuong));
+            var n = ChuanHoa(ComposePromptBuilder.BuildUserPrompt(ca.Loai, ca.TenMau, ca.TuDien(), ca.DiaPhuong));
+            Assert.True(c.he_thong == h, $"{ca.Ten}: he_thong của lớp mới lệch hộp thoại cũ");
+            Assert.True(c.nguoi_dung == n, $"{ca.Ten}: nguoi_dung của lớp mới lệch hộp thoại cũ");
         }
     }
 }

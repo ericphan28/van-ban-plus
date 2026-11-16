@@ -1,4 +1,5 @@
 using AIVanBan.Core.Models;
+using AIVanBan.Core.Services;
 
 namespace AIVanBan.Tests;
 
@@ -8,7 +9,7 @@ namespace AIVanBan.Tests;
 /// </summary>
 internal static class MauSoanThao
 {
-    internal sealed record Ca(string Ten, DocumentType Loai, string? TenMau, (string Khoa, string GiaTri)[] Truong, object? DiaPhuong)
+    internal sealed record Ca(string Ten, DocumentType Loai, string? TenMau, (string Khoa, string GiaTri)[] Truong, ComposeLocality? DiaPhuong)
     {
         public Dictionary<string, string> TuDien()
         {
@@ -24,7 +25,7 @@ internal static class MauSoanThao
         return Enumerable.Range(0, kv.Length / 2).Select(i => (kv[2 * i], kv[2 * i + 1])).ToArray();
     }
 
-    private static Ca G(string ten, DocumentType loai, string tenMau, params string[] kv) => new(ten, loai, tenMau, T(kv), "GiaKiem");
+    private static Ca G(string ten, DocumentType loai, string tenMau, params string[] kv) => new(ten, loai, tenMau, T(kv), ComposeLocality.GiaKiem);
 
     /// <summary>Ca chạy được trên hộp thoại cũ: địa phương Gia Kiệm, luôn có tên mẫu (hộp thoại luôn có mẫu khi soạn).</summary>
     public static IReadOnlyList<Ca> GiaKiem { get; } = new[]
