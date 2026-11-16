@@ -42,8 +42,27 @@ public class AppSettingsService
                 _cached = new AppSettings();
             }
 
+            ChuanHoaDiaChiCu(_cached);
             return _cached;
         }
+    }
+
+    /// <summary>Địa chỉ máy chủ VanBanPlus mặc định (và địa chỉ thay cho địa chỉ Vercel cũ).</summary>
+    public const string DiaChiMayChuMacDinh = "https://vanbanplus.giakiemso.com";
+
+    /// <summary>
+    /// settings.json của bản cũ có thể còn địa chỉ *.vercel.app (máy chủ cũ, không có tác vụ v2): đổi sang địa chỉ mặc định
+    /// ngay trong bộ nhớ; tệp chỉ đổi ở lần lưu sau. Không đụng các địa chỉ khác (máy thử, máy chủ riêng).
+    /// </summary>
+    internal static void ChuanHoaDiaChiCu(AppSettings s)
+    {
+        var url = s.VanBanPlusApiUrl;
+        if (string.IsNullOrWhiteSpace(url)) return;
+        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var u)) return;
+        var host = u.Host;
+        if (host.Equals("vercel.app", StringComparison.OrdinalIgnoreCase)
+            || host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase))
+            s.VanBanPlusApiUrl = DiaChiMayChuMacDinh;
     }
 
     /// <summary>
@@ -110,7 +129,7 @@ public class AppSettings
     public bool AiEnabled { get; set; } = false;
 
     // ===== VanBanPlus API (cloud) =====
-    public string VanBanPlusApiUrl { get; set; } = "https://vanbanplus.giakiemso.com";
+    public string VanBanPlusApiUrl { get; set; } = AppSettingsService.DiaChiMayChuMacDinh;
     public string VanBanPlusApiKey { get; set; } = "";
     /// <summary>
     /// Token bypass Vercel Deployment Protection (Hobby plan không tắt được)

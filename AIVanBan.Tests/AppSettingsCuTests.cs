@@ -46,4 +46,36 @@ public class AppSettingsCuTests
         Assert.DoesNotContain("AIza-khoa-cu", json);
         Assert.Contains("vbp_khoa_thu", json);
     }
+
+    [Theory]
+    [InlineData("https://vanbanplus.vercel.app")]
+    [InlineData("https://vanbanplus-git-main-gikidi.vercel.app/")]
+    [InlineData("HTTPS://VanBanPlus.Vercel.App")]
+    [InlineData("https://vercel.app")]
+    public void DiaChiVercelCu_DoiSangDiaChiMacDinh(string url)
+    {
+        var s = new AppSettings { VanBanPlusApiUrl = url, VanBanPlusApiKey = "vbp_khoa_thu" };
+
+        AppSettingsService.ChuanHoaDiaChiCu(s);
+
+        Assert.Equal("https://vanbanplus.giakiemso.com", s.VanBanPlusApiUrl);
+        Assert.Equal("vbp_khoa_thu", s.VanBanPlusApiKey);
+    }
+
+    [Theory]
+    [InlineData("https://vanbanplus.giakiemso.com")]
+    [InlineData("https://may-thu.example.vn")]
+    [InlineData("http://localhost:3000")]
+    [InlineData("https://notvercel.app.example.com")]
+    [InlineData("https://vercel.app.evil.com")]
+    [InlineData("khong-phai-url")]
+    [InlineData("")]
+    public void DiaChiKhac_GiuNguyen(string url)
+    {
+        var s = new AppSettings { VanBanPlusApiUrl = url };
+
+        AppSettingsService.ChuanHoaDiaChiCu(s);
+
+        Assert.Equal(url, s.VanBanPlusApiUrl);
+    }
 }
