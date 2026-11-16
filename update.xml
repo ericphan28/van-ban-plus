@@ -3,5 +3,5 @@
     <version>1.0.20</version>
     <url>https://github.com/ericphan28/van-ban-plus-releases/releases/download/v1.0.20/VanBanPlus-Setup-1.0.20-x64.exe</url>
     <changelog>https://github.com/ericphan28/van-ban-plus-releases/releases/tag/v1.0.20</changelog>
-    <mandatory>false</mandatory>
+    <mandatory>true</mandatory>
 </item>

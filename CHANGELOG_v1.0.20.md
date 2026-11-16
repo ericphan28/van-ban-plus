@@ -1,6 +1,6 @@
 # VanBanPlus v1.0.20
 
-**Ngày phát hành:** <ngày phát hành, dd/MM/yyyy — điền ở Task 13>
+**Ngày phát hành:** 17/11/2026
 **Loại bản cập nhật:** Cập nhật tính năng (không bắt buộc)
 
 ## 🔒 AI chạy hoàn toàn qua máy chủ VanBanPlus
