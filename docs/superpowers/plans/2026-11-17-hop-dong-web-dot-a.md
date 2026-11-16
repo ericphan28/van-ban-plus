@@ -30,7 +30,7 @@ từ spec + hợp đồng này, rồi thực hiện.
 
 | Số | Luồng | Nội dung |
 | --- | --- | --- |
-| `009_phien.sql` | L1 | `phien`, `dang_nhap_ngoai`, `otp_email`, `hai_lop` (bí mật TOTP mã hóa + băm mã dự phòng), `nhat_ky_bao_mat`, cột `users.khoa_den`, `users.so_lan_sai` |
+| `009_phien.sql` | L1 | `phien`, `dang_nhap_ngoai`, `otp_email`, `hai_lop` (bí mật TOTP mã hóa + băm mã dự phòng), `nhat_ky_bao_mat`, `phien_token`, `ma_tam_2_lop`, `dem_tan_suat`; cột `users.co_mat_khau`, `users.hai_lop_bat`, `users.email_xac_minh_luc` |
 | `010_kho.sql` | L3 | `kho_thu_muc`, `kho_van_ban`, `kho_tep`, `kho_dung_luong`; bỏ bảng `cloud_*` của 001 (kiểm trống trên prod trước); `unaccent` |
 | `011_dung_luong_mua.sql` | L3 | dòng bảng giá `goi_dung_luong`, `orders.loai='dung_luong'` + cột, `kho_dung_luong_mua`, nhánh mới của `pay_order`, `nhac_email`, pg_cron dọn hàng chờ + nhắc |
 | `012_mau_phap_quy.sql` | L5 | `kho_mau`, `mau_chung`, `phap_quy` |
@@ -175,3 +175,4 @@ Hàm dùng chung cho L5, L6 (L3 xuất ra): `src/lib/kho/chu-so-huu.ts` → `chu
 | --- | --- | --- |
 | 17/11/2026 | — | Bản đầu |
 | 17/11/2026 | L1 | Thêm `LAM_MOI_TRUNG` (409): token làm mới bị dùng lại trong 30 giây sau khi xoay thì không thu hồi phiên — nhiều tab cùng làm mới khi mở trang. Quá 30 giây vẫn thu hồi cả phiên (`PHIEN_THU_HOI`). L2: `src/api/khach.ts` gặp mã này thì chờ ~1 giây, gọi `lam-moi` lại một lần; nên khóa làm mới giữa các tab bằng `navigator.locks` |
+| 17/11/2026 | L1 | 009 không thêm `users.khoa_den` / `users.so_lan_sai`: khóa sai mật khẩu đếm trong `dem_tan_suat` theo băm email, đếm trước khi so mật khẩu (chống gửi song song), email không tồn tại cũng nhận `TAI_KHOAN_KHOA` như email có (không dò được email) |
