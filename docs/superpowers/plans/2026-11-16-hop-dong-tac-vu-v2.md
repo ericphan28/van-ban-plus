@@ -14,6 +14,11 @@ Mọi kế hoạch đợt 2/3 PHẢI dùng đúng tên dưới đây; đổi tê
   401 (thiếu/sai khóa), 404 (tác vụ không có), 500 (lỗi máy chủ) không có `code`.
 - Tác vụ trả JSON: `ket_qua` là đối tượng đúng tên trường JSON của model C# hiện có (giữ nguyên như prompt hiện nay).
   Tác vụ trả văn bản: `ket_qua` là chuỗi.
+- **Kết quả bị cắt** (`bi_cat: true`, chạm trần token ra): tác vụ JSON mà JSON không đọc được thì `ket_qua` là **chuỗi thô**
+  (vẫn trừ credit theo spec §6). Bên gọi phải kiểm kiểu `ket_qua` trước khi đọc vào model C#. Tác vụ văn bản trả rỗng (kể cả
+  khi bị cắt) thì máy chủ thử lại 1 lần rồi hoàn credit, mã `AI_LOI`.
+- **Thời gian chờ** phía gọi: `kiem-tra` văn bản dài (đến 60.000 ký tự) có thể chạy vài phút; không dùng mặc định 100 giây của
+  `HttpClient` (đợt 3 đặt theo số đo proxy ở spec §11 điểm 2).
 - Ngày tháng trong đầu vào: chuỗi ISO `yyyy-MM-dd`; máy chủ tự định dạng giống hệt C# khi dựng prompt.
 - Trường chuỗi tùy chọn: thiếu, `null` hoặc `""` đều coi là không có.
 

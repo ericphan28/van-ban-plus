@@ -1,6 +1,6 @@
 # API tác vụ AI và credit — thiết kế (bước 1 lộ trình đa nền tảng)
 
-Ngày: 09/11/2026. Trạng thái: đã duyệt 12/11/2026; đợt 1 (lớp credit + tom-tat) lên production 12/11/2026 — kế hoạch `docs/superpowers/plans/2026-11-12-lop-credit-va-khung-tac-vu.md`.
+Ngày: 09/11/2026. Trạng thái: đã duyệt 12/11/2026; đợt 1 (lớp credit + tom-tat) lên production 12/11/2026 — kế hoạch `docs/superpowers/plans/2026-11-12-lop-credit-va-khung-tac-vu.md`; đợt 2a (kiem-tra, tham-muu, bao-cao-dinh-ky) lên production 16/11/2026.
 
 ## 1. Mục tiêu
 
@@ -276,7 +276,7 @@ Mỗi tác vụ gồm: chép prompt sang TypeScript, bộ kiểm so khớp, thay
 **Chạy thật, trước khi mở bán:**
 
 1. Đã đo token ngày 09/11/2026 (mục 7). Đo lại trên `gemini-3.6-flash` và văn bản thật của khách trước khi chốt hệ số `ra_min`, `ra_max`.
-2. Chưa đo: thời gian chờ tối đa qua proxy Traefik `coolify-proxy` với một tác vụ dài. Nếu proxy cắt sớm hơn thời gian tác vụ dài nhất thì phải chỉnh proxy hoặc đưa streaming/hàng đợi vào sớm.
+2. Đã đo 16/11/2026: `kiem-tra` 30.292 ký tự qua Cloudflare + Traefik, máy chủ chạy 49 giây (10.611 token vào, 7.005 token ra), phía gọi nhận HTTP 200 sau 49,3 giây, không bị cắt; `bi_cat` false. Rủi ro còn lại: Cloudflare cắt ở 100 giây; lượt mà AI viết lại toàn văn (tới ~37.000 token ra ở 60.000 ký tự) có thể vượt mức đó — trước khi mở bán chọn: tắt proxy Cloudflare cho `vanbanplus.giakiemso.com`, hoặc đưa streaming / hàng đợi lên sớm.
 3. Bản cài máy mới chạy đủ 6 tác vụ trên API thật.
 
 ## 12. Triển khai
