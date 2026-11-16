@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AIVanBan.Core\AIVanBan.Core.csproj" />
+    <ProjectReference Include="..\AIVanBan.Desktop\AIVanBan.Desktop.csproj" />
   </ItemGroup>
 
 </Project>
