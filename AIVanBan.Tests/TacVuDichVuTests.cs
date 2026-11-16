@@ -367,12 +367,6 @@ public class TacVuDichVuTests
         Assert.Equal("thành phố Thống Nhất", dp.CoQuanCapTren);
         Assert.Equal("tỉnh Đồng Nai", dp.Tinh);
         Assert.Equal(DacDiemGiaKiem, dp.DacDiem);
-        // Khớp từng ký tự với địa phương Gia Kiệm mà bộ kiểm so khớp prompt của hợp đồng dùng.
-        var cu = ComposeLocality.GiaKiem;
-        Assert.Equal(cu.Xa, dp.Xa);
-        Assert.Equal(cu.CoQuanCapTren, dp.CoQuanCapTren);
-        Assert.Equal(cu.Tinh, dp.Tinh);
-        Assert.Equal(cu.DacDiem, dp.DacDiem);
     }
 
     [Fact]

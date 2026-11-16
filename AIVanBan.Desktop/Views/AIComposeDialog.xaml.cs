@@ -921,9 +921,9 @@ public partial class AIComposeDialog : Window
         };
     }
 
-    private string GetFieldLabel(string field) => ComposePromptBuilder.GetFieldLabel(field);
+    private string GetFieldLabel(string field) => NhanTruongSoanThao.GetFieldLabel(field);
 
-    private static string FormatFieldName(string field) => ComposePromptBuilder.FormatFieldName(field);
+    private static string FormatFieldName(string field) => NhanTruongSoanThao.FormatFieldName(field);
 
     private string GetFieldHint(string field)
     {
