@@ -16,6 +16,8 @@ public partial class DocumentReviewDialog : Window
     private DocumentReviewResult? _result;
     private DispatcherTimer? _timer;
     private int _elapsedSeconds;
+    // Chặn bấm lặp: một lượt (ước tính + xác nhận + chạy) tại một thời điểm, tránh trừ credit hai lần.
+    private bool _dangChay;
     private string? _referenceContent;
     private string? _uploadedFilePath;
     private readonly DocumentReviewService _service = new();
@@ -189,6 +191,7 @@ public partial class DocumentReviewDialog : Window
     private void StartTimer()
     {
         _elapsedSeconds = 0;
+        _timer?.Stop();
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += (s, e) =>
         {
@@ -316,29 +319,38 @@ public partial class DocumentReviewDialog : Window
 
     private async void QuickCheck_Click(object sender, RoutedEventArgs e)
     {
-        if (!AiPromoHelper.CheckOrShowPromo(this)) return;
-
-        var inputText = txtQuickInput.Text.Trim();
-        if (string.IsNullOrWhiteSpace(inputText) || inputText.Length <= 10)
+        if (_dangChay) return;
+        _dangChay = true;
+        try
         {
-            MessageBox.Show("Vui lòng nhập nội dung văn bản (tối thiểu 10 ký tự).",
-                "Thiếu nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            if (!AiPromoHelper.CheckOrShowPromo(this)) return;
+
+            var inputText = txtQuickInput.Text.Trim();
+            if (string.IsNullOrWhiteSpace(inputText) || inputText.Length <= 10)
+            {
+                MessageBox.Show("Vui lòng nhập nội dung văn bản (tối thiểu 10 ký tự).",
+                    "Thiếu nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Lấy loại văn bản nếu đã chọn
+            _content = inputText;
+            if (cboQuickDocType.SelectedValue is string selectedType)
+                _documentType = selectedType;
+
+            if (!await TacVuGiaoDien.XacNhanCreditAsync(this, "Kiểm tra văn bản",
+                    () => _service.UocTinhAsync(_content, _documentType, _title, _issuer, _referenceContent)))
+                return;
+
+            // Ẩn input panel, hiện loading
+            pnlQuickInput.Visibility = Visibility.Collapsed;
+
+            await StartReview();
         }
-
-        // Lấy loại văn bản nếu đã chọn
-        _content = inputText;
-        if (cboQuickDocType.SelectedValue is string selectedType)
-            _documentType = selectedType;
-
-        if (!await TacVuGiaoDien.XacNhanCreditAsync(this, "Kiểm tra văn bản",
-                () => _service.UocTinhAsync(_content, _documentType, _title, _issuer, _referenceContent)))
-            return;
-
-        // Ẩn input panel, hiện loading
-        pnlQuickInput.Visibility = Visibility.Collapsed;
-
-        await StartReview();
+        finally
+        {
+            _dangChay = false;
+        }
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
