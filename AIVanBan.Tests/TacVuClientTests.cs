@@ -274,6 +274,19 @@ public class TacVuClientTests
     }
 
     [Fact]
+    public void CauHoiDongKhiDangChay_DungLoiVaKhongCoDaiTuNhanXung()
+    {
+        var cam = new Regex(@"\b(tôi|chúng tôi|ta|chúng ta|anh|chị|em|bạn|mình|dạ|vâng)\b|(^|\s)ạ([\s.,!?]|$)",
+            RegexOptions.IgnoreCase);
+
+        Assert.Equal(
+            "Đang chạy tác vụ AI. Đóng cửa sổ thì lượt đang chạy vẫn bị trừ credit và kết quả sẽ mất. Vẫn đóng?",
+            TacVuThongBao.CauHoiDongKhiDangChay);
+        Assert.DoesNotMatch(cam, TacVuThongBao.CauHoiDongKhiDangChay);
+        Assert.DoesNotMatch(cam, TacVuThongBao.TieuDeDongKhiDangChay);
+    }
+
+    [Fact]
     public void LoiBaoKhach_CoDauVaKhongCoDaiTuNhanXung()
     {
         var cam = new Regex(@"\b(tôi|chúng tôi|ta|chúng ta|anh|chị|em|bạn|mình|dạ|vâng)\b|(^|\s)ạ([\s.,!?]|$)",

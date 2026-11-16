@@ -42,6 +42,7 @@ public partial class ScanImportDialog : Window
     private readonly DocumentService _documentService;
     private readonly TrichXuatService _trichXuat = new();
     private bool _dangChay; // chặn bấm lặp: cờ đặt trước mọi await của Analyze_Click
+    private bool _dungTach;  // đã xác nhận đóng giữa lúc «Tách riêng» đang chạy: không bắt đầu lượt có tính credit nào nữa
     private readonly ObservableCollection<ScanFileItem> _files = new();
     private TrichXuatService.ExtractedDocumentData? _extractedData;
     
@@ -399,6 +400,7 @@ public partial class ScanImportDialog : Window
         _dangChay = true;
         rbMerge.IsEnabled = false;
         rbSeparate.IsEnabled = false;
+        btnCancel.IsEnabled = false; // lượt AI đang chạy không hủy được: đóng cửa sổ phải qua hộp hỏi ở OnClosing
         try
         {
             await Analyze_ClickAsync(ds, tachRieng);
@@ -408,6 +410,7 @@ public partial class ScanImportDialog : Window
             _dangChay = false;
             rbMerge.IsEnabled = true;
             rbSeparate.IsEnabled = true;
+            btnCancel.IsEnabled = true;
         }
     }
 
@@ -512,7 +515,7 @@ public partial class ScanImportDialog : Window
         var duocChay = tachRieng
             ? await TacVuGiaoDien.XacNhanCreditAsync(this, $"Trích xuất {tep.Count} tệp (tách riêng)", () => UocTinhTachRiengAsync(tep))
             : await TacVuGiaoDien.XacNhanCreditAsync(this, $"Trích xuất {moTaTep} (ghép trang)", () => _trichXuat.UocTinhAsync(tep));
-        if (!duocChay) return;
+        if (!duocChay || _dungTach) return; // _dungTach: cửa sổ đã được xác nhận đóng trong lúc ước tính
 
         // Disable UI
         btnAnalyze.IsEnabled = false;
@@ -615,6 +618,9 @@ public partial class ScanImportDialog : Window
         
         for (int i = 0; i < ds.Count; i++)
         {
+            // Cửa sổ đã được xác nhận đóng: không bắt đầu thêm lượt nào (mỗi lượt tính credit).
+            if (_dungTach) break;
+
             var file = ds[i];
             var progress = (int)((i + 1.0) / ds.Count * 100);
             
@@ -640,6 +646,7 @@ public partial class ScanImportDialog : Window
             }
         }
         
+        if (_dungTach) return; // cửa sổ đã đóng, kết quả bị bỏ
         pbBatch.Value = 100;
         if (loiDung != null) TacVuGiaoDien.MoiMuaCreditNeuThieu(this, loiDung);
         if (biCat.Count > 0)
@@ -1046,8 +1053,20 @@ public partial class ScanImportDialog : Window
 
     #endregion
 
+    /// <summary>
+    /// Đang phân tích thì hỏi trước khi đóng (lượt đang chạy vẫn bị trừ credit, kết quả mất). Đồng ý đóng thì
+    /// «Tách riêng» dừng trước tệp kế tiếp, không bắt đầu thêm lượt tính credit.
+    /// </summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        if (TacVuGiaoDien.HoiTruocKhiDong(this, _dangChay, e))
+            _dungTach = true;
+    }
+
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return; // nút đã bị khóa lúc đang chạy; đề phòng phím tắt
         DialogResult = false;
         Close();
     }

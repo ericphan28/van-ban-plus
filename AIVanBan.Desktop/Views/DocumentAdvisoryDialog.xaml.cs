@@ -393,6 +393,13 @@ public partial class DocumentAdvisoryDialog : Window
         TacVuGiaoDien.XacNhanCreditAsync(this, "Tham mưu xử lý văn bản",
             () => _service.UocTinhAsync(_content, _documentType, _title, _issuer, _context));
 
+    /// <summary>Đang chạy tác vụ AI thì hỏi trước khi đóng (lượt vẫn bị trừ credit, kết quả sẽ mất).</summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        TacVuGiaoDien.HoiTruocKhiDong(this, _dangChay, e);
+    }
+
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();

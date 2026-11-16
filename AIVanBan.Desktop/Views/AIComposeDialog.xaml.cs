@@ -1824,6 +1824,13 @@ public partial class AIComposeDialog : Window
         public string SignerTitle { get; set; } = "";
     }
 
+    /// <summary>Đang chạy tác vụ AI thì hỏi trước khi đóng (lượt vẫn bị trừ credit, kết quả sẽ mất).</summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        TacVuGiaoDien.HoiTruocKhiDong(this, _dangChay, e);
+    }
+
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = false;

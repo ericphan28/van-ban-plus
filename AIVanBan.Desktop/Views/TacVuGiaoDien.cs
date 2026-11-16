@@ -56,6 +56,26 @@ public static class TacVuGiaoDien
             MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
     }
 
+    /// <summary>Các cửa sổ đang chạy đọc chữ (chi-chu) qua <see cref="DocChuTuPdfAsync"/>; chỉ dùng trên luồng giao diện.</summary>
+    private static readonly HashSet<Window> _dangDocChu = new();
+
+    /// <summary>
+    /// Gọi từ OnClosing của hộp thoại AI: đang có lượt chạy thì hỏi lại (lượt vẫn bị trừ credit, kết quả sẽ mất);
+    /// chọn «No» thì hủy việc đóng. Trả true khi vẫn đóng giữa lúc đang chạy (để hộp thoại dừng các lượt kế tiếp).
+    /// </summary>
+    public static bool HoiTruocKhiDong(Window owner, bool dangChay, System.ComponentModel.CancelEventArgs e)
+    {
+        if (!(dangChay || _dangDocChu.Contains(owner)) || e.Cancel) return false;
+        var chon = MessageBox.Show(owner, TacVuThongBao.CauHoiDongKhiDangChay, TacVuThongBao.TieuDeDongKhiDangChay,
+            MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+        if (chon != MessageBoxResult.Yes)
+        {
+            e.Cancel = true;
+            return false;
+        }
+        return true;
+    }
+
     public static string KhoangCredit(UocTinhKetQua u) =>
         u.CreditMin == u.CreditMax ? $"{u.CreditMax} credit" : $"{u.CreditMin}–{u.CreditMax} credit";
 
@@ -124,6 +144,20 @@ public static class TacVuGiaoDien
     /// Trả null khi người dùng hủy hoặc đã báo lỗi.
     /// </summary>
     public static async Task<string?> DocChuTuPdfAsync(Window owner, string filePath)
+    {
+        // Đọc chữ là một lượt AI tính credit: chặn bấm lặp trên cùng cửa sổ và để OnClosing biết đang chạy.
+        if (!_dangDocChu.Add(owner)) return null;
+        try
+        {
+            return await DocChuTuPdfKhongKhoaAsync(owner, filePath);
+        }
+        finally
+        {
+            _dangDocChu.Remove(owner);
+        }
+    }
+
+    private static async Task<string?> DocChuTuPdfKhongKhoaAsync(Window owner, string filePath)
     {
         (string Base64, string MimeType, int SoTrang) tepDoc;
         try
