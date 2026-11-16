@@ -585,7 +585,8 @@ public partial class ScanImportDialog : Window
             {
                 var data = await _trichXuat.ExtractDocumentFromBytesAsync(tep[i].Base64, tep[i].MimeType);
                 _separateResults.Add((data, file.FilePath));
-                if (_trichXuat.LuotCuoi?.BiCat == true) biCat.Add(file.FileName);
+                if (_trichXuat.LuotCuoi is { BiCat: true } luot)
+                    biCat.Add(string.IsNullOrWhiteSpace(luot.MaLuot) ? file.FileName : $"{file.FileName} (mã lượt {luot.MaLuot})");
             }
             catch (Exception ex)
             {

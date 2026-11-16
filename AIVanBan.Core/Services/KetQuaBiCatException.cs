@@ -9,7 +9,8 @@ public sealed class KetQuaBiCatException : Exception
     public KetQuaBiCatException(string tenViec, ThongTinLuot luot)
         : base($"Kết quả {tenViec} dài vượt giới hạn nên bị cắt ở cuối và không đọc được thành kết quả hoàn chỉnh. "
              + $"Đã trừ {luot.CreditDaTru} credit, số dư còn {luot.SoDu} credit. "
-             + "Nên chia nội dung thành các phần ngắn hơn rồi chạy lại.")
+             + "Nên chia nội dung thành các phần ngắn hơn rồi chạy lại."
+             + (luot.CauMaLuot.Length == 0 ? "" : " " + luot.CauMaLuot))
     {
         Luot = luot;
     }

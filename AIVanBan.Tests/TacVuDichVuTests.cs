@@ -83,6 +83,7 @@ public class TacVuDichVuTests
         Assert.Contains("9 credit", loi.Message);
         Assert.Contains("21 credit", loi.Message);
         Assert.Contains("cắt", loi.Message);
+        Assert.Contains("Mã lượt: luot-1", loi.Message);
         Assert.Equal(9, dv.LuotCuoi!.CreditDaTru);
         Assert.True(dv.LuotCuoi.BiCat);
     }

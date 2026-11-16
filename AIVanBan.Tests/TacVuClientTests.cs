@@ -146,6 +146,19 @@ public class TacVuClientTests
     }
 
     [Fact]
+    public void LoiBaoBiCat_KemMaLuot_ChiKhiCoMa()
+    {
+        var co = new ThongTinLuot(7, 173, "luot-42", true).LoiBaoBiCat();
+        var khong = new ThongTinLuot(7, 173, "", true).LoiBaoBiCat();
+
+        Assert.Contains("bị cắt", co);
+        Assert.Contains("Mã lượt: luot-42", co);
+        Assert.Contains("bộ phận hỗ trợ", co);
+        Assert.Contains("bị cắt", khong);
+        Assert.DoesNotContain("Mã lượt", khong);
+    }
+
+    [Fact]
     public async Task UocTinhAsync_DocKhoangCreditVaSoDu()
     {
         var h = new HandlerTacVuGia().TraVe(HttpStatusCode.OK,

@@ -11,7 +11,21 @@ namespace AIVanBan.Core.Services;
 public sealed record UocTinhKetQua(int CreditMin, int CreditMax, int SoDu, bool DuCredit);
 
 /// <summary>Thông tin một lượt chạy xong.</summary>
-public sealed record ThongTinLuot(int CreditDaTru, int SoDu, string MaLuot, bool BiCat);
+public sealed record ThongTinLuot(int CreditDaTru, int SoDu, string MaLuot, bool BiCat)
+{
+    /// <summary>
+    /// Câu mã lượt để hỗ trợ truy vết, rỗng khi máy chủ không trả mã. Ghép sau lời báo của một lượt ĐÃ chạy
+    /// (kết quả bị cắt, kết quả không đọc được...).
+    /// </summary>
+    public string CauMaLuot => string.IsNullOrWhiteSpace(MaLuot) ? "" : $"Mã lượt: {MaLuot} — gửi mã này cho bộ phận hỗ trợ khi cần truy vết.";
+
+    /// <summary>Lời báo kết quả bị cắt (vẫn thành công, đã trừ credit), kèm mã lượt nếu có.</summary>
+    public string LoiBaoBiCat()
+    {
+        var cau = "Kết quả dài vượt giới hạn nên bị cắt bớt ở cuối. Nên kiểm tra phần cuối trước khi dùng.";
+        return CauMaLuot.Length == 0 ? cau : cau + "\n" + CauMaLuot;
+    }
+}
 
 /// <summary>
 /// Kết quả một lượt chạy. <see cref="KetQua"/> là data.ket_qua đã đọc vào T.

@@ -115,9 +115,7 @@ public static class TacVuGiaoDien
     {
         if (luot?.BiCat == true)
         {
-            MessageBox.Show(owner,
-                "Kết quả dài vượt giới hạn nên bị cắt bớt ở cuối. Nên kiểm tra phần cuối trước khi dùng.",
-                "Kết quả bị cắt", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(owner, luot.LoiBaoBiCat(), "Kết quả bị cắt", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 
