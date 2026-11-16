@@ -394,6 +394,8 @@ public partial class ApiSettingsDialog : Window
 
         AppSettingsService.Save(settings);
         SaveOrganizationTab();
+        // Ngoài SaveOrganizationTab vì hàm đó return sớm khi tên và viết tắt cơ quan đều trống.
+        ThietLapDiaPhuong.Luu(txtDpXa.Text, txtDpCapTren.Text, txtDpTinh.Text, txtDpDacDiem.Text);
         MessageBox.Show("✅ Đã lưu cài đặt thành công!\n\nCần khởi động lại ứng dụng để áp dụng thay đổi.",
             "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
         DialogResult = true;
@@ -452,6 +454,12 @@ public partial class ApiSettingsDialog : Window
             txtOrgLocation.Text = AppSettingsService.GetRawSettingValue(KEY_DEFAULT_LOCATION) ?? "";
             txtDefaultSigner.Text = AppSettingsService.GetRawSettingValue(KEY_DEFAULT_SIGNER) ?? "";
             txtDefaultSigningTitle.Text = AppSettingsService.GetRawSettingValue(KEY_DEFAULT_SIGNING_TITLE) ?? "";
+
+            var diaPhuong = ThietLapDiaPhuong.Doc();
+            txtDpXa.Text = diaPhuong?.Xa ?? "";
+            txtDpCapTren.Text = diaPhuong?.CoQuanCapTren ?? "";
+            txtDpTinh.Text = diaPhuong?.Tinh ?? "";
+            txtDpDacDiem.Text = string.Join(Environment.NewLine, diaPhuong?.DacDiem ?? Array.Empty<string>());
 
             // Wire preview update
             txtOrgAbbreviation.TextChanged += (_, _) => UpdateOrgPreview();

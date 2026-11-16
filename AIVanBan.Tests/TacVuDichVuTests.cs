@@ -349,4 +349,167 @@ public class TacVuDichVuTests
         Assert.True(dv.LuotCuoi!.BiCat);
         Assert.Equal(15, dv.LuotCuoi.CreditDaTru);
     }
+
+    private static readonly string[] DacDiemGiaKiem =
+    {
+        "Dân số: 79.274 nhân khẩu, 19.818 hộ",
+        "17 ấp, 5 giáo xứ Công giáo (96% dân theo đạo)",
+        "Xã loại I, đang xây dựng nông thôn mới nâng cao",
+    };
+
+    [Fact]
+    public void DiaPhuong_ChuaTungLuu_MacDinhGiaKiemKemBaDongDacDiem()
+    {
+        var dp = ThietLapDiaPhuong.Doc(new Dictionary<string, string>());
+
+        Assert.NotNull(dp);
+        Assert.Equal("xã Gia Kiệm", dp!.Xa);
+        Assert.Equal("thành phố Thống Nhất", dp.CoQuanCapTren);
+        Assert.Equal("tỉnh Đồng Nai", dp.Tinh);
+        Assert.Equal(DacDiemGiaKiem, dp.DacDiem);
+        // Khớp từng ký tự với địa phương Gia Kiệm mà bộ kiểm so khớp prompt của hợp đồng dùng.
+        var cu = ComposeLocality.GiaKiem;
+        Assert.Equal(cu.Xa, dp.Xa);
+        Assert.Equal(cu.CoQuanCapTren, dp.CoQuanCapTren);
+        Assert.Equal(cu.Tinh, dp.Tinh);
+        Assert.Equal(cu.DacDiem, dp.DacDiem);
+    }
+
+    [Fact]
+    public void DiaPhuong_DaLuuRongCaBon_KhongGui()
+    {
+        var dp = ThietLapDiaPhuong.Doc(new Dictionary<string, string>
+        {
+            [ThietLapDiaPhuong.KhoaXa] = "",
+            [ThietLapDiaPhuong.KhoaCoQuanCapTren] = " ",
+            [ThietLapDiaPhuong.KhoaTinh] = "",
+            [ThietLapDiaPhuong.KhoaDacDiem] = "",
+        });
+
+        Assert.Null(dp);
+    }
+
+    [Theory]
+    [InlineData("", "tỉnh Đồng Nai")]
+    [InlineData("xã Minh An", "  ")]
+    public void DiaPhuong_XoaXaHoacTinh_KhongGui(string xa, string tinh)
+    {
+        // Hợp đồng đòi xa và tinh khi có dia_phuong: thiếu một trong hai thì bỏ hẳn bối cảnh địa phương.
+        var dp = ThietLapDiaPhuong.Doc(new Dictionary<string, string>
+        {
+            [ThietLapDiaPhuong.KhoaXa] = xa,
+            [ThietLapDiaPhuong.KhoaCoQuanCapTren] = "tỉnh Đồng Nai",
+            [ThietLapDiaPhuong.KhoaTinh] = tinh,
+            [ThietLapDiaPhuong.KhoaDacDiem] = "Dân số: 1.000 người",
+        });
+
+        Assert.Null(dp);
+    }
+
+    [Fact]
+    public void DiaPhuong_DaLuu_CatKhoangTrangVaGiuDungPhanDaLuu()
+    {
+        var dp = ThietLapDiaPhuong.Doc(new Dictionary<string, string>
+        {
+            [ThietLapDiaPhuong.KhoaXa] = "  phường Long Bình ",
+            [ThietLapDiaPhuong.KhoaTinh] = "tỉnh Đồng Nai",
+        });
+
+        Assert.NotNull(dp);
+        Assert.Equal("phường Long Bình", dp!.Xa);
+        Assert.Equal("", dp.CoQuanCapTren);
+        Assert.Equal("tỉnh Đồng Nai", dp.Tinh);
+        Assert.Empty(dp.DacDiem);   // đã lưu mà không có đặc điểm: không tự chèn đặc điểm Gia Kiệm
+    }
+
+    [Fact]
+    public void DiaPhuong_DacDiem_BoDongTrongToiDaMuoiDongMoiDongToiDa300KyTu()
+    {
+        var nhieu = string.Join("\r\n", Enumerable.Range(1, 14).Select(i => i % 3 == 0 ? "   " : $"  Dòng {i}  "));
+        nhieu += "\n" + new string('x', 400);
+        var dp = ThietLapDiaPhuong.Doc(new Dictionary<string, string>
+        {
+            [ThietLapDiaPhuong.KhoaXa] = "xã A",
+            [ThietLapDiaPhuong.KhoaTinh] = "tỉnh B",
+            [ThietLapDiaPhuong.KhoaDacDiem] = nhieu,
+        });
+
+        Assert.Equal(10, dp!.DacDiem.Count);
+        Assert.Equal("Dòng 1", dp.DacDiem[0]);
+        Assert.Equal("Dòng 2", dp.DacDiem[1]);
+        Assert.Equal("Dòng 4", dp.DacDiem[2]);   // dòng 3 trống đã bị bỏ
+        Assert.All(dp.DacDiem, d => Assert.True(d.Length <= 300));
+    }
+
+    [Fact]
+    public void DiaPhuong_GhiRoiDoc_KhuVongKhongMatDuLieu()
+    {
+        var extra = new Dictionary<string, string>();
+        ThietLapDiaPhuong.GhiVao(extra, " xã Minh An ", "tỉnh Đồng Nai", "tỉnh Đồng Nai", "Dân số: 12.000\n\n  8 thôn  \n");
+
+        Assert.Equal("Dân số: 12.000\n8 thôn", extra[ThietLapDiaPhuong.KhoaDacDiem]);
+        var dp = ThietLapDiaPhuong.Doc(extra);
+        Assert.Equal(new[] { "Dân số: 12.000", "8 thôn" }, dp!.DacDiem);
+        Assert.Equal("xã Minh An", dp.Xa);
+
+        // Xóa trắng tất cả rồi lưu: đã lưu (có khóa) nên KHÔNG quay về mặc định Gia Kiệm.
+        var trong = new Dictionary<string, string>();
+        ThietLapDiaPhuong.GhiVao(trong, "", "", "", "");
+        Assert.Null(ThietLapDiaPhuong.Doc(trong));
+    }
+
+    [Fact]
+    public async Task SoanThao_GuiTenEnumTruongTenMauVaDiaPhuong()
+    {
+        var h = new HandlerTacVuGia()
+            .ThanhCong("\"CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\\nĐộc lập - Tự do - Hạnh phúc\"")
+            .ThanhCong("\"Nội dung\"");
+        var dv = new TacVuSoanThao(TaoClient(h));
+        var truong = new Dictionary<string, string> { ["subject"] = "Báo cáo phòng chống thiên tai", ["signer_name"] = "", ["content"] = "Nội dung" };
+        var dp = new DiaPhuongCoQuan("xã Minh An", "tỉnh Đồng Nai", "tỉnh Đồng Nai", new[] { "Dân số: 12.000", "8 thôn" });
+
+        var kq = await dv.SoanAsync(DocumentType.CongVan, truong, dp, "Công văn hành chính");
+
+        Assert.StartsWith("CỘNG HÒA", kq);
+        Assert.Equal("https://vbp.thu/api/v2/tac-vu/soan-thao", h.DaNhan[0].Url);
+        var b = Than(h, 0);
+        Assert.Equal("CongVan", b.GetProperty("loai_van_ban").GetString());
+        Assert.Equal("Công văn hành chính", b.GetProperty("ten_mau").GetString());
+        var t = b.GetProperty("truong");
+        Assert.Equal("Báo cáo phòng chống thiên tai", t.GetProperty("subject").GetString());
+        Assert.Equal("", t.GetProperty("signer_name").GetString());
+        Assert.Equal(new[] { "subject", "signer_name", "content" }, t.EnumerateObject().Select(p => p.Name).ToArray());   // giữ thứ tự
+        var d = b.GetProperty("dia_phuong");
+        Assert.Equal("xã Minh An", d.GetProperty("xa").GetString());
+        Assert.Equal("tỉnh Đồng Nai", d.GetProperty("co_quan_cap_tren").GetString());
+        Assert.Equal("tỉnh Đồng Nai", d.GetProperty("tinh").GetString());
+        Assert.Equal(new[] { "Dân số: 12.000", "8 thôn" }, d.GetProperty("dac_diem").EnumerateArray().Select(x => x.GetString()).ToArray());
+
+        await dv.SoanAsync(DocumentType.QuyetDinh, truong, null);
+        Assert.False(Than(h, 1).TryGetProperty("dia_phuong", out _));
+        Assert.False(Than(h, 1).TryGetProperty("ten_mau", out _));
+        Assert.Equal("QuyetDinh", Than(h, 1).GetProperty("loai_van_ban").GetString());
+    }
+
+    [Fact]
+    public async Task SoanThao_UocTinhCungDauVao_GhiLuotKhiBiCat()
+    {
+        var h = new HandlerTacVuGia()
+            .TraVe(System.Net.HttpStatusCode.OK,
+                """{"success":true,"data":{"credit_min":2,"credit_max":9,"so_du":40,"du_credit":true}}""")
+            .ThanhCong("\"Văn bản dài bị cắt\"", creditDaTru: 7, soDu: 33, biCat: true);
+        var dv = new TacVuSoanThao(TaoClient(h));
+        var truong = new Dictionary<string, string> { ["subject"] = "V/v A" };
+
+        var u = await dv.UocTinhAsync(DocumentType.CongVan, truong, ThietLapDiaPhuong.MacDinhGiaKiem, "Công văn");
+        Assert.Equal(9, u.CreditMax);
+        Assert.Equal("https://vbp.thu/api/v2/tac-vu/soan-thao/uoc-tinh", h.DaNhan[0].Url);
+        Assert.Equal("Công văn", Than(h, 0).GetProperty("ten_mau").GetString());
+        Assert.Equal(3, Than(h, 0).GetProperty("dia_phuong").GetProperty("dac_diem").GetArrayLength());
+
+        var kq = await dv.SoanAsync(DocumentType.CongVan, truong, ThietLapDiaPhuong.MacDinhGiaKiem, "Công văn");
+        Assert.Equal("Văn bản dài bị cắt", kq);
+        Assert.True(dv.LuotCuoi!.BiCat);
+        Assert.Equal(7, dv.LuotCuoi.CreditDaTru);
+    }
 }

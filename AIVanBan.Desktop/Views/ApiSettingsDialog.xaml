@@ -207,6 +207,39 @@
                             </StackPanel>
                         </GroupBox>
 
+                        <GroupBox Header="Địa phương (dùng cho AI soạn thảo)" Margin="0,0,0,12"
+                                  materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                            <StackPanel Margin="8">
+                                <TextBlock Text="Xã/phường" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBox x:Name="txtDpXa"
+                                         materialDesign:HintAssist.Hint="VD: xã Gia Kiệm, phường Long Bình"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Cơ quan cấp trên" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBox x:Name="txtDpCapTren"
+                                         materialDesign:HintAssist.Hint="VD: thành phố Thống Nhất, tỉnh Đồng Nai"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Tỉnh/thành phố" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBox x:Name="txtDpTinh"
+                                         materialDesign:HintAssist.Hint="VD: tỉnh Đồng Nai"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Đặc điểm địa phương (mỗi dòng một ý, tối đa 10 dòng)" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBox x:Name="txtDpDacDiem"
+                                         materialDesign:HintAssist.Hint="VD: Dân số: 79.274 nhân khẩu, 19.818 hộ"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         AcceptsReturn="True" TextWrapping="Wrap"
+                                         MinLines="3" MaxLines="6" VerticalScrollBarVisibility="Auto"
+                                         Margin="0,0,0,4"/>
+                                <TextBlock Text="💡 Ghi cả chữ «xã», «phường», «tỉnh»... Cần có xã/phường và tỉnh/thành phố; thiếu một trong hai thì AI soạn thảo không kèm bối cảnh địa phương."
+                                           FontSize="11" Opacity="0.6" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </GroupBox>
+
                         <GroupBox Header="Người ký mặc định" Margin="0,0,0,12"
                                   materialDesign:ColorZoneAssist.Mode="SecondaryLight">
                             <StackPanel Margin="8">
