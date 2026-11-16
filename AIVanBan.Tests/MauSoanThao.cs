@@ -111,4 +111,37 @@ internal static class MauSoanThao
         G("nghi-dinh", DocumentType.NghiDinh, "Nghị định", "subject", "Nghị định mẫu", "content", "Nội dung nghị định."),
         G("thong-tu", DocumentType.ThongTu, "Thông tư", "subject", "Thông tư mẫu", "content", "Nội dung thông tư."),
     };
+
+    /// <summary>Ca chỉ có ở tệp mẫu (lớp mới): không địa phương, địa phương khác, không tên mẫu.</summary>
+    public static IReadOnlyList<Ca> ThemCa { get; } = new[]
+    {
+        new Ca("khong-dia-phuong-cong-van", DocumentType.CongVan, "Công văn",
+            T("from_org", "UBND xã Minh An", "to_org", "Sở Xây dựng", "subject", "Trả lời kiến nghị", "reply_to_number", "20/SXD-QLN",
+              "content", "Đã kiểm tra hiện trạng."), null),
+        new Ca("khong-dia-phuong-quyet-dinh", DocumentType.QuyetDinh, "Quyết định", T("person_name", "Phạm Văn Cường"), null),
+        new Ca("khong-dia-phuong-ke-hoach", DocumentType.KeHoach, "Kế hoạch", T("period", "năm 2027", "tasks", "Chuyển đổi số."), null),
+        new Ca("khong-dia-phuong-thong-bao", DocumentType.ThongBao, "Thông báo", T("content", "Lịch tiếp công dân."), null),
+        new Ca("khong-dia-phuong-nghi-quyet-hdnd", DocumentType.NghiQuyet, "Nghị quyết HĐND",
+            T("level", "xã", "subject", "Dự toán", "articles", "Điều 1.", "chairman_name", "Nguyễn Thị Lan"), null),
+        new Ca("khong-dia-phuong-nghi-quyet-ubnd", DocumentType.NghiQuyet, "Nghị quyết UBND",
+            T("level", "xã", "subject", "Quy chế", "articles", "Điều 1.", "chairman_name", "Trần Văn Bình"), null),
+        new Ca("khong-dia-phuong-chi-thi", DocumentType.ChiThi, "Chỉ thị", T("subject", "Phòng cháy", "content", "Tăng cường kiểm tra."), null),
+        new Ca("dia-phuong-khong-cap-tren", DocumentType.CongVan, "Công văn",
+            T("from_org", "UBND phường Bình Minh", "reply_to_number", "20/SXD", "content", "Trả lời kiến nghị."),
+            new ComposeLocality("phường Bình Minh", null, "tỉnh Lâm Đồng")),
+        new Ca("dia-phuong-co-dac-diem", DocumentType.KeHoach, "Kế hoạch", T("period", "năm 2027"),
+            new ComposeLocality("xã Minh An", "thành phố Minh Châu", "tỉnh Lâm Đồng", new[] { "Dân số: 12.000 người", "8 thôn" })),
+        new Ca("khac-khong-ten-mau", DocumentType.Khac, null, T("subject", "Giấy xác nhận"), ComposeLocality.GiaKiem),
+    };
+
+    public static IReadOnlyList<Ca> TatCa { get; } = GiaKiem.Concat(ThemCa).ToList();
+
+    public static Dictionary<string, object> DiaPhuongJson(ComposeLocality dp)
+    {
+        var d = new Dictionary<string, object> { ["xa"] = dp.Xa };
+        if (dp.CoQuanCapTren != null) d["co_quan_cap_tren"] = dp.CoQuanCapTren;
+        d["tinh"] = dp.Tinh;
+        if (dp.DacDiem != null) d["dac_diem"] = dp.DacDiem;
+        return d;
+    }
 }

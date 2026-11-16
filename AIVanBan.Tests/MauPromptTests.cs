@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using AIVanBan.Core.Models;
 using AIVanBan.Core.Services;
 
 namespace AIVanBan.Tests;
@@ -239,5 +240,29 @@ public class MauPromptTests
         {
             System.Globalization.CultureInfo.CurrentCulture = vanHoaCu;
         }
+    }
+
+    [Fact]
+    public void GhiMauSoanThao()
+    {
+        var thieu = Enum.GetValues<DocumentType>().Where(t => MauSoanThao.TatCa.All(c => c.Loai != t)).ToList();
+        Assert.True(thieu.Count == 0, $"Tệp mẫu soan-thao thiếu loại: {string.Join(", ", thieu)}");
+
+        var mau = MauSoanThao.TatCa.Select(ca =>
+        {
+            var dauVao = new Dictionary<string, object> { ["loai_van_ban"] = ca.Loai.ToString() };
+            if (ca.TenMau != null) dauVao["ten_mau"] = ca.TenMau;
+            dauVao["truong"] = ca.TuDien();
+            if (ca.DiaPhuong != null) dauVao["dia_phuong"] = MauSoanThao.DiaPhuongJson(ca.DiaPhuong);
+            return new
+            {
+                ten = ca.Ten,
+                dau_vao = dauVao,
+                he_thong = ChuanHoa(ComposePromptBuilder.BuildSystemInstruction(ca.Loai, ca.DiaPhuong)),
+                nguoi_dung = ChuanHoa(ComposePromptBuilder.BuildUserPrompt(ca.Loai, ca.TenMau, ca.TuDien(), ca.DiaPhuong)),
+            };
+        }).ToList();
+
+        Ghi("soan-thao.json", mau);
     }
 }
