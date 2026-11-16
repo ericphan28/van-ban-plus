@@ -27,15 +27,21 @@ public enum MaLoiTacVu
     HetThoiGian,
     /// <summary>Không tới được máy chủ.</summary>
     MatKetNoi,
+    /// <summary>
+    /// Máy chủ trả thành công (lượt ĐÃ chạy và ĐÃ trừ credit) nhưng ket_qua thiếu hoặc không đọc được vào kiểu mong đợi.
+    /// Không hoàn credit, không mời thử lại: <see cref="TacVuException.Luot"/> giữ mã lượt để hỗ trợ truy vết.
+    /// </summary>
+    KetQuaKhongDoc,
 }
 
 /// <summary>Lỗi khi gọi tác vụ v2. <see cref="Exception.Message"/> là lời hiện thẳng cho khách.</summary>
 public sealed class TacVuException : Exception
 {
     public TacVuException(MaLoiTacVu ma, string thongDiep, int? maHttp = null, TimeSpan? thuLaiSau = null,
-        string? loiMayChu = null, Exception? goc = null)
+        string? loiMayChu = null, Exception? goc = null, ThongTinLuot? luot = null)
         : base(thongDiep, goc)
     {
+        Luot = luot;
         Ma = ma;
         MaHttp = maHttp;
         ThuLaiSau = thuLaiSau;
@@ -52,4 +58,7 @@ public sealed class TacVuException : Exception
 
     /// <summary>Trường message gốc của máy chủ (để ghi log / hỗ trợ).</summary>
     public string? LoiMayChu { get; }
+
+    /// <summary>Thông tin lượt đã chạy xong (credit đã trừ, số dư, mã lượt); chỉ có với <see cref="MaLoiTacVu.KetQuaKhongDoc"/>.</summary>
+    public ThongTinLuot? Luot { get; }
 }

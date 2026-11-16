@@ -92,23 +92,57 @@ public class TacVuClientTests
     }
 
     [Fact]
-    public async Task ChayAsync_KetQuaChuoiKhiKhongBiCatMaDoiTuongDuKien_BaoLoiMayChu()
+    public async Task ChayAsync_KetQuaChuoiKhiKhongBiCatMaDoiTuongDuKien_BaoDaTruCredit()
     {
         var h = new HandlerTacVuGia().ThanhCong("\"văn bản\"", biCat: false);
 
         var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).ChayAsync<DocumentSummary>("tom-tat", new { noi_dung = "x" }));
 
-        Assert.Equal(MaLoiTacVu.LoiMayChu, loi.Ma);
+        Assert.Equal(MaLoiTacVu.KetQuaKhongDoc, loi.Ma);
     }
 
     [Fact]
-    public async Task ChayAsync_ThieuKetQua_BaoLoiMayChu()
+    public async Task ChayAsync_KetQuaKhongDocDuoc_BaoDaTruCreditKemMaLuot_KhongHuaHoanKhongMoiThuLai()
     {
-        var h = new HandlerTacVuGia().TraVe(HttpStatusCode.OK, """{"success":true,"data":{"credit_da_tru":1,"so_du":2}}""");
+        // ket_qua là mảng nhưng tác vụ cần đối tượng → JsonException khi đọc; lượt ĐÃ chạy và ĐÃ trừ 7 credit.
+        var h = new HandlerTacVuGia().ThanhCong("[1,2,3]", creditDaTru: 7, soDu: 173);
+
+        var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).ChayAsync<DocumentSummary>("tom-tat", new { noi_dung = "x" }));
+
+        Assert.Equal(MaLoiTacVu.KetQuaKhongDoc, loi.Ma);
+        Assert.Contains("đã chạy xong và đã trừ 7 credit (số dư còn 173)", loi.Message);
+        Assert.Contains("kết quả không đọc được", loi.Message);
+        Assert.Contains("Mã lượt: luot-1", loi.Message);
+        Assert.Contains("bộ phận hỗ trợ", loi.Message);
+        Assert.DoesNotContain("hoàn", loi.Message);
+        Assert.DoesNotContain("Thử lại", loi.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(new ThongTinLuot(7, 173, "luot-1", false), loi.Luot);
+        Assert.Single(h.DaNhan); // không tự gọi lại
+    }
+
+    [Fact]
+    public async Task ChayAsync_KetQuaNull_CungBaoDaTruCredit()
+    {
+        var h = new HandlerTacVuGia().ThanhCong("null", creditDaTru: 4, soDu: 96);
+
+        var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).ChayAsync<DocumentSummary>("tom-tat", new { noi_dung = "x" }));
+
+        Assert.Equal(MaLoiTacVu.KetQuaKhongDoc, loi.Ma);
+        Assert.Contains("đã trừ 4 credit (số dư còn 96)", loi.Message);
+        Assert.Contains("luot-1", loi.Message);
+    }
+
+    [Fact]
+    public async Task ChayAsync_ThieuKetQua_BaoDaTruCredit()
+    {
+        var h = new HandlerTacVuGia().TraVe(HttpStatusCode.OK,
+            """{"success":true,"data":{"credit_da_tru":1,"so_du":2,"ma_luot":"luot-9"}}""");
 
         var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).ChayAsync<string>("tom-tat", new { noi_dung = "x" }));
 
-        Assert.Equal(MaLoiTacVu.LoiMayChu, loi.Ma);
+        Assert.Equal(MaLoiTacVu.KetQuaKhongDoc, loi.Ma);
+        Assert.Contains("đã trừ 1 credit (số dư còn 2)", loi.Message);
+        Assert.Contains("Mã lượt: luot-9", loi.Message);
     }
 
     [Fact]

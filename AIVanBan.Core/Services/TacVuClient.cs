@@ -122,14 +122,16 @@ public sealed class TacVuClient
         var han = _hanChay(ten);
         var data = await GoiAsync(ten, $"/api/v2/tac-vu/{ten}", input, han, ct);
 
-        if (!data.TryGetProperty("ket_qua", out var kq) || kq.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
-            throw TaoLoi(MaLoiTacVu.LoiMayChu, 200, ten, "Thiếu ket_qua.", null, han);
-
+        // Đọc thông tin lượt TRƯỚC khi đọc ket_qua: máy chủ đã trả thành công nghĩa là lượt đã chạy và đã trừ credit,
+        // nên nếu ket_qua hỏng thì vẫn phải báo đúng số credit và mã lượt.
         var luot = new ThongTinLuot(
             DocSo(data, "credit_da_tru"),
             DocSo(data, "so_du"),
             data.TryGetProperty("ma_luot", out var ml) && ml.ValueKind == JsonValueKind.String ? ml.GetString()! : "",
             data.TryGetProperty("bi_cat", out var bc) && bc.ValueKind == JsonValueKind.True);
+
+        if (!data.TryGetProperty("ket_qua", out var kq) || kq.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            throw TaoLoi(MaLoiTacVu.KetQuaKhongDoc, 200, ten, "Thiếu ket_qua.", null, han, luot: luot);
 
         // Hợp đồng: bi_cat + tác vụ JSON không đọc được → ket_qua là chuỗi thô (vẫn trừ credit).
         if (luot.BiCat && typeof(T) != typeof(string) && kq.ValueKind == JsonValueKind.String)
@@ -142,10 +144,10 @@ public sealed class TacVuClient
         }
         catch (JsonException ex)
         {
-            throw TaoLoi(MaLoiTacVu.LoiMayChu, 200, ten, ex.Message, null, han, ex);
+            throw TaoLoi(MaLoiTacVu.KetQuaKhongDoc, 200, ten, ex.Message, null, han, ex, luot: luot);
         }
         if (ketQua is null)
-            throw TaoLoi(MaLoiTacVu.LoiMayChu, 200, ten, "ket_qua rỗng.", null, han);
+            throw TaoLoi(MaLoiTacVu.KetQuaKhongDoc, 200, ten, "ket_qua rỗng.", null, han, luot: luot);
 
         return new TacVuKetQua<T>(ketQua, luot, kq);
     }
@@ -291,7 +293,8 @@ public sealed class TacVuClient
     /// <paramref name="uocTinh"/>: lời cho /uoc-tinh, không bao giờ kèm câu về credit vì ước tính không giữ credit.
     /// </summary>
     internal static TacVuException TaoLoi(MaLoiTacVu ma, int? maHttp, string ten, string? chiTiet,
-        TimeSpan? thuLaiSau, TimeSpan han, Exception? goc = null, bool daGuiYeuCau = false, bool uocTinh = false)
+        TimeSpan? thuLaiSau, TimeSpan han, Exception? goc = null, bool daGuiYeuCau = false, bool uocTinh = false,
+        ThongTinLuot? luot = null)
     {
         var cau = uocTinh ? "" : " " + CauTrangThaiCredit;
         static string KemChiTiet(string? s) => string.IsNullOrWhiteSpace(s) ? "" : $"\nChi tiết: {s}";
@@ -331,11 +334,17 @@ public sealed class TacVuClient
             MaLoiTacVu.MatKetNoi => daGuiYeuCau
                 ? $"Kết nối bị gián đoạn khi nhận kết quả từ máy chủ VanBanPlus. Kiểm tra kết nối Internet rồi thử lại.{cau}"
                 : "Không kết nối được máy chủ VanBanPlus. Kiểm tra kết nối Internet rồi thử lại.",
+            MaLoiTacVu.KetQuaKhongDoc => luot is { } l
+                ? $"Máy chủ đã chạy xong và đã trừ {l.CreditDaTru} credit (số dư còn {l.SoDu}) nhưng kết quả không đọc được. "
+                    + (string.IsNullOrEmpty(l.MaLuot)
+                        ? "Gửi thời điểm chạy cho bộ phận hỗ trợ."
+                        : $"Mã lượt: {l.MaLuot} — gửi mã này cho bộ phận hỗ trợ.")
+                : "Máy chủ đã chạy xong và đã trừ credit nhưng kết quả không đọc được. Gửi thời điểm chạy cho bộ phận hỗ trợ.",
             _ => maHttp is null or (>= 200 and < 300)
                 ? $"Máy chủ VanBanPlus trả kết quả không đúng định dạng. Thử lại sau ít phút.{cau}"
                 : $"Máy chủ VanBanPlus gặp lỗi (mã {maHttp}). Thử lại sau ít phút.{cau}",
         };
 
-        return new TacVuException(ma, thongDiep, maHttp, thuLaiSau, chiTiet, goc);
+        return new TacVuException(ma, thongDiep, maHttp, thuLaiSau, chiTiet, goc, luot);
     }
 }
