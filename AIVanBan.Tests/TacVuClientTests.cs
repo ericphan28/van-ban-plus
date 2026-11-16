@@ -204,7 +204,7 @@ public class TacVuClientTests
     [Fact]
     public async Task MatMang_BaoMatKetNoi()
     {
-        var h = new HandlerTacVuGia { NemLoi = new HttpRequestException("No such host is known.") };
+        var h = new HandlerTacVuGia { NemLoi = new HttpRequestException(HttpRequestError.NameResolutionError, "No such host is known.") };
 
         var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).ChayAsync<string>("tom-tat", new { noi_dung = "x" }));
 

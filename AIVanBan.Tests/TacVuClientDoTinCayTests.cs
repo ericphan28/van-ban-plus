@@ -132,12 +132,115 @@ public class TacVuClientDoTinCayTests
     [Fact]
     public async Task MatKetNoiTruocKhiGui_KhongCoCauCredit()
     {
-        var h = new HandlerTacVuGia { NemLoi = new HttpRequestException("No such host is known.") };
+        var h = new HandlerTacVuGia { NemLoi = new HttpRequestException(HttpRequestError.NameResolutionError, "No such host is known.") };
 
         var loi = await ChayLoi(h);
 
         Assert.Equal(MaLoiTacVu.MatKetNoi, loi.Ma);
         Assert.DoesNotContain("Credit giữ tạm", loi.Message);
+    }
+
+    // --- Pha gửi: chỉ bốn loại lỗi chắc chắn yêu cầu chưa rời máy ---
+
+    [Theory]
+    [InlineData(HttpRequestError.NameResolutionError)]
+    [InlineData(HttpRequestError.ConnectionError)]
+    [InlineData(HttpRequestError.SecureConnectionError)]
+    [InlineData(HttpRequestError.ProxyTunnelError)]
+    public async Task LoiPhaGui_YeuCauChuaRoiMay_KhongCoCauCredit(HttpRequestError loaiLoi)
+    {
+        var h = new HandlerTacVuGia { NemLoi = new HttpRequestException(loaiLoi, "không nối được") };
+
+        var loi = await ChayLoi(h);
+
+        Assert.Equal(MaLoiTacVu.MatKetNoi, loi.Ma);
+        Assert.DoesNotContain("Credit giữ tạm", loi.Message);
+    }
+
+    [Theory]
+    [InlineData(HttpRequestError.Unknown)]
+    [InlineData(HttpRequestError.HttpProtocolError)]
+    [InlineData(HttpRequestError.ResponseEnded)]
+    [InlineData(HttpRequestError.InvalidResponse)]
+    public async Task LoiPhaGui_CoTheDaToiMayChu_CoCauCredit(HttpRequestError loaiLoi)
+    {
+        var h = new HandlerTacVuGia { NemLoi = new HttpRequestException(loaiLoi, "đứt giữa chừng") };
+
+        var loi = await ChayLoi(h);
+
+        Assert.Equal(MaLoiTacVu.MatKetNoi, loi.Ma);
+        Assert.Contains(CauCredit, loi.Message);
+    }
+
+    [Fact]
+    public async Task LoiPhaGui_HttpRequestExceptionKhongPhanLoai_CoCauCredit()
+    {
+        // Ngoại lệ dựng không kèm HttpRequestError (mặc định Unknown): coi như yêu cầu có thể đã gửi.
+        var h = new HandlerTacVuGia { NemLoi = new HttpRequestException("lỗi không rõ") };
+
+        var loi = await ChayLoi(h);
+
+        Assert.Contains(CauCredit, loi.Message);
+    }
+
+    // --- /uoc-tinh không giữ credit: lời lỗi không bao giờ có câu về credit ---
+
+    [Fact]
+    public async Task UocTinh_MatKetNoiKhongRoThoiDiem_KhongCoCauCredit()
+    {
+        var h = new HandlerTacVuGia { NemLoi = new HttpRequestException(HttpRequestError.Unknown, "đứt giữa chừng") };
+
+        var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).UocTinhAsync("tom-tat", new { noi_dung = "x" }));
+
+        Assert.Equal(MaLoiTacVu.MatKetNoi, loi.Ma);
+        Assert.DoesNotContain("Credit giữ tạm", loi.Message);
+    }
+
+    [Fact]
+    public async Task UocTinh_MatKetNoiKhiDocThan_KhongCoCauCredit()
+    {
+        var h = new HandlerTacVuGia().TraVe(HttpStatusCode.OK, "{}", r => r.Content = new ThanDocLoi());
+
+        var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).UocTinhAsync("tom-tat", new { noi_dung = "x" }));
+
+        Assert.Equal(MaLoiTacVu.MatKetNoi, loi.Ma);
+        Assert.DoesNotContain("Credit giữ tạm", loi.Message);
+    }
+
+    [Theory]
+    [InlineData(504, MaLoiTacVu.HetThoiGian)]
+    [InlineData(524, MaLoiTacVu.HetThoiGian)]
+    [InlineData(500, MaLoiTacVu.LoiMayChu)]
+    [InlineData(502, MaLoiTacVu.LoiMayChu)]
+    public async Task UocTinh_LoiMayChuHoacProxy_KhongCoCauCredit(int maHttp, MaLoiTacVu mong)
+    {
+        var h = new HandlerTacVuGia().TraVe((HttpStatusCode)maHttp, TrangHtml);
+
+        var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).UocTinhAsync("tom-tat", new { noi_dung = "x" }));
+
+        Assert.Equal(mong, loi.Ma);
+        Assert.DoesNotContain("Credit giữ tạm", loi.Message);
+    }
+
+    [Fact]
+    public async Task UocTinh_Ok200ThanKhongDungDinhDang_KhongCoCauCredit()
+    {
+        var h = new HandlerTacVuGia().TraVe(HttpStatusCode.OK, TrangHtml);
+
+        var loi = await Assert.ThrowsAsync<TacVuException>(() => TaoClient(h).UocTinhAsync("tom-tat", new { noi_dung = "x" }));
+
+        Assert.Equal(MaLoiTacVu.LoiMayChu, loi.Ma);
+        Assert.DoesNotContain("Credit giữ tạm", loi.Message);
+    }
+
+    [Fact]
+    public async Task Chay_VanCoCauCreditKhiLoiMayChu_DoiChungVoiUocTinh()
+    {
+        var h = new HandlerTacVuGia().TraVe(HttpStatusCode.InternalServerError, TrangHtml);
+
+        var loi = await ChayLoi(h);
+
+        Assert.Contains(CauCredit, loi.Message);
     }
 
     // --- Hủy của bên gọi ---
@@ -296,11 +399,13 @@ public class TacVuClientDoTinCayTests
         foreach (var ma in Enum.GetValues<MaLoiTacVu>())
             foreach (int? maHttp in new int?[] { null, 200, 500, 504, 524 })
                 foreach (var daGui in new[] { false, true })
-                    foreach (var chiTiet in new string?[] { null, "Cần tối đa 9 credit, số dư còn 4." })
-                    {
-                        var loi = TacVuClient.TaoLoi(ma, maHttp, "tom-tat", chiTiet, TimeSpan.FromSeconds(20),
-                            TimeSpan.FromSeconds(180), daGuiYeuCau: daGui);
-                        Assert.DoesNotMatch(cam, loi.Message);
-                    }
+                    foreach (var uoc in new[] { false, true })
+                        foreach (var chiTiet in new string?[] { null, "Cần tối đa 9 credit, số dư còn 4." })
+                        {
+                            var loi = TacVuClient.TaoLoi(ma, maHttp, "tom-tat", chiTiet, TimeSpan.FromSeconds(20),
+                                TimeSpan.FromSeconds(180), daGuiYeuCau: daGui, uocTinh: uoc);
+                            Assert.DoesNotMatch(cam, loi.Message);
+                            if (uoc) Assert.DoesNotContain("Credit giữ tạm", loi.Message);
+                        }
     }
 }
