@@ -4,7 +4,7 @@
 > Copilot/AI agent: **Luôn đọc file này đầu tiên** trước khi làm bất kỳ tính năng nào.
 > Sau khi hoàn thành tính năng: **Cập nhật file này** ngay lập tức.
 >
-> **Phiên bản hiện tại:** v1.0.20 (AI chạy qua API tác vụ v2, báo trước credit, bỏ gọi thẳng Gemini — phát hành 2026-11-17, cập nhật bắt buộc)
+> **Phiên bản hiện tại:** v1.0.21 (AI theo chính quyền địa phương hai cấp + luật 2025, địa phương theo Cài đặt, ngày gõ tay dd/MM — phát hành 2026-11-17, cập nhật bắt buộc). Trước đó v1.0.20: AI chạy qua API tác vụ v2, báo trước credit, bỏ gọi thẳng Gemini
 > **Cập nhật lần cuối:** 2026-11-16
 > **Kiến trúc:** WPF .NET 9 + LiteDB + MaterialDesign-in-XAML
 
