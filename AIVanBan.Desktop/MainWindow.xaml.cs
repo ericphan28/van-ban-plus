@@ -945,7 +945,7 @@ public partial class MainWindow : Window
     private void QuickLogin_Click(object sender, RoutedEventArgs e)
     {
         var settings = AppSettingsService.Load();
-        if (settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey) 
+        if (!string.IsNullOrEmpty(settings.VanBanPlusApiKey) 
             && !string.IsNullOrEmpty(settings.UserEmail))
         {
             // Đã đăng nhập → mở UserProfile
@@ -997,7 +997,7 @@ public partial class MainWindow : Window
         {
             var settings = AppSettingsService.Load();
             
-            if (settings.UseVanBanPlusApi && !string.IsNullOrEmpty(settings.VanBanPlusApiKey))
+            if (!string.IsNullOrEmpty(settings.VanBanPlusApiKey))
             {
                 // VanBanPlus mode
                 iconApiStatus.Kind = MaterialDesignThemes.Wpf.PackIconKind.CloudCheck;
@@ -1025,18 +1025,6 @@ public partial class MainWindow : Window
 
                 // Fetch usage in background
                 _ = FetchUsageAsync(settings);
-            }
-            else if (!string.IsNullOrEmpty(settings.GeminiApiKey))
-            {
-                // AI direct mode (dev/maintenance only)
-                iconApiStatus.Kind = MaterialDesignThemes.Wpf.PackIconKind.Wrench;
-                iconApiStatus.Foreground = System.Windows.Media.Brushes.Orange;
-                txtApiMode.Text = "🔧 Bảo trì";
-                txtStatusUser.Text = "Đã kích hoạt";
-                txtUsageInfo.Text = "";
-                btnLoginQuick.Content = "🔑 Đăng nhập";
-                btnLoginQuick.Visibility = Visibility.Visible;
-                btnLogout.Visibility = Visibility.Collapsed;
             }
             else
             {
