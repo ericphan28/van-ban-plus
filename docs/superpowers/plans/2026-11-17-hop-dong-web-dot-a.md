@@ -56,6 +56,7 @@ cổng; không sửa script dùng chung).
 | `CHUA_DANG_NHAP` | 401 | Không có / sai token hoặc khóa |
 | `PHIEN_HET_HAN` | 401 | JWT hết hạn → web gọi `lam-moi` rồi thử lại một lần |
 | `PHIEN_THU_HOI` | 401 | Phiên bị thu hồi → về màn đăng nhập |
+| `LAM_MOI_TRUNG` | 409 | `lam-moi` gửi token vừa được xoay < 30 giây trước (tab khác vừa làm mới) — phiên **không** bị thu hồi; chờ khoảng 1 giây rồi gọi `lam-moi` lại một lần (cookie đã là token mới) |
 | `SAI_DANG_NHAP` | 401 | Sai email / mật khẩu (không nói rõ cái nào) |
 | `TAI_KHOAN_KHOA` | 423 | Khóa tạm; `data.mo_luc` ISO |
 | `CAN_2_LOP` | 200 | Không phải lỗi: `data = { can_2_lop: true, ma_tam }` |
@@ -85,7 +86,7 @@ cookie. `NguoiDung = { id, email, ho_ten, goi, goi_het_han, co_mat_khau, hai_lop
 | `POST /api/v2/phien/otp/gui` | `{ email, muc_dich: "dang-nhap" \| "dang-ky" \| "dat-lai-mat-khau" }` | luôn `200` (không lộ email có tồn tại) · `QUA_NHIEU_YEU_CAU` |
 | `POST /api/v2/phien/otp/xac-nhan` | `{ email, ma, muc_dich, mat_khau?, ho_ten? }` | phiên · `CAN_2_LOP` · `OTP_SAI` · `OTP_HET_HAN`. `dang-ky` cần `mat_khau` + `ho_ten`, tạo tài khoản Free; `dat-lai-mat-khau` cần `mat_khau`, thu hồi mọi phiên cũ |
 | `POST /api/v2/phien/2-lop` | `{ ma_tam, ma }` (6 số TOTP hoặc mã dự phòng) | phiên · `OTP_SAI` |
-| `POST /api/v2/phien/lam-moi` | cookie, hoặc `{ token_lam_moi }` | phiên mới + cookie mới · `PHIEN_THU_HOI` |
+| `POST /api/v2/phien/lam-moi` | cookie, hoặc `{ token_lam_moi }` | phiên mới + cookie mới · `LAM_MOI_TRUNG` · `PHIEN_THU_HOI` |
 | `POST /api/v2/phien/dang-xuat` | — | `200`, xóa cookie, thu hồi chuỗi hiện tại |
 | `GET /api/v2/phien/thiet-bi` | — | `[{ id, thiet_bi, ip, tao_luc, dung_luc, la_phien_nay }]` |
 | `DELETE /api/v2/phien/thiet-bi/[id]` · `POST /api/v2/phien/thiet-bi/thu-hoi-tat-ca` | — | `200` |
@@ -173,3 +174,4 @@ Hàm dùng chung cho L5, L6 (L3 xuất ra): `src/lib/kho/chu-so-huu.ts` → `chu
 | Ngày | Luồng | Đổi gì |
 | --- | --- | --- |
 | 17/11/2026 | — | Bản đầu |
+| 17/11/2026 | L1 | Thêm `LAM_MOI_TRUNG` (409): token làm mới bị dùng lại trong 30 giây sau khi xoay thì không thu hồi phiên — nhiều tab cùng làm mới khi mở trang. Quá 30 giây vẫn thu hồi cả phiên (`PHIEN_THU_HOI`). L2: `src/api/khach.ts` gặp mã này thì chờ ~1 giây, gọi `lam-moi` lại một lần; nên khóa làm mới giữa các tab bằng `navigator.locks` |
