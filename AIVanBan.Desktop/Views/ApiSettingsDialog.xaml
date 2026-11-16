@@ -15,8 +15,8 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header (click 5 lần để mở chế độ nâng cao) -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,16" MouseLeftButtonDown="Header_Click">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
             <TextBlock Text="⚙️ Cài đặt" FontSize="20" FontWeight="Bold"
                        Foreground="{DynamicResource PrimaryHueMidBrush}"/>
             <TextBlock Text="Kết nối AI và cấu hình cơ quan" 
@@ -47,30 +47,6 @@
                     </DockPanel>
                 </Border>
 
-                <!-- Chế độ kết nối (ẩn, chỉ dev thấy) -->
-                <GroupBox x:Name="grpModeSelector" Header="Chế độ kết nối (Nâng cao)" Margin="0,0,0,12"
-                          materialDesign:ColorZoneAssist.Mode="PrimaryLight"
-                          Visibility="Collapsed">
-                    <StackPanel Margin="8">
-                        <RadioButton x:Name="rbVanBanPlus" Content="☁️ VanBanPlus (khuyến nghị)"
-                                     FontWeight="SemiBold" Margin="0,4"
-                                     Checked="ApiMode_Changed"/>
-                        <TextBlock Text="   Kết nối AI qua hệ thống VanBanPlus" 
-                                   FontSize="11" Opacity="0.6" Margin="0,0,0,8"/>
-                        
-                        <RadioButton x:Name="rbGeminiDirect" Content="🔧 Kết nối trực tiếp (Bảo trì)"
-                                     Margin="0,4"
-                                     Checked="ApiMode_Changed"/>
-                        <TextBlock Text="   Chỉ dành cho kỹ thuật viên bảo trì" 
-                                   FontSize="11" Foreground="#D32F2F"/>
-                        
-                        <Button Content="🔒 Tắt chế độ bảo trì" Click="CloseDevMode_Click"
-                                Style="{StaticResource MaterialDesignFlatButton}"
-                                Foreground="#D32F2F" FontSize="11"
-                                HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                    </StackPanel>
-                </GroupBox>
-
                 <!-- Thông tin kết nối VanBanPlus -->
                 <GroupBox x:Name="grpVanBanPlus" Header="Thông tin kết nối" Margin="0,0,0,12"
                           materialDesign:ColorZoneAssist.Mode="SecondaryLight">
@@ -91,27 +67,6 @@
                                 Style="{StaticResource MaterialDesignOutlinedButton}"
                                 HorizontalAlignment="Left" Margin="0,0,0,4"/>
                         <TextBlock x:Name="txtConnectionStatus" FontSize="12" Margin="0,4,0,0"
-                                   TextWrapping="Wrap"/>
-                    </StackPanel>
-                </GroupBox>
-
-                <!-- Dev mode: AI Direct (ẩn mặc định) -->
-                <GroupBox x:Name="grpGeminiDirect" Header="🔧 Bảo trì — Kết nối trực tiếp" Margin="0,0,0,12"
-                          materialDesign:ColorZoneAssist.Mode="SecondaryLight"
-                          Visibility="Collapsed">
-                    <StackPanel Margin="8">
-                        <TextBlock Text="Mã kết nối AI trực tiếp" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                        <TextBox x:Name="txtGeminiKey"
-                                 materialDesign:HintAssist.Hint="Chỉ kỹ thuật viên nhập..."
-                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                 Margin="0,0,0,8"/>
-                        <TextBlock Text="⚠️ Chỉ dùng khi bảo trì. Không dùng cho hoạt động hàng ngày." 
-                                   FontSize="11" Foreground="#D32F2F" Margin="0,0,0,8"/>
-                        
-                        <Button Content="🔍 Test API trực tiếp" Click="TestDirectConnection_Click"
-                                Style="{StaticResource MaterialDesignOutlinedButton}"
-                                HorizontalAlignment="Left" Margin="0,0,0,4"/>
-                        <TextBlock x:Name="txtDirectConnectionStatus" FontSize="12" Margin="0,4,0,0"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
                 </GroupBox>
@@ -204,6 +159,39 @@
                                          Margin="0,0,0,4"/>
                                 <TextBlock Text="💡 Dùng cho Phần địa danh-ngày tháng trên VB đi" 
                                            FontSize="11" Opacity="0.6"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="Địa phương (dùng cho AI soạn thảo)" Margin="0,0,0,12"
+                                  materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                            <StackPanel Margin="8">
+                                <TextBlock Text="Xã/phường" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBox x:Name="txtDpXa"
+                                         materialDesign:HintAssist.Hint="VD: xã Gia Kiệm, phường Long Bình"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Cơ quan cấp trên" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBox x:Name="txtDpCapTren"
+                                         materialDesign:HintAssist.Hint="VD: thành phố Thống Nhất, tỉnh Đồng Nai"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Tỉnh/thành phố" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBox x:Name="txtDpTinh"
+                                         materialDesign:HintAssist.Hint="VD: tỉnh Đồng Nai"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Đặc điểm địa phương (mỗi dòng một ý, tối đa 10 dòng)" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <TextBox x:Name="txtDpDacDiem"
+                                         materialDesign:HintAssist.Hint="VD: Dân số: 79.274 nhân khẩu, 19.818 hộ"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         AcceptsReturn="True" TextWrapping="Wrap"
+                                         MinLines="3" MaxLines="6" VerticalScrollBarVisibility="Auto"
+                                         Margin="0,0,0,4"/>
+                                <TextBlock Text="💡 Ghi cả chữ «xã», «phường», «tỉnh»... Cần có xã/phường và tỉnh/thành phố; thiếu một trong hai thì AI soạn thảo không kèm bối cảnh địa phương."
+                                           FontSize="11" Opacity="0.6" TextWrapping="Wrap"/>
                             </StackPanel>
                         </GroupBox>
 

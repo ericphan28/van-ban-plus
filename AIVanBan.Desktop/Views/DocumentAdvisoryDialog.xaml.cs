@@ -17,6 +17,9 @@ public partial class DocumentAdvisoryDialog : Window
     private DocumentAdvisory? _result;
     private DispatcherTimer? _timer;
     private int _elapsedSeconds;
+    private readonly DocumentAdvisoryService _service = new();
+    // Chặn bấm lặp: một lượt (ước tính + xác nhận + chạy) tại một thời điểm, tránh trừ credit hai lần.
+    private bool _dangChay;
 
     public DocumentAdvisoryDialog(string content, string documentType = "", string title = "", string issuer = "",
         DocumentAdvisoryContext? context = null)
@@ -80,24 +83,35 @@ public partial class DocumentAdvisoryDialog : Window
 
     private async void QuickAction_Click(object sender, RoutedEventArgs e)
     {
-        if (!AiPromoHelper.CheckOrShowPromo(this)) return;
-
-        var inputText = txtQuickInput.Text.Trim();
-        if (string.IsNullOrWhiteSpace(inputText) || inputText.Length <= 10)
+        if (_dangChay) return;
+        _dangChay = true;
+        try
         {
-            MessageBox.Show("Vui lòng nhập nội dung văn bản (tối thiểu 10 ký tự).",
-                "Thiếu nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            if (!AiPromoHelper.CheckOrShowPromo(this)) return;
+
+            var inputText = txtQuickInput.Text.Trim();
+            if (string.IsNullOrWhiteSpace(inputText) || inputText.Length <= 10)
+            {
+                MessageBox.Show("Vui lòng nhập nội dung văn bản (tối thiểu 10 ký tự).",
+                    "Thiếu nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            _content = inputText;
+            if (cboQuickDocType.SelectedValue is string selectedType)
+                _documentType = selectedType;
+
+            if (!await XacNhanCreditAsync()) return;
+
+            // Ẩn input panel, hiện loading
+            pnlQuickInput.Visibility = Visibility.Collapsed;
+
+            await StartAdvisory();
         }
-
-        _content = inputText;
-        if (cboQuickDocType.SelectedValue is string selectedType)
-            _documentType = selectedType;
-
-        // Ẩn input panel, hiện loading
-        pnlQuickInput.Visibility = Visibility.Collapsed;
-
-        await StartAdvisory();
+        finally
+        {
+            _dangChay = false;
+        }
     }
 
     private async Task StartAdvisory()
@@ -107,13 +121,14 @@ public partial class DocumentAdvisoryDialog : Window
 
         try
         {
-            var service = new DocumentAdvisoryService();
-            _result = await service.AdviseAsync(_content, _documentType, _title, _issuer, _context);
+            _result = await _service.AdviseAsync(_content, _documentType, _title, _issuer, _context);
             DisplayResults(_result);
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _service.LuotCuoi);
         }
         catch (Exception ex)
         {
-            ShowError($"Lỗi khi phân tích: {ex.Message}");
+            ShowError(TacVuGiaoDien.MoTaLoi(ex));
+            TacVuGiaoDien.MoiMuaCreditNeuThieu(this, ex);
         }
         finally
         {
@@ -250,6 +265,7 @@ public partial class DocumentAdvisoryDialog : Window
     private void StartTimer()
     {
         _elapsedSeconds = 0;
+        _timer?.Stop();
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += (s, e) =>
         {
@@ -360,7 +376,28 @@ public partial class DocumentAdvisoryDialog : Window
 
     private async void Retry_Click(object sender, RoutedEventArgs e)
     {
-        await StartAdvisory();
+        if (_dangChay) return;
+        _dangChay = true;
+        try
+        {
+            if (!await XacNhanCreditAsync()) return;
+            await StartAdvisory();
+        }
+        finally
+        {
+            _dangChay = false;
+        }
+    }
+
+    private Task<bool> XacNhanCreditAsync() =>
+        TacVuGiaoDien.XacNhanCreditAsync(this, "Tham mưu xử lý văn bản",
+            () => _service.UocTinhAsync(_content, _documentType, _title, _issuer, _context));
+
+    /// <summary>Đang chạy tác vụ AI thì hỏi trước khi đóng (lượt vẫn bị trừ credit, kết quả sẽ mất).</summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        TacVuGiaoDien.HoiTruocKhiDong(this, _dangChay, e);
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
@@ -401,8 +438,9 @@ public partial class DocumentAdvisoryDialog : Window
                         break;
 
                     case ".pdf":
-                        var aiService = new GeminiAIService();
-                        extractedText = await aiService.ReadTextFromFileAsync(filePath);
+                        var docDuoc = await TacVuGiaoDien.DocChuTuPdfAsync(this, filePath);
+                        if (docDuoc == null) return; // đã hủy hoặc đã báo lỗi
+                        extractedText = docDuoc;
                         if (string.IsNullOrWhiteSpace(extractedText))
                         {
                             MessageBox.Show("❌ Không trích xuất được nội dung từ PDF.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);

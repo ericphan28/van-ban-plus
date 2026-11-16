@@ -2,7 +2,7 @@
 ; Huong dan: Tai Inno Setup tai https://jrsoftware.org/isdl.php
 
 #define MyAppName "VanBanPlus"
-#define MyAppVersion "1.0.19"
+#define MyAppVersion "1.0.20"
 #define MyAppPublisher "Cong ty TNHH Gia Kiem So"
 #define MyAppExeName "AIVanBan.Desktop.exe"
 

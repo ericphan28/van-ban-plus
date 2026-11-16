@@ -15,7 +15,9 @@ namespace AIVanBan.Desktop.Views;
 public partial class AIComposeDialog : Window
 {
     private readonly DocumentService _documentService;
-    private readonly GeminiAIService _aiService;
+    private readonly TacVuSoanThao _soanThao = new();
+    // Chặn bấm lặp: một lượt (ước tính + xác nhận + soạn) tại một thời điểm, tránh trừ credit hai lần.
+    private bool _dangChay;
     private DocumentTemplate? _selectedTemplate;
     private readonly Dictionary<string, TextBox> _fieldInputs = new();
     // true = nội dung trong RichTextBox được sinh bởi AI (cần parse tách header/căn cứ/nơi nhận)
@@ -25,11 +27,10 @@ public partial class AIComposeDialog : Window
 
     public Document? GeneratedDocument { get; private set; }
 
-    public AIComposeDialog(DocumentService documentService, string? geminiApiKey = null, string? preSelectedTemplateId = null)
+    public AIComposeDialog(DocumentService documentService, string? preSelectedTemplateId = null)
     {
         InitializeComponent();
         _documentService = documentService;
-        _aiService = string.IsNullOrEmpty(geminiApiKey) ? new GeminiAIService() : new GeminiAIService(geminiApiKey);
         _preSelectedTemplateId = preSelectedTemplateId;
         
         LoadTemplates();
@@ -920,9 +921,9 @@ public partial class AIComposeDialog : Window
         };
     }
 
-    private string GetFieldLabel(string field) => ComposePromptBuilder.GetFieldLabel(field);
+    private string GetFieldLabel(string field) => NhanTruongSoanThao.GetFieldLabel(field);
 
-    private static string FormatFieldName(string field) => ComposePromptBuilder.FormatFieldName(field);
+    private static string FormatFieldName(string field) => NhanTruongSoanThao.FormatFieldName(field);
 
     private string GetFieldHint(string field)
     {
@@ -1203,8 +1204,23 @@ public partial class AIComposeDialog : Window
 
     private async void Generate_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         if (_selectedTemplate == null) return;
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
+        _dangChay = true;
+        try
+        {
+            await GenerateAsync();
+        }
+        finally
+        {
+            _dangChay = false;
+        }
+    }
+
+    private async Task GenerateAsync()
+    {
+        if (_selectedTemplate == null) return;
 
         // Validate inputs
         var missingFields = new List<string>();
@@ -1227,20 +1243,25 @@ public partial class AIComposeDialog : Window
             return;
         }
 
+        // Đầu vào v2: loại văn bản, tên mẫu, các trường theo thứ tự ô nhập, địa phương từ Cài đặt → Cơ quan.
+        // Prompt và năm hiện hành do máy chủ dựng.
+        var loai = _selectedTemplate.Type;
+        var tenMau = _selectedTemplate.Name;
+        var truong = _fieldInputs.ToDictionary(kv => kv.Key, kv => kv.Value.Text);
+        var diaPhuong = ThietLapDiaPhuong.Doc();
+        if (!await TacVuGiaoDien.XacNhanCreditAsync(this, "Soạn văn bản",
+                () => _soanThao.UocTinhAsync(loai, truong, diaPhuong, tenMau)))
+            return;
+
         // Show loading
         LoadingProgress.Visibility = Visibility.Visible;
         GenerateButton.IsEnabled = false;
 
         try
         {
-            // Build prompt từ template
-            var prompt = BuildPrompt();
-
-            // System instruction chuyên nghiệp
-            var systemInstruction = BuildSystemInstruction();
-
-            // Gọi AI
-            var content = await _aiService.GenerateContentAsync(prompt, systemInstruction);
+            // Gọi tác vụ soan-thao (một lượt, không có luồng từng đoạn)
+            var content = await _soanThao.SoanAsync(loai, truong, diaPhuong, tenMau);
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _soanThao.LuotCuoi);
 
             // Hiển thị kết quả trong RichTextBox
             SetRichTextContent(content);
@@ -1254,12 +1275,7 @@ public partial class AIComposeDialog : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                $"Lỗi khi tạo nội dung với AI:\n\n{ex.Message}",
-                "Lỗi AI",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error
-            );
+            TacVuGiaoDien.HienLoi(this, ex, "Lỗi AI");
         }
         finally
         {
@@ -1267,30 +1283,6 @@ public partial class AIComposeDialog : Window
             GenerateButton.IsEnabled = true;
         }
     }
-
-    // Prompt soạn thảo nằm ở AIVanBan.Core (ComposePromptBuilder). Địa phương Gia Kiệm giữ tới khi đợt 3 nối thiết lập cơ quan.
-    private string BuildSystemInstruction() =>
-        ComposePromptBuilder.BuildSystemInstruction(_selectedTemplate?.Type ?? DocumentType.CongVan, ComposeLocality.GiaKiem, DateTime.Now.Year);
-
-    private string BuildPrompt()
-    {
-        if (_selectedTemplate == null) return "";
-
-        var templateType = _selectedTemplate.Type;
-        var fieldValues = new Dictionary<string, string>();
-        foreach (var kvp in _fieldInputs)
-        {
-            fieldValues[kvp.Key] = kvp.Value.Text;
-        }
-
-        // Build structured prompt based on template type
-        var prompt = BuildStructuredPrompt(templateType, fieldValues);
-        
-        return prompt;
-    }
-
-    private string BuildStructuredPrompt(DocumentType templateType, Dictionary<string, string> fields) =>
-        ComposePromptBuilder.BuildUserPrompt(templateType, _selectedTemplate?.Name, fields, ComposeLocality.GiaKiem);
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
@@ -1832,9 +1824,17 @@ public partial class AIComposeDialog : Window
         public string SignerTitle { get; set; } = "";
     }
 
+    /// <summary>Đang chạy tác vụ AI thì hỏi trước khi đóng (lượt vẫn bị trừ credit, kết quả sẽ mất).</summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        TacVuGiaoDien.HoiTruocKhiDong(this, _dangChay, e);
+    }
+
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        DialogResult = false;
+        // Chỉ Close(): gán DialogResult cũng đóng cửa sổ nên hộp hỏi ở OnClosing sẽ hiện hai lần khi chọn «No».
+        // Nơi gọi chỉ kiểm ShowDialog() == true, đóng bằng Close() cho kết quả null (= không áp dụng).
         Close();
     }
 

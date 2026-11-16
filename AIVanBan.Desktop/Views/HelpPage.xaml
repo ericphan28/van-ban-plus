@@ -1412,11 +1412,14 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                     <Border Style="{StaticResource StepCard}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryHueMidBrush}">
-                                Hỏi: Dữ liệu của tôi lưu ở đâu? Có bị upload lên mạng không?
+                                Hỏi: Dữ liệu lưu ở đâu? Có bị upload lên mạng không?
                             </TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="0,4,0,0">
                                 <Bold>Trả lời:</Bold> Toàn bộ dữ liệu lưu trên máy tính cá nhân (thư mục Documents\AIVanBan). 
-                                Không có dữ liệu nào được upload lên server. Khi dùng AI, chỉ nội dung văn bản được gửi đi để xử lý, không lưu trữ trên server.
+                                Phần mềm không tự upload dữ liệu lên server. Mọi tác vụ AI đều chạy qua máy chủ VanBanPlus (phần mềm không gọi thẳng nhà cung cấp AI và không dùng khóa AI riêng);
+                                chỉ nội dung của tác vụ đang chạy được gửi đi để xử lý và không được lưu lại.
+                                Mục «Lưu để hỗ trợ» ở trang tài khoản trên web là tùy chọn và mặc định tắt: khi bật, bản sao của tác vụ được mã hóa và giữ 7 ngày để hỗ trợ khi có sự cố,
+                                tắt công tắc thì bản đã lưu bị xóa ngay.
                             </TextBlock>
                         </StackPanel>
                     </Border>
@@ -1455,9 +1458,12 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                                 Hỏi: Hết credit AI miễn phí thì sao?
                             </TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="0,4,0,0">
-                                <Bold>Trả lời:</Bold> Nâng cấp lên gói Khởi đầu (99.000đ/tháng — 400 credit), Chuyên nghiệp (249.000đ — 1.100 credit)
-                                hoặc Doanh nghiệp (599.000đ — 3.000 credit) tại vanbanplus.giakiemso.com/bang-gia. Credit được cấp mới mỗi tháng;
-                                credit chưa dùng không cộng dồn sang tháng sau. Tác vụ AI bị lỗi không trừ credit.
+                                <Bold>Trả lời:</Bold> Gói Miễn phí có 30 credit mỗi tháng. Có thể nâng cấp lên gói Khởi đầu (99.000đ/tháng — 400 credit), Chuyên nghiệp (249.000đ — 1.100 credit)
+                                hoặc Doanh nghiệp (599.000đ — 3.000 credit), hoặc mua gói nạp thêm (dùng trong 90 ngày): 49.000đ được 160 credit, 99.000đ được 350 credit, 199.000đ được 750 credit,
+                                tại vanbanplus.giakiemso.com/bang-gia.
+                                Credit gói tháng được cấp mới mỗi tháng, không cộng dồn sang tháng sau.
+                                Trước mỗi tác vụ AI, phần mềm báo khoảng credit dự kiến và số dư hiện có; credit trừ theo mức dùng thật, không vượt mức đã báo;
+                                tác vụ lỗi được hoàn credit. Số dư không đủ thì phần mềm mở sẵn trang mua credit.
                             </TextBlock>
                         </StackPanel>
                     </Border>
@@ -1470,7 +1476,7 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="0,4,0,0">
                                 <Bold>Trả lời:</Bold> Được. Mỗi máy sẽ có dữ liệu riêng (lưu cục bộ). 
-                                Tài khoản AI có thể đăng nhập trên nhiều máy nhưng dùng chung quota.
+                                Tài khoản AI có thể đăng nhập trên nhiều máy nhưng dùng chung số dư credit.
                                 Dùng tính năng Sao lưu/Khôi phục để chuyển dữ liệu giữa các máy.
                             </TextBlock>
                         </StackPanel>
@@ -1614,15 +1620,41 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- ════ Version 1.0.19 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <!-- ════ Version 1.0.20 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock Text="v1.0.20 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                </Border>
+                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
+                                🔒 AI chạy hoàn toàn qua máy chủ VanBanPlus
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Báo trước số credit</Bold>: trước mỗi tác vụ AI hiện khoảng credit dự kiến và số dư hiện có
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Thông báo lỗi rõ ràng</Bold>: hết credit (mở sẵn trang mua), quá tải, quá dài, mất kết nối; tác vụ lỗi được hoàn credit
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Soạn thảo theo địa phương của cơ quan</Bold>: khai xã/phường, cơ quan cấp trên, tỉnh tại Cài đặt → 🏛️ Cơ quan
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Bỏ chế độ kết nối AI trực tiếp</Bold>: phần mềm không còn gọi thẳng nhà cung cấp AI
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ════ Version 1.0.19 — Tháng 11/2026 ════ -->
                     <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
                                     <TextBlock Text="v1.0.19 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                </Border>
-                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">

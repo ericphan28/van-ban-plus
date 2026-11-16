@@ -500,7 +500,8 @@
                            VerticalAlignment="Center"/>
                 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                    <Button x:Name="btnCancel"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
                             Click="Cancel_Click" Height="34" Margin="0,0,10,0">
                         <TextBlock Text="Hủy" FontSize="13"/>
                     </Button>

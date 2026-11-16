@@ -1,0 +1,223 @@
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Input;
+using AIVanBan.Core.Services;
+
+namespace AIVanBan.Desktop.Views;
+
+/// <summary>
+/// Giao diện dùng chung cho tác vụ AI v2: báo trước khoảng credit và số dư, báo lỗi theo mã,
+/// mời mua credit khi thiếu. Lời hiện cho khách: không đại từ nhân xưng, không «dạ/vâng/ạ».
+/// </summary>
+public static class TacVuGiaoDien
+{
+    /// <summary>
+    /// Gọi /uoc-tinh rồi hỏi xác nhận. Trả true khi được phép chạy. Thiếu credit thì mời mua và trả false;
+    /// lỗi khi ước tính thì báo lỗi và trả false.
+    /// </summary>
+    public static async Task<bool> XacNhanCreditAsync(Window owner, string tenViec,
+        Func<Task<UocTinhKetQua>> uocTinh, string? moTaThem = null)
+    {
+        UocTinhKetQua? uoc = null;
+        Exception? loi = null;
+        Mouse.OverrideCursor = Cursors.Wait;
+        _dangUocTinh.Add(owner);
+        try
+        {
+            uoc = await uocTinh();
+        }
+        catch (Exception ex)
+        {
+            loi = ex;
+        }
+        finally
+        {
+            _dangUocTinh.Remove(owner);
+            Mouse.OverrideCursor = null;
+        }
+
+        // Cửa sổ đã đóng trong lúc ước tính (người dùng đồng ý đóng): không hiện hộp xác nhận, không chạy lượt tính credit.
+        if (DaDong(owner)) return false;
+
+        if (loi != null || uoc == null)
+        {
+            HienLoi(owner, loi ?? new InvalidOperationException("Không ước tính được credit."), tenViec);
+            return false;
+        }
+
+        if (!uoc.DuCredit)
+        {
+            MoiMuaCredit(owner,
+                $"{tenViec} dự kiến dùng {KhoangCredit(uoc)}, số dư hiện có {uoc.SoDu} credit: không đủ để chạy. Credit chưa bị trừ.");
+            return false;
+        }
+
+        var noiDung = (string.IsNullOrWhiteSpace(moTaThem) ? "" : moTaThem.TrimEnd() + "\n\n")
+            + $"💳 {tenViec} dự kiến dùng {KhoangCredit(uoc)}.\n"
+            + $"Số dư hiện có: {uoc.SoDu} credit.\n\n"
+            + "Credit trừ theo mức dùng thật, không vượt mức trên; tác vụ lỗi trước khi có kết quả được hoàn credit.\n\n"
+            + "Tiếp tục?";
+        return MessageBox.Show(owner, noiDung, "Xác nhận dùng credit",
+            MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+    }
+
+    /// <summary>Các cửa sổ đang ước tính credit trong <see cref="XacNhanCreditAsync"/>; chỉ dùng trên luồng giao diện.</summary>
+    private static readonly HashSet<Window> _dangUocTinh = new();
+
+    /// <summary>Cửa sổ đã đóng (không còn nguồn trình bày): không được hiện hộp thoại hay bắt đầu lượt mới.</summary>
+    private static bool DaDong(Window w) => PresentationSource.FromVisual(w) == null;
+
+    /// <summary>Các cửa sổ đang chạy đọc chữ (chi-chu) qua <see cref="DocChuTuPdfAsync"/>; chỉ dùng trên luồng giao diện.</summary>
+    private static readonly HashSet<Window> _dangDocChu = new();
+
+    /// <summary>
+    /// Gọi từ OnClosing của hộp thoại AI: đang có lượt chạy thì hỏi lại (lượt vẫn bị trừ credit, kết quả sẽ mất);
+    /// chọn «No» thì hủy việc đóng. Trả true khi vẫn đóng giữa lúc đang chạy (để hộp thoại dừng các lượt kế tiếp).
+    /// </summary>
+    public static bool HoiTruocKhiDong(Window owner, bool dangChay, System.ComponentModel.CancelEventArgs e)
+    {
+        var uocTinh = _dangUocTinh.Contains(owner);
+        if (!(dangChay || uocTinh || _dangDocChu.Contains(owner)) || e.Cancel) return false;
+        // Đang ước tính thì chưa trừ credit; hộp thoại đặt cờ chạy từ trước ước tính nên pha ước tính xét trước.
+        var chon = MessageBox.Show(owner, TacVuThongBao.CauHoiDong(uocTinh), TacVuThongBao.TieuDeDongKhiDangChay,
+            MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+        if (chon != MessageBoxResult.Yes)
+        {
+            e.Cancel = true;
+            return false;
+        }
+        return true;
+    }
+
+    public static string KhoangCredit(UocTinhKetQua u) =>
+        u.CreditMin == u.CreditMax ? $"{u.CreditMax} credit" : $"{u.CreditMin}–{u.CreditMax} credit";
+
+    /// <summary>Lời báo lỗi để hiện trong khung lỗi của hộp thoại.</summary>
+    public static string MoTaLoi(Exception ex) => ex switch
+    {
+        TacVuException t => t.Message,
+        KetQuaBiCatException c => c.Message,
+        ArgumentException a => a.Message,
+        _ => $"Lỗi: {ex.Message}",
+    };
+
+    /// <summary>Báo lỗi bằng hộp thoại; thiếu credit thì mời mua credit.</summary>
+    public static void HienLoi(Window owner, Exception ex, string tieuDe)
+    {
+        if (ex is TacVuException { Ma: MaLoiTacVu.KhongDuCredit })
+        {
+            MoiMuaCredit(owner, ex.Message);
+            return;
+        }
+        MessageBox.Show(owner, MoTaLoi(ex), tieuDe, MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
+
+    /// <summary>Cho hộp thoại tự hiện lỗi trong khung: chỉ bật lời mời mua khi lỗi là thiếu credit.</summary>
+    public static void MoiMuaCreditNeuThieu(Window owner, Exception ex)
+    {
+        if (ex is TacVuException { Ma: MaLoiTacVu.KhongDuCredit })
+            MoiMuaCredit(owner, ex.Message);
+    }
+
+    public static void MoiMuaCredit(Window owner, string loiDan)
+    {
+        var url = DiaChiMuaCredit();
+        var chon = MessageBox.Show(owner, $"{loiDan}\n\nMở trang mua credit?\n{url}", "Không đủ credit",
+            MessageBoxButton.YesNo, MessageBoxImage.Information);
+        if (chon != MessageBoxResult.Yes) return;
+        try
+        {
+            Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(owner, $"Không mở được trình duyệt. Địa chỉ trang mua credit: {url}\n\n{ex.Message}",
+                "Mua credit", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    public static string DiaChiMuaCredit()
+    {
+        var goc = AppSettingsService.Load().VanBanPlusApiUrl;
+        if (string.IsNullOrWhiteSpace(goc)) goc = "https://vanbanplus.giakiemso.com";
+        return goc.Trim().TrimEnd('/') + "/bang-gia";
+    }
+
+    /// <summary>Kết quả chạm trần độ dài thì báo (vẫn tính là thành công, có trừ credit — spec §6).</summary>
+    public static void CanhBaoNeuBiCat(Window owner, ThongTinLuot? luot)
+    {
+        if (luot?.BiCat == true)
+        {
+            MessageBox.Show(owner, luot.LoiBaoBiCat(), "Kết quả bị cắt", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    /// <summary>
+    /// Đọc chữ từ tệp PDF qua trich-xuat (chi-chu): báo trước credit, báo lỗi, báo khi kết quả bị cắt.
+    /// Trả null khi người dùng hủy hoặc đã báo lỗi.
+    /// </summary>
+    public static async Task<string?> DocChuTuPdfAsync(Window owner, string filePath)
+    {
+        // Đọc chữ là một lượt AI tính credit: chặn bấm lặp trên cùng cửa sổ và để OnClosing biết đang chạy.
+        if (!_dangDocChu.Add(owner)) return null;
+        try
+        {
+            return await DocChuTuPdfKhongKhoaAsync(owner, filePath);
+        }
+        finally
+        {
+            _dangDocChu.Remove(owner);
+        }
+    }
+
+    private static async Task<string?> DocChuTuPdfKhongKhoaAsync(Window owner, string filePath)
+    {
+        (string Base64, string MimeType, int SoTrang) tepDoc;
+        try
+        {
+            tepDoc = await Task.Run(() => TrichXuatService.DocTepKemSoTrang(filePath));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(owner, $"Không đọc được tệp: {ex.Message}", "Lỗi đọc tệp",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            return null;
+        }
+
+        // Đọc chữ chỉ nhận một tệp mỗi lượt: TIFF nhiều trang chỉ đọc trang 1, báo một lần để khỏi hiểu nhầm là đã đọc hết.
+        if (tepDoc.SoTrang > 1)
+        {
+            var tiepTuc = MessageBox.Show(owner,
+                $"Tệp {System.IO.Path.GetFileName(filePath)} có {tepDoc.SoTrang} trang nhưng chế độ đọc chữ chỉ đọc trang 1. "
+                + "Muốn đọc đủ các trang, dùng «Nhập văn bản từ PDF/Ảnh scan» ở chế độ «Ghép trang».\n\nVẫn đọc trang 1?",
+                "Tệp nhiều trang", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (tiepTuc != MessageBoxResult.Yes) return null;
+        }
+
+        var tep = (tepDoc.Base64, tepDoc.MimeType);
+        var dichVu = new TrichXuatService();
+        var motTep = new[] { tep };
+        if (!await XacNhanCreditAsync(owner, "Đọc chữ từ tệp PDF", () => dichVu.UocTinhAsync(motTep, chiChu: true)))
+            return null;
+
+        string chu;
+        Mouse.OverrideCursor = Cursors.Wait;
+        try
+        {
+            chu = await dichVu.ReadTextAsync(tep.Base64, tep.MimeType);
+        }
+        catch (Exception ex)
+        {
+            Mouse.OverrideCursor = null;
+            HienLoi(owner, ex, "Lỗi đọc tệp PDF");
+            return null;
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
+
+        CanhBaoNeuBiCat(owner, dichVu.LuotCuoi);
+        return chu;
+    }
+}

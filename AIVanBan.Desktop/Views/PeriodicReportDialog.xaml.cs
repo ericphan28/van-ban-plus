@@ -13,6 +13,8 @@ public partial class PeriodicReportDialog : Window
     private readonly PeriodicReportService _reportService;
     private readonly WordReaderService _wordReader = new();
     private string _generatedContent = string.Empty;
+    // Chặn bấm lặp: một lượt (ước tính + xác nhận + chạy) tại một thời điểm, tránh trừ credit hai lần.
+    private bool _dangChay;
 
     public Document? GeneratedDocument { get; private set; }
 
@@ -799,6 +801,20 @@ TUYÊN TRUYỀN PCTN:
 
     private async void Generate_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
+        _dangChay = true;
+        try
+        {
+            await GenerateAsync();
+        }
+        finally
+        {
+            _dangChay = false;
+        }
+    }
+
+    private async Task GenerateAsync()
+    {
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
 
         // Validate
@@ -816,20 +832,27 @@ TUYÊN TRUYỀN PCTN:
             return;
         }
 
-        // Confirm before calling AI
+        // Chụp MỌI đầu vào vào biến cục bộ TRƯỚC await đầu tiên: ước tính, hộp xác nhận và lượt chạy dùng đúng cùng
+        // một bộ dữ liệu, dù người dùng sửa ô nhập trong lúc chờ ước tính.
         var periodType = cboPeriodType.SelectedItem as string ?? "Tháng";
         var period = cboPeriod.Text;
         var field = cboField.Text;
+        var orgName = txtOrgName.Text;
+        var rawData = txtRawData.Text;
+        var signerName = txtSignerName.Text;
+        var signerTitle = txtSignerTitle.Text;
         var hasPrevious = !string.IsNullOrWhiteSpace(txtPreviousReport.Text);
+        var kyTruoc = hasPrevious ? txtPreviousReport.Text : null;
 
-        var confirmMsg = $"📊 Tạo báo cáo {periodType.ToLower()} — {field}\n" +
-                         $"📅 Kỳ: {period}\n" +
-                         $"🏛️ Đơn vị: {txtOrgName.Text}\n" +
-                         $"📋 So sánh kỳ trước: {(hasPrevious ? "Có" : "Không")}\n\n" +
-                         "Bấm OK để gọi AI tạo báo cáo.";
+        var moTa = $"📊 Tạo báo cáo {periodType.ToLower()} — {field}\n" +
+                   $"📅 Kỳ: {period}\n" +
+                   $"🏛️ Đơn vị: {orgName}\n" +
+                   $"📋 So sánh kỳ trước: {(hasPrevious ? "Có" : "Không")}";
 
-        if (MessageBox.Show(confirmMsg, "Xác nhận tạo báo cáo", 
-            MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+        if (!await TacVuGiaoDien.XacNhanCreditAsync(this, "Báo cáo định kỳ",
+                () => _reportService.UocTinhAsync(periodType, period, field, orgName, rawData,
+                    kyTruoc, signerName, signerTitle),
+                moTa))
             return;
 
         // Show loading
@@ -845,11 +868,11 @@ TUYÊN TRUYỀN PCTN:
                 periodType,
                 period,
                 field,
-                txtOrgName.Text,
-                txtRawData.Text,
-                string.IsNullOrWhiteSpace(txtPreviousReport.Text) ? null : txtPreviousReport.Text,
-                txtSignerName.Text,
-                txtSignerTitle.Text
+                orgName,
+                rawData,
+                kyTruoc,
+                signerName,
+                signerTitle
             );
 
             // Clean AI output: xóa header/footer nếu AI vẫn tạo, xử lý literal \n
@@ -861,14 +884,14 @@ TUYÊN TRUYỀN PCTN:
             LoadingPanel.Visibility = Visibility.Collapsed;
             ResultCard.Visibility = Visibility.Visible;
             ActionButtons.Visibility = Visibility.Visible;
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _reportService.LuotCuoi);
         }
         catch (Exception ex)
         {
             LoadingPanel.Visibility = Visibility.Collapsed;
             PlaceholderPanel.Visibility = Visibility.Visible;
 
-            MessageBox.Show($"Lỗi khi gọi AI:\n\n{ex.Message}", "Lỗi AI",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            TacVuGiaoDien.HienLoi(this, ex, "Lỗi AI");
         }
         finally
         {
@@ -1118,6 +1141,13 @@ TUYÊN TRUYỀN PCTN:
 
         MessageBox.Show($"✅ Đã lưu báo cáo vào kho văn bản!\n\n📄 {GeneratedDocument.Title}",
             "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    /// <summary>Đang chạy tác vụ AI thì hỏi trước khi đóng (lượt vẫn bị trừ credit, kết quả sẽ mất).</summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        TacVuGiaoDien.HoiTruocKhiDong(this, _dangChay, e);
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)

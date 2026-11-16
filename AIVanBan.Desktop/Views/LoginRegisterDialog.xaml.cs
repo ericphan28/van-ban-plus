@@ -54,7 +54,6 @@ public partial class LoginRegisterDialog : Window
             {
                 // Save settings
                 var settings = AppSettingsService.Load();
-                settings.UseVanBanPlusApi = true;
                 settings.VanBanPlusApiKey = result.Data.ApiKey;
                 settings.UserEmail = result.Data.Email;
                 settings.UserFullName = result.Data.FullName;
@@ -126,7 +125,6 @@ public partial class LoginRegisterDialog : Window
             {
                 // Save settings
                 var settings = AppSettingsService.Load();
-                settings.UseVanBanPlusApi = true;
                 settings.VanBanPlusApiKey = result.Data.ApiKey;
                 settings.UserEmail = result.Data.Email;
                 settings.UserFullName = result.Data.FullName;
@@ -204,7 +202,6 @@ public partial class LoginRegisterDialog : Window
                 if (result.Data != null && !string.IsNullOrEmpty(result.Data.ApiKey))
                 {
                     var settings = AppSettingsService.Load();
-                    settings.UseVanBanPlusApi = true;
                     settings.VanBanPlusApiKey = result.Data.ApiKey;
                     settings.UserEmail = result.Data.Email;
                     settings.UserFullName = result.Data.FullName;

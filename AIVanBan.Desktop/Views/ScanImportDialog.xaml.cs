@@ -40,12 +40,14 @@ public class ScanFileItem : INotifyPropertyChanged
 public partial class ScanImportDialog : Window
 {
     private readonly DocumentService _documentService;
-    private readonly GeminiAIService _aiService;
+    private readonly TrichXuatService _trichXuat = new();
+    private bool _dangChay; // chặn bấm lặp: cờ đặt trước mọi await của Analyze_Click
+    private bool _dungTach;  // đã xác nhận đóng giữa lúc «Tách riêng» đang chạy: không bắt đầu lượt có tính credit nào nữa
     private readonly ObservableCollection<ScanFileItem> _files = new();
-    private GeminiAIService.ExtractedDocumentData? _extractedData;
+    private TrichXuatService.ExtractedDocumentData? _extractedData;
     
     // Cho chế độ "Tách riêng" — mỗi file → 1 Document
-    private List<(GeminiAIService.ExtractedDocumentData Data, string FilePath)> _separateResults = new();
+    private List<(TrichXuatService.ExtractedDocumentData Data, string FilePath)> _separateResults = new();
     
     /// <summary>
     /// Văn bản đã được tạo từ scan — dùng cho chế độ "Ghép trang" (1 VB)
@@ -65,11 +67,10 @@ public partial class ScanImportDialog : Window
     private static readonly string[] SupportedExtensions = 
         { ".pdf", ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif", ".webp", ".gif" };
 
-    public ScanImportDialog(DocumentService documentService, string? geminiApiKey = null)
+    public ScanImportDialog(DocumentService documentService)
     {
         InitializeComponent();
         _documentService = documentService;
-        _aiService = string.IsNullOrEmpty(geminiApiKey) ? new GeminiAIService() : new GeminiAIService(geminiApiKey);
         
         lstFiles.ItemsSource = _files;
         InitializeComboBoxes();
@@ -180,6 +181,7 @@ public partial class ScanImportDialog : Window
     
     private void AddFiles(string[] filePaths)
     {
+        if (_dangChay) return; // đang phân tích: danh sách tệp và chế độ bị khóa
         foreach (var path in filePaths)
         {
             var ext = Path.GetExtension(path).ToLower();
@@ -248,6 +250,7 @@ public partial class ScanImportDialog : Window
     
     private void RemoveFile_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         if (sender is Button btn && btn.Tag is string filePath)
         {
             var item = _files.FirstOrDefault(f => f.FilePath == filePath);
@@ -262,6 +265,7 @@ public partial class ScanImportDialog : Window
     
     private void ClearAll_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         if (_files.Count == 0) return;
         
         var result = MessageBox.Show($"Xóa tất cả {_files.Count} file khỏi danh sách?",
@@ -275,6 +279,7 @@ public partial class ScanImportDialog : Window
     
     private void MoveUp_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         var idx = lstFiles.SelectedIndex;
         if (idx <= 0) return;
         
@@ -285,6 +290,7 @@ public partial class ScanImportDialog : Window
     
     private void MoveDown_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         var idx = lstFiles.SelectedIndex;
         if (idx < 0 || idx >= _files.Count - 1) return;
         
@@ -386,11 +392,34 @@ public partial class ScanImportDialog : Window
 
     private async void Analyze_Click(object sender, RoutedEventArgs e)
     {
-        if (_files.Count == 0) return;
+        if (_files.Count == 0 || _dangChay) return;
+        // Chụp đầu vào TRƯỚC await đầu tiên và khóa danh sách + chế độ suốt lượt: tệp, bản đọc, ước tính
+        // và kết quả luôn cùng một danh sách và một chế độ.
+        var ds = _files.ToList();
+        var tachRieng = IsSeparateMode;
+        _dangChay = true;
+        rbMerge.IsEnabled = false;
+        rbSeparate.IsEnabled = false;
+        btnCancel.IsEnabled = false; // lượt AI đang chạy không hủy được: đóng cửa sổ phải qua hộp hỏi ở OnClosing
+        try
+        {
+            await Analyze_ClickAsync(ds, tachRieng);
+        }
+        finally
+        {
+            _dangChay = false;
+            rbMerge.IsEnabled = true;
+            rbSeparate.IsEnabled = true;
+            btnCancel.IsEnabled = true;
+        }
+    }
+
+    private async Task Analyze_ClickAsync(List<ScanFileItem> ds, bool tachRieng)
+    {
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
         
         // Validate file sizes
-        foreach (var file in _files)
+        foreach (var file in ds)
         {
             var sizeMB = file.FileSizeBytes / (1024.0 * 1024.0);
             if (sizeMB > 20)
@@ -405,22 +434,89 @@ public partial class ScanImportDialog : Window
         }
         
         // Cảnh báo tổng dung lượng lớn cho chế độ ghép
-        if (!IsSeparateMode)
+        if (!tachRieng)
         {
-            var totalMB = _files.Sum(f => f.FileSizeBytes) / (1024.0 * 1024.0);
+            var totalMB = ds.Sum(f => f.FileSizeBytes) / (1024.0 * 1024.0);
             if (totalMB > 15)
             {
                 var result = MessageBox.Show(
-                    $"📁 Tổng dung lượng khá lớn ({totalMB:F1} MB cho {_files.Count} file)\n\n" +
+                    $"📁 Tổng dung lượng khá lớn ({totalMB:F1} MB cho {ds.Count} file)\n\n" +
                     "Chế độ \"Ghép trang\" gửi tất cả file cùng lúc.\n" +
                     "File quá lớn có thể bị từ chối hoặc timeout.\n\n" +
                     "💡 Gợi ý: Chuyển sang chế độ \"Tách riêng\" để xử lý từng file.\n\n" +
-                    "Bạn vẫn muốn tiếp tục?",
+                    "Vẫn tiếp tục?",
                     "Cảnh báo dung lượng", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                 if (result == MessageBoxResult.No) return;
             }
         }
         
+        if (!tachRieng && ds.Count > TrichXuatService.SoTepToiDa)
+        {
+            MessageBox.Show(
+                $"Chế độ «Ghép trang» nhận tối đa {TrichXuatService.SoTepToiDa} tệp mỗi lần. Cần bớt tệp hoặc chuyển sang «Tách riêng».",
+                "Quá nhiều tệp", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // Đọc tệp; GIF/BMP/TIFF đổi sang PNG vì máy chủ không nhận các định dạng này.
+        // «Ghép trang»: TIFF nhiều khung tách MỖI KHUNG thành một trang (tính vào giới hạn 20 tệp / 20 MB).
+        // «Tách riêng»: mỗi tệp một lượt nên chỉ lấy khung đầu; tệp nhiều khung được báo một lần bên dưới.
+        var tep = new List<(string Base64, string MimeType)>();
+        var nhieuTrang = new List<string>();
+        try
+        {
+            foreach (var f in ds)
+            {
+                var duongDan = f.FilePath;
+                var mime = f.MimeType;
+                if (tachRieng)
+                {
+                    var (b64, mimeRa, soTrang) = await Task.Run(() =>
+                    {
+                        var bytes = File.ReadAllBytes(duongDan);
+                        var t = TrichXuatService.ChuanBiTep(bytes, mime);
+                        return (t.Base64, t.MimeType, TrichXuatService.DemSoTrang(bytes, mime));
+                    });
+                    tep.Add((b64, mimeRa));
+                    if (soTrang > 1) nhieuTrang.Add($"{f.FileName} ({soTrang} trang)");
+                }
+                else
+                {
+                    tep.AddRange(await Task.Run(() => TrichXuatService.ChuanBiTrang(File.ReadAllBytes(duongDan), mime)));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Không đọc được tệp: {ex.Message}", "Lỗi đọc tệp", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        if (!tachRieng && tep.Count > TrichXuatService.SoTepToiDa)
+        {
+            MessageBox.Show(
+                $"Sau khi tách các trang của tệp TIFF nhiều trang, có {tep.Count} trang, vượt tối đa {TrichXuatService.SoTepToiDa} trang mỗi lần ở chế độ «Ghép trang». Cần bớt tệp hoặc chuyển sang «Tách riêng».",
+                "Quá nhiều trang", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (tachRieng && nhieuTrang.Count > 0)
+        {
+            var tiepTuc = MessageBox.Show(
+                "Chế độ «Tách riêng» chỉ đọc trang 1 của mỗi tệp. Các tệp sau có nhiều trang, những trang còn lại sẽ không được đọc:"
+                + "\n\n" + string.Join("\n", nhieuTrang)
+                + "\n\nMuốn đọc đủ các trang của một văn bản, chuyển sang chế độ «Ghép trang»."
+                + "\n\nVẫn tiếp tục với trang 1?",
+                "Tệp nhiều trang", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (tiepTuc != MessageBoxResult.Yes) return;
+        }
+
+        var moTaTep = MoTaSoTrang(ds.Count, tep.Count);
+        var duocChay = tachRieng
+            ? await TacVuGiaoDien.XacNhanCreditAsync(this, $"Trích xuất {tep.Count} tệp (tách riêng)", () => UocTinhTachRiengAsync(tep))
+            : await TacVuGiaoDien.XacNhanCreditAsync(this, $"Trích xuất {moTaTep} (ghép trang)", () => _trichXuat.UocTinhAsync(tep));
+        if (!duocChay || _dungTach) return; // _dungTach: cửa sổ đã được xác nhận đóng trong lúc ước tính
+
         // Disable UI
         btnAnalyze.IsEnabled = false;
         btnChooseFile.IsEnabled = false;
@@ -429,10 +525,10 @@ public partial class ScanImportDialog : Window
         
         try
         {
-            if (IsSeparateMode)
-                await AnalyzeSeparateAsync();
+            if (tachRieng)
+                await AnalyzeSeparateAsync(ds, tep);
             else
-                await AnalyzeMergeAsync();
+                await AnalyzeMergeAsync(ds, tep);
         }
         catch (Exception ex)
         {
@@ -449,14 +545,32 @@ public partial class ScanImportDialog : Window
         }
     }
 
+    private static string MoTaSoTrang(int soTep, int soTrang) =>
+        soTep == soTrang ? $"{soTep} tệp" : $"{soTep} tệp ({soTrang} trang)";
+
+    /// <summary>Tách riêng = mỗi tệp một lượt: cộng khoảng credit của từng tệp.</summary>
+    private async Task<UocTinhKetQua> UocTinhTachRiengAsync(List<(string Base64, string MimeType)> tep)
+    {
+        int min = 0, max = 0, soDu = 0;
+        foreach (var t in tep)
+        {
+            var u = await _trichXuat.UocTinhAsync(new[] { t });
+            min += u.CreditMin;
+            max += u.CreditMax;
+            soDu = u.SoDu;
+        }
+        return new UocTinhKetQua(min, max, soDu, soDu >= max);
+    }
+
     /// <summary>
     /// Chế độ "Ghép trang" — gửi nhiều ảnh trong 1 request AI → 1 văn bản
     /// </summary>
-    private async Task AnalyzeMergeAsync()
+    private async Task AnalyzeMergeAsync(List<ScanFileItem> ds, List<(string Base64, string MimeType)> tep)
     {
         loadingPanel.Visibility = Visibility.Visible;
         batchPanel.Visibility = Visibility.Collapsed;
-        txtExtractionStatus.Text = $"⏳ Đang phân tích {_files.Count} file (ghép trang)...";
+        var moTaTep = MoTaSoTrang(ds.Count, tep.Count);
+        txtExtractionStatus.Text = $"⏳ Đang phân tích {moTaTep} (ghép trang)...";
         
         var elapsed = 0;
         var progressTimer = CreateProgressTimer(ref elapsed);
@@ -464,23 +578,12 @@ public partial class ScanImportDialog : Window
         try
         {
             progressTimer.Start();
-            txtLoadingStatus.Text = $"🤖 Đang gửi {_files.Count} file lên AI...";
-            txtLoadingDetail.Text = $"Chế độ ghép trang — {_files.Count} ảnh → 1 văn bản";
-            
-            // Đọc tất cả file → base64
-            var fileDataList = new List<(string Base64, string MimeType)>();
-            for (int i = 0; i < _files.Count; i++)
-            {
-                txtLoadingStatus.Text = $"📂 Đang đọc file {i + 1}/{_files.Count}: {_files[i].FileName}";
-                var bytes = await File.ReadAllBytesAsync(_files[i].FilePath);
-                var base64 = Convert.ToBase64String(bytes);
-                fileDataList.Add((base64, _files[i].MimeType));
-            }
-            
-            txtLoadingStatus.Text = $"🤖 Đang gửi {_files.Count} file lên AI...";
+            txtLoadingStatus.Text = $"🤖 Đang gửi {moTaTep} lên AI...";
+            txtLoadingDetail.Text = $"Chế độ ghép trang — {tep.Count} trang → 1 văn bản";
             
             // Gọi AI với nhiều ảnh cùng lúc
-            _extractedData = await _aiService.ExtractDocumentFromMultipleFilesAsync(fileDataList);
+            _extractedData = await _trichXuat.ExtractDocumentFromMultipleFilesAsync(tep);
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _trichXuat.LuotCuoi);
             
             progressTimer.Stop();
             txtLoadingStatus.Text = $"✅ Phân tích hoàn tất sau {elapsed}s!";
@@ -490,8 +593,8 @@ public partial class ScanImportDialog : Window
             
             loadingPanel.Visibility = Visibility.Collapsed;
             btnSave.IsEnabled = true;
-            txtExtractionStatus.Text = $"✅ Ghép {_files.Count} trang → 1 văn bản — Kiểm tra và chỉnh sửa";
-            txtFooterInfo.Text = $"✅ Trích xuất thành công ({elapsed}s) | {_files.Count} file ghép";
+            txtExtractionStatus.Text = $"✅ Ghép {tep.Count} trang → 1 văn bản — Kiểm tra và chỉnh sửa";
+            txtFooterInfo.Text = $"✅ Trích xuất thành công ({elapsed}s) | {moTaTep} ghép";
         }
         finally
         {
@@ -502,43 +605,64 @@ public partial class ScanImportDialog : Window
     /// <summary>
     /// Chế độ "Tách riêng" — xử lý từng file → nhiều văn bản
     /// </summary>
-    private async Task AnalyzeSeparateAsync()
+    private async Task AnalyzeSeparateAsync(List<ScanFileItem> ds, List<(string Base64, string MimeType)> tep)
     {
         loadingPanel.Visibility = Visibility.Collapsed;
         batchPanel.Visibility = Visibility.Visible;
-        txtExtractionStatus.Text = $"⏳ Đang xử lý {_files.Count} file (tách riêng)...";
+        txtExtractionStatus.Text = $"⏳ Đang xử lý {ds.Count} file (tách riêng)...";
         
         _separateResults.Clear();
         var errors = new List<string>();
+        Exception? loiDung = null;
+        var biCat = new List<string>();
         
-        for (int i = 0; i < _files.Count; i++)
+        for (int i = 0; i < ds.Count; i++)
         {
-            var file = _files[i];
-            var progress = (int)((i + 1.0) / _files.Count * 100);
+            // Cửa sổ đã được xác nhận đóng: không bắt đầu thêm lượt nào (mỗi lượt tính credit).
+            if (_dungTach) break;
+
+            var file = ds[i];
+            var progress = (int)((i + 1.0) / ds.Count * 100);
             
-            pbBatch.Value = (int)(i * 100.0 / _files.Count);
-            txtBatchStatus.Text = $"📑 Đang xử lý file {i + 1}/{_files.Count}...";
+            pbBatch.Value = (int)(i * 100.0 / ds.Count);
+            txtBatchStatus.Text = $"📑 Đang xử lý file {i + 1}/{ds.Count}...";
             txtBatchDetail.Text = $"File: {file.FileName} ({file.FileSize})";
             
             try
             {
-                var data = await _aiService.ExtractDocumentFromFileAsync(file.FilePath);
+                var data = await _trichXuat.ExtractDocumentFromBytesAsync(tep[i].Base64, tep[i].MimeType);
                 _separateResults.Add((data, file.FilePath));
+                if (_trichXuat.LuotCuoi is { BiCat: true } luot)
+                    biCat.Add(string.IsNullOrWhiteSpace(luot.MaLuot) ? file.FileName : $"{file.FileName} (mã lượt {luot.MaLuot})");
             }
             catch (Exception ex)
             {
-                errors.Add($"❌ {file.FileName}: {ex.Message}");
+                errors.Add($"❌ {file.FileName}: {TacVuGiaoDien.MoTaLoi(ex)}");
+                if (ex is TacVuException { Ma: MaLoiTacVu.KhongDuCredit or MaLoiTacVu.ChuaDangNhap })
+                {
+                    loiDung = ex; // các tệp sau cũng sẽ hỏng y như vậy
+                    break;
+                }
             }
         }
         
+        if (_dungTach) return; // cửa sổ đã đóng, kết quả bị bỏ
         pbBatch.Value = 100;
+        if (loiDung != null) TacVuGiaoDien.MoiMuaCreditNeuThieu(this, loiDung);
+        if (biCat.Count > 0)
+        {
+            MessageBox.Show(
+                $"Kết quả của {biCat.Count} tệp dài vượt giới hạn nên bị cắt bớt ở cuối:\n\n" + string.Join("\n", biCat) +
+                "\n\nNên kiểm tra phần cuối trước khi lưu.",
+                "Kết quả bị cắt", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
         
         if (_separateResults.Count > 0)
         {
             // Hiển thị kết quả file đầu tiên trong form
             PopulateForm(_separateResults[0].Data);
             
-            txtBatchStatus.Text = $"✅ Hoàn tất: {_separateResults.Count}/{_files.Count} file thành công";
+            txtBatchStatus.Text = $"✅ Hoàn tất: {_separateResults.Count}/{ds.Count} file thành công";
             txtBatchDetail.Text = errors.Count > 0 
                 ? $"⚠️ {errors.Count} file lỗi — Bấm Lưu để lưu {_separateResults.Count} VB thành công"
                 : $"Bấm Lưu để lưu {_separateResults.Count} văn bản vào hệ thống";
@@ -587,6 +711,12 @@ public partial class ScanImportDialog : Window
     
     private void ShowAnalysisError(Exception ex)
     {
+        if (ex is TacVuException)
+        {
+            TacVuGiaoDien.HienLoi(this, ex, "Lỗi phân tích");
+            return;
+        }
+
         var msg = ex.Message + (ex.InnerException?.Message ?? "");
         string errorTitle;
         string errorDetail;
@@ -638,7 +768,7 @@ public partial class ScanImportDialog : Window
 
     #region Form Population
     
-    private void PopulateForm(GeminiAIService.ExtractedDocumentData data)
+    private void PopulateForm(TrichXuatService.ExtractedDocumentData data)
     {
         txtSoVanBan.Text = data.SoVanBan;
         txtTrichYeu.Text = data.TrichYeu;
@@ -818,7 +948,7 @@ public partial class ScanImportDialog : Window
     /// <summary>
     /// Tạo Document từ ExtractedDocumentData (dùng cho chế độ Tách riêng)
     /// </summary>
-    private Document BuildDocumentFromData(GeminiAIService.ExtractedDocumentData data)
+    private Document BuildDocumentFromData(TrichXuatService.ExtractedDocumentData data)
     {
         var doc = new Document
         {
@@ -923,8 +1053,20 @@ public partial class ScanImportDialog : Window
 
     #endregion
 
+    /// <summary>
+    /// Đang phân tích thì hỏi trước khi đóng (lượt đang chạy vẫn bị trừ credit, kết quả mất). Đồng ý đóng thì
+    /// «Tách riêng» dừng trước tệp kế tiếp, không bắt đầu thêm lượt tính credit.
+    /// </summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        if (TacVuGiaoDien.HoiTruocKhiDong(this, _dangChay, e))
+            _dungTach = true;
+    }
+
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return; // nút đã bị khóa lúc đang chạy; đề phòng phím tắt
         DialogResult = false;
         Close();
     }

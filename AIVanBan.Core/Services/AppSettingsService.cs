@@ -42,8 +42,27 @@ public class AppSettingsService
                 _cached = new AppSettings();
             }
 
+            ChuanHoaDiaChiCu(_cached);
             return _cached;
         }
+    }
+
+    /// <summary>Địa chỉ máy chủ VanBanPlus mặc định (và địa chỉ thay cho địa chỉ Vercel cũ).</summary>
+    public const string DiaChiMayChuMacDinh = "https://vanbanplus.giakiemso.com";
+
+    /// <summary>
+    /// settings.json của bản cũ có thể còn địa chỉ *.vercel.app (máy chủ cũ, không có tác vụ v2): đổi sang địa chỉ mặc định
+    /// ngay trong bộ nhớ; tệp chỉ đổi ở lần lưu sau. Không đụng các địa chỉ khác (máy thử, máy chủ riêng).
+    /// </summary>
+    internal static void ChuanHoaDiaChiCu(AppSettings s)
+    {
+        var url = s.VanBanPlusApiUrl;
+        if (string.IsNullOrWhiteSpace(url)) return;
+        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var u)) return;
+        var host = u.Host;
+        if (host.Equals("vercel.app", StringComparison.OrdinalIgnoreCase)
+            || host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase))
+            s.VanBanPlusApiUrl = DiaChiMayChuMacDinh;
     }
 
     /// <summary>
@@ -74,16 +93,8 @@ public class AppSettingsService
         return !string.IsNullOrWhiteSpace(key);
     }
 
-    /// <summary>
-    /// Lấy API Key hiện tại (ưu tiên VanBanPlus, fallback Gemini trực tiếp)
-    /// </summary>
-    public static string GetEffectiveApiKey()
-    {
-        var s = Load();
-        return s.UseVanBanPlusApi && !string.IsNullOrEmpty(s.VanBanPlusApiKey)
-            ? s.VanBanPlusApiKey
-            : s.GeminiApiKey;
-    }
+    /// <summary>Khóa API VanBanPlus hiện tại (bản cài máy chỉ gọi AI qua máy chủ VanBanPlus).</summary>
+    public static string GetEffectiveApiKey() => Load().VanBanPlusApiKey;
 
     /// <summary>Alias cho Load()</summary>
     public static AppSettings GetSettings() => Load();
@@ -109,47 +120,6 @@ public class AppSettingsService
     }
 }
 
-/// <summary>
-/// Cấu hình ứng dụng
-/// </summary>
-public static class DevModePolicy
-{
-    /// <summary>Chế độ bảo trì tự hết hạn sau bao nhiêu giờ</summary>
-    public const int MaxHours = 1;
-
-    /// <summary>
-    /// Kiểm tra và tự động revert về VanBanPlus nếu dev mode đã quá hạn.
-    /// Gọi khi app khởi động hoặc mở Settings dialog.
-    /// </summary>
-    public static bool AutoRevertIfExpired()
-    {
-        var settings = AppSettingsService.Load();
-        if (!settings.UseVanBanPlusApi 
-            && settings.DevModeActivatedAt.HasValue
-            && (DateTime.Now - settings.DevModeActivatedAt.Value).TotalHours >= MaxHours)
-        {
-            settings.UseVanBanPlusApi = true;
-            settings.DevModeActivatedAt = null;
-            AppSettingsService.Save(settings);
-            return true; // đã revert
-        }
-        return false;
-    }
-
-    /// <summary>Thời gian còn lại (null nếu không ở dev mode)</summary>
-    public static TimeSpan? GetRemainingTime()
-    {
-        var settings = AppSettingsService.Load();
-        if (!settings.UseVanBanPlusApi && settings.DevModeActivatedAt.HasValue)
-        {
-            var elapsed = DateTime.Now - settings.DevModeActivatedAt.Value;
-            var remaining = TimeSpan.FromHours(MaxHours) - elapsed;
-            return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
-        }
-        return null;
-    }
-}
-
 public class AppSettings
 {
     // ===== Bật/tắt tính năng AI =====
@@ -158,28 +128,13 @@ public class AppSettings
     /// </summary>
     public bool AiEnabled { get; set; } = false;
 
-    // ===== Chế độ API =====
-    /// <summary>
-    /// true = Gọi qua VanBanPlus API (khuyến nghị), false = Gọi Gemini trực tiếp
-    /// </summary>
-    public bool UseVanBanPlusApi { get; set; } = true;
-
     // ===== VanBanPlus API (cloud) =====
-    public string VanBanPlusApiUrl { get; set; } = "https://vanbanplus.giakiemso.com";
+    public string VanBanPlusApiUrl { get; set; } = AppSettingsService.DiaChiMayChuMacDinh;
     public string VanBanPlusApiKey { get; set; } = "";
     /// <summary>
     /// Token bypass Vercel Deployment Protection (Hobby plan không tắt được)
     /// </summary>
     public string VercelBypassToken { get; set; } = "O6ZwqggP5r8buGm985jUItBVbT8qIZQC";
-
-    // ===== Gemini trực tiếp (legacy/bảo trì) =====
-    public string GeminiApiKey { get; set; } = "";
-
-    /// <summary>
-    /// Thời điểm bật chế độ bảo trì (Gemini trực tiếp). Null = không dùng.
-    /// Tự động hết hạn sau DevModeMaxHours giờ.
-    /// </summary>
-    public DateTime? DevModeActivatedAt { get; set; }
 
     // ===== Thông tin người dùng (cache từ API) =====
     public string UserEmail { get; set; } = "";

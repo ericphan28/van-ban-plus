@@ -16,8 +16,11 @@ public partial class DocumentReviewDialog : Window
     private DocumentReviewResult? _result;
     private DispatcherTimer? _timer;
     private int _elapsedSeconds;
+    // Chặn bấm lặp: một lượt (ước tính + xác nhận + chạy) tại một thời điểm, tránh trừ credit hai lần.
+    private bool _dangChay;
     private string? _referenceContent;
     private string? _uploadedFilePath;
+    private readonly DocumentReviewService _service = new();
 
     /// <summary>
     /// Nội dung đã sửa (nếu user chọn "Áp dụng")
@@ -103,13 +106,14 @@ public partial class DocumentReviewDialog : Window
 
         try
         {
-            var reviewService = new DocumentReviewService();
-            _result = await reviewService.ReviewDocumentAsync(_content, _documentType, _title, _issuer, _referenceContent);
+            _result = await _service.ReviewDocumentAsync(_content, _documentType, _title, _issuer, _referenceContent);
             DisplayResults(_result);
+            TacVuGiaoDien.CanhBaoNeuBiCat(this, _service.LuotCuoi);
         }
         catch (Exception ex)
         {
-            ShowError($"Lỗi khi phân tích: {ex.Message}");
+            ShowError(TacVuGiaoDien.MoTaLoi(ex));
+            TacVuGiaoDien.MoiMuaCreditNeuThieu(this, ex);
         }
         finally
         {
@@ -187,6 +191,7 @@ public partial class DocumentReviewDialog : Window
     private void StartTimer()
     {
         _elapsedSeconds = 0;
+        _timer?.Stop();
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += (s, e) =>
         {
@@ -314,30 +319,51 @@ public partial class DocumentReviewDialog : Window
 
     private async void QuickCheck_Click(object sender, RoutedEventArgs e)
     {
-        if (!AiPromoHelper.CheckOrShowPromo(this)) return;
-
-        var inputText = txtQuickInput.Text.Trim();
-        if (string.IsNullOrWhiteSpace(inputText) || inputText.Length <= 10)
+        if (_dangChay) return;
+        _dangChay = true;
+        try
         {
-            MessageBox.Show("Vui lòng nhập nội dung văn bản (tối thiểu 10 ký tự).",
-                "Thiếu nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            if (!AiPromoHelper.CheckOrShowPromo(this)) return;
+
+            var inputText = txtQuickInput.Text.Trim();
+            if (string.IsNullOrWhiteSpace(inputText) || inputText.Length <= 10)
+            {
+                MessageBox.Show("Vui lòng nhập nội dung văn bản (tối thiểu 10 ký tự).",
+                    "Thiếu nội dung", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Lấy loại văn bản nếu đã chọn
+            _content = inputText;
+            if (cboQuickDocType.SelectedValue is string selectedType)
+                _documentType = selectedType;
+
+            if (!await TacVuGiaoDien.XacNhanCreditAsync(this, "Kiểm tra văn bản",
+                    () => _service.UocTinhAsync(_content, _documentType, _title, _issuer, _referenceContent)))
+                return;
+
+            // Ẩn input panel, hiện loading
+            pnlQuickInput.Visibility = Visibility.Collapsed;
+
+            await StartReview();
         }
+        finally
+        {
+            _dangChay = false;
+        }
+    }
 
-        // Lấy loại văn bản nếu đã chọn
-        _content = inputText;
-        if (cboQuickDocType.SelectedValue is string selectedType)
-            _documentType = selectedType;
-
-        // Ẩn input panel, hiện loading
-        pnlQuickInput.Visibility = Visibility.Collapsed;
-
-        await StartReview();
+    /// <summary>Đang chạy tác vụ AI thì hỏi trước khi đóng (lượt vẫn bị trừ credit, kết quả sẽ mất).</summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        TacVuGiaoDien.HoiTruocKhiDong(this, _dangChay, e);
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
-        DialogResult = false;
+        // Chỉ Close(): gán DialogResult cũng đóng cửa sổ nên hộp hỏi ở OnClosing sẽ hiện hai lần khi chọn «No».
+        // Nơi gọi chỉ kiểm ShowDialog() == true, đóng bằng Close() cho kết quả null (= không áp dụng).
         Close();
     }
 
@@ -443,8 +469,9 @@ public partial class DocumentReviewDialog : Window
                         break;
 
                     case ".pdf":
-                        var aiService = new GeminiAIService();
-                        extractedText = await aiService.ReadTextFromFileAsync(filePath);
+                        var docDuoc = await TacVuGiaoDien.DocChuTuPdfAsync(this, filePath);
+                        if (docDuoc == null) return; // đã hủy hoặc đã báo lỗi
+                        extractedText = docDuoc;
                         if (string.IsNullOrWhiteSpace(extractedText))
                         {
                             MessageBox.Show("❌ Không trích xuất được nội dung từ PDF.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -512,8 +539,9 @@ public partial class DocumentReviewDialog : Window
                         break;
 
                     case ".pdf":
-                        var aiService = new GeminiAIService();
-                        extractedText = await aiService.ReadTextFromFileAsync(filePath);
+                        var docDuoc = await TacVuGiaoDien.DocChuTuPdfAsync(this, filePath);
+                        if (docDuoc == null) return; // đã hủy hoặc đã báo lỗi
+                        extractedText = docDuoc;
                         if (string.IsNullOrWhiteSpace(extractedText))
                         {
                             MessageBox.Show("❌ Không trích xuất được nội dung từ PDF mẫu.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
