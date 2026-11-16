@@ -36,14 +36,14 @@ public class DocumentAdvisoryService
             throw new ArgumentException("Nội dung văn bản không được để trống.");
 
         var systemPrompt = BuildSystemPrompt();
-        var userPrompt = BuildUserPrompt(content, documentType, title, issuer, context);
+        var userPrompt = BuildUserPrompt(content, documentType, title, issuer, context, DateTime.Now);
 
         var responseText = await _aiService.GenerateContentAsync(userPrompt, systemPrompt);
 
         return ParseResult(responseText);
     }
 
-    private string BuildSystemPrompt()
+    internal static string BuildSystemPrompt()
     {
         return @"Bạn là CHÁNH VĂN PHÒNG UBND CẤP XÃ/PHƯỜNG tại Việt Nam với 20 năm kinh nghiệm xử lý văn bản hành chính. Bạn nắm vững Luật Ban hành VBQPPL 2015, Nghị định 30/2020/NĐ-CP về công tác văn thư, Luật Tổ chức chính quyền địa phương 2015.
 
@@ -179,8 +179,9 @@ QUY TẮC QUAN TRỌNG:
 - Phân biệt rõ: VB chỉ để biết vs. VB cần hành động vs. VB cần trả lời";
     }
 
-    private string BuildUserPrompt(string content, string documentType, string title, string issuer,
-        DocumentAdvisoryContext? ctx = null)
+    /// <summary>Hàm thuần: thời điểm hiện tại truyền vào (AdviseAsync truyền DateTime.Now) để bộ kiểm so khớp được.</summary>
+    internal static string BuildUserPrompt(string content, string documentType, string title, string issuer,
+        DocumentAdvisoryContext? ctx, DateTime now)
     {
         var parts = new List<string>();
 
@@ -209,7 +210,7 @@ QUY TẮC QUAN TRỌNG:
             if (!string.IsNullOrWhiteSpace(ctx.SecurityLevel) && ctx.SecurityLevel != "Thường")
                 parts.Add($"ĐỘ MẬT: {ctx.SecurityLevel}");
             if (ctx.DueDate.HasValue)
-                parts.Add($"HẠN XỬ LÝ: {ctx.DueDate.Value:dd/MM/yyyy} ({(ctx.DueDate.Value - DateTime.Now).Days} ngày nữa)");
+                parts.Add($"HẠN XỬ LÝ: {ctx.DueDate.Value:dd/MM/yyyy} ({(ctx.DueDate.Value - now).Days} ngày nữa)");
             if (!string.IsNullOrWhiteSpace(ctx.SignerName))
                 parts.Add($"NGƯỜI KÝ: {ctx.SignerName}" + (string.IsNullOrWhiteSpace(ctx.SignerTitle) ? "" : $" — {ctx.SignerTitle}"));
             if (ctx.Recipients?.Length > 0)

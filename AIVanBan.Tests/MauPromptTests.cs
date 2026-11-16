@@ -86,4 +86,105 @@ public class MauPromptTests
 
         Ghi("kiem-tra.json", mau);
     }
+
+    [Fact]
+    public void GhiMauThamMuu()
+    {
+        // Ép văn hóa vi-VN: C# định dạng {ngày:dd/MM/yyyy} theo CurrentCulture (dấu "/" là dấu ngăn ngày của văn hóa).
+        var vanHoaCu = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("vi-VN");
+        try
+        {
+            // 09:30 ngày 16/11/2026 giờ máy người dùng (Việt Nam, UTC+7) = 02:30 UTC.
+            var bayGio = new DateTime(2026, 11, 16, 9, 30, 0);
+            const string bayGioIso = "2026-11-16T02:30:00.000Z";
+
+            static string? Iso(DateTime? d) =>
+                d?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            static object NguCanhJson(DocumentAdvisoryContext c) => new
+            {
+                huong = c.Direction,
+                nhom = c.Category,
+                so_van_ban = c.DocumentNumber,
+                ngay_ban_hanh = Iso(c.IssuedDate),
+                do_khan = c.UrgencyLevel,
+                do_mat = c.SecurityLevel,
+                han_xu_ly = Iso(c.DueDate),
+                nguoi_ky = c.SignerName,
+                chuc_danh_ky = c.SignerTitle,
+                noi_nhan = c.Recipients,
+                giao_cho = c.AssignedTo,
+                ghi_chu_xu_ly = c.ProcessingNotes,
+                can_cu = c.BasedOn,
+                van_ban_lien_quan = c.RelatedDocumentsSummary,
+            };
+
+            // Đủ 14 trường; hạn còn 3,6 ngày → «3 ngày nữa».
+            var day = new DocumentAdvisoryContext
+            {
+                Direction = "Đến",
+                Category = "Đất đai",
+                DocumentNumber = "123/UBND-KT",
+                IssuedDate = new DateTime(2026, 11, 3),
+                UrgencyLevel = "Khẩn",
+                SecurityLevel = "Mật",
+                DueDate = new DateTime(2026, 11, 20),
+                SignerName = "Nguyễn Văn A",
+                SignerTitle = "Phó Chủ tịch",
+                Recipients = new[] { "UBND các xã, phường", "Phòng Kinh tế" },
+                AssignedTo = "Địa chính - XD - MT",
+                ProcessingNotes = "Giao Địa chính chủ trì, báo cáo trước hạn.",
+                BasedOn = new[] { "Luật Đất đai 2024", "Nghị định 102/2024/NĐ-CP" },
+                RelatedDocumentsSummary = "CV 98/UBND-KT ngày 10/10/2026 về rà soát đất công.\nĐã báo cáo lần 1.",
+            };
+            // «Thường» bị bỏ qua; chức danh không có người ký thì bỏ; mảng rỗng bỏ; hạn đã qua 6,4 ngày → «-6 ngày nữa».
+            var mot = new DocumentAdvisoryContext
+            {
+                Direction = "Đến",
+                UrgencyLevel = "Thường",
+                SecurityLevel = "Thường",
+                DueDate = new DateTime(2026, 11, 10),
+                SignerTitle = "Chủ tịch",
+                Recipients = Array.Empty<string>(),
+                BasedOn = Array.Empty<string>(),
+            };
+            // Hạn đúng hôm nay (còn −0,4 ngày) → «0 ngày nữa»; người ký không chức danh.
+            var homNay = new DocumentAdvisoryContext
+            {
+                SignerName = "Trần Thị B",
+                DueDate = new DateTime(2026, 11, 16),
+                IssuedDate = new DateTime(2026, 1, 5),
+            };
+
+            var cacMau = new (string NoiDung, string Loai, string TieuDe, string CoQuan, DocumentAdvisoryContext? NguCanh)[]
+            {
+                ("Đề nghị UBND các xã rà soát đất công, báo cáo trước ngày 20/11/2026.", "Công văn", "V/v rà soát đất công", "UBND tỉnh Đồng Nai", day),
+                ("Thông báo lịch tiếp công dân tháng 12/2026.", "Thông báo", "", "Văn phòng UBND tỉnh", new DocumentAdvisoryContext()),
+                ("Kính gửi: UBND xã.\nĐề nghị báo cáo số liệu dân số.", "", "", "", null),
+                ("Nhắc lại hạn báo cáo; ký tự \"ngoặc kép\", \\ , ``` và ${bien}.", "Công văn", "Nhắc hạn", "Sở Nội vụ", mot),
+                ("Mời họp giao ban.", "Giấy mời", "Mời họp", "UBND xã", homNay),
+            };
+
+            var mau = cacMau.Select(m => new
+            {
+                bay_gio = bayGioIso,
+                dau_vao = new
+                {
+                    noi_dung = m.NoiDung,
+                    loai_van_ban = m.Loai,
+                    tieu_de = m.TieuDe,
+                    co_quan = m.CoQuan,
+                    ngu_canh = m.NguCanh == null ? null : NguCanhJson(m.NguCanh),
+                },
+                he_thong = ChuanHoa(DocumentAdvisoryService.BuildSystemPrompt()),
+                nguoi_dung = ChuanHoa(DocumentAdvisoryService.BuildUserPrompt(m.NoiDung, m.Loai, m.TieuDe, m.CoQuan, m.NguCanh, bayGio)),
+            }).ToList();
+
+            Ghi("tham-muu.json", mau);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = vanHoaCu;
+        }
+    }
 }
