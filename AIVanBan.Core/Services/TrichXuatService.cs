@@ -63,9 +63,34 @@ public class TrichXuatService
 
     /// <summary>
     /// Đọc tệp thành base64 + mime theo đuôi tệp. GIF/BMP/TIFF đổi sang PNG (máy chủ không nhận);
-    /// đuôi lạ ném <see cref="ArgumentException"/>.
+    /// TIFF/GIF nhiều khung chỉ lấy khung đầu (dùng <see cref="DocTepKemSoTrang"/> để biết có bị bỏ trang không,
+    /// hoặc <see cref="DocTepTungTrang"/> để lấy từng trang); đuôi lạ ném <see cref="ArgumentException"/>.
     /// </summary>
     public static (string Base64, string MimeType) DocTep(string filePath)
+    {
+        var (base64, mime, _) = DocTepKemSoTrang(filePath);
+        return (base64, mime);
+    }
+
+    /// <summary>
+    /// Như <see cref="DocTep"/> nhưng trả thêm số trang (khung) của tệp: TIFF/GIF nhiều khung &gt; 1, loại khác = 1.
+    /// Chỉ trang đầu được đưa vào kết quả.
+    /// </summary>
+    public static (string Base64, string MimeType, int SoTrang) DocTepKemSoTrang(string filePath)
+    {
+        var (bytes, mime) = DocByteTep(filePath);
+        var (base64, mimeRa) = ChuanBiTep(bytes, mime);
+        return (base64, mimeRa, DemSoTrang(bytes, mime));
+    }
+
+    /// <summary>Đọc tệp và tách TỪNG TRANG thành một mục riêng (xem <see cref="ChuanBiTrang"/>).</summary>
+    public static List<(string Base64, string MimeType)> DocTepTungTrang(string filePath)
+    {
+        var (bytes, mime) = DocByteTep(filePath);
+        return ChuanBiTrang(bytes, mime);
+    }
+
+    private static (byte[] Bytes, string Mime) DocByteTep(string filePath)
     {
         var mime = Path.GetExtension(filePath).ToLowerInvariant() switch
         {
@@ -84,12 +109,12 @@ public class TrichXuatService
         if (kichThuoc > TongByteToiDa)
             throw new ArgumentException(
                 $"Tệp {Path.GetFileName(filePath)} nặng {kichThuoc / (1024.0 * 1024):F1} MB, vượt giới hạn {TongByteToiDa / (1024 * 1024)} MB mỗi lần trích xuất.");
-        return ChuanBiTep(File.ReadAllBytes(filePath), mime);
+        return (File.ReadAllBytes(filePath), mime);
     }
 
     /// <summary>
     /// Đưa tệp về định dạng máy chủ nhận: PDF/PNG/JPEG/WEBP/HEIC/HEIF giữ nguyên; GIF/BMP/TIFF đổi sang PNG
-    /// (chỉ khung hình đầu tiên); định dạng khác ném <see cref="ArgumentException"/>.
+    /// (chỉ khung hình đầu tiên — nhiều khung dùng <see cref="ChuanBiTrang"/>); định dạng khác ném <see cref="ArgumentException"/>.
     /// </summary>
     public static (string Base64, string MimeType) ChuanBiTep(byte[] bytes, string mimeType)
     {
@@ -97,18 +122,51 @@ public class TrichXuatService
         if (MimeMayChuNhan.Contains(mime))
             return (Convert.ToBase64String(bytes), mime);
         if (MimeDoiSangPng.Contains(mime))
-            return (Convert.ToBase64String(ChuyenSangPng(bytes)), "image/png");
+            return (Convert.ToBase64String(ChuyenSangPng(bytes, 0)), "image/png");
         throw new ArgumentException("Định dạng tệp không được hỗ trợ. Hỗ trợ: PDF, JPG, PNG, WebP, HEIC, BMP, GIF, TIFF.");
     }
 
-    private static byte[] ChuyenSangPng(byte[] bytes)
+    /// <summary>
+    /// Như <see cref="ChuanBiTep"/> nhưng TIFF/GIF nhiều khung được tách MỖI KHUNG thành một trang PNG riêng
+    /// (dùng cho «Ghép trang»: mỗi trang tính vào giới hạn số tệp và dung lượng). Loại khác trả đúng một mục.
+    /// </summary>
+    public static List<(string Base64, string MimeType)> ChuanBiTrang(byte[] bytes, string mimeType)
+    {
+        var mime = (mimeType ?? "").ToLowerInvariant();
+        var soTrang = DemSoTrang(bytes, mime);
+        if (soTrang <= 1)
+            return new List<(string, string)> { ChuanBiTep(bytes, mime) };
+        var ds = new List<(string, string)>(soTrang);
+        for (var i = 0; i < soTrang; i++)
+            ds.Add((Convert.ToBase64String(ChuyenSangPng(bytes, i)), "image/png"));
+        return ds;
+    }
+
+    /// <summary>Số trang (khung) của ảnh: chỉ TIFF/GIF mới có thể &gt; 1; ảnh hỏng hoặc loại khác trả 1.</summary>
+    public static int DemSoTrang(byte[] bytes, string mimeType)
+    {
+        var mime = (mimeType ?? "").ToLowerInvariant();
+        if (mime is not ("image/tiff" or "image/gif")) return 1;
+        try
+        {
+            using var vao = new MemoryStream(bytes);
+            var bo = BitmapDecoder.Create(vao, BitmapCreateOptions.DelayCreation, BitmapCacheOption.None);
+            return Math.Max(1, bo.Frames.Count);
+        }
+        catch
+        {
+            return 1; // không đọc được thì để ChuanBiTep báo lỗi đúng chỗ
+        }
+    }
+
+    private static byte[] ChuyenSangPng(byte[] bytes, int khung)
     {
         try
         {
             using var vao = new MemoryStream(bytes);
             var bo = BitmapDecoder.Create(vao, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
             var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(bo.Frames[0]));
+            encoder.Frames.Add(BitmapFrame.Create(bo.Frames[khung]));
             using var ra = new MemoryStream();
             encoder.Save(ra);
             return ra.ToArray();

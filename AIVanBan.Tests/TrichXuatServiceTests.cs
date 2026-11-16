@@ -30,6 +30,43 @@ public class TrichXuatServiceTests
         return ms.ToArray();
     }
 
+    private static BitmapSource TaoAnh(int rong, int cao, byte xanh)
+    {
+        var pixels = new byte[rong * cao * 4];
+        for (var i = 0; i < pixels.Length; i += 4) { pixels[i] = xanh; pixels[i + 1] = 0; pixels[i + 2] = 255; pixels[i + 3] = 255; }
+        return BitmapSource.Create(rong, cao, 96, 96, PixelFormats.Bgra32, null, pixels, rong * 4);
+    }
+
+    /// <summary>TIFF 2 trang: trang 1 rộng 2, trang 2 rộng 3 (để phân biệt trang nào được lấy).</summary>
+    private static byte[] TaoTiffHaiKhung()
+    {
+        var encoder = new TiffBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(TaoAnh(2, 2, 10)));
+        encoder.Frames.Add(BitmapFrame.Create(TaoAnh(3, 3, 200)));
+        using var ms = new MemoryStream();
+        encoder.Save(ms);
+        return ms.ToArray();
+    }
+
+    private static byte[] TaoGifHaiKhung()
+    {
+        var encoder = new GifBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(TaoAnh(2, 2, 10)));
+        encoder.Frames.Add(BitmapFrame.Create(TaoAnh(2, 2, 200)));
+        using var ms = new MemoryStream();
+        encoder.Save(ms);
+        return ms.ToArray();
+    }
+
+    private static int RongPng((string Base64, string MimeType) trang)
+    {
+        Assert.Equal("image/png", trang.MimeType);
+        var bytes = Convert.FromBase64String(trang.Base64);
+        Assert.Equal(ChuKyPng, bytes.Take(8).ToArray());
+        using var vao = new MemoryStream(bytes);
+        return BitmapDecoder.Create(vao, BitmapCreateOptions.None, BitmapCacheOption.OnLoad).Frames[0].PixelWidth;
+    }
+
     private static readonly byte[] ChuKyPng = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
     [Fact]
@@ -272,5 +309,110 @@ public class TrichXuatServiceTests
         {
             File.Delete(duongDan);
         }
+    }
+
+    // --- TIFF / GIF nhiều trang ---
+
+    [Fact]
+    public void ChuanBiTrang_TiffHaiKhung_TachThanhHaiTrangPng()
+    {
+        var tiff = TaoTiffHaiKhung();
+
+        var trang = TrichXuatService.ChuanBiTrang(tiff, "image/tiff");
+
+        Assert.Equal(2, TrichXuatService.DemSoTrang(tiff, "image/tiff"));
+        Assert.Equal(2, trang.Count);
+        Assert.Equal(2, RongPng(trang[0]));
+        Assert.Equal(3, RongPng(trang[1]));
+    }
+
+    [Fact]
+    public void ChuanBiTrang_GifHaiKhung_TachThanhHaiTrangPng()
+    {
+        var gif = TaoGifHaiKhung();
+
+        var trang = TrichXuatService.ChuanBiTrang(gif, "image/gif");
+
+        Assert.Equal(2, trang.Count);
+        Assert.All(trang, t => Assert.Equal("image/png", t.MimeType));
+    }
+
+    [Fact]
+    public void ChuanBiTrang_AnhMotTrang_VaPdf_TraDungMotMuc()
+    {
+        var bmp = TrichXuatService.ChuanBiTrang(TaoBmpNho(), "image/bmp");
+        var pdf = TrichXuatService.ChuanBiTrang(new byte[] { 1, 2, 3 }, "application/pdf");
+
+        Assert.Single(bmp);
+        Assert.Equal("image/png", bmp[0].MimeType);
+        Assert.Single(pdf);
+        Assert.Equal(("AQID", "application/pdf"), pdf[0]);
+        Assert.Equal(1, TrichXuatService.DemSoTrang(TaoBmpNho(), "image/bmp"));
+    }
+
+    [Fact]
+    public void ChuanBiTep_TiffHaiKhung_VanChiLayTrangDau()
+    {
+        var (b64, mime) = TrichXuatService.ChuanBiTep(TaoTiffHaiKhung(), "image/tiff");
+
+        Assert.Equal(2, RongPng((b64, mime)));
+    }
+
+    [Fact]
+    public void DocTepKemSoTrang_Tiff_BaoSoTrangVaChiLayTrangDau_DocTepTungTrang_LayHet()
+    {
+        var duongDan = Path.Combine(Path.GetTempPath(), $"thu-trich-xuat-{Guid.NewGuid():N}.tif");
+        File.WriteAllBytes(duongDan, TaoTiffHaiKhung());
+        try
+        {
+            var (b64, mime, soTrang) = TrichXuatService.DocTepKemSoTrang(duongDan);
+            var het = TrichXuatService.DocTepTungTrang(duongDan);
+            var (b64Cu, mimeCu) = TrichXuatService.DocTep(duongDan);
+
+            Assert.Equal(2, soTrang);
+            Assert.Equal(2, RongPng((b64, mime)));
+            Assert.Equal(b64, b64Cu);
+            Assert.Equal(mime, mimeCu);
+            Assert.Equal(2, het.Count);
+            Assert.Equal(3, RongPng(het[1]));
+        }
+        finally
+        {
+            File.Delete(duongDan);
+        }
+    }
+
+    [Fact]
+    public void DocTepKemSoTrang_AnhMotTrang_SoTrangLaMot()
+    {
+        var duongDan = Path.Combine(Path.GetTempPath(), $"thu-trich-xuat-{Guid.NewGuid():N}.bmp");
+        File.WriteAllBytes(duongDan, TaoBmpNho());
+        try
+        {
+            Assert.Equal(1, TrichXuatService.DocTepKemSoTrang(duongDan).SoTrang);
+        }
+        finally
+        {
+            File.Delete(duongDan);
+        }
+    }
+
+    [Fact]
+    public async Task GhepTrang_MoiKhungTiffTinhVaoGioiHan20_VaGuiDuTrang()
+    {
+        var tiff = TaoTiffHaiKhung();
+        var h = new HandlerTacVuGia().ThanhCong("""{"so_van_ban":"1/QĐ"}""");
+
+        // 3 tệp TIFF x 2 khung = 6 trang gửi đi
+        var trang = new List<(string, string)>();
+        for (var i = 0; i < 3; i++) trang.AddRange(TrichXuatService.ChuanBiTrang(tiff, "image/tiff"));
+        await TaoDichVu(h).ExtractDocumentFromMultipleFilesAsync(trang);
+        Assert.Equal(6, Than(h).GetProperty("tep").GetArrayLength());
+
+        // 11 tệp x 2 khung = 22 trang vượt 20 → báo lỗi trước khi gửi
+        var qua = new List<(string, string)>();
+        for (var i = 0; i < 11; i++) qua.AddRange(TrichXuatService.ChuanBiTrang(tiff, "image/tiff"));
+        await Assert.ThrowsAsync<ArgumentException>(() => TaoDichVu(h).ExtractDocumentFromMultipleFilesAsync(qua));
+        Assert.Single(h.DaNhan);
     }
 }

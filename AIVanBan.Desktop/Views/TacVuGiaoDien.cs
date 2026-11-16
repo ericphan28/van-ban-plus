@@ -125,10 +125,10 @@ public static class TacVuGiaoDien
     /// </summary>
     public static async Task<string?> DocChuTuPdfAsync(Window owner, string filePath)
     {
-        (string Base64, string MimeType) tep;
+        (string Base64, string MimeType, int SoTrang) tepDoc;
         try
         {
-            tep = await Task.Run(() => TrichXuatService.DocTep(filePath));
+            tepDoc = await Task.Run(() => TrichXuatService.DocTepKemSoTrang(filePath));
         }
         catch (Exception ex)
         {
@@ -137,6 +137,17 @@ public static class TacVuGiaoDien
             return null;
         }
 
+        // Đọc chữ chỉ nhận một tệp mỗi lượt: TIFF/GIF nhiều trang chỉ đọc trang 1, báo một lần để khỏi hiểu nhầm là đã đọc hết.
+        if (tepDoc.SoTrang > 1)
+        {
+            var tiepTuc = MessageBox.Show(owner,
+                $"Tệp {System.IO.Path.GetFileName(filePath)} có {tepDoc.SoTrang} trang nhưng chế độ đọc chữ chỉ đọc trang 1. "
+                + "Muốn đọc đủ các trang, dùng «Nhập văn bản từ PDF/Ảnh scan» ở chế độ «Ghép trang».\n\nVẫn đọc trang 1?",
+                "Tệp nhiều trang", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (tiepTuc != MessageBoxResult.Yes) return null;
+        }
+
+        var tep = (tepDoc.Base64, tepDoc.MimeType);
         var dichVu = new TrichXuatService();
         var motTep = new[] { tep };
         if (!await XacNhanCreditAsync(owner, "Đọc chữ từ tệp PDF", () => dichVu.UocTinhAsync(motTep, chiChu: true)))
