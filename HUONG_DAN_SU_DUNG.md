@@ -118,7 +118,7 @@ Nhấn nút **"+ Thêm"** để tạo văn bản thủ công. Các trường th�
 **Cách dùng:**
 1. Nhấn nút **"📷 Scan Import"**
 2. Chọn file ảnh (JPG, PNG, BMP, TIFF, WebP) hoặc PDF
-3. AI Gemini Vision tự động đọc và trích xuất **14 trường dữ liệu**: Số VB, Trích yếu, Loại VB, Ngày ban hành, Cơ quan, Người ký, Nội dung, Nơi nhận, Căn cứ pháp lý, Hướng VB, Lĩnh vực, Địa danh, Chức danh ký, Thẩm quyền ký
+3. AI tự động đọc và trích xuất **14 trường dữ liệu**: Số VB, Trích yếu, Loại VB, Ngày ban hành, Cơ quan, Người ký, Nội dung, Nơi nhận, Căn cứ pháp lý, Hướng VB, Lĩnh vực, Địa danh, Chức danh ký, Thẩm quyền ký
 4. Bạn xem lại, chỉnh sửa nếu cần, rồi nhấn **Lưu**
 
 > 💡 **Mẹo:** Chụp ảnh văn bản bằng điện thoại → gửi về máy tính → Import vào VanBanPlus. Không cần gõ lại thủ công!
@@ -372,12 +372,17 @@ Bảo vệ dữ liệu của bạn — không lo mất dữ liệu.
 
 ## 12. Các tính năng AI
 
-VanBanPlus tích hợp **7 tính năng AI** chạy bằng Google Gemini 2.5 Flash:
+VanBanPlus tích hợp **7 tính năng AI**, chạy qua máy chủ VanBanPlus và tính bằng credit. Trước mỗi tác vụ, phần mềm báo khoảng credit dự kiến và số dư hiện có; tác vụ lỗi được hoàn credit.
+
+- **Credit gói tháng** (cấp mới mỗi tháng, không cộng dồn): Miễn phí 30 · Khởi đầu 400 · Chuyên nghiệp 1.100 · Doanh nghiệp 3.000.
+- **Gói nạp** mua thêm khi cần, mỗi gói dùng trong 90 ngày: 49.000đ = 160 credit · 99.000đ = 350 credit · 199.000đ = 750 credit.
+- Phần mềm không gọi thẳng nhà cung cấp AI và không dùng khóa AI riêng; toàn bộ AI đi qua máy chủ VanBanPlus.
+- **Lưu để hỗ trợ** (công tắc ở trang tài khoản trên web) là tùy chọn, mặc định tắt. Khi bật, bản sao của tác vụ được mã hóa và giữ 7 ngày để hỗ trợ khi có sự cố; tắt công tắc thì bản đã lưu bị xóa ngay.
 
 ### 🤖 AI 1: Soạn văn bản tự động
 
 - Chọn mẫu văn bản → Nhập thông tin cần thiết → AI soạn nội dung hoàn chỉnh
-- Hỗ trợ **hiển thị kết quả theo thời gian thực** (streaming)
+- Địa phương trong văn bản (xã/phường, cơ quan cấp trên, tỉnh) lấy từ **Cài đặt → 🏛️ Cơ quan**
 - Có kịch bản mẫu để thử nhanh
 - Tạo xong → tự động lưu vào hệ thống
 
@@ -494,19 +499,14 @@ Tất cả văn bản xuất ra **file .docx chuẩn hành chính Việt Nam**:
 
 ### 14.3 Cài đặt API (nâng cao)
 
-Ứng dụng hỗ trợ 2 chế độ kết nối AI:
-
-| Chế độ | Mô tả |
-|--------|-------|
-| **VanBanPlus API** *(khuyến nghị)* | Kết nối qua server VanBanPlus — ổn định, có quản lý quota |
-| **Gemini trực tiếp** *(nâng cao)* | Dùng API Key Gemini riêng — giới hạn thời gian 1 giờ |
+Tính năng AI chỉ kết nối qua máy chủ VanBanPlus bằng mã kích hoạt của tài khoản (từ bản 1.0.20 không còn chế độ kết nối trực tiếp tới nhà cung cấp AI). Tab **🏛️ Cơ quan** khai thêm xã/phường, cơ quan cấp trên, tỉnh để AI soạn thảo đúng địa phương; để trống cả ba thì văn bản không kèm bối cảnh địa phương.
 
 ### 14.4 Thanh trạng thái (Status Bar)
 
 Ở cuối màn hình hiển thị:
-- ☁️ **Trạng thái API**: Đang kết nối / Bảo trì / Chưa cấu hình
+- ☁️ **Trạng thái API**: Đang kết nối / Chưa cấu hình
 - 👤 **Thông tin user**: Tên + Gói dịch vụ
-- 📊 **Lượt sử dụng**: Số requests + tokens tháng này
+- 📊 **Mức dùng tháng này**: Số yêu cầu + tokens
 - 🔗 Nút: Đăng nhập/Đăng xuất, Cài đặt
 
 ---

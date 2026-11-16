@@ -4,8 +4,8 @@
 > Copilot/AI agent: **Luôn đọc file này đầu tiên** trước khi làm bất kỳ tính năng nào.
 > Sau khi hoàn thành tính năng: **Cập nhật file này** ngay lập tức.
 >
-> **Phiên bản hiện tại:** v1.0.16 (Cửa sổ tiến trình tải bản cập nhật — 2026-05-14)
-> **Cập nhật lần cuối:** 2026-06-14
+> **Phiên bản hiện tại:** v1.0.20 (AI chạy qua API tác vụ v2, báo trước credit, bỏ gọi thẳng Gemini — chuẩn bị phát hành 2026-11-16)
+> **Cập nhật lần cuối:** 2026-11-16
 > **Kiến trúc:** WPF .NET 9 + LiteDB + MaterialDesign-in-XAML
 
 ---
@@ -23,6 +23,7 @@
 | 3 | **Phục vụ cả Chuyên viên lẫn Lãnh đạo** | CV: theo dõi VB mình xử lý, soạn thảo AI. LĐ: theo dõi chỉ đạo, bút phê, deadline |
 | 4 | **AI là lợi thế chính** | Soạn VB nhanh, kiểm tra lỗi, tóm tắt, tham mưu — tiết kiệm 3-5h/ngày |
 | 5 | **Dữ liệu mỗi người khác nhau** | VB tôi nhận ≠ VB bạn nhận. Ghi chú, bút phê, deadline — đều là góc nhìn cá nhân |
+| 6 | **Không gọi thẳng Gemini, không giữ prompt nghiệp vụ** | Bản cài máy chỉ gửi dữ liệu tới `/api/v2/tac-vu/*` (`TacVuClient`); prompt, khóa AI, tính credit nằm ở `vanbanplus-api` (spec 2026-11-09 §1 tiêu chí 3). Không thêm lại khóa AI riêng hay chế độ gọi thẳng nhà cung cấp AI |
 
 ### Ai dùng app này? Dùng như thế nào?
 | Vai trò | Cách dùng | Ví dụ |
@@ -112,16 +113,16 @@
 ### A4. AI Features
 | # | Tính năng | File chính | Ghi chú |
 |---|-----------|-----------|---------|
-| ✅ | AI Soạn VB (từ template + prompt) | `AIComposeDialog.xaml` | Streaming output |
+| ✅ | AI Soạn VB (từ template) | `AIComposeDialog.xaml`, `TacVuSoanThao.cs` | **v1.0.20:** tác vụ v2 `soan-thao`, địa phương từ Cài đặt → Cơ quan; không streaming |
 | ✅ | AI Kiểm tra VB (8 loại lỗi) | `DocumentReviewDialog.xaml` | Chính tả, văn phong, xung đột... |
 | ✅ | AI Kiểm tra: Xuất Word + Soạn tiếp | `DocumentReviewDialog.xaml.cs` | **v1.0.12:** 2 options sau kiểm tra: 📄 Xuất Word chuẩn NĐ 30/2020, ✏️ Chuyển sang AI Soạn thảo |
-| ✅ | AI Scan OCR (ảnh/PDF → trích xuất) | `ScanImportDialog.xaml` | Gemini Vision |
-| ✅ | Upload file cho AI Kiểm tra/Tóm tắt/Tham mưu | `DocumentReviewDialog`, `DocumentSummaryDialog`, `DocumentAdvisoryDialog` | **v1.0.12:** Tải .docx/.pdf/.txt thay vì chỉ paste text. Dùng WordReaderService + GeminiAI.ReadTextFromFileAsync |
+| ✅ | AI Scan OCR (ảnh/PDF → trích xuất) | `ScanImportDialog.xaml` | **v1.0.20:** tác vụ v2 `trich-xuat` (`TrichXuatService.cs`) |
+| ✅ | Upload file cho AI Kiểm tra/Tóm tắt/Tham mưu | `DocumentReviewDialog`, `DocumentSummaryDialog`, `DocumentAdvisoryDialog` | **v1.0.12:** Tải .docx/.pdf/.txt thay vì chỉ paste text. Dùng WordReaderService + TrichXuatService (trich-xuat, chế độ chi-chu; v1.0.20) |
 | ✅ | File mẫu đối chiếu (AI Kiểm tra) | `DocumentReviewDialog.xaml.cs` | **v1.0.12:** Upload VB mẫu để AI so sánh, chỉ ra điểm khác biệt/thiếu sót |
 | ✅ | AI Tham mưu xử lý | `DocumentAdvisoryDialog.xaml` | Phân tích VB đến |
 | ✅ | AI Tóm tắt VB | `DocumentSummaryDialog.xaml` | 10 mục tóm tắt |
 | ✅ | AI Báo cáo định kỳ | `PeriodicReportDialog.xaml` | Tuần/Tháng/Quý/Năm |
-| ✅ | Dual-mode: Proxy API + Direct Gemini | `ApiSettingsDialog.xaml` | Dev mode tự hết hạn 1h |
+| ✅ | Kết nối AI qua VanBanPlus (API tác vụ v2) | `TacVuClient.cs`, `TacVuGiaoDien.cs`, `ApiSettingsDialog.xaml` | **v1.0.20:** báo trước khoảng credit, xử lý đủ mã lỗi; bỏ chế độ gọi thẳng Gemini (DevModePolicy) |
 
 ### A5. Cuộc họp (Meetings)
 | # | Tính năng | File chính | Ghi chú |
@@ -203,7 +204,7 @@
 | ✅ | Desktop Cloud Sync Dialog | `AIVanBan.Desktop/Views/CloudSyncDialog.xaml` | Bật/tắt sync, cấu hình, sync now, backup, restore |
 | ✅ | Cloud button on MainWindow | `AIVanBan.Desktop/MainWindow.xaml` | Nút ☁ Cloud trên toolbar |
 | ✅ | Đường mua gói (07/11/2026) | `vanbanplus-api`: `/dang-ky`, `/thanh-toan`, `/admin/orders`, `/api/orders`, `/api/webhooks/sepay`, migration 002 | VietQR + webhook SePay + admin xác nhận tay. Chỉ mở khi đặt đủ biến `BANK_*`. CSDL từ 07/11/2026 ở Megacore (`api-vanbanplus.giakiemso.com`), bản trống |
-| ✅ | Credit + API tác vụ v2 (đợt 1, 12/11/2026) | `vanbanplus-api`: migration 004, `/api/v2/tac-vu/tom-tat`, `/api/v2/credit`, `/admin/credit` | `/api/ai/*` trừ credit theo token khi dùng khóa hệ thống (Free 30 · Starter 400 · Pro 1.100 · Business 3.000 credit/tháng). Còn 5 tác vụ + lưu hỗ trợ + gói nạp (đợt 2), bản cài máy gọi v2 (đợt 3); điều kiện trước khi mở bán ở spec §13 |
+| ✅ | Credit + API tác vụ v2 (đợt 1, 12/11/2026) | `vanbanplus-api`: migration 004, `/api/v2/tac-vu/tom-tat`, `/api/v2/credit`, `/admin/credit` | `/api/ai/*` trừ credit theo token khi dùng khóa hệ thống (Free 30 · Starter 400 · Pro 1.100 · Business 3.000 credit/tháng). Còn 5 tác vụ + lưu hỗ trợ + gói nạp (đợt 2), bản cài máy gọi v2 (đợt 3); điều kiện trước khi mở bán ở spec §13 Đợt 3: bản cài máy v1.0.20 gọi đủ 6 tác vụ v2, không còn prompt C# (chờ phát hành). |
 | ✅ | API tác vụ v2 đợt 2a (16/11/2026) | `vanbanplus-api`: migration 007 (bảng giá), `/api/v2/tac-vu/kiem-tra`, `/tham-muu`, `/bao-cao-dinh-ky` | Prompt chép nguyên văn từ C#, so khớp tệp mẫu. Trần token ra kiem-tra tăng theo độ dài. Đo proxy: 30.292 ký tự chạy 49 giây, không bị cắt (Cloudflare cắt ở 100 giây — rủi ro với văn bản rất dài). Còn trich-xuat, soan-thao (2b), gói nạp + lưu hỗ trợ (2c), bản cài máy gọi v2 (đợt 3) |
 | ✅ | API tác vụ v2 đợt 2b (16/11/2026) | `vanbanplus-api`: migration 008, `/api/v2/tac-vu/trich-xuat` (cau-truc / chi-chu, PDF·PNG·JPEG·WEBP·HEIC·HEIF, tối đa 20 tệp), `/soan-thao` | Prompt trích xuất dùng chung với route cũ; soan-thao chép từ `ComposePromptBuilder` (C#), địa phương là đầu vào `dia_phuong`, năm theo giờ VN. Đếm trang PDF kể cả luồng nén (chặn bom nén, chạy tuyến tính). Đủ 6 tác vụ v2. Còn gói nạp + lưu hỗ trợ (2c), bản cài máy gọi v2 (đợt 3) |
 
