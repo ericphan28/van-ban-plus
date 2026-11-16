@@ -80,6 +80,10 @@ public class TrichXuatService
             ".heif" => "image/heif",
             _ => "",
         };
+        var kichThuoc = new FileInfo(filePath).Length;
+        if (kichThuoc > TongByteToiDa)
+            throw new ArgumentException(
+                $"Tệp {Path.GetFileName(filePath)} nặng {kichThuoc / (1024.0 * 1024):F1} MB, vượt giới hạn {TongByteToiDa / (1024 * 1024)} MB mỗi lần trích xuất.");
         return ChuanBiTep(File.ReadAllBytes(filePath), mime);
     }
 
@@ -267,14 +271,17 @@ public class TrichXuatService
                 salvaged.HuongVanBan = ExtractJsonField(jsonText, "huong_van_ban");
                 salvaged.DoKhan = ExtractJsonField(jsonText, "do_khan");
                 salvaged.DoMat = ExtractJsonField(jsonText, "do_mat");
+                if (string.IsNullOrEmpty(salvaged.DoKhan)) salvaged.DoKhan = "Thuong"; // như đường thường
+                if (string.IsNullOrEmpty(salvaged.DoMat)) salvaged.DoMat = "Thuong";
                 salvaged.LinhVuc = ExtractJsonField(jsonText, "linh_vuc");
                 salvaged.DiaDanh = ExtractJsonField(jsonText, "dia_danh");
                 salvaged.ChucDanhKy = ExtractJsonField(jsonText, "chuc_danh_ky");
                 salvaged.ThamQuyenKy = ExtractJsonField(jsonText, "tham_quyen_ky");
                 // noi_dung có thể rất dài và bị cắt → lấy best effort
-                salvaged.NoiDung = ExtractJsonField(jsonText, "noi_dung");
-                if (string.IsNullOrEmpty(salvaged.NoiDung))
-                    salvaged.NoiDung = jsonText; // fallback raw text
+                // Điểm cắt gần như luôn nằm trong noi_dung (trường dài nhất, ở cuối) nên không có dấu nháy đóng:
+                // lấy từ sau «"noi_dung":"» tới hết chuỗi. Chỉ khi không có khóa này mới dùng nguyên văn.
+                var phanCat = LayNoiDungBiCat(jsonText);
+                salvaged.NoiDung = phanCat != null ? FormatExtractedContent(phanCat) : jsonText;
             }
             catch
             {
@@ -417,6 +424,72 @@ public class TrichXuatService
         if (root.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.String)
             return prop.GetString() ?? defaultValue;
         return defaultValue;
+    }
+
+    /// <summary>
+    /// Lấy giá trị noi_dung từ JSON bị cắt: từ sau «"noi_dung":"» tới dấu nháy đóng chưa thoát, hoặc tới hết chuỗi
+    /// nếu bị cắt trước dấu nháy đóng. Giải mã escape JSON. Trả null khi không có khóa noi_dung.
+    /// </summary>
+    internal static string? LayNoiDungBiCat(string jsonText)
+    {
+        if (string.IsNullOrEmpty(jsonText)) return null;
+        var m = System.Text.RegularExpressions.Regex.Match(jsonText, "\"noi_dung\"\\s*:\\s*\"");
+        if (!m.Success) return null;
+        var batDau = m.Index + m.Length;
+        var ketThuc = jsonText.Length;
+        for (var i = batDau; i < jsonText.Length; i++)
+        {
+            if (jsonText[i] == '\\') { i++; continue; }
+            if (jsonText[i] == '"') { ketThuc = i; break; }
+        }
+        return GiaiMaChuoiJson(jsonText.Substring(batDau, ketThuc - batDau));
+    }
+
+    /// <summary>
+    /// Giải mã escape JSON (\n, \t, \r, \b, \f, \", \\, \/, \uXXXX). Escape dở dang ở cuối (bị cắt) thì bỏ.
+    /// </summary>
+    internal static string GiaiMaChuoiJson(string raw)
+    {
+        var sb = new System.Text.StringBuilder(raw.Length);
+        for (var i = 0; i < raw.Length; i++)
+        {
+            var c = raw[i];
+            if (c != '\\') { sb.Append(c); continue; }
+            if (i + 1 >= raw.Length) break; // dấu \ cuối bị cắt
+            var n = raw[++i];
+            switch (n)
+            {
+                case 'n': sb.Append('\n'); break;
+                case 't': sb.Append('\t'); break;
+                case 'r': sb.Append('\r'); break;
+                case 'b': sb.Append('\b'); break;
+                case 'f': sb.Append('\f'); break;
+                case '"': sb.Append('"'); break;
+                case '\\': sb.Append('\\'); break;
+                case '/': sb.Append('/'); break;
+                case 'u':
+                    if (raw.Length - i - 1 < 4) return CatSurrogateCuoi(sb); // \uXXXX bị cắt dở: bỏ
+                    if (int.TryParse(raw.AsSpan(i + 1, 4), System.Globalization.NumberStyles.AllowHexSpecifier,
+                            System.Globalization.CultureInfo.InvariantCulture, out var ma))
+                    {
+                        sb.Append((char)ma);
+                        i += 4;
+                    }
+                    else
+                    {
+                        sb.Append("\\u"); // không phải mã hợp lệ: giữ nguyên văn
+                    }
+                    break;
+                default: sb.Append('\\').Append(n); break; // escape lạ: giữ nguyên văn
+            }
+        }
+        return CatSurrogateCuoi(sb);
+    }
+
+    private static string CatSurrogateCuoi(System.Text.StringBuilder sb)
+    {
+        if (sb.Length > 0 && char.IsHighSurrogate(sb[^1])) sb.Length--; // nửa cặp surrogate bị cắt
+        return sb.ToString();
     }
 
     /// <summary>

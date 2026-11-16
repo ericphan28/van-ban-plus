@@ -180,6 +180,7 @@ public partial class ScanImportDialog : Window
     
     private void AddFiles(string[] filePaths)
     {
+        if (_dangChay) return; // đang phân tích: danh sách tệp và chế độ bị khóa
         foreach (var path in filePaths)
         {
             var ext = Path.GetExtension(path).ToLower();
@@ -248,6 +249,7 @@ public partial class ScanImportDialog : Window
     
     private void RemoveFile_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         if (sender is Button btn && btn.Tag is string filePath)
         {
             var item = _files.FirstOrDefault(f => f.FilePath == filePath);
@@ -262,6 +264,7 @@ public partial class ScanImportDialog : Window
     
     private void ClearAll_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         if (_files.Count == 0) return;
         
         var result = MessageBox.Show($"Xóa tất cả {_files.Count} file khỏi danh sách?",
@@ -275,6 +278,7 @@ public partial class ScanImportDialog : Window
     
     private void MoveUp_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         var idx = lstFiles.SelectedIndex;
         if (idx <= 0) return;
         
@@ -285,6 +289,7 @@ public partial class ScanImportDialog : Window
     
     private void MoveDown_Click(object sender, RoutedEventArgs e)
     {
+        if (_dangChay) return;
         var idx = lstFiles.SelectedIndex;
         if (idx < 0 || idx >= _files.Count - 1) return;
         
@@ -387,23 +392,31 @@ public partial class ScanImportDialog : Window
     private async void Analyze_Click(object sender, RoutedEventArgs e)
     {
         if (_files.Count == 0 || _dangChay) return;
+        // Chụp đầu vào TRƯỚC await đầu tiên và khóa danh sách + chế độ suốt lượt: tệp, bản đọc, ước tính
+        // và kết quả luôn cùng một danh sách và một chế độ.
+        var ds = _files.ToList();
+        var tachRieng = IsSeparateMode;
         _dangChay = true;
+        rbMerge.IsEnabled = false;
+        rbSeparate.IsEnabled = false;
         try
         {
-            await Analyze_ClickAsync();
+            await Analyze_ClickAsync(ds, tachRieng);
         }
         finally
         {
             _dangChay = false;
+            rbMerge.IsEnabled = true;
+            rbSeparate.IsEnabled = true;
         }
     }
 
-    private async Task Analyze_ClickAsync()
+    private async Task Analyze_ClickAsync(List<ScanFileItem> ds, bool tachRieng)
     {
         if (!AiPromoHelper.CheckOrShowPromo(this)) return;
         
         // Validate file sizes
-        foreach (var file in _files)
+        foreach (var file in ds)
         {
             var sizeMB = file.FileSizeBytes / (1024.0 * 1024.0);
             if (sizeMB > 20)
@@ -418,13 +431,13 @@ public partial class ScanImportDialog : Window
         }
         
         // Cảnh báo tổng dung lượng lớn cho chế độ ghép
-        if (!IsSeparateMode)
+        if (!tachRieng)
         {
-            var totalMB = _files.Sum(f => f.FileSizeBytes) / (1024.0 * 1024.0);
+            var totalMB = ds.Sum(f => f.FileSizeBytes) / (1024.0 * 1024.0);
             if (totalMB > 15)
             {
                 var result = MessageBox.Show(
-                    $"📁 Tổng dung lượng khá lớn ({totalMB:F1} MB cho {_files.Count} file)\n\n" +
+                    $"📁 Tổng dung lượng khá lớn ({totalMB:F1} MB cho {ds.Count} file)\n\n" +
                     "Chế độ \"Ghép trang\" gửi tất cả file cùng lúc.\n" +
                     "File quá lớn có thể bị từ chối hoặc timeout.\n\n" +
                     "💡 Gợi ý: Chuyển sang chế độ \"Tách riêng\" để xử lý từng file.\n\n" +
@@ -434,7 +447,7 @@ public partial class ScanImportDialog : Window
             }
         }
         
-        if (!IsSeparateMode && _files.Count > TrichXuatService.SoTepToiDa)
+        if (!tachRieng && ds.Count > TrichXuatService.SoTepToiDa)
         {
             MessageBox.Show(
                 $"Chế độ «Ghép trang» nhận tối đa {TrichXuatService.SoTepToiDa} tệp mỗi lần. Cần bớt tệp hoặc chuyển sang «Tách riêng».",
@@ -446,7 +459,7 @@ public partial class ScanImportDialog : Window
         var tep = new List<(string Base64, string MimeType)>();
         try
         {
-            foreach (var f in _files.ToList())
+            foreach (var f in ds)
             {
                 var duongDan = f.FilePath;
                 var mime = f.MimeType;
@@ -459,7 +472,7 @@ public partial class ScanImportDialog : Window
             return;
         }
 
-        var duocChay = IsSeparateMode
+        var duocChay = tachRieng
             ? await TacVuGiaoDien.XacNhanCreditAsync(this, $"Trích xuất {tep.Count} tệp (tách riêng)", () => UocTinhTachRiengAsync(tep))
             : await TacVuGiaoDien.XacNhanCreditAsync(this, $"Trích xuất {tep.Count} tệp (ghép trang)", () => _trichXuat.UocTinhAsync(tep));
         if (!duocChay) return;
@@ -472,10 +485,10 @@ public partial class ScanImportDialog : Window
         
         try
         {
-            if (IsSeparateMode)
-                await AnalyzeSeparateAsync(tep);
+            if (tachRieng)
+                await AnalyzeSeparateAsync(ds, tep);
             else
-                await AnalyzeMergeAsync(tep);
+                await AnalyzeMergeAsync(ds, tep);
         }
         catch (Exception ex)
         {
@@ -509,11 +522,11 @@ public partial class ScanImportDialog : Window
     /// <summary>
     /// Chế độ "Ghép trang" — gửi nhiều ảnh trong 1 request AI → 1 văn bản
     /// </summary>
-    private async Task AnalyzeMergeAsync(List<(string Base64, string MimeType)> tep)
+    private async Task AnalyzeMergeAsync(List<ScanFileItem> ds, List<(string Base64, string MimeType)> tep)
     {
         loadingPanel.Visibility = Visibility.Visible;
         batchPanel.Visibility = Visibility.Collapsed;
-        txtExtractionStatus.Text = $"⏳ Đang phân tích {_files.Count} file (ghép trang)...";
+        txtExtractionStatus.Text = $"⏳ Đang phân tích {ds.Count} file (ghép trang)...";
         
         var elapsed = 0;
         var progressTimer = CreateProgressTimer(ref elapsed);
@@ -521,8 +534,8 @@ public partial class ScanImportDialog : Window
         try
         {
             progressTimer.Start();
-            txtLoadingStatus.Text = $"🤖 Đang gửi {_files.Count} file lên AI...";
-            txtLoadingDetail.Text = $"Chế độ ghép trang — {_files.Count} ảnh → 1 văn bản";
+            txtLoadingStatus.Text = $"🤖 Đang gửi {ds.Count} file lên AI...";
+            txtLoadingDetail.Text = $"Chế độ ghép trang — {ds.Count} ảnh → 1 văn bản";
             
             // Gọi AI với nhiều ảnh cùng lúc
             _extractedData = await _trichXuat.ExtractDocumentFromMultipleFilesAsync(tep);
@@ -536,8 +549,8 @@ public partial class ScanImportDialog : Window
             
             loadingPanel.Visibility = Visibility.Collapsed;
             btnSave.IsEnabled = true;
-            txtExtractionStatus.Text = $"✅ Ghép {_files.Count} trang → 1 văn bản — Kiểm tra và chỉnh sửa";
-            txtFooterInfo.Text = $"✅ Trích xuất thành công ({elapsed}s) | {_files.Count} file ghép";
+            txtExtractionStatus.Text = $"✅ Ghép {ds.Count} trang → 1 văn bản — Kiểm tra và chỉnh sửa";
+            txtFooterInfo.Text = $"✅ Trích xuất thành công ({elapsed}s) | {ds.Count} file ghép";
         }
         finally
         {
@@ -548,24 +561,24 @@ public partial class ScanImportDialog : Window
     /// <summary>
     /// Chế độ "Tách riêng" — xử lý từng file → nhiều văn bản
     /// </summary>
-    private async Task AnalyzeSeparateAsync(List<(string Base64, string MimeType)> tep)
+    private async Task AnalyzeSeparateAsync(List<ScanFileItem> ds, List<(string Base64, string MimeType)> tep)
     {
         loadingPanel.Visibility = Visibility.Collapsed;
         batchPanel.Visibility = Visibility.Visible;
-        txtExtractionStatus.Text = $"⏳ Đang xử lý {_files.Count} file (tách riêng)...";
+        txtExtractionStatus.Text = $"⏳ Đang xử lý {ds.Count} file (tách riêng)...";
         
         _separateResults.Clear();
         var errors = new List<string>();
         Exception? loiDung = null;
         var biCat = new List<string>();
         
-        for (int i = 0; i < _files.Count; i++)
+        for (int i = 0; i < ds.Count; i++)
         {
-            var file = _files[i];
-            var progress = (int)((i + 1.0) / _files.Count * 100);
+            var file = ds[i];
+            var progress = (int)((i + 1.0) / ds.Count * 100);
             
-            pbBatch.Value = (int)(i * 100.0 / _files.Count);
-            txtBatchStatus.Text = $"📑 Đang xử lý file {i + 1}/{_files.Count}...";
+            pbBatch.Value = (int)(i * 100.0 / ds.Count);
+            txtBatchStatus.Text = $"📑 Đang xử lý file {i + 1}/{ds.Count}...";
             txtBatchDetail.Text = $"File: {file.FileName} ({file.FileSize})";
             
             try
@@ -600,7 +613,7 @@ public partial class ScanImportDialog : Window
             // Hiển thị kết quả file đầu tiên trong form
             PopulateForm(_separateResults[0].Data);
             
-            txtBatchStatus.Text = $"✅ Hoàn tất: {_separateResults.Count}/{_files.Count} file thành công";
+            txtBatchStatus.Text = $"✅ Hoàn tất: {_separateResults.Count}/{ds.Count} file thành công";
             txtBatchDetail.Text = errors.Count > 0 
                 ? $"⚠️ {errors.Count} file lỗi — Bấm Lưu để lưu {_separateResults.Count} VB thành công"
                 : $"Bấm Lưu để lưu {_separateResults.Count} văn bản vào hệ thống";

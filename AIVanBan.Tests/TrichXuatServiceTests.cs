@@ -199,22 +199,49 @@ public class TrichXuatServiceTests
         Assert.Empty(h.DaNhan);
     }
 
+    /// <summary>ket_qua là chuỗi thô (hợp đồng): bọc văn bản đã cắt thành một chuỗi JSON hợp lệ.</summary>
+    private static HandlerTacVuGia TraChuoiTho(string thoBiCat) =>
+        new HandlerTacVuGia().ThanhCong(JsonSerializer.Serialize(thoBiCat), biCat: true);
+
     [Fact]
-    public async Task KetQuaBiCatDangChuoiTho_VotDuocTruongVaGhiLuotCuoi()
+    public async Task KetQuaBiCat_CatTrongNoiDung_LayPhanNoiDungDaGiaiMa_KhongDoRaJson()
     {
-        HandlerTacVuGia h;
-        // ket_qua là chuỗi thô: JSON bị cắt giữa trường noi_dung.
-        h = new HandlerTacVuGia().ThanhCong(
-            "\"{\\\"so_van_ban\\\":\\\"15/GM-UBND\\\",\\\"trich_yeu\\\":\\\"V/v họp\\\",\\\"noi_dung\\\":\\\"Điều 1. Cắt giữa chừng\"",
-            biCat: true);
-        var dichVu = TaoDichVu(h);
+        // Cắt giữa noi_dung, không có dấu nháy đóng; có \n, \", \\, \t, á và escape \u00 dở dang ở cuối.
+        var tho = """{"so_van_ban":"15/GM-UBND","trich_yeu":"V/v họp","noi_dung":"Điều 1. Một.\nĐiều 2. Hai \"trích\" \\ giá\tx.\nĐiều 3. Ba cắt dở \u00""";
+        var dichVu = TaoDichVu(TraChuoiTho(tho));
 
         var kq = await dichVu.ExtractDocumentFromBytesAsync("AQID", "image/png");
 
         Assert.Equal("15/GM-UBND", kq.SoVanBan);
         Assert.Equal("V/v họp", kq.TrichYeu);
+        Assert.Equal("Điều 1. Một.\nĐiều 2. Hai \"trích\" \\ giá\tx.\nĐiều 3. Ba cắt dở", kq.NoiDung.TrimEnd());
+        Assert.DoesNotContain("so_van_ban", kq.NoiDung);
+        Assert.Equal("Thuong", kq.DoKhan);
+        Assert.Equal("Thuong", kq.DoMat);
         Assert.True(dichVu.LuotCuoi!.BiCat);
         Assert.Equal(7, dichVu.LuotCuoi.CreditDaTru);
+    }
+
+    [Fact]
+    public async Task KetQuaBiCat_CatSauDoKhanDoMat_GiuGiaTriDaVot_BoDauGachCheoCuoi()
+    {
+        var tho = """{"do_khan":"HoaToc","do_mat":"Mat","noi_dung":"Điều 1. A.\nĐiều 2. B.\nĐiều 3. C\""";
+        var kq = await TaoDichVu(TraChuoiTho(tho)).ExtractDocumentFromBytesAsync("AQID", "image/png");
+
+        Assert.Equal("HoaToc", kq.DoKhan);
+        Assert.Equal("Mat", kq.DoMat);
+        Assert.Equal("Điều 1. A.\nĐiều 2. B.\nĐiều 3. C", kq.NoiDung.TrimEnd());
+    }
+
+    [Fact]
+    public async Task KetQuaBiCat_CatTruocNoiDung_KhongCoKhoa_DungNguyenVan()
+    {
+        var tho = """{"so_van_ban":"15/GM-UBND","trich_yeu":"V/v họp""";
+        var kq = await TaoDichVu(TraChuoiTho(tho)).ExtractDocumentFromBytesAsync("AQID", "image/png");
+
+        Assert.Equal("15/GM-UBND", kq.SoVanBan);
+        Assert.Equal(tho, kq.NoiDung);
+        Assert.Equal("Thuong", kq.DoKhan);
     }
 
     [Fact]
@@ -228,5 +255,22 @@ public class TrichXuatServiceTests
         Assert.Equal(4, dichVu.LuotCuoi!.CreditDaTru);
         Assert.Equal(96, dichVu.LuotCuoi.SoDu);
         Assert.False(dichVu.LuotCuoi.BiCat);
+    }
+
+    [Fact]
+    public void DocTep_TepQua20MB_BaoLoiTruocKhiDoc()
+    {
+        var duongDan = Path.Combine(Path.GetTempPath(), $"thu-trich-xuat-{Guid.NewGuid():N}.pdf");
+        using (var f = new FileStream(duongDan, FileMode.Create))
+            f.SetLength(TrichXuatService.TongByteToiDa + 1);
+        try
+        {
+            var loi = Assert.Throws<ArgumentException>(() => TrichXuatService.DocTep(duongDan));
+            Assert.Contains("20 MB", loi.Message);
+        }
+        finally
+        {
+            File.Delete(duongDan);
+        }
     }
 }
