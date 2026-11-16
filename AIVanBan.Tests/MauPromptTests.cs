@@ -258,7 +258,7 @@ public class MauPromptTests
             {
                 ten = ca.Ten,
                 dau_vao = dauVao,
-                he_thong = ChuanHoa(ComposePromptBuilder.BuildSystemInstruction(ca.Loai, ca.DiaPhuong)),
+                he_thong = ChuanHoa(ComposePromptBuilder.BuildSystemInstruction(ca.Loai, ca.DiaPhuong, 2026)),
                 nguoi_dung = ChuanHoa(ComposePromptBuilder.BuildUserPrompt(ca.Loai, ca.TenMau, ca.TuDien(), ca.DiaPhuong)),
             };
         }).ToList();

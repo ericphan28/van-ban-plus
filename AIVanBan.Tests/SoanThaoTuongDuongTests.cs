@@ -105,7 +105,7 @@ public class SoanThaoTuongDuongTests
         Assert.Equal(chup.Select(c => c.ten), MauSoanThao.GiaKiem.Select(c => c.Ten));
         foreach (var (ca, c) in MauSoanThao.GiaKiem.Zip(chup))
         {
-            var h = ChuanHoa(ComposePromptBuilder.BuildSystemInstruction(ca.Loai, ca.DiaPhuong));
+            var h = ChuanHoa(ComposePromptBuilder.BuildSystemInstruction(ca.Loai, ca.DiaPhuong, 2026));
             var n = ChuanHoa(ComposePromptBuilder.BuildUserPrompt(ca.Loai, ca.TenMau, ca.TuDien(), ca.DiaPhuong));
             Assert.True(c.he_thong == h, $"{ca.Ten}: he_thong của lớp mới lệch hộp thoại cũ");
             Assert.True(c.nguoi_dung == n, $"{ca.Ten}: nguoi_dung của lớp mới lệch hộp thoại cũ");

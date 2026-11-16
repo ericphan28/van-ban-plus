@@ -36,18 +36,21 @@ public sealed class ComposePromptBuilder
 {
     private readonly string? _templateName;
     private readonly ComposeLocality? _dp;
+    private readonly int _nam;
 
-    private ComposePromptBuilder(string? templateName, ComposeLocality? dp)
+    private ComposePromptBuilder(string? templateName, ComposeLocality? dp, int nam = 0)
     {
         if (dp != null && (string.IsNullOrWhiteSpace(dp.Xa) || string.IsNullOrWhiteSpace(dp.Tinh)))
             throw new ArgumentException("Địa phương phải có xã/phường và tỉnh", nameof(dp));
         _templateName = templateName;
         _dp = dp;
+        _nam = nam;
     }
 
-    /// <summary>System instruction. dp = null: không có bối cảnh địa phương.</summary>
-    public static string BuildSystemInstruction(DocumentType type, ComposeLocality? dp) =>
-        new ComposePromptBuilder(null, dp).BuildSystemInstructionCore(type);
+    /// <summary>System instruction. dp = null: không có bối cảnh địa phương.
+    /// nam: năm hiện tại cho dòng «địa danh, ngày ... tháng ... năm …» (spec §5: thời điểm là tham số để kiểm so khớp).</summary>
+    public static string BuildSystemInstruction(DocumentType type, ComposeLocality? dp, int nam) =>
+        new ComposePromptBuilder(null, dp, nam).BuildSystemInstructionCore(type);
 
     /// <summary>User prompt. fields theo thứ tự ô nhập; templateName là tên mẫu đang chọn (null: chưa chọn mẫu).</summary>
     public static string BuildUserPrompt(DocumentType type, string? templateName, Dictionary<string, string> fields, ComposeLocality? dp) =>
@@ -149,7 +152,7 @@ QUY TẮC THỂ THỨC (Theo NĐ 30/2020):
    - Thư công: (không đánh số ký hiệu)
 
 4. ĐỊA DANH VÀ NGÀY THÁNG:
-   ""{DiaDanh}, ngày ... tháng ... năm 2026""
+   ""{DiaDanh}, ngày ... tháng ... năm {_nam}""
 
 5. TRÍCH YẾU NỘI DUNG (V/v):
    - Công văn: ""V/v [nội dung]""

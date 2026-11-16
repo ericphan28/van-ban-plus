@@ -1270,7 +1270,7 @@ public partial class AIComposeDialog : Window
 
     // Prompt soạn thảo nằm ở AIVanBan.Core (ComposePromptBuilder). Địa phương Gia Kiệm giữ tới khi đợt 3 nối thiết lập cơ quan.
     private string BuildSystemInstruction() =>
-        ComposePromptBuilder.BuildSystemInstruction(_selectedTemplate?.Type ?? DocumentType.CongVan, ComposeLocality.GiaKiem);
+        ComposePromptBuilder.BuildSystemInstruction(_selectedTemplate?.Type ?? DocumentType.CongVan, ComposeLocality.GiaKiem, DateTime.Now.Year);
 
     private string BuildPrompt()
     {
