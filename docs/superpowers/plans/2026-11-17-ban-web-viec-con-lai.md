@@ -60,12 +60,17 @@ thêm, L6 dùng chung).
 
 ## 5. Sửa còn tồn
 
-- [ ] 5.1 (L1, API) Đặt lại mật khẩu trên tài khoản bật 2 lớp: lần gửi đầu chưa có `ma_2_lop` vẫn tính vào trần đoán mã 2 lớp
-  và ghi `hai_lop_sai`; mã email bị dùng trước → người dùng chỉ còn ~2 lượt trong trần 3 mã / 15 phút
-  (`src/lib/phien/dang-nhap.ts`, khoảng dòng 195–215).
-- [ ] 5.2 (L1, API) Mất phản hồi `lam-moi` giữa chừng (tải lại / rớt mạng lúc xoay token) → lần sau dùng token cũ → hai lần
-  `LAM_MOI_TRUNG` → web đăng xuất; quá 30 giây thì máy chủ coi là dùng lại và thu hồi phiên. Cân nhắc nới luật.
-- [ ] 5.3 (L1, API) Đăng nhập sai mật khẩu mất ~7 giây (đo 17/11) — xem lại chi phí bcrypt / đếm tần suất.
+- [x] 5.1 (L1, API) Đặt lại mật khẩu trên tài khoản bật 2 lớp: lần gửi đầu chưa có `ma_2_lop` vẫn tính vào trần đoán mã 2 lớp
+  và ghi `hai_lop_sai`. **Xong 17/11/2026, API `a027cbf`:** thiếu `ma_2_lop` → `CAN_MA_2_LOP` không tính lượt, không ghi
+  nhật ký; mã email vẫn phải đúng trước (không lộ trạng thái 2 lớp). Mã email vẫn bị dùng → web tự gửi mã mới như cũ.
+- [x] 5.2 (L1, API) Mất phản hồi `lam-moi` giữa chừng → web đăng xuất / thu hồi phiên. **Xong 17/11/2026, migration
+  `014_phien_cap_lai` (prod, trong giao dịch) + API `a027cbf`:** token vừa dùng < 30 giây mà chưa có token mới hơn được dùng thì
+  cấp lại (tối đa 3 lần, nhật ký `token_cap_lai`); xoay bình thường gom các nhánh còn lại; > 30 giây vẫn thu hồi. Còn tồn
+  (nhỏ, hiếm): trần 3 lần có thể vượt khi tải đồng thời vì `now()` là giờ bắt đầu giao dịch (dùng `clock_timestamp()`); đoạn
+  hoàn tác nên `LOCK TABLE phien_token` trước. Web (`khach.ts`): sau `MAT_MANG` lúc làm mới nên thử lại ngay một lần để kịp
+  cửa sổ 30 giây — việc của luồng web kế tiếp.
+- [x] 5.3 (L1, API) Đăng nhập sai mật khẩu mất ~7 giây. **Đóng 17/11/2026, không tái hiện:** đo lại email thật và email giả
+  đều ~1 giây (bằng nhau, không dò được email); 5 hash trong `users` đều bcrypt cost 10. Lần 7 giây là chậm nhất thời.
 - [ ] 5.4 (L2 → L4 dọn khi đụng tới, ghi ở sổ SDD L2) — `vanbanplus-web`:
   - cờ tự tải lại `?lam-moi=1` hết hạn theo đồng hồ 10 giây thay vì khi trang tải thành công (`src/vo/lam-moi.ts`);
   - React Router không thấy việc gỡ cờ (`history.replaceState` trực tiếp);
@@ -90,3 +95,4 @@ thêm, L6 dùng chung).
 | Ngày | Phiên | Đổi gì |
 | --- | --- | --- |
 | 17/11/2026 | L2 | Bản đầu |
+| 17/11/2026 | L2 (sửa L1) | 5.1, 5.2 xong (014 prod + API `a027cbf`); 5.3 đóng — không tái hiện |
