@@ -61,3 +61,6 @@ Desktop.ini
 *.env
 *.local
 .vercel
+
+## Repo riêng nằm cạnh (không theo dõi ở repo gốc)
+vanbanplus-web/
