@@ -22,11 +22,16 @@ L4, L5, L6 chạy song song được (cả ba cùng sửa `vanbanplus-web`: work
 thêm, L6 dùng chung).
 
 **Xong L4–L6 = đủ chức năng đợt A, CHƯA mở bán.** Mở bán khi mục 2–4 dưới đây xong hết. **18/11/2026: phần kỹ thuật đã xong hết;
-còn lại chỉ việc của chủ dự án — 2.1 (thêm nguồn JS vào client của chợ), 2.2 (Gmail), 3.1 (xác nhận Vertex đã trả phí). 3.4 hoãn.**
+còn lại chỉ 3.1 (xác nhận Vertex đã trả phí thật trước 18/12/2026). 2.1, 2.2 xong 18/11; 3.4 hoãn.**
 
 ## 2. Chờ chủ dự án (làm được ngay, không phải chờ L4–L6)
 
-- [ ] 2.1 **Google OAuth Client ID** (loại Web; nguồn JS `https://app.vanbanplus.giakiemso.com`, `http://localhost:5173`).
+- [x] 2.1 **Xong 18/11/2026 05:30:** chủ dự án đổi ý — tạo dự án Google Cloud riêng `vanbanplus` (771010985698, tài khoản ericphan28,
+  không billing) theo khuôn chợ: màn đồng ý «VanBanPlus» External, In production (chưa xác minh — gmail.send là phạm vi nhạy cảm, trần
+  100 người dùng phạm vi đó, chỉ hộp thư gửi dùng); client web `771010985698-9c0nrmlh…` (nguồn JS app.vanbanplus + localhost:5173) →
+  `VITE_GOOGLE_CLIENT_ID` (build, web) + `VBP_GOOGLE_CLIENT_ID` (chạy, API). Kiểm prod: nút Google hiện, popup «Choose an account to
+  continue to giakiemso.com», không lỗi nguồn (chưa đăng nhập trọn để khỏi tạo tài khoản). Khóa ở `~/.gikidi/vanbanplus-google.env`
+  (PC + dev). Ghi chú cũ: **Google OAuth Client ID** (loại Web; nguồn JS `https://app.vanbanplus.giakiemso.com`, `http://localhost:5173`).
   **18/11/2026 (chủ dự án: dùng client của chogiakiem.vn):** client `565276165016-slmdmd1jhddbj58umengbs8dda17gskt` (dự án Google
   Cloud `chogiakiem-48`, «Web client 1»; nguồn hiện có chogiakiem.vn, www, localhost:3000). Còn thiếu: chủ dự án đăng nhập tài khoản
   sở hữu `chogiakiem-48` (KHÔNG phải ericphan28 — tài khoản đó không có quyền) → Google Auth Platform › Clients › Web client 1 ›
@@ -35,7 +40,9 @@ còn lại chỉ việc của chủ dự án — 2.1 (thêm nguồn JS vào clie
   `VITE_GOOGLE_CLIENT_ID` (biến build, app web) + biến client id phía API (L1) rồi triển khai lại hai app.
   Có rồi: đặt biến build `VITE_GOOGLE_CLIENT_ID` cho app Coolify `csywi7ct…` (vanbanplus-web) + biến tương ứng phía API
   (L1), triển khai lại. Chưa có → nút Google ẩn.
-- [ ] 2.2 **Hộp thư Gmail gửi email** + cấp quyền Gmail API (`VBP_GMAIL_*`, hợp đồng mục 4). Chưa có → đăng ký, đăng nhập
+- [x] 2.2 **Xong 18/11/2026 05:34 (chủ dự án: gửi từ ericphan28@gmail.com):** client Desktop `771010985698-c4svhn1i…` + refresh token
+  phạm vi gmail.send → `VBP_GMAIL_*` (chỉ lúc chạy, API); tên người gửi «VanBanPlus». Thử OTP `dang-nhap` tới chính hộp thư → thư tới
+  Hộp thư đến. Gmail cá nhân giới hạn khoảng 500 thư / ngày. Nhắc email kho (`vbp-kho-nhac`) nay tự chạy. Ghi chú cũ: **Hộp thư Gmail gửi email** + cấp quyền Gmail API (`VBP_GMAIL_*`, hợp đồng mục 4). Chưa có → đăng ký, đăng nhập
   bằng mã email, quên mật khẩu, nhắc gia hạn / vượt dung lượng đều chưa chạy thật (API ghi log thay vì gửi).
 - [x] 2.3 **Không còn chặn (18/11/2026):** các kịch bản kiểm prod tự đăng ký tài khoản thử qua `/api/auth/register` rồi dọn bằng SQL
   (`cong-cu/thu-xuyen-luong.mjs`); mật khẩu `vanbanplus-demo-clip` vẫn cũ — chỉ cần cho clip. Ghi chú cũ: **Tài khoản thử cho kiểm production**: `~/.gikidi/vanbanplus-demo-clip.txt` có mật khẩu cũ (cả route cũ lẫn v2 trả
@@ -159,3 +166,4 @@ còn lại chỉ việc của chủ dự án — 2.1 (thêm nguồn JS vào clie
 | 17/11/2026 | L4 | L4 lên prod; thêm 4.6–4.10; 5.4 mục timeout lệnh ghi xong; 3.2 thêm kết quả đo hủy qua Cloudflare |
 | 18/11/2026 | Mở bán | 3.2, 4.1–4.10, 5.4–5.6 xong (prod); thêm 3.4 (sao lưu R2), 3.5 (giới hạn tệp Business), §5b tồn nhỏ; 2.3 hết chặn |
 | 18/11/2026 | Mở bán (quyết định chủ dự án) | 2.1 dùng client chợ (chờ thêm nguồn JS); 3.1 cần xác nhận trong Billing; 3.4 hoãn; 3.5 xong (016, 10 MB); 4.4 tự quyết |
+| 18/11/2026 | Mở bán (Google + Gmail) | 2.1, 2.2 xong: dự án GCP `vanbanplus`, đăng nhập Google + OTP email chạy thật trên prod |
