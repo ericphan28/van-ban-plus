@@ -13,7 +13,7 @@ lý do.
 | L2 | os-kit lớp nối + khung `vanbanplus-web` (`https://app.vanbanplus.giakiemso.com`) | Prod 17/11 — còn mục 2.3 |
 | L3 | API kho + dung lượng + phí | Prod 17/11 |
 | L4 | Web văn bản, quét, 6 tác vụ AI, xuất Word | Đợt 2 — chưa bắt đầu |
-| L5 | Mẫu văn bản + tra cứu pháp quy | Đợt 2 — chưa bắt đầu |
+| L5 | Mẫu văn bản + tra cứu pháp quy | Prod 17/11 (API `54cda8e` + migration 012, web `205ff6b`) |
 | L6 | Lịch họp + album ảnh | Đợt 2 — chưa bắt đầu |
 
 L4, L5, L6 chạy song song được (cả ba cùng sửa `vanbanplus-web`: worktree riêng, chỉ sửa dòng phân hệ của mình trong
