@@ -68,6 +68,7 @@ cổng; không sửa script dùng chung).
 | `TEP_KHONG_HOP_LE` | 400 | Mime không cho phép, quá 50 MB, kích thước thật khác khai báo |
 | `CAN_MA_2_LOP` | 400 | Đặt lại mật khẩu trên tài khoản bật 2 lớp: thiếu / sai `ma_2_lop`; mã email đã dùng → lấy mã mới |
 | `CHUA_CO_MAT_KHAU` | 409 | Đổi mật khẩu trên tài khoản chưa có mật khẩu → đặt qua OTP `dat-lai-mat-khau` |
+| L3 thêm | | `THU_MUC_KHONG_TRONG` 409 · `CHUA_O_THUNG_RAC` 409 · `DANG_O_THUNG_RAC` 409 · `TEP_CHUA_TAI_LEN` 409 (xác nhận khi tệp chưa lên Storage — tải xong rồi gọi lại) · `DA_NGUNG` 410 |
 | L1 thêm | | `DAU_VAO_SAI` 400 · `EMAIL_DA_CO` 409 · `TAI_KHOAN_NGUNG` 403 · `GOOGLE_SAI` 401 · `GOOGLE_LOI` 502 · `EMAIL_LOI` 502 · `CHUA_CAU_HINH` 503 · `SAI_MAT_KHAU` 400 · `DA_BAT` / `CHUA_BAT` 409 · `NGUON_LA` 403 · `LOI_MAY_CHU` 500 |
 
 - **Route v2 có sẵn** (`/api/v2/credit`, `/api/v2/tac-vu/*`) trả 401 **không có `code`** khi Bearer hết hạn / bị thu hồi → web: mọi
@@ -142,8 +143,21 @@ type Tep = { id; ten; mime; byte; so_trang; co_anh_nho: boolean; tao_luc };
 | `POST /api/orders` | Thêm `loai: "dung_luong"`, `goi_dung_luong_ma`, `so_thang` 1–12 |
 
 Hàm dùng chung cho L5, L6 (L3 xuất ra): `src/lib/kho/chu-so-huu.ts` → `chuCuaNguoiDung(user): { chu_loai, chu_id }`;
-`src/lib/kho/han-muc.ts` → `kiemConGhi(chu): Promise<void>` (ném lỗi mang `HET_DUNG_LUONG`). Gắn tệp vào `cuoc_hop` /
-`album` kiểm chủ sở hữu bằng hàm do L6 đăng ký qua `src/lib/kho/gan-tep.ts` (L3 tạo bảng đăng ký, `van_ban` sẵn).
+`src/lib/kho/han-muc.ts` → `kiemConGhi(chu): Promise<void>` (ném `LoiHetDungLuong`, `code = "HET_DUNG_LUONG"`; bọc route
+bằng `chay` của `src/lib/kho/tra-loi.ts` thì tự thành 403). Gắn tệp vào `cuoc_hop` / `album`: L6 thêm hàm kiểm chủ sở hữu
+vào **`src/lib/kho/gan-tep-dang-ky.ts`** (đăng ký tĩnh, nạp cùng `gan-tep.ts`; `dangKyGanTep` lúc chạy chỉ dùng cho kiểm
+thử). Xóa cuộc họp / album phải xóa tệp qua `kho_tep_xoa` / `kho_xoa_van_ban_noi`-tương đương để trừ dung lượng.
+
+**Bản đã lên production (17/11/2026, vanbanplus-api `ec97de8`) khác bảng trên ở:**
+
+- Danh sách `GET /van-ban` không kèm `noi_dung` (đọc chi tiết `GET /van-ban/[id]` mới có).
+- `xin-tai-len`: `het_han` = 120 giây (Storage prod), phải PUT ngay; giới hạn 60 lần / 15 phút / tài khoản (429). Tải lên
+  bằng `PUT url_tai_len` thân là tệp, `Content-Type` = mime đã khai.
+- `dung-luong` thêm `cho_byte` (tệp đang chờ); `goi_them` có thêm `bat_dau` (gói mua tiếp nối chưa bắt đầu vẫn liệt kê).
+- `DELETE /tep/[id]` với tệp đang chờ: hàng chờ còn tính tối đa 3 phút rồi tự dọn.
+- `POST /api/orders` + `GET /api/orders/[code]` nhận Bearer (ngoài X-API-Key), CORS như route v2. `orderView` thêm
+  `goiDungLuongMa`, `soThang`, `themMb`, `periodStart`.
+- `/api/cloud/*` (đồng bộ cloud cũ của bản cài máy) trả 410 `DA_NGUNG`; 14 bảng của 001 đã bỏ.
 
 ## 6. Hợp đồng L2 — os-kit và web
 
@@ -183,3 +197,4 @@ Hàm dùng chung cho L5, L6 (L3 xuất ra): `src/lib/kho/chu-so-huu.ts` → `chu
 | 17/11/2026 | L1 | Thêm `LAM_MOI_TRUNG` (409): token làm mới bị dùng lại trong 30 giây sau khi xoay thì không thu hồi phiên — nhiều tab cùng làm mới khi mở trang. Quá 30 giây vẫn thu hồi cả phiên (`PHIEN_THU_HOI`). L2: `src/api/khach.ts` gặp mã này thì chờ ~1 giây, gọi `lam-moi` lại một lần; nên khóa làm mới giữa các tab bằng `navigator.locks` |
 | 17/11/2026 | L1 | 009 không thêm `users.khoa_den` / `users.so_lan_sai`: khóa sai mật khẩu đếm trong `dem_tan_suat` theo băm email, đếm trước khi so mật khẩu (chống gửi song song), email không tồn tại cũng nhận `TAI_KHOAN_KHOA` như email có (không dò được email) |
 | 17/11/2026 | L1 | Đặt lại mật khẩu bằng OTP trên tài khoản bật 2 lớp cần thêm `ma_2_lop` (`CAN_MA_2_LOP`); `toi/mat-khau` bắt buộc `mat_khau_cu`, tài khoản chưa có mật khẩu → `CHUA_CO_MAT_KHAU` (đặt mật khẩu đầu chỉ qua OTP). Thêm danh sách mã lỗi L1 và luật «401 khi có Bearer → `lam-moi` một lần» ở mục 3. Bảng thực tế: `phien` + `phien_token` (xoay token) thay cột `chuoi_id` / `bam_token` của spec. App di động (sau) cần `token_lam_moi` trong thân trả về — bổ sung khi bắt đầu app |
+| 17/11/2026 | L3 | Lên production (`010_kho`, `011_dung_luong_mua`, `ec97de8`). Mã lỗi L3 ở mục 3; chỗ khác bảng route ở mục 5 (danh sách không `noi_dung`, tải lên 120 giây + giới hạn 60/15 phút, `cho_byte`, `goi_them.bat_dau`). Sửa ngoài thư mục L3: `src/lib/phien/cors.ts` (CORS nguồn cho phép cho `/api/orders*`), `/api/orders*` nhận Bearer, trang `/tai-khoan`, `/admin`, `/bang-gia` (bỏ quảng cáo đồng bộ cloud cũ), webhook SePay (tin Telegram đơn dung lượng). Đăng ký gắn tệp cho L6 đổi sang tệp tĩnh `src/lib/kho/gan-tep-dang-ky.ts`. Mua dung lượng: `/thanh-toan?dung-luong=dl-10&thang=3`. Việc định kỳ: pg_cron `vbp-kho-don` (mỗi giờ :37) + `vbp-kho-nhac` (01:13 UTC) → `/api/noi-bo/*` khóa `VBP_NOI_BO_KHOA` (Vault); chưa cấu hình Gmail thì nhắc email tạm dừng, không mất thư |
