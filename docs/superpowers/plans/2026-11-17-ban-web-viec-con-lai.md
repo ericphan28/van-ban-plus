@@ -22,11 +22,17 @@ L4, L5, L6 chạy song song được (cả ba cùng sửa `vanbanplus-web`: work
 thêm, L6 dùng chung).
 
 **Xong L4–L6 = đủ chức năng đợt A, CHƯA mở bán.** Mở bán khi mục 2–4 dưới đây xong hết. **18/11/2026: phần kỹ thuật đã xong hết;
-còn lại chỉ việc của chủ dự án — 2.1, 2.2, 3.1, 3.4, 3.5 và duyệt điều khoản (4.4).**
+còn lại chỉ việc của chủ dự án — 2.1 (thêm nguồn JS vào client của chợ), 2.2 (Gmail), 3.1 (xác nhận Vertex đã trả phí). 3.4 hoãn.**
 
 ## 2. Chờ chủ dự án (làm được ngay, không phải chờ L4–L6)
 
 - [ ] 2.1 **Google OAuth Client ID** (loại Web; nguồn JS `https://app.vanbanplus.giakiemso.com`, `http://localhost:5173`).
+  **18/11/2026 (chủ dự án: dùng client của chogiakiem.vn):** client `565276165016-slmdmd1jhddbj58umengbs8dda17gskt` (dự án Google
+  Cloud `chogiakiem-48`, «Web client 1»; nguồn hiện có chogiakiem.vn, www, localhost:3000). Còn thiếu: chủ dự án đăng nhập tài khoản
+  sở hữu `chogiakiem-48` (KHÔNG phải ericphan28 — tài khoản đó không có quyền) → Google Auth Platform › Clients › Web client 1 ›
+  Authorized JavaScript origins thêm `https://app.vanbanplus.giakiemso.com` và `http://localhost:5173` › Save; nên đặt tên ứng dụng ở
+  Branding thành tên chung (vd «Gia Kiệm Số») vì hộp đăng nhập Google hiện tên này cho cả hai sản phẩm. Xong thì đặt
+  `VITE_GOOGLE_CLIENT_ID` (biến build, app web) + biến client id phía API (L1) rồi triển khai lại hai app.
   Có rồi: đặt biến build `VITE_GOOGLE_CLIENT_ID` cho app Coolify `csywi7ct…` (vanbanplus-web) + biến tương ứng phía API
   (L1), triển khai lại. Chưa có → nút Google ẩn.
 - [ ] 2.2 **Hộp thư Gmail gửi email** + cấp quyền Gmail API (`VBP_GMAIL_*`, hợp đồng mục 4). Chưa có → đăng ký, đăng nhập
@@ -39,7 +45,9 @@ còn lại chỉ việc của chủ dự án — 2.1, 2.2, 3.1, 3.4, 3.5 và duy
 
 ## 3. Điều kiện mở bán (spec §11, spec 09/11 §13)
 
-- [ ] 3.1 **Đường trả phí thật cho Vertex AI trước 18/12/2026** — khóa hệ thống đang chạy bằng credit dùng thử, hết hạn là 6
+- [ ] 3.1 **Đường trả phí thật cho Vertex AI trước 18/12/2026** — 18/11: chủ dự án nhớ là đã có. Kiểm bằng service account: dự án
+  Vertex đang bật thanh toán, tài khoản thanh toán `0186F9-DE33FD-…`; service account không xem được tài khoản đó là dùng thử hay trả
+  phí → chủ dự án mở Billing › Overview của `yenphipham83`: còn dải «Free trial / Activate full account» là CHƯA nâng. Ghi chú cũ: — khóa hệ thống đang chạy bằng credit dùng thử, hết hạn là 6
   tác vụ AI dừng (bộ nhớ `vanbanplus-khoa-gemini`).
 - [x] 3.2 **Xong 18/11/2026 (chủ dự án chọn tên miền riêng 17/11):** web gọi tác vụ AI chữ (`/api/v2/tac-vu/<ten>` + `/uoc-tinh`,
   trừ `trich-xuat`) qua `https://vanbanplus-api.app.giakiemso.com` (chỉ DNS, không Cloudflare), Bearer, không cookie; `trich-xuat`
@@ -52,11 +60,12 @@ còn lại chỉ việc của chủ dự án — 2.1, 2.2, 3.1, 3.4, 3.5 và duy
 - [ ] 3.3 **Việc treo của đợt credit**: theo dõi `tac_vu_chay.ma_loi` bản cài 1.0.20; hệ số ước tính `bao-cao-dinh-ky` hơi cao
   (trừ thật 5 < min 7) — bộ nhớ `vanbanplus-credit-dot-1`.
 
-- [ ] 3.4 **Sao lưu tệp kho ra ngoài máy (chờ chủ dự án, thêm 18/11/2026):** restic đêm (`may-chu/sao-luu/sao-luu`) chép cả
+- [ ] 3.4 **HOÃN (chủ dự án 18/11/2026: tính sau, hiện ưu tiên sao lưu DMS) — không chặn mở bán.** Sao lưu tệp kho ra ngoài máy: restic đêm (`may-chu/sao-luu/sao-luu`) chép cả
   `/data/coolify` gồm Storage VanBanPlus lên Cloudflare R2; gói miễn phí R2 10 GB **tính chung cả tài khoản** (đang báo ở 7 GB); ghi chú
   «Quyết định 10» trong `sao-luu` nói tệp Storage lớn phải loại khỏi R2. Bán dung lượng 2–50 GB / tài khoản là vượt sớm → chọn trả phí R2
   theo dung lượng hay đích sao lưu khác cho kho VanBanPlus. (18/11: kho chưa có tệp nào.)
-- [ ] 3.5 **Giới hạn tệp gói Business (chờ chủ dự án):** `subscription_plans.max_file_size_mb` = 50 nhưng `proxyClientMaxBodySize` 30 MB
+- [x] 3.5 **Xong 18/11/2026 (chủ dự án: Business 50 MB quá lớn, về khoảng 10 MB):** migration `016_gioi_han_tep_goi` trên prod (API
+  `7a10e22`) — Chuyên nghiệp 20 → 10, Doanh nghiệp 50 → 10 để giữ thứ bậc gói (5 / 10 / 10 / 10 MB). Ghi chú cũ: **Giới hạn tệp gói Business:** `subscription_plans.max_file_size_mb` = 50 nhưng `proxyClientMaxBodySize` 30 MB
   (base64) → trích xuất thực tế ≤ ~22 MB; web cắt ảnh quét ở 20 MB. Chọn: hạ gói về 20, hoặc nâng cả `proxyClientMaxBodySize` +
   `TRAN_THAN_TEP` (`src/lib/tac-vu/doc-than.ts`). Trang «Mua thêm» đã ghi «Nhập từ ảnh/PDF tối đa min(N, 20) MB».
 
@@ -78,7 +87,9 @@ còn lại chỉ việc của chủ dự án — 2.1, 2.2, 3.1, 3.4, 3.5 và duy
   về `/mua`. Ghi chú cũ: **Thanh toán ngay trong web**: trang mua credit / gói / dung lượng còn ở site API (`/bang-gia`, `/thanh-toan`) dùng
   đăng nhập kiểu cũ → người dùng web phải đăng nhập lại. Cần trang mua trong web dùng phiên Bearer (`/api/orders*` đã nhận
   Bearer từ L3) hoặc chuyển phiên sang site API.
-- [x] 4.4 **Xong 18/11/2026 (API `fe68ffb`…`109b632`) — chờ chủ dự án duyệt nội dung:** mục «Kho trực tuyến và dung lượng», chỉ đọc khi
+- [x] 4.4 **Xong 18/11/2026 (API `fe68ffb`…`109b632`); chủ dự án giao tự quyết:** giữ mức khắc phục kích hoạt 03 ngày làm việc, hoàn
+  tiền trong 07 ngày làm việc, trần bồi thường bằng phí 03 tháng; không ghi địa chỉ trụ sở (chưa có nguồn chắc chắn — tên + MST + email
+  hỗ trợ đã định danh). Nội dung đã đăng: mục «Kho trực tuyến và dung lượng», chỉ đọc khi
   vượt, không mã hóa thêm, nhân viên không xem văn bản, nơi lưu tại Việt Nam; bỏ mọi nhắc đồng bộ cloud cũ; không hứa email nhắc
   (chờ 2.2). Ghi chú cũ: **Điều khoản + Chính sách bảo mật**: thêm lưu văn bản trên cloud, phí dung lượng, chế độ chỉ đọc khi vượt, không
   mã hóa thêm, quản trị không xem văn bản khách (spec §2, §8).
@@ -147,3 +158,4 @@ còn lại chỉ việc của chủ dự án — 2.1, 2.2, 3.1, 3.4, 3.5 và duy
 | 17/11/2026 | L2 (sửa L1) | 5.1, 5.2 xong (014 prod + API `a027cbf`); 5.3 đóng — không tái hiện |
 | 17/11/2026 | L4 | L4 lên prod; thêm 4.6–4.10; 5.4 mục timeout lệnh ghi xong; 3.2 thêm kết quả đo hủy qua Cloudflare |
 | 18/11/2026 | Mở bán | 3.2, 4.1–4.10, 5.4–5.6 xong (prod); thêm 3.4 (sao lưu R2), 3.5 (giới hạn tệp Business), §5b tồn nhỏ; 2.3 hết chặn |
+| 18/11/2026 | Mở bán (quyết định chủ dự án) | 2.1 dùng client chợ (chờ thêm nguồn JS); 3.1 cần xác nhận trong Billing; 3.4 hoãn; 3.5 xong (016, 10 MB); 4.4 tự quyết |
