@@ -39,6 +39,7 @@ từ spec + hợp đồng này, rồi thực hiện.
 | `012_mau_phap_quy.sql` | L5 | `kho_mau`, `mau_chung`, `phap_quy` |
 | `013_hop_album.sql` | L6 | `kho_cuoc_hop`, `kho_album`, `kho_anh` |
 | `014_phien_cap_lai.sql` | L1 | `phien_lam_moi` cấp lại khi phản hồi xoay token bị mất |
+| `015_mo_ban.sql` | Mở bán | `kho_van_ban.khoa_tao` + chỉ mục duy nhất một phần (chống tạo trùng), chỉ mục hạn xử lý; bảng `nguoi_dung_co_quan` + `co_quan_doc` / `co_quan_ghi`; thay `kho_van_ban_tao`, `kho_van_ban_tim`, `kho_van_ban_json` (chạy lại 010 thì phải chạy lại 015) |
 
 Luồng lệ chung: RLS bật, không policy, `REVOKE ALL ... FROM anon, authenticated`; hàm `SECURITY DEFINER` đặt
 `search_path`; mọi bản ghi kho có `chu_loai text check (chu_loai in ('ca_nhan','to_chuc'))`, `chu_id uuid`, `tao_boi uuid`,
@@ -74,6 +75,7 @@ cổng; không sửa script dùng chung).
 | `CHUA_CO_MAT_KHAU` | 409 | Đổi mật khẩu trên tài khoản chưa có mật khẩu → đặt qua OTP `dat-lai-mat-khau` |
 | L3 thêm | | `THU_MUC_KHONG_TRONG` 409 · `CHUA_O_THUNG_RAC` 409 · `DANG_O_THUNG_RAC` 409 · `TEP_CHUA_TAI_LEN` 409 (xác nhận khi tệp chưa lên Storage — tải xong rồi gọi lại) · `DA_NGUNG` 410 |
 | L1 thêm | | `DAU_VAO_SAI` 400 · `EMAIL_DA_CO` 409 · `TAI_KHOAN_NGUNG` 403 · `GOOGLE_SAI` 401 · `GOOGLE_LOI` 502 · `EMAIL_LOI` 502 · `CHUA_CAU_HINH` 503 · `SAI_MAT_KHAU` 400 · `DA_BAT` / `CHUA_BAT` 409 · `NGUON_LA` 403 · `LOI_MAY_CHU` 500 |
+| Mở bán thêm | | `THAN_QUA_LON` 413 (route `/api/v2/tac-vu/*`: thân > 2 MB, `trich-xuat` > 30 MB — khớp `proxyClientMaxBodySize`) |
 
 - **Route v2 có sẵn** (`/api/v2/credit`, `/api/v2/tac-vu/*`) trả 401 **không có `code`** khi Bearer hết hạn / bị thu hồi → web: mọi
   401 khi đang gửi Bearer thì gọi `lam-moi` một lần rồi thử lại; `lam-moi` hỏng thì về màn đăng nhập.
@@ -103,6 +105,7 @@ cookie. `NguoiDung = { id, email, ho_ten, goi, goi_het_han, co_mat_khau, hai_lop
 | `DELETE /api/v2/phien/thiet-bi/[id]` · `POST /api/v2/phien/thiet-bi/thu-hoi-tat-ca` | — | `200` (`thu-hoi-tat-ca` giữ phiên đang dùng) |
 | `GET /api/v2/toi` | — | `NguoiDung` |
 | `PATCH /api/v2/toi` | `{ ho_ten }` | `NguoiDung` |
+| `GET /api/v2/toi/co-quan` · `PUT /api/v2/toi/co-quan` | `PUT`: `{ ten_co_quan, xa, tinh, dac_diem: string[] ≤ 10, nguoi_ky, chuc_danh }` (mỗi ô ≤ 300 ký tự, tổng ≤ 8000 byte; thân không phải đối tượng → 400) | `{ co_quan: CoQuan \| null }` · `DAU_VAO_SAI` · `QUA_NHIEU_YEU_CAU` (60 lần ghi / 15 phút). Nhận Bearer **và** X-API-Key (Mở bán) |
 | `POST /api/v2/toi/mat-khau` | `{ mat_khau_cu, mat_khau_moi }` | `200` (thu hồi mọi phiên khác) · `SAI_MAT_KHAU` · `CHUA_CO_MAT_KHAU` |
 | `POST /api/v2/toi/2-lop/bat-dau` | — | `{ otpauth_url, bi_mat }` |
 | `POST /api/v2/toi/2-lop/xac-nhan` | `{ ma }` | `{ ma_du_phong: string[10] }` |
@@ -110,7 +113,7 @@ cookie. `NguoiDung = { id, email, ho_ten, goi, goi_het_han, co_mat_khau, hai_lop
 
 **CORS** (`src/proxy.ts`, chỉ `/api/v2/**`): nguồn trong `VBP_CORS_NGUON` (phân cách dấu phẩy; mặc định
 `https://app.vanbanplus.giakiemso.com,capacitor://localhost,https://localhost`) → trả đúng nguồn +
-`Access-Control-Allow-Credentials: true`; xử lý `OPTIONS`. Route ngoài v2 giữ `*` như cũ (bản cài máy không gửi `Origin`).
+`Access-Control-Allow-Credentials: true`; xử lý `OPTIONS`. Route ngoài v2 giữ `*` như cũ (bản cài máy không gửi `Origin`). Ngoại lệ có credentials cho nguồn cho phép: `/api/orders*` (L3), `/api/plans`, `/api/goi-nap` (Mở bán — trang «Mua thêm» của web).
 Phát triển: thêm `http://localhost:5173` qua biến môi trường, không ghi cứng.
 
 **Email** (`src/lib/email/gui.ts`, L1 đưa lên `main` sớm nhất có thể vì L3 dùng):
@@ -136,8 +139,8 @@ type Tep = { id; ten; mime; byte; so_trang; co_anh_nho: boolean; tao_luc };
 | --- | --- |
 | `GET /api/v2/kho/dung-luong` | `{ da_dung_byte, han_muc_byte, goi_mb, them_mb, chi_doc, goi_them: [{ ma, them_mb, het_han }] }` |
 | `GET/POST /api/v2/kho/thu-muc` · `PATCH/DELETE /api/v2/kho/thu-muc/[id]` | Cây theo `cha_id`; xóa thư mục còn văn bản → 409 |
-| `GET /api/v2/kho/van-ban` | Lọc `q` (không dấu), `huong`, `loai`, `tu`, `den`, `thu_muc`, `the`, `sao`, `thung_rac`; `trang`, `so_dong` ≤ 100 → `{ muc: VanBan[], tong }` |
-| `POST /api/v2/kho/van-ban` · `GET/PATCH/DELETE /api/v2/kho/van-ban/[id]` | `PATCH` bắt buộc `phien_ban`; `DELETE` = xóa mềm, `?vinh_vien=1` xóa hẳn (chỉ khi đã ở thùng rác) |
+| `GET /api/v2/kho/van-ban` | Lọc `q` (không dấu), `huong`, `loai`, `tu`, `den`, `thu_muc`, `the`, `sao`, `thung_rac`; `trang`, `so_dong` ≤ 100 → `{ muc: VanBan[], tong }`. Mở bán thêm: `do_khan` (danh sách phân cách dấu phẩy, ≤ 4), `han_tu`, `han_den` (`YYYY-MM-DD`, gồm hai đầu; văn bản không có hạn bị loại khi có một trong hai; `han_tu` > `han_den` → 400), `xep=han_xu_ly` (hạn tăng dần, không hạn xuống cuối) |
+| `POST /api/v2/kho/van-ban` · `GET/PATCH/DELETE /api/v2/kho/van-ban/[id]` | `PATCH` bắt buộc `phien_ban`; `DELETE` = xóa mềm, `?vinh_vien=1` xóa hẳn (chỉ khi đã ở thùng rác). Mở bán: `POST` nhận `khoa_tao` (uuid) — cùng khóa, cùng chủ → 200 trả lại văn bản đã tạo, không sửa gì, `message` «Văn bản đã được lưu trước đó.» |
 | `POST /api/v2/kho/van-ban/[id]/khoi-phuc` | Lấy ra khỏi thùng rác |
 | `POST /api/v2/kho/tep/xin-tai-len` | `{ ten, mime, byte, gan: { loai: "van_ban" \| "cuoc_hop" \| "album", id } }` → `{ id, url_tai_len, het_han }` |
 | `POST /api/v2/kho/tep/xac-nhan` | `{ id }` → `Tep` |
@@ -258,3 +261,4 @@ Luật mới (áp cho mọi luồng dùng kho tệp): album chỉ nhận `image/
 | 17/11/2026 | L6 | API lên production: migration `013_hop_album` (bảng `kho_cuoc_hop`, `kho_album`, `kho_anh`), vanbanplus-api `a07e17e`, route + luật ở §5c. Đổi hàm L3 trong 013: `kho_tep_xin` (album chỉ nhận ảnh; cuộc họp / album đã xóa → `KHONG_TIM_THAY`), `kho_tep_xac_nhan` (đối tượng gắn đã mất → từ chối với mọi loại gắn; văn bản như 010). Sửa tệp L3: `kiem-dau-vao.ts` thêm `export` 8 hàm kiểm (L5 cũng thêm — đã gộp), `tep.ts` tách `xinTaiLenDaKiem` (+ chặn mime album sớm → `TEP_KHONG_HOP_LE`), `storage.ts` thêm `kyAnh` (đường ký có biến đổi), `gan-tep-dang-ky.ts` đăng ký `cuoc_hop` + `album`, `tests/kho-dich-vu.test.ts` (gắn tệp vào `cuoc_hop` id lạ nay là 404). Không mã lỗi mới. imgproxy giới hạn ảnh nguồn 16,8 MP; container imgproxy chưa có trần CPU (đề xuất chủ dự án đặt). Web L6 dùng `kho.taiTepLen` / `taiLenStorage` của L4, không lớp tệp riêng |
 | 17/11/2026 | L6 | Web lên production (vanbanplus-web `7b674d9`): phân hệ `/lich-hop/*` (tháng / tuần / danh sách, chi tiết, tạo / sửa, tệp đính kèm, thẻ «Lịch họp hôm nay») và `/album/*` (lưới ảnh thu nhỏ, tải nhiều ảnh theo lô 4, xem ảnh). Dùng `kho.taiTepLen` / `kho.taiVe` / `kho.xoaTep` / `taiLenStorage` của L4, không lớp tệp riêng; CSP không đổi. Gọi API L6 qua `src/api/hop.ts`, `src/api/album.ts` (hạn 60 giây cho lệnh ghi, `HAN_GHI_MS`). Đường ký ảnh: hạn tính theo đồng hồ máy chủ (`het-han.ts`) để máy lệch giờ không lặp tải lại. Thử thật trên prod 8/8 (CSP connect-src + img-src, imgproxy) |
 | 17/11/2026 | L4 | **Web lên production (vanbanplus-web `03debc5`)**: Văn bản (3 cột PC / danh sách → chi tiết điện thoại, thư mục, tìm không dấu, thẻ lọc, vuốt sao / xóa + hoàn tác, chi tiết + tệp xem tại chỗ / tải lên có tiến trình / tải về hai bước, biểu mẫu tạo / sửa, xung đột phiên bản chỉ ghi đè trường người dùng sửa), Nhập từ ảnh/PDF (thu nhỏ ảnh, «Tính credit» theo yêu cầu, trích xuất → soát → lưu + tệp gốc), Soạn thảo AI (8 loại, trường đúng khóa prompt máy chủ, Quyết định bắt buộc chọn mẫu), 4 trang AI (Kiểm tra, Tóm tắt, Tham mưu, Báo cáo định kỳ), Thùng rác, thẻ màn hình chính, xuất Word NĐ 30 trên trình duyệt (`docx` chunk riêng). `kho_van_ban.loai` lưu **mã enum DocumentType** của bản cài máy (`CongVan`, `QuyetDinh`…; 33 mã ở `src/phan-he/van-ban/danh-muc.ts`), giao diện hiện tên tiếng Việt — L5/L6/bản cài máy dùng cùng mã. Soạn theo mẫu: đọc `/soan-thao?mau=<chung\|rieng>:<id>` đúng §5b (`truong[]` của mẫu thành ô nhập, trần 60 trường gồm ô người ký). Lệch spec §7: khung soạn là chữ thuần, định dạng NĐ 30 do bộ xuất Word áp; «Cơ quan» lưu trình duyệt theo tài khoản (`vbp-co-quan:<user_id>`). Đo hủy tác vụ qua Cloudflare trên prod: `NGAT_KET_NOI`, `credit_tru = 0` (hoàn), mô hình vẫn chạy xong; 524 do Cloudflare tự cắt chưa đo — web hỏi xác nhận trước khi chạy lại sau `QUA_GIO_CHO` / `MAT_MANG`. Thử prod (`cong-cu/thu-prod-l4.mjs`) 10/10: đăng nhập, tạo văn bản, tải + xem PDF tại chỗ, ước tính credit, Xuất Word, thùng rác; không lỗi CSP. Chưa làm (`ban-web-viec-con-lai.md` §4.6–4.10): xếp / lọc theo hạn xử lý + độ khẩn ở API, `Ctrl+K`, xem bố cục trang giấy, «Cơ quan» trên máy chủ, khóa chống trùng khi tạo văn bản |
+| 18/11/2026 | Mở bán (API) | Lên production (vanbanplus-api `109b632`, migration `015_mo_ban`): §2 thêm 015; §3 thêm `THAN_QUA_LON`; §4 thêm `GET/PUT /api/v2/toi/co-quan` (bảng riêng `nguoi_dung_co_quan`, không cột `users`), CORS credentials cho `/api/plans`, `/api/goi-nap`; §5 lọc `do_khan`/`han_tu`/`han_den`/`xep` + `khoa_tao`. Tác vụ AI chữ của web đi thẳng `https://vanbanplus-api.app.giakiemso.com` (chủ dự án chọn 17/11; preflight 204 đúng nguồn); route tác vụ có trần thân. Điều khoản + chính sách: mục kho trực tuyến, bỏ mọi nhắc đồng bộ cloud cũ. Thử khói prod 14/14. Sửa ngoài thư mục luồng: `src/lib/phien/cors.ts`, `src/lib/kho/kiem-dau-vao.ts` (export `coNul`, `coSurrogateLe`), route `src/app/api/v2/toi/co-quan` (dùng `canNguoiDung` của kho) |
