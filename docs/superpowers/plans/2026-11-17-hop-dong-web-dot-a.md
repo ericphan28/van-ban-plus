@@ -4,6 +4,9 @@ Ngày 17/11/2026. Spec: `docs/superpowers/specs/2026-11-17-ban-web-dot-a-design.
 các phiên chạy song song phải giống nhau: luồng, nhánh, thư mục, số migration, route, dạng dữ liệu, mã lỗi, luật lên
 production. Luồng nào cần đổi một điều ở đây → sửa tệp này trong cùng commit và ghi một dòng ở mục 9.
 
+**Việc còn lại tới khi mở bán** (chờ chủ dự án, điều kiện mở bán, việc chưa luồng nào nhận, sửa còn tồn):
+`docs/superpowers/plans/2026-11-17-ban-web-viec-con-lai.md` — đọc trước khi bắt đầu một luồng; làm xong mục nào thì đánh dấu ở đó.
+
 ## 1. Luồng và đợt
 
 | Đợt | Luồng | Việc (spec §11) | Repo · nhánh · worktree |
