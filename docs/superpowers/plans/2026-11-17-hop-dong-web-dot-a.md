@@ -163,6 +163,33 @@ thử). Xóa cuộc họp / album phải xóa tệp qua `kho_tep_xoa` / `kho_xoa
   `goiDungLuongMa`, `soThang`, `themMb`, `periodStart`.
 - `/api/cloud/*` (đồng bộ cloud cũ của bản cài máy) trả 410 `DA_NGUNG`; 14 bảng của 001 đã bỏ.
 
+## 5b. Hợp đồng L5 — mẫu văn bản + tra cứu pháp quy
+
+```ts
+type TruongMau = { ma: string; nhan: string };            // ma: ^[A-Za-z][A-Za-z0-9_]{0,63}$ — khóa `truong` của tác vụ soan-thao
+type MauTomTat = { nguon: "chung" | "rieng"; id: string;   // chung: mã chữ (vd san-cong-van) · rieng: uuid
+  ten: string; loai: LoaiVanBan; nhom: string | null; mo_ta: string | null; the: string[]; co_noi_dung: boolean;
+  moi: boolean; pho_bien: boolean; tu_mau_chung: string | null; tao_luc: string; sua_luc: string; phien_ban: number };
+type Mau = MauTomTat & { noi_dung_mau: string | null; truong: TruongMau[] };
+type NutCay = { ma: string; cha: string | null; loai: "van_ban" | "chuong" | "muc" | "dieu" | "phu_luc" | "phan"; tieu_de: string; thu_tu: number };
+type MucPhapQuy = NutCay & { noi_dung: string; the: string[]; duong_dan: { ma: string; tieu_de: string }[];
+  con: { ma: string; loai: string; tieu_de: string }[]; truoc: { ma: string; tieu_de: string } | null; sau: { ma: string; tieu_de: string } | null };
+```
+
+| Route | Thân / tham số | Trả |
+| --- | --- | --- |
+| `GET /api/v2/mau` | `q` (không dấu), `nguon` (`chung`\|`rieng`), `loai`, `nhom`, `trang`, `so_dong` ≤ 100 (mặc định 50) | `{ muc: MauTomTat[], tong, nhom: [{ ten, so }] }` — mẫu riêng lên trước (mới sửa trước), rồi mẫu có sẵn theo thứ tự bản cài máy; có `q` thì xếp theo độ khớp |
+| `GET /api/v2/mau/chung/[ma]` | — | `Mau` · 404 |
+| `POST /api/v2/mau/rieng` | `{ ten, loai, nhom?, mo_ta?, noi_dung_mau?, truong?: [{ nhan, ma? }], the? }` hoặc `{ tu_mau_chung: ma, ten? }` | `Mau` · 403 `HET_DUNG_LUONG` · 400 · 404 · 429 |
+| `GET /api/v2/mau/rieng/[id]` | — | `Mau` · 404 |
+| `PATCH /api/v2/mau/rieng/[id]` | `{ phien_ban, ...trường cần đổi }` | `Mau` · 409 `XUNG_DOT_PHIEN_BAN` (`data.ban_moi`) · 400 · 404 · 429 |
+| `DELETE /api/v2/mau/rieng/[id]` | — | `null` · 404 · 429 (xóa hẳn, mẫu không có tệp) |
+| `GET /api/v2/phap-quy` | — | `NutCay[]` (cả cây, không kèm nội dung) |
+| `GET /api/v2/phap-quy/[ma]` | `ma` dạng `nd-30-2020` hoặc `nd-30-2020:dieu-8` | `MucPhapQuy` · 404 |
+| `GET /api/v2/phap-quy/tim` | `q` | `{ muc: [{ ma, loai, tieu_de, duong_dan: string, trich: string }], tong }` (≤ 50 mục) |
+
+**Nối với L4 (soạn thảo):** nút «Soạn bằng AI theo mẫu» mở `/soan-thao?mau=<chung|rieng>:<id>` (`duongSoanTheoMau` trong `src/phan-he/mau/api.ts`). L4 đọc bằng `docThamSoMau(searchParams.get("mau"))` rồi `apiMau.doc(nguon, id)` → `loai` = `loai_van_ban`, `ten` = `ten_mau`, `truong[].ma` = khóa của `truong`, `truong[].nhan` = nhãn ô nhập. Khi phân hệ `soan-thao` chưa có `trang`, nút trỏ `/sap-co/soan-thao`. Mẫu riêng: khóa trường là ASCII sinh từ nhãn gõ tay (`co_quan_nhan`); tác vụ soạn thảo dựng nhãn trong prompt bằng `nhanTruong(khoa)` nên nhãn có dấu chưa tới AI — cần tham số nhãn ở tác vụ soạn thảo (đợt sau).
+
 ## 6. Hợp đồng L2 — os-kit và web
 
 - os-kit bỏ `import` trực tiếp `next/link`, `next/navigation` khỏi thành phần; đi qua một tệp nối `src/dieu-huong.tsx`
@@ -204,3 +231,4 @@ thử). Xóa cuộc họp / album phải xóa tệp qua `kho_tep_xoa` / `kho_xoa
 | 17/11/2026 | L3 | Lên production (`010_kho`, `011_dung_luong_mua`, `ec97de8`). Mã lỗi L3 ở mục 3; chỗ khác bảng route ở mục 5 (danh sách không `noi_dung`, tải lên 120 giây + giới hạn 60/15 phút, `cho_byte`, `goi_them.bat_dau`). Sửa ngoài thư mục L3: `src/lib/phien/cors.ts` (CORS nguồn cho phép cho `/api/orders*`), `/api/orders*` nhận Bearer, trang `/tai-khoan`, `/admin`, `/bang-gia` (bỏ quảng cáo đồng bộ cloud cũ), webhook SePay (tin Telegram đơn dung lượng). Đăng ký gắn tệp cho L6 đổi sang tệp tĩnh `src/lib/kho/gan-tep-dang-ky.ts`. Mua dung lượng: `/thanh-toan?dung-luong=dl-10&thang=3`. Việc định kỳ: pg_cron `vbp-kho-don` (mỗi giờ :37) + `vbp-kho-nhac` (01:13 UTC) → `/api/noi-bo/*` khóa `VBP_NOI_BO_KHOA` (Vault); chưa cấu hình Gmail thì nhắc email tạm dừng, không mất thư |
 | 17/11/2026 | L2 | Lên production: `https://app.vanbanplus.giakiemso.com` (repo riêng tư `ericphan28/vanbanplus-web`, Coolify app `csywi7ct…`, chỉ-DNS, không proxy Cloudflare vì tên hai nhãn). os-kit 0.4.1: `cai.mjs --dieu-huong react-router` (lần sau tự nhớ), `BangCaiDat` nhận `tenMacDinh`. **Đăng ký phân hệ** (`src/ung-dung.ts`): kiểu `PhanHe = UngDung & { ma; trang?; the? }`, một dòng mỗi phân hệ — chưa có `trang` thì icon khóa sang `/sap-co/<ma>`; đợt 2 bỏ khóa bằng cách thêm `trang: lazy(() => import(...))` vào đúng dòng của mình; `the` = thẻ màn hình chính. Dock / thanh tab: L4 sửa `tab` trong `src/vo/Vo.tsx` khi Văn bản có trang. **CSP** `public/serve.json`: L4/L6 tự thêm nguồn Storage (đường ký tải lên / tải về) vào `connect-src`, `img-src`, `frame-src`; `connect-src` gắn với `VITE_API_GOC`. `khach.ts`: lỗi `lam-moi` khác 401 (503 lúc triển khai, 429) giữ phiên; timeout 15 giây → `MAT_MANG`. Có `LoiTai` + tự tải lại khi chunk cũ bị xóa sau triển khai |
 | 17/11/2026 | L1 | Sửa hai lỗi L1 (nhánh `web-phien-sua`). (1) Đặt lại mật khẩu bằng OTP trên tài khoản bật 2 lớp mà không gửi `ma_2_lop`: trả `CAN_MA_2_LOP` ngay sau khi mã email đúng, **không** tính lượt đoán mã 2 lớp, **không** ghi `hai_lop_sai`; mã email đã tiêu nên web lấy mã email mới rồi gửi kèm `ma_2_lop`. Có `ma_2_lop` thì như cũ (đếm, kiểm, ghi khi sai). (2) `014_phien_cap_lai.sql`: trình lại token đã xoay < 30 giây khi phiên còn sống và token mới hơn chưa ai dùng (phản hồi `lam-moi` bị mất do tải lại / rớt mạng) → cấp lại token mới, `lam-moi` trả 200 + cookie mới thay vì `LAM_MOI_TRUNG`; tối đa 3 lần cấp lại cho mỗi token đã dùng, quá trần → `LAM_MOI_TRUNG`; token mới hơn đã được dùng → `LAM_MOI_TRUNG` như cũ; quá 30 giây → thu hồi cả phiên như cũ. Làm mới thường đánh dấu mọi token chưa dùng khác của phiên là đã dùng (gom nhánh, cột `phien_token.bi_gom`); token bị gom trình lại trong 30 giây → `LAM_MOI_TRUNG`. Cấp lại không đổi IP của phiên. Nhật ký bảo mật mới: `token_cap_lai`, `token_dung_lai_som` (kèm `phien_id`, IP, thiết bị). L2 không cần sửa `khach.ts` |
+| 17/11/2026 | L5 | Thêm §5b (route mẫu + pháp quy, tham số `/soan-thao?mau=<chung\|rieng>:<id>` cho L4). Sửa ngoài thư mục L5: thêm `export` cho 6 hàm kiểm trong `src/lib/kho/kiem-dau-vao.ts` (không đổi hành vi); 2 dòng `TEP_LUOC_DO` trong `tests/ho-tro/csdl-thu.ts` |
