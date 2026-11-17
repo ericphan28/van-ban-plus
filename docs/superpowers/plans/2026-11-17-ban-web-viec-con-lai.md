@@ -12,7 +12,7 @@ lý do.
 | L1 | API phiên + đăng nhập | Prod 17/11 |
 | L2 | os-kit lớp nối + khung `vanbanplus-web` (`https://app.vanbanplus.giakiemso.com`) | Prod 17/11 — còn mục 2.3 |
 | L3 | API kho + dung lượng + phí | Prod 17/11 |
-| L4 | Web văn bản, quét, 6 tác vụ AI, xuất Word | Đợt 2 — chưa bắt đầu |
+| L4 | Web văn bản, quét, 6 tác vụ AI, xuất Word | Prod 17/11 (web `03debc5`; lớp API dùng chung `a5126f9`) — thử prod 10/10 |
 | L5 | Mẫu văn bản + tra cứu pháp quy | Prod 17/11 (API `54cda8e` + migration 012, web `205ff6b`) |
 | L6 | Lịch họp + album ảnh | Đợt 2 — chưa bắt đầu |
 
@@ -39,7 +39,9 @@ thêm, L6 dùng chung).
 - [ ] 3.1 **Đường trả phí thật cho Vertex AI trước 18/12/2026** — khóa hệ thống đang chạy bằng credit dùng thử, hết hạn là 6
   tác vụ AI dừng (bộ nhớ `vanbanplus-khoa-gemini`).
 - [ ] 3.2 **Giới hạn 100 giây của Cloudflare** cho tác vụ AI dài (soạn thảo, báo cáo định kỳ) — chốt cách xử lý (chạy nền +
-  hỏi kết quả, hoặc tên miền API riêng không qua proxy) trước khi bán.
+  hỏi kết quả, hoặc tên miền API riêng không qua proxy) trước khi bán. Đo 17/11 (L4): người dùng **hủy** qua Cloudflare thì
+  API nhận ngắt → `NGAT_KET_NOI`, hoàn credit (`credit_tru = 0`), nhưng mô hình vẫn chạy xong (chi phí Vertex vẫn phát sinh);
+  trường hợp Cloudflare tự cắt 524 ở 100 giây chưa đo — web hỏi xác nhận trước khi chạy lại sau `QUA_GIO_CHO` / `MAT_MANG`.
 - [ ] 3.3 **Việc treo của đợt credit**: theo dõi `tac_vu_chay.ma_loi` bản cài 1.0.20; hệ số ước tính `bao-cao-dinh-ky` hơi cao
   (trừ thật 5 < min 7) — bộ nhớ `vanbanplus-credit-dot-1`.
 
@@ -57,6 +59,15 @@ thêm, L6 dùng chung).
 - [ ] 4.4 **Điều khoản + Chính sách bảo mật**: thêm lưu văn bản trên cloud, phí dung lượng, chế độ chỉ đọc khi vượt, không
   mã hóa thêm, quản trị không xem văn bản khách (spec §2, §8).
 - [ ] 4.5 Rà tiêu chí hoàn thành đợt A (spec §1, 6 mục) trên production, ghi kết quả vào tệp này.
+- [ ] 4.6 **API kho: xếp / lọc theo `han_xu_ly` (`han_tu`, `han_den`) và lọc độ khẩn** — thẻ «Hạn xử lý gần» trên màn hình chính
+  và bộ lọc văn bản hiện chỉ xét 100 văn bản có ngày ban hành mới nhất; độ khẩn chưa lọc được (L4 ghi chú phạm vi trên thẻ).
+- [ ] 4.7 **Tìm toàn cục `Ctrl+K`** (spec §7) qua văn bản, cuộc họp, mẫu, pháp quy — chưa luồng nào làm.
+- [ ] 4.8 **«Xem bố cục» cho trang giấy soạn thảo / báo cáo** — khung soạn là chữ thuần nên phần đầu hai cột (cơ quan | quốc
+  hiệu) trông lệch; bản Word xuất ra đúng NĐ 30. Đề xuất nút xem bố cục dựng từ `phanTichVanBan` (L4).
+- [ ] 4.9 **«Cơ quan» (địa phương cho soạn thảo) lưu trên máy chủ** — L4 đang lưu trình duyệt theo tài khoản
+  (`vbp-co-quan:<user_id>`); cần cột / route `toi` để dùng chung giữa máy và bản cài.
+- [ ] 4.10 **Kiểm trùng sau mất mạng khi tạo văn bản** so `tao_luc` máy chủ với giờ máy khách, dung sai 5 giây — máy lệch giờ
+  có thể sinh văn bản trùng; nên để API trả khóa chống trùng (idempotency key) cho `POST /kho/van-ban`.
 
 ## 5. Sửa còn tồn
 
@@ -75,7 +86,8 @@ thêm, L6 dùng chung).
   - cờ tự tải lại `?lam-moi=1` hết hạn theo đồng hồ 10 giây thay vì khi trang tải thành công (`src/vo/lam-moi.ts`);
   - React Router không thấy việc gỡ cờ (`history.replaceState` trực tiếp);
   - lóe «Có lỗi khi hiển thị trang» trước khi tự tải lại;
-  - timeout 15 giây áp cả lệnh ghi dữ liệu (`src/api/khach.ts`) — POST có thể đã chạy xong ở máy chủ mà web báo mất mạng;
+  - ~~timeout 15 giây áp cả lệnh ghi dữ liệu~~ **xong (L4):** lệnh ghi kho hạn 60 giây; tạo văn bản gặp `MAT_MANG` thì tìm văn
+    bản vừa tạo trước khi cho lưu lại (lệnh ghi của L5/L6 tự đặt hạn 60 giây);
   - nút `LoiTai` lệch trái; thông báo xanh tương phản 3,1:1 (dưới AA);
   - `api.dangXuat` lỗi máy chủ thì cookie làm mới còn sống (máy dùng chung) — sửa trước khi bán: giữ token khi đăng xuất lỗi
     hoặc cảnh báo ở màn đăng nhập.
@@ -96,3 +108,4 @@ thêm, L6 dùng chung).
 | --- | --- | --- |
 | 17/11/2026 | L2 | Bản đầu |
 | 17/11/2026 | L2 (sửa L1) | 5.1, 5.2 xong (014 prod + API `a027cbf`); 5.3 đóng — không tái hiện |
+| 17/11/2026 | L4 | L4 lên prod; thêm 4.6–4.10; 5.4 mục timeout lệnh ghi xong; 3.2 thêm kết quả đo hủy qua Cloudflare |
