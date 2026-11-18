@@ -22,7 +22,7 @@ L4, L5, L6 chạy song song được (cả ba cùng sửa `vanbanplus-web`: work
 thêm, L6 dùng chung).
 
 **Xong L4–L6 = đủ chức năng đợt A, CHƯA mở bán.** Mở bán khi mục 2–4 dưới đây xong hết. **18/11/2026: phần kỹ thuật đã xong hết;
-còn lại chỉ 3.1 (xác nhận Vertex đã trả phí thật trước 18/12/2026). 2.1, 2.2 xong 18/11; 3.4 hoãn.**
+đủ điều kiện mở bán: 2.1, 2.2, 3.1, 3.2 xong 18/11; 3.4 hoãn (không chặn); 3.3 chỉ còn theo dõi.**
 
 ## 2. Chờ chủ dự án (làm được ngay, không phải chờ L4–L6)
 
@@ -52,7 +52,10 @@ còn lại chỉ 3.1 (xác nhận Vertex đã trả phí thật trước 18/12/2
 
 ## 3. Điều kiện mở bán (spec §11, spec 09/11 §13)
 
-- [ ] 3.1 **Đường trả phí thật cho Vertex AI trước 18/12/2026** — 18/11: chủ dự án nhớ là đã có. Kiểm bằng service account: dự án
+- [x] 3.1 **Xong 18/11/2026 (chủ dự án đồng ý nâng cấp):** tài khoản thanh toán `0186F9-DE33FD-0C63AD` (yenphipham83) đã nâng từ dùng
+  thử lên **Paid account** trên console — giữ ₫6,45 triệu credit còn lại, hết credit mới trừ thẻ theo mức dùng. Thêm ngân sách «VanBanPlus
+  AI - canh bao 2 trieu/thang» (chỉ cảnh báo, không chặn chi; ₫2.000.000/tháng; email ở 50 / 90 / 100 %; phạm vi cả tài khoản thanh
+  toán, gồm cả worker viral dùng chung credit). Ghi chú trước khi nâng: 18/11: chủ dự án nhớ là đã có. Kiểm bằng service account: dự án
   Vertex đang bật thanh toán, tài khoản thanh toán `0186F9-DE33FD-…`; service account không xem được tài khoản đó là dùng thử hay trả
   phí → chủ dự án mở Billing › Overview của `yenphipham83`: còn dải «Free trial / Activate full account» là CHƯA nâng. Ghi chú cũ: — khóa hệ thống đang chạy bằng credit dùng thử, hết hạn là 6
   tác vụ AI dừng (bộ nhớ `vanbanplus-khoa-gemini`).
@@ -167,3 +170,4 @@ còn lại chỉ 3.1 (xác nhận Vertex đã trả phí thật trước 18/12/2
 | 18/11/2026 | Mở bán | 3.2, 4.1–4.10, 5.4–5.6 xong (prod); thêm 3.4 (sao lưu R2), 3.5 (giới hạn tệp Business), §5b tồn nhỏ; 2.3 hết chặn |
 | 18/11/2026 | Mở bán (quyết định chủ dự án) | 2.1 dùng client chợ (chờ thêm nguồn JS); 3.1 cần xác nhận trong Billing; 3.4 hoãn; 3.5 xong (016, 10 MB); 4.4 tự quyết |
 | 18/11/2026 | Mở bán (Google + Gmail) | 2.1, 2.2 xong: dự án GCP `vanbanplus`, đăng nhập Google + OTP email chạy thật trên prod |
+| 18/11/2026 | Mở bán (Vertex) | 3.1 xong: tài khoản thanh toán Vertex nâng lên trả phí + ngân sách cảnh báo ₫2 triệu/tháng |
