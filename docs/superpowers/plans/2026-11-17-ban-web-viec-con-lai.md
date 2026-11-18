@@ -155,8 +155,7 @@ thêm, L6 dùng chung).
 
 ## 5b. Tồn nhỏ sau phiên «Mở bán» (không chặn bán; chi tiết ở sổ SDD `.superpowers/sdd/2026-11-18-web-mo-ban/progress.md`)
 
-- Web: cờ lùi về Cloudflare bật cả khi lần thử lại cũng hỏng (tải lại trang là hết); Quét để AI chọn «Đi» cho văn bản giấy (thường là
-  «Đến»); lề «Kính gửi» trong «Xem bố cục» tính theo `em`; Ctrl+K: không khóa cuộn nền, không chọn sẵn dòng đầu; kit nên tự lo màu
+- Web: cờ lùi về Cloudflare bật cả khi lần thử lại cũng hỏng (tải lại trang là hết); ~~Quét để AI chọn «Đi» cho văn bản giấy~~ **xong 18/11/2026** (web `80b1cb0`: Quét mặc định «Đến», chỉ lấy «Đi»/«Nội bộ» của AI khi cơ quan ban hành khớp tên Cơ quan trong hồ sơ); lề «Kính gửi» trong «Xem bố cục» tính theo `em`; Ctrl+K: không khóa cuộn nền, không chọn sẵn dòng đầu; kit nên tự lo màu
   mục tab đang chọn ở chế độ tối (web đang đè).
 - API: chưa có bài kiểm mức route cho 413 / tạo trùng 200 / co-quan; chạy lại 010 thì phải chạy lại 015.
 
