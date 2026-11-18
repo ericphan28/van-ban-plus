@@ -67,6 +67,12 @@ thêm, L6 dùng chung).
   hỏi kết quả, hoặc tên miền API riêng không qua proxy) trước khi bán. Đo 17/11 (L4): người dùng **hủy** qua Cloudflare thì
   API nhận ngắt → `NGAT_KET_NOI`, hoàn credit (`credit_tru = 0`), nhưng mô hình vẫn chạy xong (chi phí Vertex vẫn phát sinh);
   trường hợp Cloudflare tự cắt 524 ở 100 giây chưa đo — web hỏi xác nhận trước khi chạy lại sau `QUA_GIO_CHO` / `MAT_MANG`.
+- [ ] 3.6 **Trước 10/12/2026 — chọn đường trả tiền Vertex sau khi credit dùng thử hết hạn 18/12** (chủ dự án 18/11: phải chắt bóp,
+  có nhiều thẻ → muốn mở tài khoản dùng thử mới bằng thẻ khác). Lúc đó đo lại mức chi thật sau mở bán rồi quyết. Nếu đi đường dùng thử
+  mới: chủ dự án tự tạo tài khoản Google mới + tự nhập thẻ (Claude không nhập thẻ), KHÔNG dính `ericphan28` (nợ + dự án bị treo) hay
+  `yenphipham83`; Claude làm phần còn lại (dự án, bật Vertex, service account, đổi `GOOGLE_VERTEX_SA_B64` trên Coolify, chuyển cả worker
+  viral, kiểm). Rủi ro: Google khóa vì lạm dụng dùng thử → API tự lùi về khóa AI Studio miễn phí 5 lượt/phút. Đường hợp lệ khác:
+  Google for Startups (gói Start ~2.000 USD credit), đổi model rẻ hơn / giảm token suy luận.
 - [ ] 3.3 **Việc treo của đợt credit**: theo dõi `tac_vu_chay.ma_loi` bản cài 1.0.20; hệ số ước tính `bao-cao-dinh-ky` hơi cao
   (trừ thật 5 < min 7) — bộ nhớ `vanbanplus-credit-dot-1`.
 
