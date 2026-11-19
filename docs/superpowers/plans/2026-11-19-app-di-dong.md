@@ -577,7 +577,7 @@ curl -s -o /dev/null -D - -X OPTIONS https://vanbanplus-api-thu.app.giakiemso.co
 ```
 Mong đợi `access-control-allow-origin: https://localhost` (Storage đã trả `*` cho cả hai nguồn app — kiểm 19/11).
 
-- [ ] **Step 6: Chạy kịch bản tấn công trên API thật** — `node scripts/thu-phien-app.mjs` → 10 dòng ✔, mã thoát 0. Dọn tài khoản thử
+- [ ] **Step 6: Chạy kịch bản tấn công trên API thật** — `node scripts/thu-phien-app.mjs` → 11 dòng ✔, mã thoát 0. Dọn tài khoản thử
   bằng SQL trong giao dịch theo khuôn `docs/superpowers/plans/2026-11-17-web-l4.md` Task 2 Step 3 (lệnh `psql` vào
   `supabase-db-q323olywghtnjcvpyvtjzo9v` ở Global Constraints của `docs/superpowers/plans/2026-11-18-web-mo-ban.md`), đếm dòng
   `users` = 1 trước `COMMIT`.
@@ -2262,9 +2262,9 @@ SHA-1 là thông tin công khai (không phải bí mật). Khóa debug chỉ có
 - [ ] **Step 4: API thử nhận ba client** (ghi `uuid` của app tạm từ Task 3 Step 4 vào `UUID`):
 
 ```bash
-py -3.13 -c "import sys; sys.path.insert(0, r'D:\Thang\gikidi-server\chuyen'); from coolify import api; api('PATCH', '/applications/UUID/envs', json={'key': 'VBP_GOOGLE_CLIENT_ID', 'value': '<web>,<ios>,<android>', 'is_preview': False}); print(api('GET', '/deploy', params={'uuid': 'UUID'}))"
+py -3.13 -c "import sys; sys.path.insert(0, r'D:\Thang\gikidi-server\chuyen'); from coolify import api; api('PATCH', '/applications/UUID/envs', json={'key': 'VBP_GOOGLE_CLIENT_ID', 'value': '<web>,<ios>,<android>', 'is_preview': False}); print(api('POST', '/deploy', params={'uuid': 'UUID'}))"
 ```
-Chờ triển khai xong (`/api/health` 200), chạy lại `node scripts/thu-phien-app.mjs` (repo API) → 10 ✔. **Không** đổi biến của app
+Chờ triển khai xong (`/api/health` 200), chạy lại `node scripts/thu-phien-app.mjs` (repo API) → 11 ✔. **Không** đổi biến của app
 API prod (prod chỉ đổi khi API app lên `main`, ngoài kế hoạch).
 
 - [ ] **Step 5: Commit**

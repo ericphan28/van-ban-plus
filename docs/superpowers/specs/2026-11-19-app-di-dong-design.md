@@ -1,5 +1,7 @@
 # App iOS / Android VanBanPlus (thiết kế)
 
+Trạng thái triển khai: kế hoạch `docs/superpowers/plans/2026-11-19-app-di-dong.md`; APK thử gửi duyệt 19/11/2026 (Telegram; quét tài liệu + Google còn chờ thử trên điện thoại thật).
+
 Ngày: 19/11/2026. Trạng thái: chủ dự án duyệt thiết kế trong phiên 19/11; **làm ở nhánh riêng, chưa phát hành, chưa hiện ở đâu cho
 người dùng tới khi chủ dự án duyệt bản chạy thử**. Song song: tổ chức thuê — `2026-11-19-dot-b-to-chuc-design.md`.
 
