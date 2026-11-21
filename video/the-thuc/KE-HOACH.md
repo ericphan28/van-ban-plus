@@ -81,3 +81,9 @@ demo phần mềm khi đã chụp màn hình app.
 | 38 | Ký bút bi xanh có sai không: chỉ hai điều kiện mực xanh + không dễ phai; dấu mực đỏ; chữ ký số xanh, hình dấu đỏ | Điều 13.6, 33.1a, Phụ lục I II.7d, II.8a | hẹn 23/11 10:00 |
 | 39 | «Số: 15/CV-UBND» sai: công văn không có chữ viết tắt tên loại; trích yếu sau «V/v» | Phụ lục I II.3b, II.5b, Phụ lục III | hẹn 23/11 17:00 |
 | 40 | Đố chữ viết tắt: HD/HĐ, ĐA/DA, TrS, BGN | Phụ lục III mục I | hẹn 24/11 05:00 |
+| 41 | «Ngày Quốc Khánh 2/9» hay «ngày Quốc khánh 2-9»: chữ «ngày» thường, ví dụ gạch ngang, «Tổng tuyển cử» chỉ hoa Tổng | Phụ lục II V.5 | hẹn 24/11 10:00 |
+| 42 | «Cách mạng Tháng 8» hay «tháng Tám»: số mốc thời gian ghi bằng chữ + viết hoa; Triều Lý; năm âm lịch hoa mọi âm tiết | Phụ lục II V.9, V.8a | hẹn 24/11 17:00 |
+| 43 | «Lê-Nin» hay «Lê-nin»: phiên âm sát nguyên ngữ hoa âm tiết đầu mỗi thành phần; Hán - Việt như tên Việt; tên địa lý cùng cách | Phụ lục II II.2, III.2 | hẹn 25/11 05:00 |
+| 44 | «Sao Vàng» hay «Sao vàng» (ví dụ: Sao vàng); Nghệ sĩ Nhân dân; danh từ riêng hóa Bác, Người, Đảng | Phụ lục II V.2, V.4 | hẹn 25/11 10:00 |
+| 45 | «Bộ Luật Hình Sự» hay «Bộ luật Hình sự»: hoa tên loại + âm tiết thứ nhất; tạp chí Cộng sản, từ điển viết thường | Phụ lục II V.6, V.10 | hẹn 25/11 17:00 |
+| 46 | «SAO Y BẢN CHÍNH» hay «SAO Y»: chỉ 3 hình thức; in hoa 13–14 đậm; dưới đường kẻ nét liền; số bản sao đánh chung, từ 01 mỗi năm | Phụ lục I Phần II mục II, Phụ lục III | hẹn 26/11 05:00 |
