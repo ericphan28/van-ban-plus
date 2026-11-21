@@ -75,7 +75,7 @@ b) Tên cơ quan, tổ chức nước ngoài viết tắt: Viết bằng chữ i
 
 6. Tên các loại văn bản: Viết hoa chữ cái đầu của tên loại văn bản và chữ cái đầu của âm tiết thứ nhất tạo thành tên gọi khi nói đến một văn bản cụ thể. Ví dụ: Bộ luật Hình sự, Luật Tổ chức Quốc hội,…
 
-7. Viện dẫn phần, chương, mục, tiểu mục, điều, khoản, điểm của một văn bản cụ thể thì viết hoa chữ cái đầu. Ví dụ:
+7. Trường hợp viện dẫn phần, chương, mục, tiểu mục, điều, khoản, điểm của một văn bản cụ thể thì viết hoa chữ cái đầu của phần, chương, mục, tiểu mục, điều. Ví dụ:
 - Căn cứ điểm a khoản 2 Điều 103 Mục 5 Chương XII Phần I của Bộ luật Hình sự.
 - Theo quy định tại điểm a khoản 1 Điều 24 Tiểu mục 1 Mục 1 Chương III của Nghị quyết số 351/2017/UBTVQH14.
 

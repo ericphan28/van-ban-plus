@@ -1,0 +1,43 @@
+1
+00:00:01,100 --> 00:00:05,044
+«khoản 2 Điều 5»: chữ nào viết hoa?
+
+2
+00:00:05,094 --> 00:00:08,840
+Chọn A hay B? → bình luận trước rồi xem tiếp
+
+3
+00:00:08,890 --> 00:00:13,115
+VIẾT HOA: Phần · Chương · Mục · Tiểu mục · Điều
+
+4
+00:00:13,165 --> 00:00:16,438
+khoản · điểm → viết thường
+
+5
+00:00:16,488 --> 00:00:21,747
+Ví dụ: «điểm a khoản 2 Điều 103 … Bộ luật Hình sự»
+
+6
+00:00:21,797 --> 00:00:25,416
+Đứng đầu câu, đầu dòng → vẫn viết hoa
+
+7
+00:00:25,466 --> 00:00:28,495
+Đó là viết hoa vì phép đặt câu (mục I)
+
+8
+00:00:28,545 --> 00:00:35,948
+Phần mềm AI soạn văn bản · Công ty Gia Kiệm Số · đăng ký miễn phí trên web
+
+9
+00:00:35,998 --> 00:00:41,255
+Viện dẫn: viết hoa phần, chương, mục, tiểu mục, điều
+
+10
+00:00:41,305 --> 00:00:43,572
+Nghị định 30/2020/NĐ-CP · Phụ lục II · mục V.7
+
+11
+00:00:43,622 --> 00:00:50,307
+Cơ quan anh chị viết thế nào? Bình luận bên dưới

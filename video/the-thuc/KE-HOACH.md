@@ -26,6 +26,17 @@ demo phần mềm khi đã chụp màn hình app.
 - **BẮT BUỘC mỗi clip (chủ dự án 10/11/2026, «vô cùng quan trọng»): giữ cảnh giới thiệu phần mềm (thẻ VanBanPlus, `theApp("c0k0", true)` có dòng «Sản phẩm của Công ty Gia Kiệm Số», câu đọc nhắc Công ty Gia Kiệm Số + tải miễn phí). KHÔNG được bỏ.** Thời lượng 47–52 s như 01–06, không ngắn hơn.
 - Bảng chữ viết tắt (Phụ lục III) và quy tắc viết hoa (Phụ lục II) còn nhiều chất liệu chưa dùng.
 
+## Khuôn tranh luận + bản web (từ clip 35, chủ dự án chốt 22/11/2026)
+
+- Chọn điểm **dễ cãi nhau** (thực tế làm khác quy định, hoặc chính Nghị định viết không thống nhất) để kéo bình luận.
+- Móc: hai phương án A/B (hoặc đố nhiều câu) + câu đọc cố định «Anh chị chọn bên nào, bình luận trước, rồi xem tiếp.» +
+  `nhanBinhLuan("c1k0")`. Màn kết có câu 3 mời bình luận: `binhLuanCau(…)` + `theBinhLuan(…)` (ket.the có 3 đoạn).
+- Cảnh phần mềm: `theWeb("c0k0")` + `CAU_WEB` (đăng ký miễn phí trên trình duyệt, app.vanbanplus.giakiemso.com, gói tháng
+  từ 99.000đ — giá đọc prod `/api/plans` 22/11/2026); thay `theApp` (bản cài Windows). Mô tả bài đăng kết bằng 💬 câu hỏi
+  + dòng đăng ký bản web.
+- Soát với bản gốc `nghi-dinh/30-2020-ND-CP/van-ban-goc/30.2020.NĐ-CP/*.md` (bản chuyển `phu-luc/*.md` từng bị cụt câu
+  Phụ lục II mục V.7 — đã sửa 22/11/2026).
+
 ## Bảng clip
 
 | NN | Đề tài | Nguồn | Trạng thái |
@@ -64,3 +75,9 @@ demo phần mềm khi đã chụp màn hình app.
 | 32 | Bản gốc ≠ bản chính; lưu giấy (Văn thư / hồ sơ), lưu điện tử trên Hệ thống; Hệ thống chưa đáp ứng thì in ký số ra giấy đóng dấu | Điều 3, 18, 19 | hẹn 19/11 10:00 |
 | 33 | Nhận văn bản đến: kiểm tra bì, bóc bì đóng dấu ĐẾN, gửi đích danh không bóc, việc chung chuyển lại Văn thư; điện tử: xác thực toàn vẹn, báo nhận trong ngày | Điều 21 | hẹn 19/11 17:00 |
 | 34 | Chỉ đạo giải quyết văn bản đến: trình trong ngày, ý kiến ghi mục «Chuyển», chủ trì / phối hợp / thời hạn, ký nhận, khẩn giải quyết ngay | Điều 23, 24 | hẹn 20/11 05:00 |
+| 35 | «Hòa» hay «hoà», «ủy» hay «uỷ»: chính NĐ 30 viết cả hai kiểu; không quy định chỗ đặt dấu thanh (tranh luận) | Điều 4, 13, Phụ lục I | hẹn 22/11 10:00 |
+| 36 | Viện dẫn: viết hoa Phần, Chương, Mục, Tiểu mục, Điều; khoản, điểm viết thường; đầu câu vẫn hoa | Phụ lục II V.7, I | hẹn 22/11 17:00 |
+| 37 | Cỡ chữ 13 hay 14 (cả hai đúng), phông Times New Roman; chỗ cỡ cố định: Số 13, Nơi nhận 12, Phụ lục 14 | Phụ lục I I.4, II.6e, II.3c, II.9, III.1b | hẹn 23/11 05:00 |
+| 38 | Ký bút bi xanh có sai không: chỉ hai điều kiện mực xanh + không dễ phai; dấu mực đỏ; chữ ký số xanh, hình dấu đỏ | Điều 13.6, 33.1a, Phụ lục I II.7d, II.8a | hẹn 23/11 10:00 |
+| 39 | «Số: 15/CV-UBND» sai: công văn không có chữ viết tắt tên loại; trích yếu sau «V/v» | Phụ lục I II.3b, II.5b, Phụ lục III | hẹn 23/11 17:00 |
+| 40 | Đố chữ viết tắt: HD/HĐ, ĐA/DA, TrS, BGN | Phụ lục III mục I | hẹn 24/11 05:00 |

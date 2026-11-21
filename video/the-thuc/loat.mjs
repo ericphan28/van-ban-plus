@@ -32,6 +32,31 @@ export const theApp = (hien, cty = false) => `<div class="tt-app" data-k="lop" d
   <ul><li>✍️ AI soạn bản nháp văn bản hành chính</li><li>🔎 AI kiểm tra lỗi chính tả, thể thức</li><li>📄 Xuất Word theo thể thức NĐ 30/2020</li></ul>
   <div class="tai">Tải miễn phí cho Windows<br><b>vanbanplus.giakiemso.com</b></div></div>`;
 
+/**
+ * TỪ CLIP 35 (22/11/2026, chủ dự án: kêu gọi bình luận + đăng ký bản web có gói tháng): cảnh phần mềm trỏ bản web.
+ * Tính năng soát `vanbanplus-web/src/phan-he/ai/TrangAi.tsx` (Kiểm tra: chính tả, văn phong, thể thức NĐ 30) +
+ * `KhungSoan.tsx` (Xuất Word). Giá đọc prod `/api/plans` 22/11: Miễn phí 0đ, Khởi đầu 99.000đ/tháng.
+ */
+export const theWeb = (hien) => `<div class="tt-app" data-k="lop" data-hien="${hien}" style="opacity:0">
+  <div class="dau"><i>AI</i><span>VanBanPlus</span></div><div class="cty">Sản phẩm của Công ty Gia Kiệm Số</div>
+  <ul><li>✍️ AI soạn bản nháp văn bản hành chính</li><li>🔎 AI kiểm tra chính tả, thể thức NĐ 30</li><li>📄 Xuất Word đúng thể thức</li></ul>
+  <div class="tai">Đăng ký miễn phí · dùng ngay trên trình duyệt<br><b>app.vanbanplus.giakiemso.com</b><small>Gói tháng từ 99.000đ · thanh toán VietQR</small></div></div>`;
+
+/** câu đọc cảnh phần mềm bản web — cố định để đệm giọng dùng lại */
+export const CAU_WEB = {
+  loi: "Soạn văn bản bằng trí tuệ nhân tạo, của Công ty Gia Kiệm Số, đăng ký miễn phí ngay trên trình duyệt, đường dẫn trên màn hình.",
+  chu: "Phần mềm AI soạn văn bản · *Công ty Gia Kiệm Số* · *đăng ký miễn phí trên web*",
+  nghiSau: 0.4,
+};
+
+/** câu 3 màn kết: mời bình luận (đoạn 3 của ket.the = theBinhLuan(…)) */
+export const binhLuanCau = (loi, chu) => ({ loi, chu });
+export const theBinhLuan = (chu) => `<b class="cc-bl">💬 ${chu}</b>`;
+
+/** nhãn nổi «Bình luận trước khi xem đáp án» cho cảnh móc */
+export const nhanBinhLuan = (hien, tren = 1120) =>
+  `<div class="cc-bl-moc" data-k="lop" data-hien="${hien}" style="opacity:0;top:${tren}px">💬 Bình luận đáp án <b>trước</b> khi xem tiếp</div>`;
+
 /** thanh ngang (rộng %) hoặc cột (chieu "cao", cao %) chạy theo `khoa` như `so` */
 export const thanh = (khoa, { chieu = "rong", lop = "", dai = 0.8, style = "" } = {}) =>
   `<i class="${lop}" style="${style}" data-cc="${chieu}" data-khoa="${khoa}" data-dai="${dai}"></i>`;
@@ -121,6 +146,11 @@ export const CSS_CC = `
 .tt-app li{font-size:40px;font-weight:700;line-height:1.25;padding:14px 0;border-top:2px solid #eef2ff;color:#1e293b}
 .tt-app .tai{margin-top:26px;padding:22px;border-radius:22px;background:var(--mau-chinh-nhat, #dbeafe);text-align:center;font-size:36px;font-weight:800;color:#334155}
 .tt-app .tai b{display:block;font-size:46px;color:var(--mau-chinh)}
+.tt-app .tai small{display:block;margin-top:8px;font-size:30px;font-weight:700;color:#475569}
+.cc-bl{display:block;font-size:40px;line-height:1.3;color:#334155}
+.cc-bl-moc{position:absolute;left:70px;width:940px;box-sizing:border-box;text-align:center;font-size:38px;font-weight:800;color:#fff;
+  background:#0f172a;border-radius:999px;padding:18px 28px;box-shadow:0 14px 28px rgba(15,23,42,.22)}
+.cc-bl-moc b{color:#fde68a}
 .moc-khai b.ngu-canh{display:inline-block;font-size:40px;font-weight:800;letter-spacing:0;color:#334155;background:#fff;border:3px solid var(--mau-chinh);
   border-radius:999px;padding:8px 28px;margin-bottom:18px;box-shadow:0 8px 18px rgba(15,23,42,.08)}
 .cc-the{position:absolute;box-sizing:border-box;background:#fff;border-radius:30px;box-shadow:0 18px 34px rgba(15,23,42,.16)}

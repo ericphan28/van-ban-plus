@@ -41,7 +41,7 @@ export default {
     ],
     the: ["Soạn *đúng thể thức* ngay từ đầu.", "<b class=\"tt-dieu\">Nghị định 30/2020/NĐ-CP</b>"],
     nhan: "THỂ THỨC VĂN BẢN · NGUYÊN VĂN",
-    nguon: "VanBanPlus · tải miễn phí: vanbanplus.giakiemso.com",   // ký tên trên hình (không đọc)
+    nguon: "VanBanPlus · đăng ký: app.vanbanplus.giakiemso.com",   // ký tên trên hình (không đọc); bản web từ 22/11/2026
     loat: "",
     soPhan: 0,
     tren: 430,
