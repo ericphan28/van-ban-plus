@@ -13,7 +13,7 @@ namespace AIVanBan.Core.Services;
 /// 2. Thông báo kết luận cuộc họp
 /// 3. Báo cáo tổng hợp cuộc họp (nội bộ)
 /// 4. Tổng hợp nhiều cuộc họp (danh sách)
-/// Định dạng: Times New Roman, line spacing 1.3, margins theo Thông tư 01/2011/TT-BNV
+/// Định dạng: Times New Roman, line spacing 1.3. Phần đầu (Biên bản, Thông báo kết luận) theo NĐ 30/2020 Phụ lục I.
 /// </summary>
 public class MeetingWordExportService
 {
@@ -48,13 +48,11 @@ public class MeetingWordExportService
         mainPart.Document = new WordDoc();
         var body = mainPart.Document.AppendChild(new Body());
         
-        // === QUỐC HIỆU + TIÊU NGỮ ===
-        AddQuocHieu(body);
-        AddOrgHeader(body, meeting.OrganizingUnit);
-        AddDateLine(body, meeting.StartTime);
-        
-        // === BIÊN BẢN ===
-        AddCenteredBold(body, "BIÊN BẢN", FontSize16);
+        // === Phần đầu theo NĐ 30/2020 Phụ lục I (ô 1–4) ===
+        AddPhanDau(body, meeting.OrganizingUnit, "BB", meeting.StartTime);
+
+        // === BIÊN BẢN === (tên loại: in hoa, cỡ 13–14, đứng, đậm)
+        AddCenteredBold(body, "BIÊN BẢN", FontSize14);
         AddCenteredText(body, meeting.Title, FontSize14, true);
         AddEmptyLine(body);
         
@@ -82,7 +80,7 @@ public class MeetingWordExportService
             
             AddParagraph(body, $"Tổng số: {meeting.Attendees.Count} người; Có mặt: {attended.Count}; Vắng mặt: {absent.Count}.", false);
             AddEmptyLine(body);
-            AddAttendeeTable(body, meeting.Attendees);
+            AddAttendeeTable(body, meeting.Attendees, meeting);
             AddEmptyLine(body);
             
             if (absent.Count > 0)
@@ -130,10 +128,12 @@ public class MeetingWordExportService
             AddEmptyLine(body);
         }
         
-        // === Kết thúc ===
-        var endTime = meeting.EndTime?.ToString("HH:mm") ?? "...";
-        AddParagraph(body, $"Cuộc họp kết thúc vào lúc {endTime} cùng ngày.", false);
-        AddParagraph(body, "Biên bản được lập thành 02 bản, các thành viên dự họp đã thống nhất nội dung trên.", false);
+        // === Kết thúc === (Mẫu 1.9: «Cuộc họp kết thúc vào …. giờ …., ngày …. tháng …. năm …../.»)
+        var ketThuc = meeting.EndTime is DateTime kt
+            ? $"{kt:HH} giờ {kt:mm}, ngày {kt:dd} tháng {kt:MM} năm {kt:yyyy}"
+            : $"…. giờ …., ngày {meeting.StartTime:dd} tháng {meeting.StartTime:MM} năm {meeting.StartTime:yyyy}";
+        AddParagraph(body, $"Cuộc họp kết thúc vào {ketThuc}.", false);
+        AddParagraph(body, "Biên bản được lập thành 02 bản, các thành viên dự họp đã thống nhất nội dung trên./.", false);
         AddEmptyLine(body);
         AddEmptyLine(body);
         
@@ -155,11 +155,9 @@ public class MeetingWordExportService
         mainPart.Document = new WordDoc();
         var body = mainPart.Document.AppendChild(new Body());
         
-        AddQuocHieu(body);
-        AddOrgHeader(body, meeting.OrganizingUnit);
-        AddDateLine(body, meeting.StartTime);
-        
-        AddCenteredBold(body, "THÔNG BÁO", FontSize16);
+        AddPhanDau(body, meeting.OrganizingUnit, "TB", meeting.StartTime);
+
+        AddCenteredBold(body, "THÔNG BÁO", FontSize14);
         AddCenteredText(body, $"Kết luận cuộc họp {MeetingHelper.GetTypeName(meeting.Type).ToLower()}", FontSize14, true);
         AddCenteredText(body, meeting.Title, FontSize14, false);
         AddEmptyLine(body);
@@ -233,7 +231,7 @@ public class MeetingWordExportService
             var absent = meeting.Attendees.Count - attended;
             AddParagraph(body, $"Tổng số: {meeting.Attendees.Count} người — Có mặt: {attended} — Vắng: {absent}", false);
             AddEmptyLine(body);
-            AddAttendeeTable(body, meeting.Attendees);
+            AddAttendeeTable(body, meeting.Attendees, meeting);
             AddEmptyLine(body);
         }
         
@@ -550,8 +548,16 @@ public class MeetingWordExportService
     // PRIVATE: Bảng thành phần tham dự (10200 twips)
     // ========================================================================
     
-    private void AddAttendeeTable(Body body, List<MeetingAttendee> attendees)
+    private void AddAttendeeTable(Body body, List<MeetingAttendee> attendees, Meeting? meeting = null)
     {
+        // Hộp sửa cuộc họp không có ô chọn vai trò → người trùng tên Chủ trì / Thư ký của cuộc họp thì ghi đúng vai
+        static bool Trung(string? a, string? b) => !string.IsNullOrWhiteSpace(a) && !string.IsNullOrWhiteSpace(b)
+            && string.Equals(a.Trim().Normalize(), b.Trim().Normalize(), StringComparison.OrdinalIgnoreCase);
+        if (meeting != null)
+            attendees = attendees.Select(a => a.Role != AttendeeRole.Attendee ? a
+                : Trung(a.Name, meeting.ChairPerson) ? new MeetingAttendee { Name = a.Name, Position = a.Position, Unit = a.Unit, Role = AttendeeRole.ChairPerson }
+                : Trung(a.Name, meeting.Secretary) ? new MeetingAttendee { Name = a.Name, Position = a.Position, Unit = a.Unit, Role = AttendeeRole.Secretary }
+                : a).ToList();
         // STT(700) + Họ tên(2800) + Chức vụ(2200) + Đơn vị(2500) + Vai trò(2000) = 10200
         var table = CreateStyledTable(PageAvailableWidth, 700, 2800, 2200, 2500, 2000);
         table.AppendChild(CreateHeaderRow("STT", "Họ và tên", "Chức vụ", "Đơn vị", "Vai trò"));
@@ -784,8 +790,8 @@ public class MeetingWordExportService
         grid.AppendChild(new GridColumn { Width = "5100" });
         table.AppendChild(grid);
         
-        var row = new TableRow();
-        
+        var row = new TableRow(new TableRowProperties(new CantSplit()));
+
         // Cột trái: Nơi nhận
         var leftCell = new TableCell();
         leftCell.AppendChild(new TableCellProperties
@@ -840,8 +846,9 @@ public class MeetingWordExportService
         grid.AppendChild(new GridColumn { Width = "5100" });
         table.AppendChild(grid);
         
-        var row = new TableRow();
-        
+        // Không cho hàng ký tách trang (chức danh một trang, họ tên trang sau)
+        var row = new TableRow(new TableRowProperties(new CantSplit()));
+
         var leftCell = new TableCell();
         leftCell.AppendChild(new TableCellProperties
         {
@@ -897,43 +904,112 @@ public class MeetingWordExportService
         }
         else
         {
+            // Khổ A4 (NĐ 30/2020 Phụ lục I) — thiếu PageSize thì Word / LibreOffice lấy khổ mặc định của máy (thường Letter)
+            sectionProps.AppendChild(new PageSize { Width = 11906, Height = 16838 });
             sectionProps.AppendChild(new PageMargin { Top = 1134, Bottom = 850, Left = 1134, Right = 567, Header = 708, Footer = 708 });
         }
         body.AppendChild(sectionProps);
     }
     
-    private void AddQuocHieu(Body body)
+    /// <summary>
+    /// Phần đầu văn bản theo NĐ 30/2020 Phụ lục I, Mục IV Phần I: bảng 2 cột không viền.
+    /// Trái: tên cơ quan (ô 2, in hoa, đậm, kẻ ngang dưới) + «Số: …/BB-…» (ô 3).
+    /// Phải: Quốc hiệu + Tiêu ngữ (ô 1, kẻ ngang dưới) + địa danh, ngày tháng năm (ô 4, nghiêng, canh giữa dưới Quốc hiệu).
+    /// Số để trống cho văn thư cấp khi ban hành.
+    /// </summary>
+    private void AddPhanDau(Body body, string orgName, string kyHieuLoai, DateTime date)
     {
-        AddCenteredBold(body, "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", FontSize14);
-        AddCenteredBoldUnderline(body, "Độc lập - Tự do - Hạnh phúc", FontSize13);
+        const int trai = 4000, phai = PageAvailableWidth - trai;
+        var table = new Table();
+        table.AppendChild(new TableProperties(
+            new TableBorders(),
+            new TableWidth { Width = PageAvailableWidth.ToString(), Type = TableWidthUnitValues.Dxa },
+            new TableLayout { Type = TableLayoutValues.Fixed }));
+        var grid = new TableGrid();
+        grid.AppendChild(new GridColumn { Width = trai.ToString() });
+        grid.AppendChild(new GridColumn { Width = phai.ToString() });
+        table.AppendChild(grid);
+
+        TableCell O(int w)
+        {
+            var c = new TableCell();
+            c.AppendChild(new TableCellProperties { TableCellWidth = new TableCellWidth { Width = w.ToString(), Type = TableWidthUnitValues.Dxa } });
+            return c;
+        }
+
+        // Hàng 1: tên cơ quan | Quốc hiệu, Tiêu ngữ
+        var r1 = new TableRow(new TableRowProperties(new CantSplit()));
+        var o2 = O(trai);
+        AddCellParagraph(o2, string.IsNullOrWhiteSpace(orgName) ? "" : orgName.Trim().ToUpper(), FontSize13, true, true);
+        AddCellParagraph(o2, "────────", FontSize11, false, true);
+        var o1 = O(phai);
+        AddCellParagraph(o1, "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", FontSize13, true, true);
+        AddCellParagraph(o1, "Độc lập - Tự do - Hạnh phúc", FontSize14, true, true);
+        AddCellParagraph(o1, "──────────────────", FontSize11, false, true);
+        r1.Append(o2, o1);
+
+        // Hàng 2: Số, ký hiệu | Địa danh, ngày tháng năm (cùng một dòng)
+        var r2 = new TableRow(new TableRowProperties(new CantSplit()));
+        var o3 = O(trai);
+        var vietTat = VietTatCoQuan(orgName);
+        AddCellParagraph(o3, $"Số:        /{kyHieuLoai}" + (vietTat.Length > 0 ? $"-{vietTat}" : "-……"), FontSize13, false, true);
+        var o4 = O(phai);
+        var ngay = new Paragraph();
+        var run = ngay.AppendChild(new Run());
+        run.AppendChild(new Text($"{DiaDanh(orgName)}, ngày {date:dd} tháng {date:MM} năm {date:yyyy}") { Space = SpaceProcessingModeValues.Preserve });
+        SetRunProps(run, FontSize14, false, true);
+        var pp = ngay.PrependChild(new ParagraphProperties());
+        pp.AppendChild(new Justification { Val = JustificationValues.Center });
+        pp.AppendChild(new SpacingBetweenLines { After = "0", Line = SingleLine, LineRule = LineSpacingRuleValues.Auto });
+        o4.AppendChild(ngay);
+        r2.Append(o3, o4);
+
+        table.Append(r1, r2);
+        body.AppendChild(table);
         AddEmptyLine(body);
     }
-    
-    private void AddOrgHeader(Body body, string orgName)
+
+    private static readonly System.Text.RegularExpressions.Regex DonViHanhChinh = new(
+        @"([Xx]ã|[Pp]hường|[Tt]hị trấn|[Đđ]ặc khu)\s+((?:\p{Lu}[\p{L}\d]*)(?:\s+\p{Lu}[\p{L}\d]*){0,3}|\d+)\s*$");
+
+    /// <summary>
+    /// Địa danh (NĐ 30 Phụ lục I, mục 4: tên gọi chính thức của đơn vị hành chính nơi cơ quan đóng trụ sở).
+    /// Lấy từ tên cơ quan tổ chức cuộc họp («Ủy ban nhân dân xã Hòa Bình» → «Hòa Bình»; tên một chữ cái hoặc
+    /// bằng số → giữ cả cấp: «Xã A», «Phường 5»); không suy được → địa danh mặc định ở tab Cơ quan; không có nữa → «……».
+    /// </summary>
+    public static string DiaDanh(string? orgName)
     {
-        if (string.IsNullOrEmpty(orgName)) return;
-        var para = body.AppendChild(new Paragraph());
-        var run = para.AppendChild(new Run());
-        run.AppendChild(new Text(orgName.ToUpper()));
-        SetRunProps(run, FontSize13, true);
-        var paraProps = para.PrependChild(new ParagraphProperties());
-        paraProps.AppendChild(new Justification { Val = JustificationValues.Center });
-        SetSpacing(paraProps);
+        var m = DonViHanhChinh.Match((orgName ?? "").Normalize());
+        if (m.Success)
+        {
+            var ten = m.Groups[2].Value.Trim();
+            if (ten.Length <= 1 || ten.All(char.IsDigit))
+            {
+                var cap = m.Groups[1].Value.ToLowerInvariant();
+                return char.ToUpperInvariant(cap[0]) + cap[1..] + " " + ten;
+            }
+            return ten;
+        }
+        try
+        {
+            var d = ThietLapDiaPhuong.DiaDanh();
+            if (!string.IsNullOrWhiteSpace(d)) return d;
+        }
+        catch { /* không đọc được cài đặt → để chấm */ }
+        return "……";
     }
-    
-    private void AddDateLine(Body body, DateTime date)
+
+    /// <summary>Chữ viết tắt tên cơ quan cho ký hiệu: chỉ nhận diện Ủy ban nhân dân → «UBND»; khác → "" (văn thư ghi).</summary>
+    public static string VietTatCoQuan(string? orgName)
     {
-        var text = $"........., ngày {date:dd} tháng {date:MM} năm {date:yyyy}";
-        var para = body.AppendChild(new Paragraph());
-        var run = para.AppendChild(new Run());
-        run.AppendChild(new Text(text) { Space = SpaceProcessingModeValues.Preserve });
-        SetRunProps(run, FontSize13, false, true);
-        var paraProps = para.PrependChild(new ParagraphProperties());
-        paraProps.AppendChild(new Justification { Val = JustificationValues.Right });
-        SetSpacing(paraProps);
-        AddEmptyLine(body);
+        var t = (orgName ?? "").Normalize().Trim();
+        if (t.StartsWith("UBND", StringComparison.OrdinalIgnoreCase)
+            || t.StartsWith("Ủy ban nhân dân".Normalize(), StringComparison.OrdinalIgnoreCase)
+            || t.StartsWith("Uỷ ban nhân dân".Normalize(), StringComparison.OrdinalIgnoreCase))
+            return "UBND";
+        return "";
     }
-    
+
     private void AddCenteredBold(Body body, string text, string fontSize)
     {
         var para = body.AppendChild(new Paragraph());
