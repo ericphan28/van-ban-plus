@@ -1,0 +1,47 @@
+1
+00:00:01,100 --> 00:00:04,439
+Công văn sắp trình ký — có 4 lỗi thể thức
+
+2
+00:00:04,489 --> 00:00:06,707
+Anh chị nhìn ra mấy lỗi?
+
+3
+00:00:06,757 --> 00:00:10,708
+Bản cài máy tính → AI Kiểm tra → Kiểm tra
+
+4
+00:00:10,758 --> 00:00:14,222
+Xác nhận credit → AI đọc cả văn bản
+
+5
+00:00:14,272 --> 00:00:17,248
+Ký hiệu công văn — không có «CV»
+
+6
+00:00:17,298 --> 00:00:20,255
+Thiếu dấu phẩy sau địa danh · ngày 05
+
+7
+00:00:20,305 --> 00:00:23,000
+Nơi nhận — thiếu «Lưu: VT»
+
+8
+00:00:23,050 --> 00:00:28,582
+Bản đã sửa — đủ cả 4 chỗ
+
+9
+00:00:28,632 --> 00:00:32,654
+AI viết lại câu chữ — soát kỹ rồi mới trình ký
+
+10
+00:00:32,704 --> 00:00:38,379
+Tóm lại: AI chỉ ra từng lỗi · Kèm căn cứ NĐ 30 · Có sẵn bản đã sửa
+
+11
+00:00:38,429 --> 00:00:40,941
+Dùng thử miễn phí — ngay trên trình duyệt
+
+12
+00:00:40,991 --> 00:00:48,099
+Gói Khởi đầu 99.000đ/tháng · app.vanbanplus.giakiemso.com

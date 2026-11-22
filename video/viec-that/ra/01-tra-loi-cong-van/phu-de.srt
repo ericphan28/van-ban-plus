@@ -1,0 +1,43 @@
+1
+00:00:01,100 --> 00:00:04,691
+15:00 nhận công văn — 17:00 phải trả lời
+
+2
+00:00:04,741 --> 00:00:08,174
+Làm bằng AI trên trình duyệt — kịp không?
+
+3
+00:00:08,224 --> 00:00:12,415
+Công văn → nơi nhận · trích yếu · số liệu của xã
+
+4
+00:00:12,465 --> 00:00:15,052
+Trả lời công văn số 845/SNNMT-MT
+
+5
+00:00:15,102 --> 00:00:17,914
+Chạm Soạn bằng AI
+
+6
+00:00:17,964 --> 00:00:22,601
+Phúc đáp CV 845 · 3 mục · đủ số liệu
+
+7
+00:00:22,651 --> 00:00:28,298
+Xuất Word — phông, lề, chữ ký theo NĐ 30
+
+8
+00:00:28,348 --> 00:00:32,520
+Tệp Word 2 trang — sửa · in · trình ký
+
+9
+00:00:32,570 --> 00:00:38,094
+Tóm lại: Gõ số liệu của xã · AI viết bản phúc đáp · Tải Word · trình ký
+
+10
+00:00:38,144 --> 00:00:40,656
+Dùng thử miễn phí — ngay trên trình duyệt
+
+11
+00:00:40,706 --> 00:00:47,814
+Gói Khởi đầu 99.000đ/tháng · app.vanbanplus.giakiemso.com

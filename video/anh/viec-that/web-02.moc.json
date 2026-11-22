@@ -1,0 +1,127 @@
+{
+ "_ghi_chu": "s = giây trong MP4; hop = [x0,y0,x1,y1] % khung 390×844",
+ "moc": [
+  {
+   "nhan": "quet",
+   "s": 1.51
+  },
+  {
+   "nhan": "cham-chup-anh",
+   "s": 1.93,
+   "hop": [
+    29.5,
+    24,
+    70.5,
+    30.1
+   ]
+  },
+  {
+   "nhan": "hai-trang",
+   "s": 1.96
+  },
+  {
+   "nhan": "cham-tinh-credit",
+   "s": 3.85,
+   "hop": [
+    4.1,
+    83.5,
+    33.7,
+    88.7
+   ]
+  },
+  {
+   "nhan": "cham-doc",
+   "s": 9.85,
+   "hop": [
+    4.1,
+    83.5,
+    60.3,
+    88.7
+   ]
+  },
+  {
+   "nhan": "ai-doc",
+   "s": 9.9
+  },
+  {
+   "nhan": "soat",
+   "s": 22.27
+  },
+  {
+   "nhan": "soat-luot",
+   "s": 30
+  },
+  {
+   "nhan": "cham-luu",
+   "s": 31.53,
+   "hop": [
+    51,
+    86,
+    95.9,
+    91.2
+   ]
+  },
+  {
+   "nhan": "chi-tiet",
+   "s": 34.52
+  },
+  {
+   "nhan": "tro-ly-ai",
+   "s": 38.19
+  },
+  {
+   "nhan": "cham-tab-tom-tat",
+   "s": 39.47,
+   "hop": [
+    8.7,
+    59.6,
+    35.9,
+    64.8
+   ]
+  },
+  {
+   "nhan": "cham-tom-tat",
+   "s": 40.79,
+   "hop": [
+    7.9,
+    70.3,
+    55,
+    75.5
+   ]
+  },
+  {
+   "nhan": "ai-tom-tat",
+   "s": 40.81
+  },
+  {
+   "nhan": "tom-tat-xong",
+   "s": 55.24
+  },
+  {
+   "nhan": "tom-tat-dau",
+   "s": 57.21
+  },
+  {
+   "nhan": "tom-tat-luot",
+   "s": 65.78
+  },
+  {
+   "nhan": "cham-ghi-tom-tat",
+   "s": 67.34,
+   "hop": [
+    7.9,
+    70.3,
+    52.6,
+    75.6
+   ]
+  },
+  {
+   "nhan": "da-ghi",
+   "s": 68.16
+  },
+  {
+   "nhan": "het",
+   "s": 70.98
+  }
+ ]
+}

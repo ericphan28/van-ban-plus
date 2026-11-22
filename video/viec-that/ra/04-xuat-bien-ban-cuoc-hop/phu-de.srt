@@ -1,0 +1,47 @@
+1
+00:00:01,100 --> 00:00:04,793
+Họp xong — chiều nay phải có biên bản
+
+2
+00:00:04,843 --> 00:00:07,338
+Lại ngồi gõ lại từ đầu?
+
+3
+00:00:07,388 --> 00:00:12,249
+Trong lúc họp — ghi người dự · nội dung · kết luận
+
+4
+00:00:12,299 --> 00:00:15,697
+Biểu tượng Word → Xuất Biên bản cuộc họp
+
+5
+00:00:15,747 --> 00:00:18,281
+Bấm Lưu → tệp Word ra ngay
+
+6
+00:00:18,331 --> 00:00:22,481
+Phần đầu — cơ quan · Quốc hiệu · số · ngày tháng
+
+7
+00:00:22,531 --> 00:00:26,838
+Thời gian · địa điểm · chủ trì · thư ký · bảng người dự
+
+8
+00:00:26,888 --> 00:00:30,832
+Kết luận · giờ kết thúc · chỗ ký thư ký, chủ trì
+
+9
+00:00:30,882 --> 00:00:34,733
+Đọc lại · sửa nếu cần → trình ký
+
+10
+00:00:34,783 --> 00:00:40,138
+Tóm lại: Ghi ngay trong lúc họp · Vài lần chạm ra tệp Word · Đủ các phần biên bản
+
+11
+00:00:40,188 --> 00:00:42,700
+Dùng thử miễn phí — ngay trên trình duyệt
+
+12
+00:00:42,750 --> 00:00:49,858
+Gói Khởi đầu 99.000đ/tháng · app.vanbanplus.giakiemso.com

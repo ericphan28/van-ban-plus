@@ -1,0 +1,97 @@
+﻿=== TOM TAT
+Văn bản cơ bản rõ ràng về mục đích và đúng thẩm quyền tiếp nhận theo mô hình chính quyền hai cấp. Tuy nhiên, văn bản còn vi phạm các quy định về thể thức hành chính theo Nghị định 30/2020/NĐ-CP (ký hiệu công văn sai quy tắc, địa danh ngày tháng thiếu dấu câu và số 0, nơi nhận thiếu phần lưu) và câu từ kết thúc chưa đúng chuẩn mực công văn gửi cấp sở.
+📊 Đánh giá: 6/10 — Khá — cần sửa một số lỗi
+=== LOI
+🔍 AI KIỂM TRA VĂN BẢN
+📄 Đề nghị hỗ trợ kinh phí sửa chữa nhà văn hóa ấp 3 — Xem lại nội dung rồi nhấn Kiểm tra
+6
+/10
+Văn bản cơ bản rõ ràng về mục đích và đúng thẩm quyền tiếp nhận theo mô hình chính quyền hai cấp. Tuy nhiên, văn bản còn vi phạm các quy định về thể thức hành chính theo Nghị định 30/2020/NĐ-CP (ký hiệu công văn sai quy tắc, địa danh ngày tháng thiếu dấu câu và số 0, nơi nhận thiếu phần lưu) và câu từ kết thúc chưa đúng chuẩn mực công văn gửi cấp sở.
+🔴 1 Nghiêm trọng
+🟡 3 Cần xem xét
+🟢 1 Gợi ý
+💪 Điểm mạnh
+✅ Xác định đúng tuyến gửi trực tiếp từ UBND cấp xã lên Sở quản lý chuyên ngành cấp tỉnh theo quy định hệ thống chính quyền 2 cấp.
+✅ Nêu rõ được mục đích, lý do và số tiền cụ thể đề nghị hỗ trợ.
+🔴
+📐 Thể thức NĐ30
+📍 Số và ký hiệu văn bản (Số: 15/CV-UBND)
+Ký hiệu công văn dùng chữ viết tắt tên loại 'CV' là sai quy định.
+Văn bản gốc:
+Số: 15/CV-UBND
+💡 Đề xuất sửa:
+Đổi thành 'Số: 15/UBND-VP' (hoặc 'Số: 15/UBND-VH' tùy thuộc vào tên đơn vị soạn thảo/lĩnh vực phụ trách).
+📖 Phụ lục I và Phụ lục III Nghị định số 30/2020/NĐ-CP quy định công văn KHÔNG có chữ viết tắt tên loại văn bản. Ký hiệu công văn bao gồm chữ viết tắt tên cơ quan ban hành và chữ viết tắt tên đơn vị soạn thảo hoặc lĩnh vực nội dung.
+🟡
+📐 Thể thức NĐ30
+📍 Địa danh và ngày tháng năm (Xã A ngày 5 tháng 11 năm 2026)
+Thiếu dấu phẩy sau địa danh và thiếu số '0' trước ngày nhỏ hơn 10.
+Văn bản gốc:
+Xã A ngày 5 tháng 11 năm 2026
+💡 Đề xuất sửa:
+Sửa thành: 'Xã A, ngày 05 tháng 11 năm 2026'
+📖 Phụ lục I Nghị định số 30/2020/NĐ-CP quy định: Địa danh ghi trên văn bản phải có dấu phẩy (,) phía sau; các ngày từ 1 đến 9 phải ghi thêm số 0 phía trước.
+🟡
+📐 Thể thức NĐ30
+📍 Nơi nhận
+Nơi nhận thiếu thành phần bắt buộc là thông tin lưu văn bản.
+Văn bản gốc:
+Nơi nhận:
+- Như trên;
+💡 Đề xuất sửa:
+Bổ sung dòng lưu văn bản: '- Lưu: VT, VP.' (hoặc đơn vị tham mưu).
+📖 Phụ lục I Nghị định số 30/2020/NĐ-CP quy định phần Nơi nhận của công văn bắt buộc phải có thông tin 'Lưu: VT, [chữ viết tắt Tên đơn vị soạn thảo văn bản]' ở cuối.
+🟡
+✍️ Văn phong
+📍 Đoạn kết văn bản
+Cách dùng từ 'trân trọng đề nghị' chưa thể hiện đúng văn phong đề xuất kinh phí cấp trên xem xét.
+Văn bản gốc:
+Ủy ban nhân dân xã A trân trọng đề nghị./.
+💡 Đề xuất sửa:
+Sửa thành: 'Ủy ban nhân dân xã A kính trình Sở Văn hóa, Thể thao và Du lịch tỉnh B xem xét, giải quyết./.' hoặc 'Ủy ban nhân dân xã A kính đề nghị Sở Văn hóa, Thể thao và Du lịch tỉnh B xem xét, hỗ trợ./.'
+📖 Văn phong hành chính khi gửi cấp tỉnh/sở ngành đề nghị hỗ trợ cần dùng từ 'kính trình' hoặc 'kính đề nghị' để đảm bảo tính trang trọng, lịch sự.
+🟢
+📋 Thiếu thành phần
+📍 Nội dung văn bản
+Chưa đề cập đến tài liệu/hồ sơ đính kèm (dự toán, biên bản khảo sát hiện trạng) để cơ quan cấp tỉnh có căn cứ phê duyệt.
+Văn bản gốc:
+Ủy ban nhân dân xã A đề nghị Sở Văn hóa, Thể thao và Du lịch tỉnh B xem xét, hỗ trợ kinh phí 150.000.000 đồng (Một trăm năm mươi triệu đồng) để sửa chữa nhà văn hóa ấp 3 trong năm 2026.
+💡 Đề xuất sửa:
+Bổ sung thông tin tài liệu đính kèm, ví dụ: '(Có Báo cáo khảo sát hiện trạng và Dự toán chi tiết đính kèm)'.
+📖 Để cơ quan tài chính/chuyên môn cấp tỉnh có đủ cơ sở thẩm định việc cấp hỗ trợ kinh phí.
+📝 VĂN BẢN SAU KHI SỬA (có thể chỉnh sửa)
+Copy
+Bạn có thể chỉnh sửa trực tiếp nội dung tại đây
+📊 Đánh giá: 6/10 — Khá — cần sửa một số lỗi
+📄 Xuất Word
+✅ Áp dụng
+Copy
+Đóng
+=== BAN DA SUA
+ỦY BAN NHÂN DÂN
+XÃ A
+Số: 15/UBND-VP
+V/v đề nghị hỗ trợ kinh phí sửa chữa nhà văn hóa ấp 3
+
+CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+
+Xã A, ngày 05 tháng 11 năm 2026
+
+Kính gửi: Sở Văn hóa, Thể thao và Du lịch tỉnh B
+
+Hiện nay, Nhà văn hóa ấp 3, xã A đã xuống cấp nghiêm trọng: mái tôn bị thủng, tường nứt nhiều chỗ, hệ thống điện và thiết bị không bảo đảm an toàn khi tổ chức các hoạt động sinh hoạt cộng đồng và tuyên truyền nhiệm vụ chính trị tại địa phương.
+
+Để đáp ứng nhu cầu sinh hoạt văn hóa của nhân dân và bảo đảm an toàn công trình, Ủy ban nhân dân xã A kính đề nghị Sở Văn hóa, Thể thao và Du lịch tỉnh B xem xét, hỗ trợ kinh phí 150.000.000 đồng (Một trăm năm mươi triệu đồng) để thực hiện sửa chữa, khắc phục các hạng mục hư hỏng của Nhà văn hóa ấp 3 trong năm 2026 (Có Hồ sơ khảo sát hiện trạng và Dự toán chi tiết đính kèm).
+
+Ủy ban nhân dân xã A kính trình Sở Văn hóa, Thể thao và Du lịch tỉnh B xem xét, giải quyết./.
+
+Nơi nhận:
+Như trên;
+Lưu: VT, VP.
+
+TM. ỦY BAN NHÂN DÂN
+CHỦ TỊCH
+
+(Ký, đóng dấu, ghi rõ họ tên)
+Nguyễn Văn B
