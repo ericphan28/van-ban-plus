@@ -29,12 +29,13 @@ mỗi câu soát với mã / prod, ghi ✔ đầu tệp clip. NĐ 30 chỉ đư�
 | 07 | Kế hoạch, báo cáo dài → AI dựng khung từ mẫu có sẵn | web | L5 mẫu `/soan-thao?mau=` |
 | 08 | Lịch họp + album ảnh hoạt động lưu một chỗ | web | `huong-dan-web/05` |
 
-**Trạng thái:** 01 dựng PC 22/11/2026, 47,8 s · 02 dựng PC 22/11/2026, 50,5 s · 03 dựng PC 22/11/2026, 48,1 s — chờ duyệt, chưa hẹn đăng.
+**Trạng thái:** 01 dựng PC 22/11/2026, 47,8 s — hẹn 26/11 10:00 · 02 dựng PC 22/11/2026, 50,5 s — hẹn 26/11 17:00
+· 03 dựng PC 22/11/2026, 48,1 s — hẹn 27/11 05:00 (YouTube + Facebook + TikTok; lệnh: máy chủ `~/tam-vb/dang-viec-that.sh`).
 03: AI có thẻ riêng cho 3/4 lỗi cài (lỗi «Kính gửi» chỉ sửa trong bản đã sửa) → lời không nói «AI bắt 4 lỗi»; bản đã sửa tự thêm ý
 không có trong bản gốc → không phóng phần thân; «Xuất Word» của hộp AI Kiểm tra bọc nhầm vào khuôn BÁO CÁO → không quay.
-04 dựng PC 23/11/2026 — chờ duyệt. Xuất thử bằng bản 1.0.21 thấy sai thể thức (tên cơ quan dưới Quốc hiệu, không số/ký hiệu,
+04 dựng PC 23/11/2026, 49,9 s — hẹn 27/11 10:00 (lệnh: máy chủ `~/tam-vb/dang-viec-that-04.sh`). Xuất thử bằng bản 1.0.21 thấy sai thể thức (tên cơ quan dưới Quốc hiệu, không số/ký hiệu,
 địa danh «.........», tên người ký rơi sang trang sau, không đặt khổ A4) → đã sửa `MeetingWordExportService` + bộ kiểm
-`MeetingWordExportTests`, quay bằng app dựng từ mã đã sửa. **Phải phát hành bản cài mới trước khi đăng 04.** Lời không nói
+`MeetingWordExportTests`, quay bằng app dựng từ mã đã sửa. Đã phát hành bản cài 1.0.22 (26/11/2026) có bản sửa này. Lời không nói
 «đúng thể thức» (lề trang bản xuất chưa theo NĐ 30). Cuộc họp hư cấu «Họp giao ban tháng 11 năm 2026» (UBND xã A) tạo qua giao diện.
 
 **Công cụ quay của loạt (22/11/2026):**

@@ -46,4 +46,16 @@
 
 ## 8. Loạt
 
-- `the-thuc/` — mẹo thể thức NĐ 30 (kế hoạch: `the-thuc/KE-HOACH.md`).
+- **`viec-that/` — loạt chính từ 22/11/2026**: trải nghiệm thật web + desktop, giá trị khách trả tiền
+  (kế hoạch: `viec-that/KE-HOACH.md`). Thay `lam-that/` và `huong-dan-web/`.
+- `the-thuc/` — mẹo thể thức NĐ 30, **dừng ở clip 46** (chủ dự án 22/11/2026: không phải hướng hay).
+- `lam-that/` — quay bản cài máy giải việc thật (kế hoạch: `lam-that/KE-HOACH.md`).
+- `huong-dan-web/` — hướng dẫn bản web (kế hoạch: `huong-dan-web/KE-HOACH.md`).
+
+## 9. Bản web (mở bán 18/11/2026) — được nói
+
+- Địa chỉ app.vanbanplus.giakiemso.com, dùng trên trình duyệt, không cần cài. Mua gói / credit / dung lượng trong web bằng
+  chuyển khoản VietQR, kích hoạt tự động 1–2 phút, «Không lưu thẻ, không tự động trừ tiền» (nguyên văn trên web).
+- Giá đọc từ prod `/api/plans`, `/api/goi-nap`, `/api/v2/goi-dung-luong` ngay trước khi viết (18/11: Khởi đầu 99.000đ/tháng,
+  nạp 160/350/750 credit = 49/99/199 nghìn, dùng 90 ngày). Mục 5 «không nói giá» chỉ áp cho bản cài máy.
+- Chưa có — không nói: đồng bộ với bản cài máy, app điện thoại, tổ chức nhiều người dùng chung kho.
