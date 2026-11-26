@@ -869,7 +869,7 @@
                         </DataGridTextColumn>
                         
                         <!-- Cột Hạn xử lý — Điều 24, NĐ 30/2020 -->
-                        <DataGridTemplateColumn Header="Hạn xử lý" Width="110" MinWidth="100" SortMemberPath="DueDate" CanUserSort="True">
+                        <DataGridTemplateColumn Header="Hạn xử lý" Width="140" MinWidth="130" SortMemberPath="DueDate" CanUserSort="True">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DeadlineText}" 

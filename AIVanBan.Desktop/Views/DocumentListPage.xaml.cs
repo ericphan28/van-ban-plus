@@ -571,12 +571,10 @@ public partial class DocumentListPage : Page
                 filtered = filtered.Where(d => d.MyStatus == PersonalStatus.ChuaXuLy);
             else if (_personalFilter == "overdue")
             {
-                var now = DateTime.Now;
-                filtered = filtered.Where(d => 
-                    d.MyStatus != PersonalStatus.DaXuLy 
-                    && d.MyStatus != PersonalStatus.ChuyenTiep
-                    && ((d.PersonalDeadline.HasValue && d.PersonalDeadline.Value < now)
-                        || (d.DueDate.HasValue && d.DueDate.Value < now)));
+                // Cùng quy tắc với thông báo khi mở máy + dòng tô đỏ «⚠ Quá hạn» (trước đây lọc theo giờ hiện tại
+                // nên VB hạn hôm nay, VB đi có hạn cũng lọt vào → con số không khớp thông báo).
+                var today = DateTime.Today;
+                filtered = filtered.Where(d => DocumentService.IsOverdue(d, today));
             }
 
             // Sắp xếp mặc định: Năm DESC → Số VB ASC (numeric-aware)

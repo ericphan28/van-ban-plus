@@ -172,8 +172,10 @@ public class DocumentService : IDisposable
     
     public int GetTotalDocuments()
     {
+        // Không đếm văn bản trong thùng rác (trước đây thanh bên «Tổng» lệch với danh sách)
         var collection = _db.GetCollection<Document>("documents");
-        return collection.Count();
+        // Lọc trong bộ nhớ: VB cũ có thể thiếu trường IsDeleted trong CSDL, truy vấn LiteDB sẽ bỏ sót
+        return collection.FindAll().Count(d => !d.IsDeleted);
     }
     
     public Dictionary<DocumentType, int> GetDocumentCountByType()
@@ -203,14 +205,20 @@ public class DocumentService : IDisposable
     {
         var collection = _db.GetCollection<Document>("documents");
         var today = DateTime.Today;
-        return collection.Find(d =>
-            d.Direction == Direction.Den &&
-            d.DueDate.HasValue &&
-            d.DueDate.Value.Date < today &&
-            d.WorkflowStatus != DocumentStatus.Archived &&
-            d.WorkflowStatus != DocumentStatus.Published
-        ).Where(d => !d.IsDeleted).ToList();
+        return collection.FindAll().Where(d => IsOverdue(d, today)).ToList();
     }
+
+    /// <summary>
+    /// Quy tắc «quá hạn» DUY NHẤT — thông báo khi mở máy, dòng tô đỏ và nút lọc «Quá hạn» đều dùng hàm này
+    /// để con số luôn khớp nhau. Hạn đúng hôm nay chưa tính là quá hạn.
+    /// </summary>
+    public static bool IsOverdue(Document d, DateTime today) =>
+        !d.IsDeleted &&
+        d.Direction == Direction.Den &&
+        d.DueDate.HasValue &&
+        d.DueDate.Value.Date < today.Date &&
+        d.WorkflowStatus != DocumentStatus.Archived &&
+        d.WorkflowStatus != DocumentStatus.Published;
     
     /// <summary>
     /// Lấy danh sách VB đến sắp hết hạn xử lý (trong N ngày tới).

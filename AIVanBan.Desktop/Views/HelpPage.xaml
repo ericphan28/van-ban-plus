@@ -1620,15 +1620,41 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- ════ Version 1.0.22 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <!-- ════ Version 1.0.23 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock Text="v1.0.23 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                </Border>
+                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
+                                📥 Sổ văn bản đến chính xác hơn
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Sửa văn bản</Bold>: đổi Loại không còn làm đổi Số và ký hiệu đã lưu
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Thêm văn bản đến</Bold>: để trống Số, Cơ quan ban hành, Người ký cho nhập theo nơi gửi; Loại mặc định là Công văn
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Nút lọc «Quá hạn»</Bold> khớp con số thông báo khi mở máy; cột Hạn xử lý không còn cắt chữ; «Tổng» không đếm thùng rác
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Soạn theo mẫu</Bold>: AI đọc đủ mọi ô đã điền của mẫu chuyên ngành (Y tế, Giáo dục, UBND xã)
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ════ Version 1.0.22 — Tháng 11/2026 ════ -->
                     <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
                                     <TextBlock Text="v1.0.22 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                </Border>
-                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">

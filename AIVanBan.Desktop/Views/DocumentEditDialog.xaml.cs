@@ -14,11 +14,23 @@ public partial class DocumentEditDialog : Window
     public bool SaveAndAddNew { get; private set; }
     private DocumentService? _documentService;
 
+    /// <summary>True khi hộp mở để THÊM văn bản mới (không phải sửa văn bản đã lưu).</summary>
+    private readonly bool _isNew;
+
+    // Giá trị hộp TỰ điền cho văn bản đi. Chỉ ghi đè / xoá một ô khi ô đó còn đúng giá trị tự điền,
+    // để không bao giờ đè lên chữ người dùng đã gõ.
+    private string _autoNumber = "";
+    private string _autoIssuer = "";
+    private string _autoLocation = "";
+    private string _autoSignedBy = "";
+    private string _autoSigningTitle = "";
+
     public DocumentEditDialog(Document? document = null, string? folderId = null, DocumentService? documentService = null)
     {
         InitializeComponent();
         _documentService = documentService;
-        
+        _isNew = document == null;
+
         // Load loại văn bản (hiển thị tên tiếng Việt)
         cboType.DisplayMemberPath = "Value";
         cboType.SelectedValuePath = "Key";
@@ -70,8 +82,10 @@ public partial class DocumentEditDialog : Window
             {
                 Document.FolderId = folderId;
             }
-            cboType.SelectedIndex = 0;
-            cboDirection.SelectedIndex = 0;
+            // Mục đầu danh sách loại là «Luật» — văn bản mới hay gặp nhất là Công văn
+            cboType.SelectedValue = DocumentType.CongVan;
+            if (cboType.SelectedIndex < 0) cboType.SelectedIndex = 0;
+            cboDirection.SelectedValue = Direction.Di;
             cboUrgency.SelectedValue = UrgencyLevel.Thuong;
             cboSecurity.SelectedValue = SecurityLevel.Thuong;
 
@@ -155,14 +169,12 @@ public partial class DocumentEditDialog : Window
         {
             // 1) Lấy cấu hình cơ quan
             string orgName = "";
-            string orgAbbr = "UBND";
             try
             {
                 if (_documentService != null)
                 {
                     var org = _documentService.GetOrganizationConfig();
                     if (!string.IsNullOrWhiteSpace(org.Name)) orgName = org.Name;
-                    if (!string.IsNullOrWhiteSpace(org.Abbreviation)) orgAbbr = org.Abbreviation;
                 }
             }
             catch { /* ignore */ }
@@ -217,17 +229,13 @@ public partial class DocumentEditDialog : Window
 
             dpIssueDate.SelectedDate = DateTime.Now;
 
-            // 5) Auto-cấp số VB cho loại VB mặc định (Công văn / loại đầu tiên)
-            try
-            {
-                if (_documentService != null && cboType.SelectedValue is DocumentType defType)
-                {
-                    var symbol = _documentService.GenerateDocumentSymbol(
-                        defType, orgAbbr, Direction.Di, isSecret: false);
-                    txtNumber.Text = symbol;
-                }
-            }
-            catch { /* không chặn nếu lỗi cấp số */ }
+            _autoIssuer = txtIssuer.Text;
+            _autoLocation = txtLocation.Text;
+            _autoSignedBy = txtSignedBy.Text;
+            _autoSigningTitle = txtSigningTitle.Text;
+
+            // 5) Auto-cấp số VB cho loại VB mặc định (Công văn)
+            RefreshAutoNumber();
         }
         catch (Exception ex)
         {
@@ -342,31 +350,83 @@ public partial class DocumentEditDialog : Window
 
     private void CboDirection_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (IsLoaded) UpdateDirectionPanels();
+        if (!IsLoaded) return;
+        if (_isNew) ApplyDirectionDefaults();
+        UpdateDirectionPanels();
     }
 
     private void CboType_Changed(object sender, SelectionChangedEventArgs e)
     {
-        // Khi tạo VB mới và Số VB còn rỗng/auto → tự động cập nhật ký hiệu theo loại mới
-        // (chỉ áp dụng cho doc mới — Document.Id chưa có trong DB)
-        if (!IsLoaded || Document == null || _documentService == null) return;
-        if (!string.IsNullOrEmpty(Document.Number) && Document.Number != txtNumber.Text)
+        // Chỉ văn bản MỚI mới được tự cấp lại số theo loại. Sửa văn bản đã lưu thì đổi Loại
+        // KHÔNG được động tới ô Số (trước 1.0.23 điều kiện bị ngược → mất số cũ).
+        if (!IsLoaded) return;
+        RefreshAutoNumber();
+    }
+
+    /// <summary>
+    /// Văn bản đến: số, cơ quan ban hành, địa danh, người ký là của NƠI GỬI — bỏ các giá trị tự điền
+    /// theo văn bản đi (nếu người dùng chưa sửa). Quay lại văn bản đi / nội bộ thì điền lại ô còn trống.
+    /// </summary>
+    private void ApplyDirectionDefaults()
+    {
+        var isDen = cboDirection.SelectedValue is Direction d && d == Direction.Den;
+        if (isDen)
         {
-            // Đang sửa VB đã lưu — không tự đổi số
+            ClearIfAuto(txtIssuer, _autoIssuer);
+            ClearIfAuto(txtLocation, _autoLocation);
+            ClearIfAuto(txtSignedBy, _autoSignedBy);
+            ClearIfAuto(txtSigningTitle, _autoSigningTitle);
+        }
+        else
+        {
+            RestoreIfEmpty(txtIssuer, _autoIssuer);
+            RestoreIfEmpty(txtLocation, _autoLocation);
+            RestoreIfEmpty(txtSignedBy, _autoSignedBy);
+            RestoreIfEmpty(txtSigningTitle, _autoSigningTitle);
+        }
+        RefreshAutoNumber();
+    }
+
+    private static void ClearIfAuto(TextBox box, string auto)
+    {
+        if (!string.IsNullOrEmpty(auto) && box.Text == auto) box.Text = "";
+    }
+
+    private static void RestoreIfEmpty(TextBox box, string auto)
+    {
+        if (string.IsNullOrEmpty(box.Text)) box.Text = auto;
+    }
+
+    /// <summary>
+    /// Cấp lại số tự động cho văn bản MỚI khi đổi loại / hướng. Không bao giờ chạy khi sửa văn bản đã lưu,
+    /// và không đè số người dùng tự gõ. Văn bản đến để trống ô Số (số do nơi gửi cấp).
+    /// </summary>
+    private void RefreshAutoNumber()
+    {
+        if (!_isNew || _documentService == null) return;
+        if (!string.IsNullOrEmpty(txtNumber.Text) && txtNumber.Text != _autoNumber) return;
+
+        var direction = cboDirection.SelectedValue is Direction d ? d : Direction.Di;
+        if (direction == Direction.Den)
+        {
+            txtNumber.Text = "";
+            _autoNumber = "";
             return;
         }
+
         try
         {
-            if (cboType.SelectedValue is DocumentType newType)
+            if (cboType.SelectedValue is DocumentType type)
             {
                 var org = _documentService.GetOrganizationConfig();
                 var orgAbbr = !string.IsNullOrWhiteSpace(org.Abbreviation) ? org.Abbreviation : "UBND";
-                var direction = cboDirection.SelectedValue is Direction d ? d : Direction.Di;
                 var isSecret = cboSecurity.SelectedValue is SecurityLevel s && s != SecurityLevel.Thuong;
-                txtNumber.Text = _documentService.GenerateDocumentSymbol(newType, orgAbbr, direction, isSecret: isSecret);
+                var symbol = _documentService.GenerateDocumentSymbol(type, orgAbbr, direction, isSecret: isSecret);
+                txtNumber.Text = symbol;
+                _autoNumber = symbol;
             }
         }
-        catch { /* ignore */ }
+        catch { /* không chặn nếu lỗi cấp số */ }
     }
 
     /// <summary>
@@ -391,7 +451,8 @@ public partial class DocumentEditDialog : Window
         
         var symbol = _documentService.GenerateDocumentSymbol(type, orgAbbr, direction, isSecret: isSecret);
         txtNumber.Text = symbol;
-        
+        _autoNumber = symbol;
+
         MessageBox.Show(
             $"✅ Đã cấp số: {symbol}\n\n" +
             $"📋 Loại VB: {type.GetDisplayName()} ({type.GetAbbreviation()})\n" +
