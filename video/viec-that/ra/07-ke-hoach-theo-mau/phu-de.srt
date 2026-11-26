@@ -1,0 +1,51 @@
+1
+00:00:01,100 --> 00:00:04,384
+Chiều giao — sáng mai nộp kế hoạch
+
+2
+00:00:04,434 --> 00:00:06,880
+Mấy trang giấy — bắt đầu từ đâu?
+
+3
+00:00:06,930 --> 00:00:10,574
+Mẫu văn bản → «ke hoach» → Kế hoạch tổ chức sự kiện
+
+4
+00:00:10,624 --> 00:00:13,106
+Mẫu có sẵn khung 5 phần
+
+5
+00:00:13,156 --> 00:00:17,792
+Soạn theo mẫu → gõ vài dòng
+
+6
+00:00:17,842 --> 00:00:20,782
+Chạm Soạn bằng AI
+
+7
+00:00:20,832 --> 00:00:24,360
+Chương trình theo giờ · phân công từng bộ phận
+
+8
+00:00:24,410 --> 00:00:27,295
+Xem bố cục → Xuất Word
+
+9
+00:00:27,345 --> 00:00:31,512
+Tệp Word 4 trang — đủ 4 phần
+
+10
+00:00:31,562 --> 00:00:35,362
+Chỗ AI đề xuất — soát lại rồi trình ký
+
+11
+00:00:35,412 --> 00:00:40,819
+Tóm lại: Chọn mẫu có sẵn · Gõ vài dòng · AI dựng khung · tải Word
+
+12
+00:00:40,869 --> 00:00:43,381
+Dùng thử miễn phí — ngay trên trình duyệt
+
+13
+00:00:43,431 --> 00:00:50,539
+Gói Khởi đầu 99.000đ/tháng · app.vanbanplus.giakiemso.com

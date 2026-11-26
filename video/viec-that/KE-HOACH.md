@@ -38,6 +38,23 @@ không có trong bản gốc → không phóng phần thân; «Xuất Word» c�
 `MeetingWordExportTests`, quay bằng app dựng từ mã đã sửa. Đã phát hành bản cài 1.0.22 (26/11/2026) có bản sửa này. Lời không nói
 «đúng thể thức» (lề trang bản xuất chưa theo NĐ 30). Cuộc họp hư cấu «Họp giao ban tháng 11 năm 2026» (UBND xã A) tạo qua giao diện.
 
+05–08 dựng PC 26/11/2026 bằng bốn agent con song song, hẹn 05 27/11 17:00 · 06 28/11 05:00 · 07 28/11 10:00 · 08 28/11 17:00 (lệnh: máy chủ `~/tam-vb/dang-viec-that-05-08.sh`):
+- 05 «Tìm văn bản năm ngoái», 50,1 s — quay KHUNG MÁY TÍNH (Ctrl+K là phím tắt; điện thoại chỉ mở qua menu tài khoản),
+  `quay-web/quay-05.mjs`. Gõ «to cong nghe so» ra 2 văn bản sau 0,84 s; 5 văn bản hư cấu năm 2025 tạo qua giao diện
+  (86/QĐ-UBND + ảnh bản gốc), tài khoản 1, không AI. Chưa nghe Whisper.
+- 06 «Sổ văn bản đến», 49,7 s — bản cài dựng từ main 1.0.22, cửa sổ ngoài màn + UIA + PrintWindow
+  (`quay-app/quay-viec-that-06.ps1`; PC có người dùng nên không dùng gdigrab + chuột thật). Dữ liệu demo tạo lại qua giao diện,
+  quay xong chép trả `documents.db` gốc. Lỗi gặp: đổi Loại trong hộp Sửa sinh lại ô Số; nút lọc «Quá hạn» không khớp con số
+  thông báo; cột Hạn xử lý cắt chữ; Thêm VB đến điền sẵn số/cơ quan/người ký của VB đi.
+- 07 «Kế hoạch theo mẫu», 50,5 s — web, tài khoản 2: AI soạn thật trừ 11 credit, còn 8 (không đủ cho lượt AI nữa). Mẫu
+  «Kế hoạch tổ chức sự kiện», chỉ gõ 4 ô (đủ 7 ô ước tính 5–20 > số dư 19 → bị chặn); Word 4 trang. Lời nói «chỗ AI đề xuất,
+  soát lại» (AI tự thêm 120 đại biểu, mốc giờ, chia kinh phí); né dòng «Hường trực» + địa danh thiếu «Xã». Lỗi: nhiều mẫu L5
+  (KH/BC UBND xã, mẫu cửa hàng) dùng khóa ô mà prompt KeHoach/BaoCao không đọc → AI không nhận nội dung đã điền. Ảnh bìa
+  còn bóng nhãn «① Chọn mẫu». `quay-web/quay-07.mjs`.
+- 08 «Lịch họp + album», 50,3 s — web, tài khoản 1, không AI. Cuộc họp hư cấu «Ra quân trồng cây xanh tuyến đường liên ấp» +
+  3 album tạo qua giao diện; ảnh CC0 Wikimedia Commons, không mặt người (`web-08-anh/nguon.json`). Trình duyệt đặt vi-VN để ô
+  ngày ra 26/11/2026. «Tải ảnh gốc» mở tab mới nên chỉ quay cảnh chạm nút. `quay-web/quay-08.mjs`.
+
 **Công cụ quay của loạt (22/11/2026):**
 - Web: `node video/cong-cu/quay-web/quay.mjs xem | dang-ky | 01 | 02` — CDP screencast khung 390×844 ×3 → `video/anh/viec-that/web-NN.mp4`
   + `.moc.json` (giây + hộp chạm). `VBP_TK=2` dùng tài khoản `demo-web-clip-2` (tài khoản 1 còn 18 credit tới 18/12).

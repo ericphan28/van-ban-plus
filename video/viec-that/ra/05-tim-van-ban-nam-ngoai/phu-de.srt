@@ -1,0 +1,43 @@
+1
+00:00:01,100 --> 00:00:04,681
+Lãnh đạo hỏi: quyết định năm ngoái — số mấy, ký ngày nào?
+
+2
+00:00:04,731 --> 00:00:07,879
+Khỏi lục tủ hồ sơ — tìm ngay trên trình duyệt
+
+3
+00:00:07,929 --> 00:00:13,454
+Ctrl + K — tìm văn bản · cuộc họp · mẫu · pháp quy
+
+4
+00:00:13,504 --> 00:00:17,131
+Gõ không dấu to cong nghe so → ra ngay
+
+5
+00:00:17,181 --> 00:00:21,015
+2 văn bản khớp — số · cơ quan · ngày
+
+6
+00:00:21,065 --> 00:00:25,531
+86/QĐ-UBND · ngày 12/08/2025
+
+7
+00:00:25,581 --> 00:00:30,180
+Bản gốc đính kèm — bấm Xem là mở
+
+8
+00:00:30,230 --> 00:00:35,197
+Số · ngày ký · người ký · bản gốc
+
+9
+00:00:35,247 --> 00:00:40,357
+Tóm lại: Bấm Ctrl + K · Gõ không dấu cũng ra · Mở luôn bản gốc
+
+10
+00:00:40,407 --> 00:00:42,919
+Dùng thử miễn phí — ngay trên trình duyệt
+
+11
+00:00:42,969 --> 00:00:50,077
+Gói Khởi đầu 99.000đ/tháng · app.vanbanplus.giakiemso.com

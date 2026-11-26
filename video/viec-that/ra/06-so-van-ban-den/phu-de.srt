@@ -1,0 +1,43 @@
+1
+00:00:01,100 --> 00:00:04,460
+Văn bản đến — ghi sổ tay, nhớ hạn trong đầu
+
+2
+00:00:04,510 --> 00:00:08,145
+Bị hỏi mới biết — quá hạn 3 ngày?
+
+3
+00:00:08,195 --> 00:00:11,223
+Thêm mới → Hướng: Văn bản đến
+
+4
+00:00:11,273 --> 00:00:15,220
+Số đến tự cấp · ngày đến tự ghi
+
+5
+00:00:15,270 --> 00:00:19,098
+Nhập số · trích yếu · nơi gửi · hạn giải quyết
+
+6
+00:00:19,148 --> 00:00:23,019
+Lưu & Thêm mới → số đến tự tăng
+
+7
+00:00:23,069 --> 00:00:28,564
+Mở máy là báo — 3 quá hạn · 6 sắp hết hạn
+
+8
+00:00:28,614 --> 00:00:34,577
+Lịch: đỏ = quá hạn · cam = sắp hạn
+
+9
+00:00:34,627 --> 00:00:39,965
+Tóm lại: Số đến tự cấp · Mở máy báo quá hạn · Lịch tô đỏ việc trễ hạn
+
+10
+00:00:40,015 --> 00:00:42,527
+Dùng thử miễn phí — ngay trên trình duyệt
+
+11
+00:00:42,577 --> 00:00:49,685
+Gói Khởi đầu 99.000đ/tháng · app.vanbanplus.giakiemso.com

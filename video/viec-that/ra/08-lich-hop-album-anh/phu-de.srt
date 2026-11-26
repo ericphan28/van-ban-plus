@@ -1,0 +1,43 @@
+1
+00:00:01,100 --> 00:00:05,402
+Cuối năm làm báo cáo — ảnh lẫn hết trong điện thoại
+
+2
+00:00:05,452 --> 00:00:08,414
+Lưu thế nào — cần là tìm ra?
+
+3
+00:00:08,464 --> 00:00:12,835
+Lịch họp → giờ · địa điểm · chủ trì
+
+4
+00:00:12,885 --> 00:00:16,775
+Tạo album cho cuộc họp — tên điền sẵn
+
+5
+00:00:16,825 --> 00:00:21,327
+Thêm 10 ảnh một lúc — ảnh lớn tự giảm cỡ
+
+6
+00:00:21,377 --> 00:00:24,234
+Chú thích · ảnh bìa
+
+7
+00:00:24,284 --> 00:00:29,609
+Gõ trong cay → album hiện ra → tải ảnh về
+
+8
+00:00:29,659 --> 00:00:34,951
+Mỗi hoạt động một album — có ngày · có ảnh bìa
+
+9
+00:00:35,001 --> 00:00:40,542
+Tóm lại: Ghi cuộc họp vào lịch · Mỗi cuộc họp một album · Gõ không dấu là tìm ra
+
+10
+00:00:40,592 --> 00:00:43,104
+Dùng thử miễn phí — ngay trên trình duyệt
+
+11
+00:00:43,154 --> 00:00:50,262
+Gói Khởi đầu 99.000đ/tháng · app.vanbanplus.giakiemso.com
