@@ -203,7 +203,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="16" 
+                                            <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="16" Foreground="{Binding BadgeColor}" 
                                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
                                             <TextBlock Grid.Column="1" Text="{Binding Message}" FontSize="13" 
                                                       VerticalAlignment="Center" TextWrapping="Wrap"/>

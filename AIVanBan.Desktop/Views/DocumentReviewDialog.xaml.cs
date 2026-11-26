@@ -138,9 +138,9 @@ public partial class DocumentReviewDialog : Window
         txtScoreText.Text = $"📊 Đánh giá: {result.OverallScore}/10 — {result.ScoreText}";
 
         // Severity counts
-        txtCriticalCount.Text = $"🔴 {result.CriticalCount} Nghiêm trọng";
-        txtWarningCount.Text = $"🟡 {result.WarningCount} Cần xem xét";
-        txtSuggestionCount.Text = $"🟢 {result.SuggestionCount} Gợi ý";
+        txtCriticalCount.Text = $"● {result.CriticalCount} Nghiêm trọng";
+        txtWarningCount.Text = $"● {result.WarningCount} Cần xem xét";
+        txtSuggestionCount.Text = $"● {result.SuggestionCount} Gợi ý";
 
         // Strengths
         if (result.Strengths.Count > 0)
@@ -598,6 +598,13 @@ public class ReviewIssueViewModel
     public ReviewIssueViewModel(ReviewIssue issue) => _issue = issue;
 
     public string SeverityIcon => _issue.SeverityIcon;
+    public System.Windows.Media.Brush SeverityBrush => _issue.SeverityEnum switch
+    {
+        IssueSeverity.Critical => ChamMau.Do,
+        IssueSeverity.Warning => ChamMau.Vang,
+        IssueSeverity.Suggestion => ChamMau.Xanh,
+        _ => ChamMau.Xam
+    };
     public string Description => _issue.Description;
     public string OriginalText => _issue.OriginalText;
     public string Suggestion => _issue.Suggestion;

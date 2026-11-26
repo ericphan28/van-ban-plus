@@ -1008,9 +1008,9 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 1:</Bold> Vào menu <Bold>✨ Kiểm tra VB</Bold> ở sidebar.</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 2:</Bold> Chọn văn bản cần kiểm tra từ danh sách.</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 3:</Bold> AI phân tích <Bold>8 khía cạnh</Bold>:</TextBlock>
-                            <TextBlock Style="{StaticResource BodyText}" Margin="24,0,0,0">🔴 Lỗi nghiêm trọng — chính tả, ngữ pháp sai</TextBlock>
-                            <TextBlock Style="{StaticResource BodyText}" Margin="24,0,0,0">🟡 Cần cải thiện — văn phong chưa phù hợp</TextBlock>
-                            <TextBlock Style="{StaticResource BodyText}" Margin="24,0,0,0">🟢 Đạt yêu cầu — đúng thể thức, logic tốt</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="24,0,0,0"><Run Foreground="#C62828">●</Run> Lỗi nghiêm trọng — chính tả, ngữ pháp sai</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="24,0,0,0"><Run Foreground="#F9A825">●</Run> Cần cải thiện — văn phong chưa phù hợp</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="24,0,0,0"><Run Foreground="#2E7D32">●</Run> Đạt yêu cầu — đúng thể thức, logic tốt</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 4:</Bold> Xem <Bold>điểm chất lượng</Bold> tổng thể (thang 1-10).</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}"><Bold>Bước 5:</Bold> Nhấn <Bold>✅ Áp dụng sửa đổi</Bold> để AI tự động sửa lỗi → lưu vào văn bản.</TextBlock>
                         </StackPanel>
@@ -1281,10 +1281,10 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                     </Border>
 
                     <TextBlock Style="{StaticResource BodyText}" FontWeight="SemiBold" Margin="0,8,0,4">Mã màu sự kiện:</TextBlock>
-                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">🔴 <Bold>Quá hạn</Bold> — Văn bản đã quá hạn xử lý (cần ưu tiên)</TextBlock>
-                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">🟡 <Bold>Sắp hạn</Bold> — Văn bản sắp đến hạn (trong 3 ngày)</TextBlock>
-                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">🔵 <Bold>Cuộc họp</Bold> — Cuộc họp đã lên lịch</TextBlock>
-                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0">🟢 <Bold>Nhiệm vụ</Bold> — Task từ cuộc họp (có deadline)</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0"><Run Foreground="#C62828">●</Run> <Bold>Quá hạn</Bold> — Văn bản đã quá hạn xử lý (cần ưu tiên)</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0"><Run Foreground="#F9A825">●</Run> <Bold>Sắp hạn</Bold> — Văn bản sắp đến hạn (trong 3 ngày)</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0"><Run Foreground="#1565C0">●</Run> <Bold>Cuộc họp</Bold> — Cuộc họp đã lên lịch</TextBlock>
+                    <TextBlock Style="{StaticResource BodyText}" Margin="16,0,0,0"><Run Foreground="#2E7D32">●</Run> <Bold>Nhiệm vụ</Bold> — Task từ cuộc họp (có deadline)</TextBlock>
 
                     <Border Style="{StaticResource TipCard}">
                         <TextBlock Style="{StaticResource BodyText}" Margin="0">
@@ -1620,15 +1620,38 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- ════ Version 1.0.23 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <!-- ════ Version 1.0.24 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock Text="v1.0.24 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                </Border>
+                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
+                                🎨 Chấm màu rõ ràng, AI soạn sát thông tin hơn
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Chấm màu mức độ</Bold> (Trang chủ «Cần xử lý», Lịch, độ ưu tiên, soát văn bản) hiện đúng màu đỏ / vàng / xanh, không còn vòng tròn sọc đen trắng
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Còn ít credit</Bold>: tác vụ AI vẫn chạy khi số dư đủ mức thấp của ước tính
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>AI soạn thảo</Bold>: không tự đặt số người, mốc giờ, kinh phí; chỗ thiếu để «[...]» cho người soạn điền; địa danh «Xã A», «Phường 1» đúng NĐ 30
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ════ Version 1.0.23 — Tháng 11/2026 ════ -->
                     <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
                                     <TextBlock Text="v1.0.23 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                </Border>
-                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
@@ -1884,7 +1907,7 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Lịch tổng hợp</Bold> — Xem deadline VB + cuộc họp + tasks trên 1 lịch tháng</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Xuất Excel báo cáo</Bold> — 5 sheet chi tiết: Tổng quan, Phân loại, Khẩn &amp; Mật, Xu hướng, DS VB</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>24 mẫu VB chuyên ngành</Bold> — Y tế (8), Giáo dục (8), UBND xã (8)</TextBlock>
-                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Mã màu sự kiện</Bold> — 🔴 Quá hạn, 🟡 Sắp hạn, 🔵 Cuộc họp, 🟢 Task</TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Mã màu sự kiện</Bold> — <Run Foreground="#C62828">●</Run> Quá hạn, <Run Foreground="#F9A825">●</Run> Sắp hạn, <Run Foreground="#1565C0">●</Run> Cuộc họp, <Run Foreground="#2E7D32">●</Run> Task</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ <Bold>Nút Xuất Excel</Bold> trên Thống kê + Danh sách VB (hành động hàng loạt)</TextBlock>
                             <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0">✅ Dọn dẹp dead code, tối ưu hiệu năng</TextBlock>
                         </StackPanel>

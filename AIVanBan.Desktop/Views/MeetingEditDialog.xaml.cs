@@ -373,7 +373,7 @@ public partial class MeetingEditDialog : Window
             txtTaskTotal.Text = $"Tổng: {_tasks.Count}";
             txtTaskCompleted.Text = $"✅ Hoàn thành: {completed}";
             txtTaskInProgress.Text = $"🔄 Đang làm: {inProgress}";
-            txtTaskOverdue.Text = $"🔴 Quá hạn: {overdue}";
+            txtTaskOverdue.Text = $"● Quá hạn: {overdue}";
             txtTaskStats.Text = $"({completed}/{_tasks.Count} hoàn thành)";
         }
         else

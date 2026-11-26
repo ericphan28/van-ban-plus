@@ -148,8 +148,8 @@
                     <ComboBoxItem Content="📜 NQ: UBND quản lý karaoke" Tag="nq_ubnd"/>
                     <ComboBoxItem Content="📜 NQ: Chuyên đề xây dựng NTM" Tag="nq_chuyende"/>
                     <!-- ═══ CHỈ THỊ (2 mẫu) ═══ -->
-                    <ComboBoxItem Content="🔴 CT: Tăng cường ANTT dịp Tết" Tag="ct_antt"/>
-                    <ComboBoxItem Content="🔴 CT: Phòng chống dịch bệnh" Tag="ct_phongdich"/>
+                    <ComboBoxItem Content="📌 CT: Tăng cường ANTT dịp Tết" Tag="ct_antt"/>
+                    <ComboBoxItem Content="📌 CT: Phòng chống dịch bệnh" Tag="ct_phongdich"/>
                 </ComboBox>
 
                 <Button Grid.Column="2"

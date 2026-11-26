@@ -298,15 +298,7 @@ public partial class DocumentViewDialog : Window
         if (txtViewPersonalDeadline != null)
             txtViewPersonalDeadline.Text = doc.PersonalDeadline?.ToString("dd/MM/yyyy") ?? "— Chưa đặt";
         if (txtViewPriority != null)
-            txtViewPriority.Text = doc.PersonalPriority switch
-            {
-                1 => "⚪ Rất thấp",
-                2 => "🔵 Thấp",
-                3 => "🟡 Bình thường",
-                4 => "🟠 Cao",
-                5 => "🔴 Rất cao",
-                _ => "🟡 Bình thường"
-            };
+            ChamMau.GhiUuTien(txtViewPriority, doc.PersonalPriority);
         
         // Hiện ghi chú bút phê
         LoadNotes(doc);

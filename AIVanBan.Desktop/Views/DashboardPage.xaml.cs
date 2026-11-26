@@ -186,7 +186,7 @@ public partial class DashboardPage : Page
         {
             alerts.Add(new AlertItem
             {
-                Icon = "🔴",
+                Icon = "●",
                 Message = $"{overdueDocuments.Count} VB đến đã quá hạn xử lý!",
                 Badge = $"{overdueDocuments.Count}",
                 BadgeColor = new SolidColorBrush(Color.FromRgb(198, 40, 40)),
@@ -200,7 +200,7 @@ public partial class DashboardPage : Page
         {
             alerts.Add(new AlertItem
             {
-                Icon = "🟡",
+                Icon = "●",
                 Message = $"{dueSoonDocuments.Count} VB đến sắp hết hạn xử lý (3 ngày)",
                 Badge = $"{dueSoonDocuments.Count}",
                 BadgeColor = new SolidColorBrush(Color.FromRgb(230, 81, 0)),
@@ -216,7 +216,7 @@ public partial class DashboardPage : Page
         {
             alerts.Add(new AlertItem
             {
-                Icon = "🔴",
+                Icon = "●",
                 Message = $"{pendingApproval.Count} VB chờ duyệt quá 3 ngày",
                 Badge = $"{pendingApproval.Count}",
                 BadgeColor = new SolidColorBrush(Color.FromRgb(198, 40, 40)),
@@ -230,7 +230,7 @@ public partial class DashboardPage : Page
         {
             alerts.Add(new AlertItem
             {
-                Icon = "🔴",
+                Icon = "●",
                 Message = $"{overdueTasks} nhiệm vụ đã quá hạn",
                 Badge = $"{overdueTasks}",
                 BadgeColor = new SolidColorBrush(Color.FromRgb(198, 40, 40)),
@@ -249,7 +249,7 @@ public partial class DashboardPage : Page
         {
             alerts.Add(new AlertItem
             {
-                Icon = "🟡",
+                Icon = "●",
                 Message = $"{unprocessedIncoming.Count} VB đến chưa xử lý (tuần này)",
                 Badge = $"{unprocessedIncoming.Count}",
                 BadgeColor = new SolidColorBrush(Color.FromRgb(230, 81, 0)),
@@ -263,7 +263,7 @@ public partial class DashboardPage : Page
         {
             alerts.Add(new AlertItem
             {
-                Icon = "🟡",
+                Icon = "●",
                 Message = $"{todayMeetings.Count} cuộc họp hôm nay",
                 Badge = $"{todayMeetings.Count}",
                 BadgeColor = new SolidColorBrush(Color.FromRgb(230, 81, 0)),
@@ -278,7 +278,7 @@ public partial class DashboardPage : Page
         {
             alerts.Add(new AlertItem
             {
-                Icon = "🟢",
+                Icon = "●",
                 Message = $"{upcomingDeadlineTasks} nhiệm vụ hết hạn trong 7 ngày tới",
                 Badge = $"{upcomingDeadlineTasks}",
                 BadgeColor = new SolidColorBrush(Color.FromRgb(46, 125, 50)),

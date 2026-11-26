@@ -33,7 +33,7 @@
                 <Border x:Name="badgePriority" Grid.Column="1" 
                        CornerRadius="30" Width="80" Height="60" Visibility="Collapsed">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock x:Name="txtPriorityIcon" Text="🟡" 
+                        <TextBlock x:Name="txtPriorityIcon" Text="●" 
                                   FontSize="22" HorizontalAlignment="Center"/>
                         <TextBlock x:Name="txtPriorityLabel" Text="Vừa" 
                                   FontSize="11" FontWeight="Bold" Foreground="White"

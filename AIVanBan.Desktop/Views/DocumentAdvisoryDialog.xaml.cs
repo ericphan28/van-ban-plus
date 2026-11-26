@@ -147,11 +147,12 @@ public partial class DocumentAdvisoryDialog : Window
         badgePriority.Visibility = Visibility.Visible;
         var (prioIcon, prioLabel, prioBg, prioFg) = result.Priority?.ToLower() switch
         {
-            "high" => ("🔴", "Khẩn", "#FFCDD2", "#C62828"),
-            "low" => ("🟢", "Thấp", "#C8E6C9", "#2E7D32"),
-            _ => ("🟡", "Vừa", "#FFF3E0", "#E65100")
+            "high" => ("●", "Khẩn", "#FFCDD2", "#C62828"),
+            "low" => ("●", "Thấp", "#C8E6C9", "#2E7D32"),
+            _ => ("●", "Vừa", "#FFF3E0", "#E65100")
         };
         txtPriorityIcon.Text = prioIcon;
+        txtPriorityIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(prioFg));
         txtPriorityLabel.Text = prioLabel;
         badgePriority.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(prioBg));
         txtPriorityLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(prioFg));

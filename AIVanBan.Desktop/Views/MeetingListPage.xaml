@@ -89,7 +89,7 @@
                          SelectionChanged="Filter_Changed">
                     <ComboBoxItem Content="Tất cả" IsSelected="True" Tag=""/>
                     <ComboBoxItem Content="📅 Đã lên lịch" Tag="Scheduled"/>
-                    <ComboBoxItem Content="🔴 Đang diễn ra" Tag="InProgress"/>
+                    <ComboBoxItem Content="▶ Đang diễn ra" Tag="InProgress"/>
                     <ComboBoxItem Content="✅ Đã kết thúc" Tag="Completed"/>
                     <ComboBoxItem Content="⏸️ Hoãn" Tag="Postponed"/>
                     <ComboBoxItem Content="❌ Hủy" Tag="Cancelled"/>

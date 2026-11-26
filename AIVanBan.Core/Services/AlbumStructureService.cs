@@ -226,7 +226,7 @@ public class AlbumStructureService : IDisposable
                             SuggestedTags = new[] { "chào cờ", "thứ hai", "lễ" } },
                         new() { Name = "Họp giao ban", Icon = "👥", SortOrder = 2, AutoCreateYearFolder = true,
                             SuggestedTags = new[] { "giao ban", "họp", "tuần" } },
-                        new() { Name = "Sinh hoạt Chi bộ", Icon = "🔴", SortOrder = 3, AutoCreateYearFolder = true,
+                        new() { Name = "Sinh hoạt Chi bộ", Icon = "🚩", SortOrder = 3, AutoCreateYearFolder = true,
                             SuggestedTags = new[] { "chi bộ", "sinh hoạt", "đảng" } },
                         new() { Name = "Sinh hoạt Đoàn - Hội", Icon = "⭐", SortOrder = 4, AutoCreateYearFolder = true,
                             SuggestedTags = new[] { "đoàn", "hội", "thanh niên" } },

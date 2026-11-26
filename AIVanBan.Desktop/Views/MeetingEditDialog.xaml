@@ -349,7 +349,7 @@
                             <TextBlock x:Name="txtTaskTotal" Text="Tổng: 0" FontSize="12" Margin="0,0,16,0"/>
                             <TextBlock x:Name="txtTaskCompleted" Text="✅ Hoàn thành: 0" FontSize="12" Foreground="#43A047" Margin="0,0,16,0"/>
                             <TextBlock x:Name="txtTaskInProgress" Text="🔄 Đang làm: 0" FontSize="12" Foreground="#1976D2" Margin="0,0,16,0"/>
-                            <TextBlock x:Name="txtTaskOverdue" Text="🔴 Quá hạn: 0" FontSize="12" Foreground="#E53935" Margin="0,0,16,0"/>
+                            <TextBlock x:Name="txtTaskOverdue" Text="● Quá hạn: 0" FontSize="12" Foreground="#E53935" Margin="0,0,16,0"/>
                         </WrapPanel>
                     </Border>
                     

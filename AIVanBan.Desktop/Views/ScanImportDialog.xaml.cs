@@ -135,10 +135,10 @@ public partial class ScanImportDialog : Window
         // Mức độ khẩn
         var urgencies = new[]
         {
-            new { Value = "Thuong", Display = "⚪ Thường" },
-            new { Value = "Khan", Display = "🟡 Khẩn" },
-            new { Value = "ThuongKhan", Display = "🟠 Thượng khẩn" },
-            new { Value = "HoaToc", Display = "🔴 Hỏa tốc" }
+            new { Value = "Thuong", Display = "Thường" },
+            new { Value = "Khan", Display = "Khẩn" },
+            new { Value = "ThuongKhan", Display = "Thượng khẩn" },
+            new { Value = "HoaToc", Display = "Hỏa tốc" }
         };
         cboDoKhan.ItemsSource = urgencies;
         cboDoKhan.DisplayMemberPath = "Display";
@@ -148,10 +148,10 @@ public partial class ScanImportDialog : Window
         // Độ mật
         var securities = new[]
         {
-            new { Value = "Thuong", Display = "⚪ Thường" },
-            new { Value = "Mat", Display = "🟡 Mật" },
-            new { Value = "ToiMat", Display = "🟠 Tối mật" },
-            new { Value = "TuyetMat", Display = "🔴 Tuyệt mật" }
+            new { Value = "Thuong", Display = "Thường" },
+            new { Value = "Mat", Display = "Mật" },
+            new { Value = "ToiMat", Display = "Tối mật" },
+            new { Value = "TuyetMat", Display = "Tuyệt mật" }
         };
         cboDoMat.ItemsSource = securities;
         cboDoMat.DisplayMemberPath = "Display";
@@ -559,7 +559,7 @@ public partial class ScanImportDialog : Window
             max += u.CreditMax;
             soDu = u.SoDu;
         }
-        return new UocTinhKetQua(min, max, soDu, soDu >= max);
+        return new UocTinhKetQua(min, max, soDu, soDu >= min);
     }
 
     /// <summary>

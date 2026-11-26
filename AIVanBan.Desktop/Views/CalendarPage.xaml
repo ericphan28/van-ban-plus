@@ -67,16 +67,16 @@
                             </StackPanel>
                         </Border>
                         <Border Background="#FFCDD2" CornerRadius="6" Padding="8,4" Margin="0,2,6,2">
-                            <TextBlock Text="🔴 Quá hạn" FontSize="12" FontWeight="Medium" Foreground="#C62828"/>
+                            <TextBlock Text="● Quá hạn" FontSize="12" FontWeight="Medium" Foreground="#C62828"/>
                         </Border>
                         <Border Background="#FFF9C4" CornerRadius="6" Padding="8,4" Margin="0,2,6,2">
-                            <TextBlock Text="🟡 Sắp hạn" FontSize="12" FontWeight="Medium" Foreground="#F57F17"/>
+                            <TextBlock Text="● Sắp hạn" FontSize="12" FontWeight="Medium" Foreground="#F57F17"/>
                         </Border>
                         <Border Background="#BBDEFB" CornerRadius="6" Padding="8,4" Margin="0,2,6,2">
-                            <TextBlock Text="🔵 Họp" FontSize="12" FontWeight="Medium" Foreground="#1565C0"/>
+                            <TextBlock Text="● Họp" FontSize="12" FontWeight="Medium" Foreground="#1565C0"/>
                         </Border>
                         <Border Background="#C8E6C9" CornerRadius="6" Padding="8,4" Margin="0,2,0,2">
-                            <TextBlock Text="🟢 Nhiệm vụ" FontSize="12" FontWeight="Medium" Foreground="#2E7D32"/>
+                            <TextBlock Text="● Nhiệm vụ" FontSize="12" FontWeight="Medium" Foreground="#2E7D32"/>
                         </Border>
                     </WrapPanel>
                 </DockPanel>

@@ -1356,7 +1356,7 @@ public partial class DocumentListPage : Page
         var statuses = new[]
         {
             (PersonalStatus.ChuaXuLy,   "⬜ Chưa xử lý"),
-            (PersonalStatus.DangXuLy,   "🟠 Đang xử lý"),
+            (PersonalStatus.DangXuLy,   "⏳ Đang xử lý"),
             (PersonalStatus.DaXuLy,     "✅ Đã xử lý"),
             (PersonalStatus.ChuyenTiep,  "➡️ Chuyển tiếp")
         };
@@ -2039,15 +2039,7 @@ public partial class DocumentListPage : Page
                 }
                 
                 if (txtPreviewPriority != null)
-                    txtPreviewPriority.Text = doc.PersonalPriority switch
-                    {
-                        1 => "⚪ Rất thấp",
-                        2 => "🔵 Thấp",
-                        3 => "🟡 Bình thường",
-                        4 => "🟠 Cao",
-                        5 => "🔴 Rất cao",
-                        _ => "🟡 Bình thường"
-                    };
+                    ChamMau.GhiUuTien(txtPreviewPriority, doc.PersonalPriority);
                 
                 if (txtPreviewPersonalDeadline != null)
                     txtPreviewPersonalDeadline.Text = doc.PersonalDeadline?.ToString("dd/MM/yyyy") ?? "—";

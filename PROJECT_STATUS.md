@@ -4,7 +4,7 @@
 > Copilot/AI agent: **Luôn đọc file này đầu tiên** trước khi làm bất kỳ tính năng nào.
 > Sau khi hoàn thành tính năng: **Cập nhật file này** ngay lập tức.
 >
-> **Phiên bản hiện tại:** v1.0.23 (sổ văn bản: đổi Loại không còn đổi Số, Thêm VB đến không điền sẵn theo VB đi, lọc «Quá hạn» khớp thông báo — phát hành 2026-11-26, không bắt buộc). Trước đó v1.0.22 (xuất Biên bản / Thông báo kết luận cuộc họp ra Word theo thể thức NĐ 30). Trước nữa v1.0.21: AI theo chính quyền địa phương hai cấp + luật 2025, địa phương theo Cài đặt, ngày gõ tay dd/MM (bắt buộc)
+> **Phiên bản hiện tại:** v1.0.24 (chấm màu mức độ hiện đúng màu thay vì vòng tròn sọc đen trắng — phát hành 2026-11-27, không bắt buộc). Trước đó v1.0.23 (sổ văn bản: đổi Loại không còn đổi Số, Thêm VB đến không điền sẵn theo VB đi, lọc «Quá hạn» khớp thông báo). Trước nữa v1.0.22 (xuất Biên bản / Thông báo kết luận cuộc họp ra Word theo thể thức NĐ 30). Trước nữa v1.0.21: AI theo chính quyền địa phương hai cấp + luật 2025, địa phương theo Cài đặt, ngày gõ tay dd/MM (bắt buộc)
 > **Cập nhật lần cuối:** 2026-11-16
 > **Kiến trúc:** WPF .NET 9 + LiteDB + MaterialDesign-in-XAML
 

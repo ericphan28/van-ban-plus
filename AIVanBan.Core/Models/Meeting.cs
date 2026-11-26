@@ -413,7 +413,7 @@ public static class MeetingHelper
     public static string GetStatusIcon(MeetingStatus status) => status switch
     {
         MeetingStatus.Scheduled => "📅",
-        MeetingStatus.InProgress => "🔴",
+        MeetingStatus.InProgress => "▶",
         MeetingStatus.Completed => "✅",
         MeetingStatus.Postponed => "⏸️",
         MeetingStatus.Cancelled => "❌",

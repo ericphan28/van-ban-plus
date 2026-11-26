@@ -591,7 +591,7 @@ public partial class CalendarPage : Page
                 var evt = new CalendarEvent
                 {
                     Type = EventType.Meeting,
-                    ShortLabel = $"🔵 {TruncateText(meeting.Title, 18)}",
+                    ShortLabel = $"👥 {TruncateText(meeting.Title, 18)}",
                     FullLabel = meeting.Title,
                     Detail = $"Thời gian: {meeting.StartTime:HH:mm} - {meeting.EndTime:HH:mm}\n" +
                              $"Địa điểm: {meeting.Location}\n" +
