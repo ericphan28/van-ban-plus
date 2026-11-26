@@ -1620,15 +1620,38 @@ Internet chỉ cần khi sử dụng các tính năng AI."/>
                         <Run Text=" Có gì mới?"/>
                     </TextBlock>
 
-                    <!-- ════ Version 1.0.21 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <!-- ════ Version 1.0.22 — Tháng 11/2026 (MỚI NHẤT) ════ -->
+                    <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
+                                    <TextBlock Text="v1.0.22 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                                </Border>
+                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
+                                📝 Xuất Biên bản cuộc họp ra Word
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Phần đầu văn bản</Bold>: tên cơ quan và «Số: .../BB-...» bên trái, Quốc hiệu, Tiêu ngữ và địa danh, ngày tháng bên phải; địa danh lấy theo tên cơ quan hoặc Cài đặt → 🏛️ Cơ quan
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Khối chữ ký</Bold> không còn bị tách sang trang sau; tệp Word đặt sẵn khổ A4
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="4,0,0,0" TextWrapping="Wrap">
+                                ✅ <Bold>Thành phần tham dự</Bold> ghi đúng vai Chủ trì, Thư ký; dòng kết thúc cuộc họp ghi giờ, ngày
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ════ Version 1.0.21 — Tháng 11/2026 ════ -->
                     <Border Style="{StaticResource ChangelogCard}" BorderBrush="#1976D2" BorderThickness="2">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#1976D2" CornerRadius="4" Padding="8,2" Margin="0,0,8,0">
                                     <TextBlock Text="v1.0.21 — Tháng 11/2026" Foreground="White" FontWeight="Bold" FontSize="12"/>
-                                </Border>
-                                <Border Background="#FF9800" CornerRadius="4" Padding="6,2">
-                                    <TextBlock Text="🆕 MỚI NHẤT" Foreground="White" FontWeight="Bold" FontSize="10"/>
                                 </Border>
                             </StackPanel>
                             <TextBlock Style="{StaticResource BodyText}" FontWeight="Bold" Foreground="#0D47A1" Margin="4,4,0,4">
